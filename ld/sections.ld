@@ -224,8 +224,9 @@ SECTIONS
      */
     .text : ALIGN(4)
     {
-        *(.text .text.*)			/* all remaining code */
- 
+        *(.text .text.usb_* .text.usbd_* .text.st_usbfs_*)			/* all remaining code */
+        /*  *(move_it_sect)*/
+        *(.text.*)
  		/* read-only data (constants) */
         *(.rodata .rodata.* .constdata .constdata.*) 		
 
@@ -243,6 +244,12 @@ SECTIONS
         *(.glue_7)
         *(.glue_7t)
 
+    } >FLASH
+    
+    move_it_sect : ALIGN(32)
+    {
+    	*(move_it_sect_first)
+    	*(move_it_sect)
     } >FLASH
 
 	/* ARM magic sections */
@@ -473,3 +480,8 @@ SECTIONS
     .debug_typenames 0 : { *(.debug_typenames) }
     .debug_varnames  0 : { *(.debug_varnames) }    
 }
+__fgot_begin = LOADADDR(.got) ;
+__fgot_end = __fgot_begin + SIZEOF(.got) ;
+__rgot_begin = ADDR(.got) ;
+__rgot_end = __rgot_begin + SIZEOF(.got) ;
+__ram_start = ORIGIN(RAM);
