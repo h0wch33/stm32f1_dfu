@@ -1,0 +1,2882 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"spi_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.spi_reset,"ax",%progbits
+  16              		.align	1
+  17              		.global	spi_reset
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	spi_reset:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/spi_common_all.c"
+   1:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @addtogroup spi_file SPI peripheral API
+   2:../libopencm3/lib/stm32/common/spi_common_all.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+   4:../libopencm3/lib/stm32/common/spi_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2009
+   5:../libopencm3/lib/stm32/common/spi_common_all.c **** Uwe Hermann <uwe@hermann-uwe.de>
+   6:../libopencm3/lib/stm32/common/spi_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2012
+   7:../libopencm3/lib/stm32/common/spi_common_all.c **** Ken Sarkies <ksarkies@internode.on.net>
+   8:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+   9:../libopencm3/lib/stm32/common/spi_common_all.c **** Devices can have up to three SPI peripherals. The common 4-wire full-duplex
+  10:../libopencm3/lib/stm32/common/spi_common_all.c **** mode of operation is supported, along with 3-wire variants using unidirectional
+  11:../libopencm3/lib/stm32/common/spi_common_all.c **** communication modes or half-duplex bidirectional communication. A variety of
+  12:../libopencm3/lib/stm32/common/spi_common_all.c **** options allows many of the SPI variants to be supported. Multimaster operation
+  13:../libopencm3/lib/stm32/common/spi_common_all.c **** is also supported. A CRC can be generated and checked in hardware.
+  14:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  15:../libopencm3/lib/stm32/common/spi_common_all.c **** @note Some JTAG pins need to be remapped if SPI is to be used.
+  16:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  17:../libopencm3/lib/stm32/common/spi_common_all.c **** @note The I2S protocol shares the SPI hardware so the two protocols cannot be
+  18:../libopencm3/lib/stm32/common/spi_common_all.c **** used at the same time on the same peripheral.
+  19:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  20:../libopencm3/lib/stm32/common/spi_common_all.c **** Example: Clk/4, positive clock polarity, leading edge trigger, 8-bit words,
+  21:../libopencm3/lib/stm32/common/spi_common_all.c **** LSB first.
+  22:../libopencm3/lib/stm32/common/spi_common_all.c **** @code
+  23:../libopencm3/lib/stm32/common/spi_common_all.c **** 	spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_4, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
+  24:../libopencm3/lib/stm32/common/spi_common_all.c **** 			SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_8BIT, SPI_CR1_LSBFIRST);
+  25:../libopencm3/lib/stm32/common/spi_common_all.c **** 	spi_write(SPI1, 0x55);		// 8-bit write
+  26:../libopencm3/lib/stm32/common/spi_common_all.c **** 	spi_write(SPI1, 0xaa88);	// 16-bit write
+  27:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg8 = spi_read(SPI1);		// 8-bit read
+  28:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg16 = spi_read(SPI1);		// 16-bit read
+  29:../libopencm3/lib/stm32/common/spi_common_all.c **** @endcode
+  30:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  31:../libopencm3/lib/stm32/common/spi_common_all.c **** @todo need additional functions to aid ISRs in retrieving status
+  32:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  33:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+  34:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  35:../libopencm3/lib/stm32/common/spi_common_all.c **** /*
+  36:../libopencm3/lib/stm32/common/spi_common_all.c ****  * This file is part of the libopencm3 project.
+  37:../libopencm3/lib/stm32/common/spi_common_all.c ****  *
+  38:../libopencm3/lib/stm32/common/spi_common_all.c ****  * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+  39:../libopencm3/lib/stm32/common/spi_common_all.c ****  *
+  40:../libopencm3/lib/stm32/common/spi_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  41:../libopencm3/lib/stm32/common/spi_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  42:../libopencm3/lib/stm32/common/spi_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  43:../libopencm3/lib/stm32/common/spi_common_all.c ****  * (at your option) any later version.
+  44:../libopencm3/lib/stm32/common/spi_common_all.c ****  *
+  45:../libopencm3/lib/stm32/common/spi_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  46:../libopencm3/lib/stm32/common/spi_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  47:../libopencm3/lib/stm32/common/spi_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  48:../libopencm3/lib/stm32/common/spi_common_all.c ****  * GNU Lesser General Public License for more details.
+  49:../libopencm3/lib/stm32/common/spi_common_all.c ****  *
+  50:../libopencm3/lib/stm32/common/spi_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  51:../libopencm3/lib/stm32/common/spi_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  52:../libopencm3/lib/stm32/common/spi_common_all.c ****  */
+  53:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  54:../libopencm3/lib/stm32/common/spi_common_all.c **** #include <libopencm3/stm32/spi.h>
+  55:../libopencm3/lib/stm32/common/spi_common_all.c **** #include <libopencm3/stm32/rcc.h>
+  56:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  57:../libopencm3/lib/stm32/common/spi_common_all.c **** /**@{*/
+  58:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  59:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+  60:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Reset.
+  61:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  62:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral and all its associated configuration registers are placed in
+  63:../libopencm3/lib/stm32/common/spi_common_all.c **** the reset condition. The reset is effected via the RCC peripheral reset system.
+  64:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  65:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi_peripheral Unsigned int32. SPI peripheral identifier @ref
+  66:../libopencm3/lib/stm32/common/spi_common_all.c **** spi_reg_base.
+  67:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+  68:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+  69:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_reset(uint32_t spi_peripheral)
+  70:../libopencm3/lib/stm32/common/spi_common_all.c **** {	switch (spi_peripheral) {
+  27              		.loc 1 70 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 82B0     		sub	sp, sp, #8
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40              		.loc 1 70 3
+  41 0008 7B68     		ldr	r3, [r7, #4]
+  42 000a 0F4A     		ldr	r2, .L7
+  43 000c 9342     		cmp	r3, r2
+  44 000e 12D0     		beq	.L2
+  45 0010 7B68     		ldr	r3, [r7, #4]
+  46 0012 0E4A     		ldr	r2, .L7+4
+  47 0014 9342     		cmp	r3, r2
+  48 0016 04D0     		beq	.L3
+  49 0018 7B68     		ldr	r3, [r7, #4]
+  50 001a 0D4A     		ldr	r2, .L7+8
+  51 001c 9342     		cmp	r3, r2
+  52 001e 05D0     		beq	.L4
+  71:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI1_BASE)
+  72:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI1_BASE:
+  73:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI1);
+  74:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  75:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  76:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI2_BASE)
+  77:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI2_BASE:
+  78:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI2);
+  79:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  80:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  81:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI3_BASE)
+  82:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI3_BASE:
+  83:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI3);
+  84:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  85:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  86:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI4_BASE)
+  87:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI4_BASE:
+  88:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI4);
+  89:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  90:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  91:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI5_BASE)
+  92:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI5_BASE:
+  93:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI5);
+  94:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  95:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  96:../libopencm3/lib/stm32/common/spi_common_all.c **** #if defined(SPI6_BASE)
+  97:../libopencm3/lib/stm32/common/spi_common_all.c **** 	case SPI6_BASE:
+  98:../libopencm3/lib/stm32/common/spi_common_all.c **** 		rcc_periph_reset_pulse(RST_SPI6);
+  99:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+ 100:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+ 101:../libopencm3/lib/stm32/common/spi_common_all.c **** 	default:
+ 102:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  53              		.loc 1 102 3
+  54 0020 0EE0     		b	.L6
+  55              	.L3:
+  73:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  56              		.loc 1 73 3
+  57 0022 4FF4C670 		mov	r0, #396
+  58 0026 FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  74:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  59              		.loc 1 74 3
+  60 002a 09E0     		b	.L6
+  61              	.L4:
+  78:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  62              		.loc 1 78 3
+  63 002c 40F20E20 		movw	r0, #526
+  64 0030 FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  79:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  65              		.loc 1 79 3
+  66 0034 04E0     		b	.L6
+  67              	.L2:
+  83:../libopencm3/lib/stm32/common/spi_common_all.c **** 		break;
+  68              		.loc 1 83 3
+  69 0036 40F20F20 		movw	r0, #527
+  70 003a FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  84:../libopencm3/lib/stm32/common/spi_common_all.c **** #endif
+  71              		.loc 1 84 3
+  72 003e 00BF     		nop
+  73              	.L6:
+ 103:../libopencm3/lib/stm32/common/spi_common_all.c **** 	}
+ 104:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+  74              		.loc 1 104 1
+  75 0040 00BF     		nop
+  76 0042 0837     		adds	r7, r7, #8
+  77              		.cfi_def_cfa_offset 8
+  78 0044 BD46     		mov	sp, r7
+  79              		.cfi_def_cfa_register 13
+  80              		@ sp needed
+  81 0046 80BD     		pop	{r7, pc}
+  82              	.L8:
+  83              		.align	2
+  84              	.L7:
+  85 0048 003C0040 		.word	1073757184
+  86 004c 00300140 		.word	1073819648
+  87 0050 00380040 		.word	1073756160
+  88              		.cfi_endproc
+  89              	.LFE0:
+  91              		.section	.text.spi_enable,"ax",%progbits
+  92              		.align	1
+  93              		.global	spi_enable
+  94              		.syntax unified
+  95              		.thumb
+  96              		.thumb_func
+  97              		.fpu softvfp
+  99              	spi_enable:
+ 100              	.LFB1:
+ 105:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 106:../libopencm3/lib/stm32/common/spi_common_all.c **** /* TODO: Error handling? */
+ 107:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 108:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable.
+ 109:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 110:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is enabled.
+ 111:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 112:../libopencm3/lib/stm32/common/spi_common_all.c **** @todo Error handling?
+ 113:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 114:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 115:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 116:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 117:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable(uint32_t spi)
+ 118:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 101              		.loc 1 118 1
+ 102              		.cfi_startproc
+ 103              		@ args = 0, pretend = 0, frame = 8
+ 104              		@ frame_needed = 1, uses_anonymous_args = 0
+ 105              		@ link register save eliminated.
+ 106 0000 80B4     		push	{r7}
+ 107              		.cfi_def_cfa_offset 4
+ 108              		.cfi_offset 7, -4
+ 109 0002 83B0     		sub	sp, sp, #12
+ 110              		.cfi_def_cfa_offset 16
+ 111 0004 00AF     		add	r7, sp, #0
+ 112              		.cfi_def_cfa_register 7
+ 113 0006 7860     		str	r0, [r7, #4]
+ 119:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_SPE; /* Enable SPI. */
+ 114              		.loc 1 119 15
+ 115 0008 7B68     		ldr	r3, [r7, #4]
+ 116 000a 1A68     		ldr	r2, [r3]
+ 117 000c 7B68     		ldr	r3, [r7, #4]
+ 118 000e 42F04002 		orr	r2, r2, #64
+ 119 0012 1A60     		str	r2, [r3]
+ 120:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 120              		.loc 1 120 1
+ 121 0014 00BF     		nop
+ 122 0016 0C37     		adds	r7, r7, #12
+ 123              		.cfi_def_cfa_offset 4
+ 124 0018 BD46     		mov	sp, r7
+ 125              		.cfi_def_cfa_register 13
+ 126              		@ sp needed
+ 127 001a 80BC     		pop	{r7}
+ 128              		.cfi_restore 7
+ 129              		.cfi_def_cfa_offset 0
+ 130 001c 7047     		bx	lr
+ 131              		.cfi_endproc
+ 132              	.LFE1:
+ 134              		.section	.text.spi_disable,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	spi_disable
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 140              		.fpu softvfp
+ 142              	spi_disable:
+ 143              	.LFB2:
+ 121:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 122:../libopencm3/lib/stm32/common/spi_common_all.c **** /* TODO: Error handling? */
+ 123:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 124:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable.
+ 125:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 126:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is disabled.
+ 127:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 128:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 129:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 130:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 131:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable(uint32_t spi)
+ 132:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 144              		.loc 1 132 1
+ 145              		.cfi_startproc
+ 146              		@ args = 0, pretend = 0, frame = 16
+ 147              		@ frame_needed = 1, uses_anonymous_args = 0
+ 148              		@ link register save eliminated.
+ 149 0000 80B4     		push	{r7}
+ 150              		.cfi_def_cfa_offset 4
+ 151              		.cfi_offset 7, -4
+ 152 0002 85B0     		sub	sp, sp, #20
+ 153              		.cfi_def_cfa_offset 24
+ 154 0004 00AF     		add	r7, sp, #0
+ 155              		.cfi_def_cfa_register 7
+ 156 0006 7860     		str	r0, [r7, #4]
+ 133:../libopencm3/lib/stm32/common/spi_common_all.c **** 	uint32_t reg32;
+ 134:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 135:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg32 = SPI_CR1(spi);
+ 157              		.loc 1 135 10
+ 158 0008 7B68     		ldr	r3, [r7, #4]
+ 159              		.loc 1 135 8
+ 160 000a 1B68     		ldr	r3, [r3]
+ 161 000c FB60     		str	r3, [r7, #12]
+ 136:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg32 &= ~(SPI_CR1_SPE); /* Disable SPI. */
+ 162              		.loc 1 136 8
+ 163 000e FB68     		ldr	r3, [r7, #12]
+ 164 0010 23F04003 		bic	r3, r3, #64
+ 165 0014 FB60     		str	r3, [r7, #12]
+ 137:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) = reg32;
+ 166              		.loc 1 137 2
+ 167 0016 7B68     		ldr	r3, [r7, #4]
+ 168              		.loc 1 137 15
+ 169 0018 FA68     		ldr	r2, [r7, #12]
+ 170 001a 1A60     		str	r2, [r3]
+ 138:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 171              		.loc 1 138 1
+ 172 001c 00BF     		nop
+ 173 001e 1437     		adds	r7, r7, #20
+ 174              		.cfi_def_cfa_offset 4
+ 175 0020 BD46     		mov	sp, r7
+ 176              		.cfi_def_cfa_register 13
+ 177              		@ sp needed
+ 178 0022 80BC     		pop	{r7}
+ 179              		.cfi_restore 7
+ 180              		.cfi_def_cfa_offset 0
+ 181 0024 7047     		bx	lr
+ 182              		.cfi_endproc
+ 183              	.LFE2:
+ 185              		.section	.text.spi_clean_disable,"ax",%progbits
+ 186              		.align	1
+ 187              		.global	spi_clean_disable
+ 188              		.syntax unified
+ 189              		.thumb
+ 190              		.thumb_func
+ 191              		.fpu softvfp
+ 193              	spi_clean_disable:
+ 194              	.LFB3:
+ 139:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 140:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 141:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Clean Disable.
+ 142:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 143:../libopencm3/lib/stm32/common/spi_common_all.c **** Disable the SPI peripheral according to the procedure in section 23.3.8 of the
+ 144:../libopencm3/lib/stm32/common/spi_common_all.c **** reference manual.  This prevents corruption of any ongoing transfers and
+ 145:../libopencm3/lib/stm32/common/spi_common_all.c **** prevents the BSY flag from becoming unreliable.
+ 146:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 147:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 148:../libopencm3/lib/stm32/common/spi_common_all.c **** @returns data Unsigned int16. 8 or 16 bit data from final read.
+ 149:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 150:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 151:../libopencm3/lib/stm32/common/spi_common_all.c **** uint16_t spi_clean_disable(uint32_t spi)
+ 152:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 195              		.loc 1 152 1
+ 196              		.cfi_startproc
+ 197              		@ args = 0, pretend = 0, frame = 16
+ 198              		@ frame_needed = 1, uses_anonymous_args = 0
+ 199              		@ link register save eliminated.
+ 200 0000 80B4     		push	{r7}
+ 201              		.cfi_def_cfa_offset 4
+ 202              		.cfi_offset 7, -4
+ 203 0002 85B0     		sub	sp, sp, #20
+ 204              		.cfi_def_cfa_offset 24
+ 205 0004 00AF     		add	r7, sp, #0
+ 206              		.cfi_def_cfa_register 7
+ 207 0006 7860     		str	r0, [r7, #4]
+ 153:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait to receive last data */
+ 154:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (!(SPI_SR(spi) & SPI_SR_RXNE));
+ 208              		.loc 1 154 8
+ 209 0008 00BF     		nop
+ 210              	.L12:
+ 211              		.loc 1 154 11 discriminator 1
+ 212 000a 7B68     		ldr	r3, [r7, #4]
+ 213 000c 0833     		adds	r3, r3, #8
+ 214 000e 1B68     		ldr	r3, [r3]
+ 215              		.loc 1 154 23 discriminator 1
+ 216 0010 03F00103 		and	r3, r3, #1
+ 217              		.loc 1 154 8 discriminator 1
+ 218 0014 002B     		cmp	r3, #0
+ 219 0016 F8D0     		beq	.L12
+ 155:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 156:../libopencm3/lib/stm32/common/spi_common_all.c **** 	uint16_t data = SPI_DR(spi);
+ 220              		.loc 1 156 18
+ 221 0018 7B68     		ldr	r3, [r7, #4]
+ 222 001a 0C33     		adds	r3, r3, #12
+ 223 001c 1B68     		ldr	r3, [r3]
+ 224              		.loc 1 156 11
+ 225 001e FB81     		strh	r3, [r7, #14]	@ movhi
+ 157:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 158:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait to transmit last data */
+ 159:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (!(SPI_SR(spi) & SPI_SR_TXE));
+ 226              		.loc 1 159 8
+ 227 0020 00BF     		nop
+ 228              	.L13:
+ 229              		.loc 1 159 11 discriminator 1
+ 230 0022 7B68     		ldr	r3, [r7, #4]
+ 231 0024 0833     		adds	r3, r3, #8
+ 232 0026 1B68     		ldr	r3, [r3]
+ 233              		.loc 1 159 23 discriminator 1
+ 234 0028 03F00203 		and	r3, r3, #2
+ 235              		.loc 1 159 8 discriminator 1
+ 236 002c 002B     		cmp	r3, #0
+ 237 002e F8D0     		beq	.L13
+ 160:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 161:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait until not busy */
+ 162:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (SPI_SR(spi) & SPI_SR_BSY);
+ 238              		.loc 1 162 8
+ 239 0030 00BF     		nop
+ 240              	.L14:
+ 241              		.loc 1 162 9 discriminator 1
+ 242 0032 7B68     		ldr	r3, [r7, #4]
+ 243 0034 0833     		adds	r3, r3, #8
+ 244 0036 1B68     		ldr	r3, [r3]
+ 245              		.loc 1 162 21 discriminator 1
+ 246 0038 03F08003 		and	r3, r3, #128
+ 247              		.loc 1 162 8 discriminator 1
+ 248 003c 002B     		cmp	r3, #0
+ 249 003e F8D1     		bne	.L14
+ 163:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 164:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_SPE;
+ 250              		.loc 1 164 15
+ 251 0040 7B68     		ldr	r3, [r7, #4]
+ 252 0042 1A68     		ldr	r2, [r3]
+ 253 0044 7B68     		ldr	r3, [r7, #4]
+ 254 0046 22F04002 		bic	r2, r2, #64
+ 255 004a 1A60     		str	r2, [r3]
+ 165:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 166:../libopencm3/lib/stm32/common/spi_common_all.c **** 	return data;
+ 256              		.loc 1 166 9
+ 257 004c FB89     		ldrh	r3, [r7, #14]
+ 167:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 258              		.loc 1 167 1
+ 259 004e 1846     		mov	r0, r3
+ 260 0050 1437     		adds	r7, r7, #20
+ 261              		.cfi_def_cfa_offset 4
+ 262 0052 BD46     		mov	sp, r7
+ 263              		.cfi_def_cfa_register 13
+ 264              		@ sp needed
+ 265 0054 80BC     		pop	{r7}
+ 266              		.cfi_restore 7
+ 267              		.cfi_def_cfa_offset 0
+ 268 0056 7047     		bx	lr
+ 269              		.cfi_endproc
+ 270              	.LFE3:
+ 272              		.section	.text.spi_write,"ax",%progbits
+ 273              		.align	1
+ 274              		.global	spi_write
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 278              		.fpu softvfp
+ 280              	spi_write:
+ 281              	.LFB4:
+ 168:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 169:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 170:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Data Write.
+ 171:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 172:../libopencm3/lib/stm32/common/spi_common_all.c **** Data is written to the SPI interface.
+ 173:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 174:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 175:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] data Unsigned int16. 8 or 16 bit data to be written.
+ 176:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 177:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 178:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_write(uint32_t spi, uint16_t data)
+ 179:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 282              		.loc 1 179 1
+ 283              		.cfi_startproc
+ 284              		@ args = 0, pretend = 0, frame = 8
+ 285              		@ frame_needed = 1, uses_anonymous_args = 0
+ 286              		@ link register save eliminated.
+ 287 0000 80B4     		push	{r7}
+ 288              		.cfi_def_cfa_offset 4
+ 289              		.cfi_offset 7, -4
+ 290 0002 83B0     		sub	sp, sp, #12
+ 291              		.cfi_def_cfa_offset 16
+ 292 0004 00AF     		add	r7, sp, #0
+ 293              		.cfi_def_cfa_register 7
+ 294 0006 7860     		str	r0, [r7, #4]
+ 295 0008 0B46     		mov	r3, r1
+ 296 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 180:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Write data (8 or 16 bits, depending on DFF) into DR. */
+ 181:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_DR(spi) = data;
+ 297              		.loc 1 181 2
+ 298 000c 7B68     		ldr	r3, [r7, #4]
+ 299 000e 0C33     		adds	r3, r3, #12
+ 300 0010 1A46     		mov	r2, r3
+ 301              		.loc 1 181 14
+ 302 0012 7B88     		ldrh	r3, [r7, #2]
+ 303 0014 1360     		str	r3, [r2]
+ 182:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 304              		.loc 1 182 1
+ 305 0016 00BF     		nop
+ 306 0018 0C37     		adds	r7, r7, #12
+ 307              		.cfi_def_cfa_offset 4
+ 308 001a BD46     		mov	sp, r7
+ 309              		.cfi_def_cfa_register 13
+ 310              		@ sp needed
+ 311 001c 80BC     		pop	{r7}
+ 312              		.cfi_restore 7
+ 313              		.cfi_def_cfa_offset 0
+ 314 001e 7047     		bx	lr
+ 315              		.cfi_endproc
+ 316              	.LFE4:
+ 318              		.section	.text.spi_send,"ax",%progbits
+ 319              		.align	1
+ 320              		.global	spi_send
+ 321              		.syntax unified
+ 322              		.thumb
+ 323              		.thumb_func
+ 324              		.fpu softvfp
+ 326              	spi_send:
+ 327              	.LFB5:
+ 183:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 184:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 185:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Data Write with Blocking.
+ 186:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 187:../libopencm3/lib/stm32/common/spi_common_all.c **** Data is written to the SPI interface after the previous write transfer has
+ 188:../libopencm3/lib/stm32/common/spi_common_all.c **** finished.
+ 189:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 190:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 191:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] data Unsigned int16. 8 or 16 bit data to be written.
+ 192:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 193:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 194:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_send(uint32_t spi, uint16_t data)
+ 195:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 328              		.loc 1 195 1
+ 329              		.cfi_startproc
+ 330              		@ args = 0, pretend = 0, frame = 8
+ 331              		@ frame_needed = 1, uses_anonymous_args = 0
+ 332              		@ link register save eliminated.
+ 333 0000 80B4     		push	{r7}
+ 334              		.cfi_def_cfa_offset 4
+ 335              		.cfi_offset 7, -4
+ 336 0002 83B0     		sub	sp, sp, #12
+ 337              		.cfi_def_cfa_offset 16
+ 338 0004 00AF     		add	r7, sp, #0
+ 339              		.cfi_def_cfa_register 7
+ 340 0006 7860     		str	r0, [r7, #4]
+ 341 0008 0B46     		mov	r3, r1
+ 342 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 196:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait for transfer finished. */
+ 197:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (!(SPI_SR(spi) & SPI_SR_TXE));
+ 343              		.loc 1 197 8
+ 344 000c 00BF     		nop
+ 345              	.L18:
+ 346              		.loc 1 197 11 discriminator 1
+ 347 000e 7B68     		ldr	r3, [r7, #4]
+ 348 0010 0833     		adds	r3, r3, #8
+ 349 0012 1B68     		ldr	r3, [r3]
+ 350              		.loc 1 197 23 discriminator 1
+ 351 0014 03F00203 		and	r3, r3, #2
+ 352              		.loc 1 197 8 discriminator 1
+ 353 0018 002B     		cmp	r3, #0
+ 354 001a F8D0     		beq	.L18
+ 198:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 199:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Write data (8 or 16 bits, depending on DFF) into DR. */
+ 200:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_DR(spi) = data;
+ 355              		.loc 1 200 2
+ 356 001c 7B68     		ldr	r3, [r7, #4]
+ 357 001e 0C33     		adds	r3, r3, #12
+ 358 0020 1A46     		mov	r2, r3
+ 359              		.loc 1 200 14
+ 360 0022 7B88     		ldrh	r3, [r7, #2]
+ 361 0024 1360     		str	r3, [r2]
+ 201:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 362              		.loc 1 201 1
+ 363 0026 00BF     		nop
+ 364 0028 0C37     		adds	r7, r7, #12
+ 365              		.cfi_def_cfa_offset 4
+ 366 002a BD46     		mov	sp, r7
+ 367              		.cfi_def_cfa_register 13
+ 368              		@ sp needed
+ 369 002c 80BC     		pop	{r7}
+ 370              		.cfi_restore 7
+ 371              		.cfi_def_cfa_offset 0
+ 372 002e 7047     		bx	lr
+ 373              		.cfi_endproc
+ 374              	.LFE5:
+ 376              		.section	.text.spi_read,"ax",%progbits
+ 377              		.align	1
+ 378              		.global	spi_read
+ 379              		.syntax unified
+ 380              		.thumb
+ 381              		.thumb_func
+ 382              		.fpu softvfp
+ 384              	spi_read:
+ 385              	.LFB6:
+ 202:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 203:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 204:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Data Read.
+ 205:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 206:../libopencm3/lib/stm32/common/spi_common_all.c **** Data is read from the SPI interface after the incoming transfer has finished.
+ 207:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 208:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 209:../libopencm3/lib/stm32/common/spi_common_all.c **** @returns data Unsigned int16. 8 or 16 bit data.
+ 210:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 211:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 212:../libopencm3/lib/stm32/common/spi_common_all.c **** uint16_t spi_read(uint32_t spi)
+ 213:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 386              		.loc 1 213 1
+ 387              		.cfi_startproc
+ 388              		@ args = 0, pretend = 0, frame = 8
+ 389              		@ frame_needed = 1, uses_anonymous_args = 0
+ 390              		@ link register save eliminated.
+ 391 0000 80B4     		push	{r7}
+ 392              		.cfi_def_cfa_offset 4
+ 393              		.cfi_offset 7, -4
+ 394 0002 83B0     		sub	sp, sp, #12
+ 395              		.cfi_def_cfa_offset 16
+ 396 0004 00AF     		add	r7, sp, #0
+ 397              		.cfi_def_cfa_register 7
+ 398 0006 7860     		str	r0, [r7, #4]
+ 214:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait for transfer finished. */
+ 215:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (!(SPI_SR(spi) & SPI_SR_RXNE));
+ 399              		.loc 1 215 8
+ 400 0008 00BF     		nop
+ 401              	.L20:
+ 402              		.loc 1 215 11 discriminator 1
+ 403 000a 7B68     		ldr	r3, [r7, #4]
+ 404 000c 0833     		adds	r3, r3, #8
+ 405 000e 1B68     		ldr	r3, [r3]
+ 406              		.loc 1 215 23 discriminator 1
+ 407 0010 03F00103 		and	r3, r3, #1
+ 408              		.loc 1 215 8 discriminator 1
+ 409 0014 002B     		cmp	r3, #0
+ 410 0016 F8D0     		beq	.L20
+ 216:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 217:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Read the data (8 or 16 bits, depending on DFF bit) from DR. */
+ 218:../libopencm3/lib/stm32/common/spi_common_all.c **** 	return SPI_DR(spi);
+ 411              		.loc 1 218 9
+ 412 0018 7B68     		ldr	r3, [r7, #4]
+ 413 001a 0C33     		adds	r3, r3, #12
+ 414 001c 1B68     		ldr	r3, [r3]
+ 415 001e 9BB2     		uxth	r3, r3
+ 219:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 416              		.loc 1 219 1
+ 417 0020 1846     		mov	r0, r3
+ 418 0022 0C37     		adds	r7, r7, #12
+ 419              		.cfi_def_cfa_offset 4
+ 420 0024 BD46     		mov	sp, r7
+ 421              		.cfi_def_cfa_register 13
+ 422              		@ sp needed
+ 423 0026 80BC     		pop	{r7}
+ 424              		.cfi_restore 7
+ 425              		.cfi_def_cfa_offset 0
+ 426 0028 7047     		bx	lr
+ 427              		.cfi_endproc
+ 428              	.LFE6:
+ 430              		.section	.text.spi_xfer,"ax",%progbits
+ 431              		.align	1
+ 432              		.global	spi_xfer
+ 433              		.syntax unified
+ 434              		.thumb
+ 435              		.thumb_func
+ 436              		.fpu softvfp
+ 438              	spi_xfer:
+ 439              	.LFB7:
+ 220:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 221:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 222:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Data Write and Read Exchange.
+ 223:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 224:../libopencm3/lib/stm32/common/spi_common_all.c **** Data is written to the SPI interface, then a read is done after the incoming
+ 225:../libopencm3/lib/stm32/common/spi_common_all.c **** transfer has finished.
+ 226:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 227:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 228:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] data Unsigned int16. 8 or 16 bit data to be written.
+ 229:../libopencm3/lib/stm32/common/spi_common_all.c **** @returns data Unsigned int16. 8 or 16 bit data.
+ 230:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 231:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 232:../libopencm3/lib/stm32/common/spi_common_all.c **** uint16_t spi_xfer(uint32_t spi, uint16_t data)
+ 233:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 440              		.loc 1 233 1
+ 441              		.cfi_startproc
+ 442              		@ args = 0, pretend = 0, frame = 8
+ 443              		@ frame_needed = 1, uses_anonymous_args = 0
+ 444 0000 80B5     		push	{r7, lr}
+ 445              		.cfi_def_cfa_offset 8
+ 446              		.cfi_offset 7, -8
+ 447              		.cfi_offset 14, -4
+ 448 0002 82B0     		sub	sp, sp, #8
+ 449              		.cfi_def_cfa_offset 16
+ 450 0004 00AF     		add	r7, sp, #0
+ 451              		.cfi_def_cfa_register 7
+ 452 0006 7860     		str	r0, [r7, #4]
+ 453 0008 0B46     		mov	r3, r1
+ 454 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 234:../libopencm3/lib/stm32/common/spi_common_all.c **** 	spi_write(spi, data);
+ 455              		.loc 1 234 2
+ 456 000c 7B88     		ldrh	r3, [r7, #2]
+ 457 000e 1946     		mov	r1, r3
+ 458 0010 7868     		ldr	r0, [r7, #4]
+ 459 0012 FFF7FEFF 		bl	spi_write(PLT)
+ 235:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 236:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Wait for transfer finished. */
+ 237:../libopencm3/lib/stm32/common/spi_common_all.c **** 	while (!(SPI_SR(spi) & SPI_SR_RXNE));
+ 460              		.loc 1 237 8
+ 461 0016 00BF     		nop
+ 462              	.L23:
+ 463              		.loc 1 237 11 discriminator 1
+ 464 0018 7B68     		ldr	r3, [r7, #4]
+ 465 001a 0833     		adds	r3, r3, #8
+ 466 001c 1B68     		ldr	r3, [r3]
+ 467              		.loc 1 237 23 discriminator 1
+ 468 001e 03F00103 		and	r3, r3, #1
+ 469              		.loc 1 237 8 discriminator 1
+ 470 0022 002B     		cmp	r3, #0
+ 471 0024 F8D0     		beq	.L23
+ 238:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 239:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* Read the data (8 or 16 bits, depending on DFF bit) from DR. */
+ 240:../libopencm3/lib/stm32/common/spi_common_all.c **** 	return SPI_DR(spi);
+ 472              		.loc 1 240 9
+ 473 0026 7B68     		ldr	r3, [r7, #4]
+ 474 0028 0C33     		adds	r3, r3, #12
+ 475 002a 1B68     		ldr	r3, [r3]
+ 476 002c 9BB2     		uxth	r3, r3
+ 241:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 477              		.loc 1 241 1
+ 478 002e 1846     		mov	r0, r3
+ 479 0030 0837     		adds	r7, r7, #8
+ 480              		.cfi_def_cfa_offset 8
+ 481 0032 BD46     		mov	sp, r7
+ 482              		.cfi_def_cfa_register 13
+ 483              		@ sp needed
+ 484 0034 80BD     		pop	{r7, pc}
+ 485              		.cfi_endproc
+ 486              	.LFE7:
+ 488              		.section	.text.spi_set_bidirectional_mode,"ax",%progbits
+ 489              		.align	1
+ 490              		.global	spi_set_bidirectional_mode
+ 491              		.syntax unified
+ 492              		.thumb
+ 493              		.thumb_func
+ 494              		.fpu softvfp
+ 496              	spi_set_bidirectional_mode:
+ 497              	.LFB8:
+ 242:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 243:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 244:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Bidirectional Simplex Mode.
+ 245:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 246:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is set for bidirectional transfers in two-wire simplex mode
+ 247:../libopencm3/lib/stm32/common/spi_common_all.c **** (using a clock wire and a bidirectional data wire).
+ 248:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 249:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 250:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 251:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 252:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_bidirectional_mode(uint32_t spi)
+ 253:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 498              		.loc 1 253 1
+ 499              		.cfi_startproc
+ 500              		@ args = 0, pretend = 0, frame = 8
+ 501              		@ frame_needed = 1, uses_anonymous_args = 0
+ 502              		@ link register save eliminated.
+ 503 0000 80B4     		push	{r7}
+ 504              		.cfi_def_cfa_offset 4
+ 505              		.cfi_offset 7, -4
+ 506 0002 83B0     		sub	sp, sp, #12
+ 507              		.cfi_def_cfa_offset 16
+ 508 0004 00AF     		add	r7, sp, #0
+ 509              		.cfi_def_cfa_register 7
+ 510 0006 7860     		str	r0, [r7, #4]
+ 254:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_BIDIMODE;
+ 511              		.loc 1 254 15
+ 512 0008 7B68     		ldr	r3, [r7, #4]
+ 513 000a 1A68     		ldr	r2, [r3]
+ 514 000c 7B68     		ldr	r3, [r7, #4]
+ 515 000e 42F40042 		orr	r2, r2, #32768
+ 516 0012 1A60     		str	r2, [r3]
+ 255:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 517              		.loc 1 255 1
+ 518 0014 00BF     		nop
+ 519 0016 0C37     		adds	r7, r7, #12
+ 520              		.cfi_def_cfa_offset 4
+ 521 0018 BD46     		mov	sp, r7
+ 522              		.cfi_def_cfa_register 13
+ 523              		@ sp needed
+ 524 001a 80BC     		pop	{r7}
+ 525              		.cfi_restore 7
+ 526              		.cfi_def_cfa_offset 0
+ 527 001c 7047     		bx	lr
+ 528              		.cfi_endproc
+ 529              	.LFE8:
+ 531              		.section	.text.spi_set_unidirectional_mode,"ax",%progbits
+ 532              		.align	1
+ 533              		.global	spi_set_unidirectional_mode
+ 534              		.syntax unified
+ 535              		.thumb
+ 536              		.thumb_func
+ 537              		.fpu softvfp
+ 539              	spi_set_unidirectional_mode:
+ 540              	.LFB9:
+ 256:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 257:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 258:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Unidirectional Mode.
+ 259:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 260:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is set for unidirectional transfers. This is used in full
+ 261:../libopencm3/lib/stm32/common/spi_common_all.c **** duplex mode or when the SPI is placed in two-wire simplex mode that uses a
+ 262:../libopencm3/lib/stm32/common/spi_common_all.c **** clock wire and a unidirectional data wire.
+ 263:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 264:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 265:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 266:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 267:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_unidirectional_mode(uint32_t spi)
+ 268:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 541              		.loc 1 268 1
+ 542              		.cfi_startproc
+ 543              		@ args = 0, pretend = 0, frame = 8
+ 544              		@ frame_needed = 1, uses_anonymous_args = 0
+ 545              		@ link register save eliminated.
+ 546 0000 80B4     		push	{r7}
+ 547              		.cfi_def_cfa_offset 4
+ 548              		.cfi_offset 7, -4
+ 549 0002 83B0     		sub	sp, sp, #12
+ 550              		.cfi_def_cfa_offset 16
+ 551 0004 00AF     		add	r7, sp, #0
+ 552              		.cfi_def_cfa_register 7
+ 553 0006 7860     		str	r0, [r7, #4]
+ 269:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_BIDIMODE;
+ 554              		.loc 1 269 15
+ 555 0008 7B68     		ldr	r3, [r7, #4]
+ 556 000a 1A68     		ldr	r2, [r3]
+ 557 000c 7B68     		ldr	r3, [r7, #4]
+ 558 000e 22F40042 		bic	r2, r2, #32768
+ 559 0012 1A60     		str	r2, [r3]
+ 270:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 560              		.loc 1 270 1
+ 561 0014 00BF     		nop
+ 562 0016 0C37     		adds	r7, r7, #12
+ 563              		.cfi_def_cfa_offset 4
+ 564 0018 BD46     		mov	sp, r7
+ 565              		.cfi_def_cfa_register 13
+ 566              		@ sp needed
+ 567 001a 80BC     		pop	{r7}
+ 568              		.cfi_restore 7
+ 569              		.cfi_def_cfa_offset 0
+ 570 001c 7047     		bx	lr
+ 571              		.cfi_endproc
+ 572              	.LFE9:
+ 574              		.section	.text.spi_set_bidirectional_receive_only_mode,"ax",%progbits
+ 575              		.align	1
+ 576              		.global	spi_set_bidirectional_receive_only_mode
+ 577              		.syntax unified
+ 578              		.thumb
+ 579              		.thumb_func
+ 580              		.fpu softvfp
+ 582              	spi_set_bidirectional_receive_only_mode:
+ 583              	.LFB10:
+ 271:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 272:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 273:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Bidirectional Simplex Receive Only Mode.
+ 274:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 275:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is set for bidirectional transfers in two-wire simplex mode
+ 276:../libopencm3/lib/stm32/common/spi_common_all.c **** (using a clock wire and a bidirectional data wire), and is placed in a receive
+ 277:../libopencm3/lib/stm32/common/spi_common_all.c **** state.
+ 278:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 279:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 280:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 281:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 282:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_bidirectional_receive_only_mode(uint32_t spi)
+ 283:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 584              		.loc 1 283 1
+ 585              		.cfi_startproc
+ 586              		@ args = 0, pretend = 0, frame = 8
+ 587              		@ frame_needed = 1, uses_anonymous_args = 0
+ 588              		@ link register save eliminated.
+ 589 0000 80B4     		push	{r7}
+ 590              		.cfi_def_cfa_offset 4
+ 591              		.cfi_offset 7, -4
+ 592 0002 83B0     		sub	sp, sp, #12
+ 593              		.cfi_def_cfa_offset 16
+ 594 0004 00AF     		add	r7, sp, #0
+ 595              		.cfi_def_cfa_register 7
+ 596 0006 7860     		str	r0, [r7, #4]
+ 284:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_BIDIMODE;
+ 597              		.loc 1 284 15
+ 598 0008 7B68     		ldr	r3, [r7, #4]
+ 599 000a 1A68     		ldr	r2, [r3]
+ 600 000c 7B68     		ldr	r3, [r7, #4]
+ 601 000e 42F40042 		orr	r2, r2, #32768
+ 602 0012 1A60     		str	r2, [r3]
+ 285:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_BIDIOE;
+ 603              		.loc 1 285 15
+ 604 0014 7B68     		ldr	r3, [r7, #4]
+ 605 0016 1A68     		ldr	r2, [r3]
+ 606 0018 7B68     		ldr	r3, [r7, #4]
+ 607 001a 22F48042 		bic	r2, r2, #16384
+ 608 001e 1A60     		str	r2, [r3]
+ 286:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 609              		.loc 1 286 1
+ 610 0020 00BF     		nop
+ 611 0022 0C37     		adds	r7, r7, #12
+ 612              		.cfi_def_cfa_offset 4
+ 613 0024 BD46     		mov	sp, r7
+ 614              		.cfi_def_cfa_register 13
+ 615              		@ sp needed
+ 616 0026 80BC     		pop	{r7}
+ 617              		.cfi_restore 7
+ 618              		.cfi_def_cfa_offset 0
+ 619 0028 7047     		bx	lr
+ 620              		.cfi_endproc
+ 621              	.LFE10:
+ 623              		.section	.text.spi_set_bidirectional_transmit_only_mode,"ax",%progbits
+ 624              		.align	1
+ 625              		.global	spi_set_bidirectional_transmit_only_mode
+ 626              		.syntax unified
+ 627              		.thumb
+ 628              		.thumb_func
+ 629              		.fpu softvfp
+ 631              	spi_set_bidirectional_transmit_only_mode:
+ 632              	.LFB11:
+ 287:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 288:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 289:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Bidirectional Simplex Receive Only Mode.
+ 290:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 291:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is set for bidirectional transfers in two-wire simplex mode
+ 292:../libopencm3/lib/stm32/common/spi_common_all.c **** (using a clock wire and a bidirectional data wire), and is placed in a transmit
+ 293:../libopencm3/lib/stm32/common/spi_common_all.c **** state.
+ 294:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 295:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 296:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 297:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 298:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_bidirectional_transmit_only_mode(uint32_t spi)
+ 299:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 633              		.loc 1 299 1
+ 634              		.cfi_startproc
+ 635              		@ args = 0, pretend = 0, frame = 8
+ 636              		@ frame_needed = 1, uses_anonymous_args = 0
+ 637              		@ link register save eliminated.
+ 638 0000 80B4     		push	{r7}
+ 639              		.cfi_def_cfa_offset 4
+ 640              		.cfi_offset 7, -4
+ 641 0002 83B0     		sub	sp, sp, #12
+ 642              		.cfi_def_cfa_offset 16
+ 643 0004 00AF     		add	r7, sp, #0
+ 644              		.cfi_def_cfa_register 7
+ 645 0006 7860     		str	r0, [r7, #4]
+ 300:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_BIDIMODE;
+ 646              		.loc 1 300 15
+ 647 0008 7B68     		ldr	r3, [r7, #4]
+ 648 000a 1A68     		ldr	r2, [r3]
+ 649 000c 7B68     		ldr	r3, [r7, #4]
+ 650 000e 42F40042 		orr	r2, r2, #32768
+ 651 0012 1A60     		str	r2, [r3]
+ 301:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_BIDIOE;
+ 652              		.loc 1 301 15
+ 653 0014 7B68     		ldr	r3, [r7, #4]
+ 654 0016 1A68     		ldr	r2, [r3]
+ 655 0018 7B68     		ldr	r3, [r7, #4]
+ 656 001a 42F48042 		orr	r2, r2, #16384
+ 657 001e 1A60     		str	r2, [r3]
+ 302:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 658              		.loc 1 302 1
+ 659 0020 00BF     		nop
+ 660 0022 0C37     		adds	r7, r7, #12
+ 661              		.cfi_def_cfa_offset 4
+ 662 0024 BD46     		mov	sp, r7
+ 663              		.cfi_def_cfa_register 13
+ 664              		@ sp needed
+ 665 0026 80BC     		pop	{r7}
+ 666              		.cfi_restore 7
+ 667              		.cfi_def_cfa_offset 0
+ 668 0028 7047     		bx	lr
+ 669              		.cfi_endproc
+ 670              	.LFE11:
+ 672              		.section	.text.spi_enable_crc,"ax",%progbits
+ 673              		.align	1
+ 674              		.global	spi_enable_crc
+ 675              		.syntax unified
+ 676              		.thumb
+ 677              		.thumb_func
+ 678              		.fpu softvfp
+ 680              	spi_enable_crc:
+ 681              	.LFB12:
+ 303:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 304:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 305:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable the CRC.
+ 306:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 307:../libopencm3/lib/stm32/common/spi_common_all.c **** The SPI peripheral is set to use a CRC field for transmit and receive.
+ 308:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 309:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 310:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 311:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 312:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_crc(uint32_t spi)
+ 313:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 682              		.loc 1 313 1
+ 683              		.cfi_startproc
+ 684              		@ args = 0, pretend = 0, frame = 8
+ 685              		@ frame_needed = 1, uses_anonymous_args = 0
+ 686              		@ link register save eliminated.
+ 687 0000 80B4     		push	{r7}
+ 688              		.cfi_def_cfa_offset 4
+ 689              		.cfi_offset 7, -4
+ 690 0002 83B0     		sub	sp, sp, #12
+ 691              		.cfi_def_cfa_offset 16
+ 692 0004 00AF     		add	r7, sp, #0
+ 693              		.cfi_def_cfa_register 7
+ 694 0006 7860     		str	r0, [r7, #4]
+ 314:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_CRCEN;
+ 695              		.loc 1 314 15
+ 696 0008 7B68     		ldr	r3, [r7, #4]
+ 697 000a 1A68     		ldr	r2, [r3]
+ 698 000c 7B68     		ldr	r3, [r7, #4]
+ 699 000e 42F40052 		orr	r2, r2, #8192
+ 700 0012 1A60     		str	r2, [r3]
+ 315:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 701              		.loc 1 315 1
+ 702 0014 00BF     		nop
+ 703 0016 0C37     		adds	r7, r7, #12
+ 704              		.cfi_def_cfa_offset 4
+ 705 0018 BD46     		mov	sp, r7
+ 706              		.cfi_def_cfa_register 13
+ 707              		@ sp needed
+ 708 001a 80BC     		pop	{r7}
+ 709              		.cfi_restore 7
+ 710              		.cfi_def_cfa_offset 0
+ 711 001c 7047     		bx	lr
+ 712              		.cfi_endproc
+ 713              	.LFE12:
+ 715              		.section	.text.spi_disable_crc,"ax",%progbits
+ 716              		.align	1
+ 717              		.global	spi_disable_crc
+ 718              		.syntax unified
+ 719              		.thumb
+ 720              		.thumb_func
+ 721              		.fpu softvfp
+ 723              	spi_disable_crc:
+ 724              	.LFB13:
+ 316:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 317:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 318:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable the CRC.
+ 319:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 320:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 321:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 322:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 323:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_crc(uint32_t spi)
+ 324:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 725              		.loc 1 324 1
+ 726              		.cfi_startproc
+ 727              		@ args = 0, pretend = 0, frame = 8
+ 728              		@ frame_needed = 1, uses_anonymous_args = 0
+ 729              		@ link register save eliminated.
+ 730 0000 80B4     		push	{r7}
+ 731              		.cfi_def_cfa_offset 4
+ 732              		.cfi_offset 7, -4
+ 733 0002 83B0     		sub	sp, sp, #12
+ 734              		.cfi_def_cfa_offset 16
+ 735 0004 00AF     		add	r7, sp, #0
+ 736              		.cfi_def_cfa_register 7
+ 737 0006 7860     		str	r0, [r7, #4]
+ 325:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_CRCEN;
+ 738              		.loc 1 325 15
+ 739 0008 7B68     		ldr	r3, [r7, #4]
+ 740 000a 1A68     		ldr	r2, [r3]
+ 741 000c 7B68     		ldr	r3, [r7, #4]
+ 742 000e 22F40052 		bic	r2, r2, #8192
+ 743 0012 1A60     		str	r2, [r3]
+ 326:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 744              		.loc 1 326 1
+ 745 0014 00BF     		nop
+ 746 0016 0C37     		adds	r7, r7, #12
+ 747              		.cfi_def_cfa_offset 4
+ 748 0018 BD46     		mov	sp, r7
+ 749              		.cfi_def_cfa_register 13
+ 750              		@ sp needed
+ 751 001a 80BC     		pop	{r7}
+ 752              		.cfi_restore 7
+ 753              		.cfi_def_cfa_offset 0
+ 754 001c 7047     		bx	lr
+ 755              		.cfi_endproc
+ 756              	.LFE13:
+ 758              		.section	.text.spi_set_next_tx_from_buffer,"ax",%progbits
+ 759              		.align	1
+ 760              		.global	spi_set_next_tx_from_buffer
+ 761              		.syntax unified
+ 762              		.thumb
+ 763              		.thumb_func
+ 764              		.fpu softvfp
+ 766              	spi_set_next_tx_from_buffer:
+ 767              	.LFB14:
+ 327:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 328:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 329:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Next Transmit is a Data Word
+ 330:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 331:../libopencm3/lib/stm32/common/spi_common_all.c **** The next transmission to take place is a data word from the transmit buffer.
+ 332:../libopencm3/lib/stm32/common/spi_common_all.c **** This must be called before transmission to distinguish between sending
+ 333:../libopencm3/lib/stm32/common/spi_common_all.c **** of a data or CRC word.
+ 334:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 335:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 336:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 337:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 338:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_next_tx_from_buffer(uint32_t spi)
+ 339:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 768              		.loc 1 339 1
+ 769              		.cfi_startproc
+ 770              		@ args = 0, pretend = 0, frame = 8
+ 771              		@ frame_needed = 1, uses_anonymous_args = 0
+ 772              		@ link register save eliminated.
+ 773 0000 80B4     		push	{r7}
+ 774              		.cfi_def_cfa_offset 4
+ 775              		.cfi_offset 7, -4
+ 776 0002 83B0     		sub	sp, sp, #12
+ 777              		.cfi_def_cfa_offset 16
+ 778 0004 00AF     		add	r7, sp, #0
+ 779              		.cfi_def_cfa_register 7
+ 780 0006 7860     		str	r0, [r7, #4]
+ 340:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_CRCNEXT;
+ 781              		.loc 1 340 15
+ 782 0008 7B68     		ldr	r3, [r7, #4]
+ 783 000a 1A68     		ldr	r2, [r3]
+ 784 000c 7B68     		ldr	r3, [r7, #4]
+ 785 000e 22F48052 		bic	r2, r2, #4096
+ 786 0012 1A60     		str	r2, [r3]
+ 341:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 787              		.loc 1 341 1
+ 788 0014 00BF     		nop
+ 789 0016 0C37     		adds	r7, r7, #12
+ 790              		.cfi_def_cfa_offset 4
+ 791 0018 BD46     		mov	sp, r7
+ 792              		.cfi_def_cfa_register 13
+ 793              		@ sp needed
+ 794 001a 80BC     		pop	{r7}
+ 795              		.cfi_restore 7
+ 796              		.cfi_def_cfa_offset 0
+ 797 001c 7047     		bx	lr
+ 798              		.cfi_endproc
+ 799              	.LFE14:
+ 801              		.section	.text.spi_set_next_tx_from_crc,"ax",%progbits
+ 802              		.align	1
+ 803              		.global	spi_set_next_tx_from_crc
+ 804              		.syntax unified
+ 805              		.thumb
+ 806              		.thumb_func
+ 807              		.fpu softvfp
+ 809              	spi_set_next_tx_from_crc:
+ 810              	.LFB15:
+ 342:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 343:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 344:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Next Transmit is a CRC Word
+ 345:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 346:../libopencm3/lib/stm32/common/spi_common_all.c **** The next transmission to take place is a crc word from the hardware crc unit.
+ 347:../libopencm3/lib/stm32/common/spi_common_all.c **** This must be called before transmission to distinguish between sending
+ 348:../libopencm3/lib/stm32/common/spi_common_all.c **** of a data or CRC word.
+ 349:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 350:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 351:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 352:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 353:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_next_tx_from_crc(uint32_t spi)
+ 354:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 811              		.loc 1 354 1
+ 812              		.cfi_startproc
+ 813              		@ args = 0, pretend = 0, frame = 8
+ 814              		@ frame_needed = 1, uses_anonymous_args = 0
+ 815              		@ link register save eliminated.
+ 816 0000 80B4     		push	{r7}
+ 817              		.cfi_def_cfa_offset 4
+ 818              		.cfi_offset 7, -4
+ 819 0002 83B0     		sub	sp, sp, #12
+ 820              		.cfi_def_cfa_offset 16
+ 821 0004 00AF     		add	r7, sp, #0
+ 822              		.cfi_def_cfa_register 7
+ 823 0006 7860     		str	r0, [r7, #4]
+ 355:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_CRCNEXT;
+ 824              		.loc 1 355 15
+ 825 0008 7B68     		ldr	r3, [r7, #4]
+ 826 000a 1A68     		ldr	r2, [r3]
+ 827 000c 7B68     		ldr	r3, [r7, #4]
+ 828 000e 42F48052 		orr	r2, r2, #4096
+ 829 0012 1A60     		str	r2, [r3]
+ 356:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 830              		.loc 1 356 1
+ 831 0014 00BF     		nop
+ 832 0016 0C37     		adds	r7, r7, #12
+ 833              		.cfi_def_cfa_offset 4
+ 834 0018 BD46     		mov	sp, r7
+ 835              		.cfi_def_cfa_register 13
+ 836              		@ sp needed
+ 837 001a 80BC     		pop	{r7}
+ 838              		.cfi_restore 7
+ 839              		.cfi_def_cfa_offset 0
+ 840 001c 7047     		bx	lr
+ 841              		.cfi_endproc
+ 842              	.LFE15:
+ 844              		.section	.text.spi_set_full_duplex_mode,"ax",%progbits
+ 845              		.align	1
+ 846              		.global	spi_set_full_duplex_mode
+ 847              		.syntax unified
+ 848              		.thumb
+ 849              		.thumb_func
+ 850              		.fpu softvfp
+ 852              	spi_set_full_duplex_mode:
+ 853              	.LFB16:
+ 357:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 358:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 359:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Full Duplex (3-wire) Mode
+ 360:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 361:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 362:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 363:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 364:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_full_duplex_mode(uint32_t spi)
+ 365:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 854              		.loc 1 365 1
+ 855              		.cfi_startproc
+ 856              		@ args = 0, pretend = 0, frame = 8
+ 857              		@ frame_needed = 1, uses_anonymous_args = 0
+ 858              		@ link register save eliminated.
+ 859 0000 80B4     		push	{r7}
+ 860              		.cfi_def_cfa_offset 4
+ 861              		.cfi_offset 7, -4
+ 862 0002 83B0     		sub	sp, sp, #12
+ 863              		.cfi_def_cfa_offset 16
+ 864 0004 00AF     		add	r7, sp, #0
+ 865              		.cfi_def_cfa_register 7
+ 866 0006 7860     		str	r0, [r7, #4]
+ 366:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_RXONLY;
+ 867              		.loc 1 366 15
+ 868 0008 7B68     		ldr	r3, [r7, #4]
+ 869 000a 1A68     		ldr	r2, [r3]
+ 870 000c 7B68     		ldr	r3, [r7, #4]
+ 871 000e 22F48062 		bic	r2, r2, #1024
+ 872 0012 1A60     		str	r2, [r3]
+ 367:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 873              		.loc 1 367 1
+ 874 0014 00BF     		nop
+ 875 0016 0C37     		adds	r7, r7, #12
+ 876              		.cfi_def_cfa_offset 4
+ 877 0018 BD46     		mov	sp, r7
+ 878              		.cfi_def_cfa_register 13
+ 879              		@ sp needed
+ 880 001a 80BC     		pop	{r7}
+ 881              		.cfi_restore 7
+ 882              		.cfi_def_cfa_offset 0
+ 883 001c 7047     		bx	lr
+ 884              		.cfi_endproc
+ 885              	.LFE16:
+ 887              		.section	.text.spi_set_receive_only_mode,"ax",%progbits
+ 888              		.align	1
+ 889              		.global	spi_set_receive_only_mode
+ 890              		.syntax unified
+ 891              		.thumb
+ 892              		.thumb_func
+ 893              		.fpu softvfp
+ 895              	spi_set_receive_only_mode:
+ 896              	.LFB17:
+ 368:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 369:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 370:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set Receive Only Mode for Simplex (2-wire) Unidirectional
+ 371:../libopencm3/lib/stm32/common/spi_common_all.c **** Transfers
+ 372:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 373:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 374:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 375:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 376:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_receive_only_mode(uint32_t spi)
+ 377:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 897              		.loc 1 377 1
+ 898              		.cfi_startproc
+ 899              		@ args = 0, pretend = 0, frame = 8
+ 900              		@ frame_needed = 1, uses_anonymous_args = 0
+ 901              		@ link register save eliminated.
+ 902 0000 80B4     		push	{r7}
+ 903              		.cfi_def_cfa_offset 4
+ 904              		.cfi_offset 7, -4
+ 905 0002 83B0     		sub	sp, sp, #12
+ 906              		.cfi_def_cfa_offset 16
+ 907 0004 00AF     		add	r7, sp, #0
+ 908              		.cfi_def_cfa_register 7
+ 909 0006 7860     		str	r0, [r7, #4]
+ 378:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_RXONLY;
+ 910              		.loc 1 378 15
+ 911 0008 7B68     		ldr	r3, [r7, #4]
+ 912 000a 1A68     		ldr	r2, [r3]
+ 913 000c 7B68     		ldr	r3, [r7, #4]
+ 914 000e 42F48062 		orr	r2, r2, #1024
+ 915 0012 1A60     		str	r2, [r3]
+ 379:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 916              		.loc 1 379 1
+ 917 0014 00BF     		nop
+ 918 0016 0C37     		adds	r7, r7, #12
+ 919              		.cfi_def_cfa_offset 4
+ 920 0018 BD46     		mov	sp, r7
+ 921              		.cfi_def_cfa_register 13
+ 922              		@ sp needed
+ 923 001a 80BC     		pop	{r7}
+ 924              		.cfi_restore 7
+ 925              		.cfi_def_cfa_offset 0
+ 926 001c 7047     		bx	lr
+ 927              		.cfi_endproc
+ 928              	.LFE17:
+ 930              		.section	.text.spi_disable_software_slave_management,"ax",%progbits
+ 931              		.align	1
+ 932              		.global	spi_disable_software_slave_management
+ 933              		.syntax unified
+ 934              		.thumb
+ 935              		.thumb_func
+ 936              		.fpu softvfp
+ 938              	spi_disable_software_slave_management:
+ 939              	.LFB18:
+ 380:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 381:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 382:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable Slave Management by Hardware
+ 383:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 384:../libopencm3/lib/stm32/common/spi_common_all.c **** In slave mode the NSS hardware input is used as a select enable for the slave.
+ 385:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 386:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 387:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 388:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 389:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_software_slave_management(uint32_t spi)
+ 390:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 940              		.loc 1 390 1
+ 941              		.cfi_startproc
+ 942              		@ args = 0, pretend = 0, frame = 8
+ 943              		@ frame_needed = 1, uses_anonymous_args = 0
+ 944              		@ link register save eliminated.
+ 945 0000 80B4     		push	{r7}
+ 946              		.cfi_def_cfa_offset 4
+ 947              		.cfi_offset 7, -4
+ 948 0002 83B0     		sub	sp, sp, #12
+ 949              		.cfi_def_cfa_offset 16
+ 950 0004 00AF     		add	r7, sp, #0
+ 951              		.cfi_def_cfa_register 7
+ 952 0006 7860     		str	r0, [r7, #4]
+ 391:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_SSM;
+ 953              		.loc 1 391 15
+ 954 0008 7B68     		ldr	r3, [r7, #4]
+ 955 000a 1A68     		ldr	r2, [r3]
+ 956 000c 7B68     		ldr	r3, [r7, #4]
+ 957 000e 22F40072 		bic	r2, r2, #512
+ 958 0012 1A60     		str	r2, [r3]
+ 392:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 959              		.loc 1 392 1
+ 960 0014 00BF     		nop
+ 961 0016 0C37     		adds	r7, r7, #12
+ 962              		.cfi_def_cfa_offset 4
+ 963 0018 BD46     		mov	sp, r7
+ 964              		.cfi_def_cfa_register 13
+ 965              		@ sp needed
+ 966 001a 80BC     		pop	{r7}
+ 967              		.cfi_restore 7
+ 968              		.cfi_def_cfa_offset 0
+ 969 001c 7047     		bx	lr
+ 970              		.cfi_endproc
+ 971              	.LFE18:
+ 973              		.section	.text.spi_enable_software_slave_management,"ax",%progbits
+ 974              		.align	1
+ 975              		.global	spi_enable_software_slave_management
+ 976              		.syntax unified
+ 977              		.thumb
+ 978              		.thumb_func
+ 979              		.fpu softvfp
+ 981              	spi_enable_software_slave_management:
+ 982              	.LFB19:
+ 393:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 394:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 395:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable Slave Management by Software
+ 396:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 397:../libopencm3/lib/stm32/common/spi_common_all.c **** In slave mode the NSS hardware input is replaced by an internal software
+ 398:../libopencm3/lib/stm32/common/spi_common_all.c **** enable/disable of the slave (@ref spi_set_nss_high).
+ 399:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 400:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 401:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 402:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 403:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_software_slave_management(uint32_t spi)
+ 404:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 983              		.loc 1 404 1
+ 984              		.cfi_startproc
+ 985              		@ args = 0, pretend = 0, frame = 8
+ 986              		@ frame_needed = 1, uses_anonymous_args = 0
+ 987              		@ link register save eliminated.
+ 988 0000 80B4     		push	{r7}
+ 989              		.cfi_def_cfa_offset 4
+ 990              		.cfi_offset 7, -4
+ 991 0002 83B0     		sub	sp, sp, #12
+ 992              		.cfi_def_cfa_offset 16
+ 993 0004 00AF     		add	r7, sp, #0
+ 994              		.cfi_def_cfa_register 7
+ 995 0006 7860     		str	r0, [r7, #4]
+ 405:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_SSM;
+ 996              		.loc 1 405 15
+ 997 0008 7B68     		ldr	r3, [r7, #4]
+ 998 000a 1A68     		ldr	r2, [r3]
+ 999 000c 7B68     		ldr	r3, [r7, #4]
+ 1000 000e 42F40072 		orr	r2, r2, #512
+ 1001 0012 1A60     		str	r2, [r3]
+ 406:../libopencm3/lib/stm32/common/spi_common_all.c **** 	/* allow slave select to be an input */
+ 407:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_SSOE;
+ 1002              		.loc 1 407 15
+ 1003 0014 7B68     		ldr	r3, [r7, #4]
+ 1004 0016 0433     		adds	r3, r3, #4
+ 1005 0018 1B68     		ldr	r3, [r3]
+ 1006 001a 7A68     		ldr	r2, [r7, #4]
+ 1007 001c 0432     		adds	r2, r2, #4
+ 1008 001e 23F00403 		bic	r3, r3, #4
+ 1009 0022 1360     		str	r3, [r2]
+ 408:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1010              		.loc 1 408 1
+ 1011 0024 00BF     		nop
+ 1012 0026 0C37     		adds	r7, r7, #12
+ 1013              		.cfi_def_cfa_offset 4
+ 1014 0028 BD46     		mov	sp, r7
+ 1015              		.cfi_def_cfa_register 13
+ 1016              		@ sp needed
+ 1017 002a 80BC     		pop	{r7}
+ 1018              		.cfi_restore 7
+ 1019              		.cfi_def_cfa_offset 0
+ 1020 002c 7047     		bx	lr
+ 1021              		.cfi_endproc
+ 1022              	.LFE19:
+ 1024              		.section	.text.spi_set_nss_high,"ax",%progbits
+ 1025              		.align	1
+ 1026              		.global	spi_set_nss_high
+ 1027              		.syntax unified
+ 1028              		.thumb
+ 1029              		.thumb_func
+ 1030              		.fpu softvfp
+ 1032              	spi_set_nss_high:
+ 1033              	.LFB20:
+ 409:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 410:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 411:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Software NSS Signal High
+ 412:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 413:../libopencm3/lib/stm32/common/spi_common_all.c **** In slave mode, and only when software slave management is used, this replaces
+ 414:../libopencm3/lib/stm32/common/spi_common_all.c **** the NSS signal with a slave select enable signal.
+ 415:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 416:../libopencm3/lib/stm32/common/spi_common_all.c **** @todo these should perhaps be combined with an SSM enable as it is meaningless
+ 417:../libopencm3/lib/stm32/common/spi_common_all.c **** otherwise
+ 418:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 419:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 420:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 421:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 422:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_nss_high(uint32_t spi)
+ 423:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1034              		.loc 1 423 1
+ 1035              		.cfi_startproc
+ 1036              		@ args = 0, pretend = 0, frame = 8
+ 1037              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1038              		@ link register save eliminated.
+ 1039 0000 80B4     		push	{r7}
+ 1040              		.cfi_def_cfa_offset 4
+ 1041              		.cfi_offset 7, -4
+ 1042 0002 83B0     		sub	sp, sp, #12
+ 1043              		.cfi_def_cfa_offset 16
+ 1044 0004 00AF     		add	r7, sp, #0
+ 1045              		.cfi_def_cfa_register 7
+ 1046 0006 7860     		str	r0, [r7, #4]
+ 424:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_SSI;
+ 1047              		.loc 1 424 15
+ 1048 0008 7B68     		ldr	r3, [r7, #4]
+ 1049 000a 1A68     		ldr	r2, [r3]
+ 1050 000c 7B68     		ldr	r3, [r7, #4]
+ 1051 000e 42F48072 		orr	r2, r2, #256
+ 1052 0012 1A60     		str	r2, [r3]
+ 425:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1053              		.loc 1 425 1
+ 1054 0014 00BF     		nop
+ 1055 0016 0C37     		adds	r7, r7, #12
+ 1056              		.cfi_def_cfa_offset 4
+ 1057 0018 BD46     		mov	sp, r7
+ 1058              		.cfi_def_cfa_register 13
+ 1059              		@ sp needed
+ 1060 001a 80BC     		pop	{r7}
+ 1061              		.cfi_restore 7
+ 1062              		.cfi_def_cfa_offset 0
+ 1063 001c 7047     		bx	lr
+ 1064              		.cfi_endproc
+ 1065              	.LFE20:
+ 1067              		.section	.text.spi_set_nss_low,"ax",%progbits
+ 1068              		.align	1
+ 1069              		.global	spi_set_nss_low
+ 1070              		.syntax unified
+ 1071              		.thumb
+ 1072              		.thumb_func
+ 1073              		.fpu softvfp
+ 1075              	spi_set_nss_low:
+ 1076              	.LFB21:
+ 426:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 427:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 428:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Software NSS Signal Low
+ 429:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 430:../libopencm3/lib/stm32/common/spi_common_all.c **** In slave mode, and only when software slave management is used, this replaces
+ 431:../libopencm3/lib/stm32/common/spi_common_all.c **** the NSS signal with a slave select disable signal.
+ 432:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 433:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 434:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 435:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 436:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_nss_low(uint32_t spi)
+ 437:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1077              		.loc 1 437 1
+ 1078              		.cfi_startproc
+ 1079              		@ args = 0, pretend = 0, frame = 8
+ 1080              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1081              		@ link register save eliminated.
+ 1082 0000 80B4     		push	{r7}
+ 1083              		.cfi_def_cfa_offset 4
+ 1084              		.cfi_offset 7, -4
+ 1085 0002 83B0     		sub	sp, sp, #12
+ 1086              		.cfi_def_cfa_offset 16
+ 1087 0004 00AF     		add	r7, sp, #0
+ 1088              		.cfi_def_cfa_register 7
+ 1089 0006 7860     		str	r0, [r7, #4]
+ 438:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_SSI;
+ 1090              		.loc 1 438 15
+ 1091 0008 7B68     		ldr	r3, [r7, #4]
+ 1092 000a 1A68     		ldr	r2, [r3]
+ 1093 000c 7B68     		ldr	r3, [r7, #4]
+ 1094 000e 22F48072 		bic	r2, r2, #256
+ 1095 0012 1A60     		str	r2, [r3]
+ 439:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1096              		.loc 1 439 1
+ 1097 0014 00BF     		nop
+ 1098 0016 0C37     		adds	r7, r7, #12
+ 1099              		.cfi_def_cfa_offset 4
+ 1100 0018 BD46     		mov	sp, r7
+ 1101              		.cfi_def_cfa_register 13
+ 1102              		@ sp needed
+ 1103 001a 80BC     		pop	{r7}
+ 1104              		.cfi_restore 7
+ 1105              		.cfi_def_cfa_offset 0
+ 1106 001c 7047     		bx	lr
+ 1107              		.cfi_endproc
+ 1108              	.LFE21:
+ 1110              		.section	.text.spi_send_lsb_first,"ax",%progbits
+ 1111              		.align	1
+ 1112              		.global	spi_send_lsb_first
+ 1113              		.syntax unified
+ 1114              		.thumb
+ 1115              		.thumb_func
+ 1116              		.fpu softvfp
+ 1118              	spi_send_lsb_first:
+ 1119              	.LFB22:
+ 440:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 441:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 442:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set to Send LSB First
+ 443:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 444:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 445:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 446:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 447:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_send_lsb_first(uint32_t spi)
+ 448:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1120              		.loc 1 448 1
+ 1121              		.cfi_startproc
+ 1122              		@ args = 0, pretend = 0, frame = 8
+ 1123              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1124              		@ link register save eliminated.
+ 1125 0000 80B4     		push	{r7}
+ 1126              		.cfi_def_cfa_offset 4
+ 1127              		.cfi_offset 7, -4
+ 1128 0002 83B0     		sub	sp, sp, #12
+ 1129              		.cfi_def_cfa_offset 16
+ 1130 0004 00AF     		add	r7, sp, #0
+ 1131              		.cfi_def_cfa_register 7
+ 1132 0006 7860     		str	r0, [r7, #4]
+ 449:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_LSBFIRST;
+ 1133              		.loc 1 449 15
+ 1134 0008 7B68     		ldr	r3, [r7, #4]
+ 1135 000a 1A68     		ldr	r2, [r3]
+ 1136 000c 7B68     		ldr	r3, [r7, #4]
+ 1137 000e 42F08002 		orr	r2, r2, #128
+ 1138 0012 1A60     		str	r2, [r3]
+ 450:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1139              		.loc 1 450 1
+ 1140 0014 00BF     		nop
+ 1141 0016 0C37     		adds	r7, r7, #12
+ 1142              		.cfi_def_cfa_offset 4
+ 1143 0018 BD46     		mov	sp, r7
+ 1144              		.cfi_def_cfa_register 13
+ 1145              		@ sp needed
+ 1146 001a 80BC     		pop	{r7}
+ 1147              		.cfi_restore 7
+ 1148              		.cfi_def_cfa_offset 0
+ 1149 001c 7047     		bx	lr
+ 1150              		.cfi_endproc
+ 1151              	.LFE22:
+ 1153              		.section	.text.spi_send_msb_first,"ax",%progbits
+ 1154              		.align	1
+ 1155              		.global	spi_send_msb_first
+ 1156              		.syntax unified
+ 1157              		.thumb
+ 1158              		.thumb_func
+ 1159              		.fpu softvfp
+ 1161              	spi_send_msb_first:
+ 1162              	.LFB23:
+ 451:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 452:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 453:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set to Send MSB First
+ 454:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 455:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 456:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 457:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 458:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_send_msb_first(uint32_t spi)
+ 459:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1163              		.loc 1 459 1
+ 1164              		.cfi_startproc
+ 1165              		@ args = 0, pretend = 0, frame = 8
+ 1166              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1167              		@ link register save eliminated.
+ 1168 0000 80B4     		push	{r7}
+ 1169              		.cfi_def_cfa_offset 4
+ 1170              		.cfi_offset 7, -4
+ 1171 0002 83B0     		sub	sp, sp, #12
+ 1172              		.cfi_def_cfa_offset 16
+ 1173 0004 00AF     		add	r7, sp, #0
+ 1174              		.cfi_def_cfa_register 7
+ 1175 0006 7860     		str	r0, [r7, #4]
+ 460:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_LSBFIRST;
+ 1176              		.loc 1 460 15
+ 1177 0008 7B68     		ldr	r3, [r7, #4]
+ 1178 000a 1A68     		ldr	r2, [r3]
+ 1179 000c 7B68     		ldr	r3, [r7, #4]
+ 1180 000e 22F08002 		bic	r2, r2, #128
+ 1181 0012 1A60     		str	r2, [r3]
+ 461:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1182              		.loc 1 461 1
+ 1183 0014 00BF     		nop
+ 1184 0016 0C37     		adds	r7, r7, #12
+ 1185              		.cfi_def_cfa_offset 4
+ 1186 0018 BD46     		mov	sp, r7
+ 1187              		.cfi_def_cfa_register 13
+ 1188              		@ sp needed
+ 1189 001a 80BC     		pop	{r7}
+ 1190              		.cfi_restore 7
+ 1191              		.cfi_def_cfa_offset 0
+ 1192 001c 7047     		bx	lr
+ 1193              		.cfi_endproc
+ 1194              	.LFE23:
+ 1196              		.section	.text.spi_set_baudrate_prescaler,"ax",%progbits
+ 1197              		.align	1
+ 1198              		.global	spi_set_baudrate_prescaler
+ 1199              		.syntax unified
+ 1200              		.thumb
+ 1201              		.thumb_func
+ 1202              		.fpu softvfp
+ 1204              	spi_set_baudrate_prescaler:
+ 1205              	.LFB24:
+ 462:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 463:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 464:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Baudrate Prescaler
+ 465:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 466:../libopencm3/lib/stm32/common/spi_common_all.c **** @todo Why is this specification different to the spi_init_master baudrate
+ 467:../libopencm3/lib/stm32/common/spi_common_all.c **** values?
+ 468:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 469:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 470:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] baudrate Unsigned int8. Baudrate prescale value @ref spi_br_pre.
+ 471:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 472:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 473:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_baudrate_prescaler(uint32_t spi, uint8_t baudrate)
+ 474:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1206              		.loc 1 474 1
+ 1207              		.cfi_startproc
+ 1208              		@ args = 0, pretend = 0, frame = 16
+ 1209              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1210              		@ link register save eliminated.
+ 1211 0000 80B4     		push	{r7}
+ 1212              		.cfi_def_cfa_offset 4
+ 1213              		.cfi_offset 7, -4
+ 1214 0002 85B0     		sub	sp, sp, #20
+ 1215              		.cfi_def_cfa_offset 24
+ 1216 0004 00AF     		add	r7, sp, #0
+ 1217              		.cfi_def_cfa_register 7
+ 1218 0006 7860     		str	r0, [r7, #4]
+ 1219 0008 0B46     		mov	r3, r1
+ 1220 000a FB70     		strb	r3, [r7, #3]
+ 475:../libopencm3/lib/stm32/common/spi_common_all.c **** 	uint32_t reg32;
+ 476:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 477:../libopencm3/lib/stm32/common/spi_common_all.c **** 	if (baudrate > 7) {
+ 1221              		.loc 1 477 5
+ 1222 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1223 000e 072B     		cmp	r3, #7
+ 1224 0010 0FD8     		bhi	.L44
+ 478:../libopencm3/lib/stm32/common/spi_common_all.c **** 		return;
+ 479:../libopencm3/lib/stm32/common/spi_common_all.c **** 	}
+ 480:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 481:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg32 = (SPI_CR1(spi) & 0xffc7); /* Clear bits [5:3]. */
+ 1225              		.loc 1 481 11
+ 1226 0012 7B68     		ldr	r3, [r7, #4]
+ 1227 0014 1A68     		ldr	r2, [r3]
+ 1228              		.loc 1 481 8
+ 1229 0016 4FF6C773 		movw	r3, #65479
+ 1230 001a 1340     		ands	r3, r3, r2
+ 1231 001c FB60     		str	r3, [r7, #12]
+ 482:../libopencm3/lib/stm32/common/spi_common_all.c **** 	reg32 |= (baudrate << 3);
+ 1232              		.loc 1 482 21
+ 1233 001e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1234 0020 DB00     		lsls	r3, r3, #3
+ 1235 0022 1A46     		mov	r2, r3
+ 1236              		.loc 1 482 8
+ 1237 0024 FB68     		ldr	r3, [r7, #12]
+ 1238 0026 1343     		orrs	r3, r3, r2
+ 1239 0028 FB60     		str	r3, [r7, #12]
+ 483:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) = reg32;
+ 1240              		.loc 1 483 2
+ 1241 002a 7B68     		ldr	r3, [r7, #4]
+ 1242              		.loc 1 483 15
+ 1243 002c FA68     		ldr	r2, [r7, #12]
+ 1244 002e 1A60     		str	r2, [r3]
+ 1245 0030 00E0     		b	.L41
+ 1246              	.L44:
+ 478:../libopencm3/lib/stm32/common/spi_common_all.c **** 		return;
+ 1247              		.loc 1 478 3
+ 1248 0032 00BF     		nop
+ 1249              	.L41:
+ 484:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1250              		.loc 1 484 1
+ 1251 0034 1437     		adds	r7, r7, #20
+ 1252              		.cfi_def_cfa_offset 4
+ 1253 0036 BD46     		mov	sp, r7
+ 1254              		.cfi_def_cfa_register 13
+ 1255              		@ sp needed
+ 1256 0038 80BC     		pop	{r7}
+ 1257              		.cfi_restore 7
+ 1258              		.cfi_def_cfa_offset 0
+ 1259 003a 7047     		bx	lr
+ 1260              		.cfi_endproc
+ 1261              	.LFE24:
+ 1263              		.section	.text.spi_set_master_mode,"ax",%progbits
+ 1264              		.align	1
+ 1265              		.global	spi_set_master_mode
+ 1266              		.syntax unified
+ 1267              		.thumb
+ 1268              		.thumb_func
+ 1269              		.fpu softvfp
+ 1271              	spi_set_master_mode:
+ 1272              	.LFB25:
+ 485:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 486:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 487:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set to Master Mode
+ 488:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 489:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 490:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 491:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 492:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_master_mode(uint32_t spi)
+ 493:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1273              		.loc 1 493 1
+ 1274              		.cfi_startproc
+ 1275              		@ args = 0, pretend = 0, frame = 8
+ 1276              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1277              		@ link register save eliminated.
+ 1278 0000 80B4     		push	{r7}
+ 1279              		.cfi_def_cfa_offset 4
+ 1280              		.cfi_offset 7, -4
+ 1281 0002 83B0     		sub	sp, sp, #12
+ 1282              		.cfi_def_cfa_offset 16
+ 1283 0004 00AF     		add	r7, sp, #0
+ 1284              		.cfi_def_cfa_register 7
+ 1285 0006 7860     		str	r0, [r7, #4]
+ 494:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_MSTR;
+ 1286              		.loc 1 494 15
+ 1287 0008 7B68     		ldr	r3, [r7, #4]
+ 1288 000a 1A68     		ldr	r2, [r3]
+ 1289 000c 7B68     		ldr	r3, [r7, #4]
+ 1290 000e 42F00402 		orr	r2, r2, #4
+ 1291 0012 1A60     		str	r2, [r3]
+ 495:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1292              		.loc 1 495 1
+ 1293 0014 00BF     		nop
+ 1294 0016 0C37     		adds	r7, r7, #12
+ 1295              		.cfi_def_cfa_offset 4
+ 1296 0018 BD46     		mov	sp, r7
+ 1297              		.cfi_def_cfa_register 13
+ 1298              		@ sp needed
+ 1299 001a 80BC     		pop	{r7}
+ 1300              		.cfi_restore 7
+ 1301              		.cfi_def_cfa_offset 0
+ 1302 001c 7047     		bx	lr
+ 1303              		.cfi_endproc
+ 1304              	.LFE25:
+ 1306              		.section	.text.spi_set_slave_mode,"ax",%progbits
+ 1307              		.align	1
+ 1308              		.global	spi_set_slave_mode
+ 1309              		.syntax unified
+ 1310              		.thumb
+ 1311              		.thumb_func
+ 1312              		.fpu softvfp
+ 1314              	spi_set_slave_mode:
+ 1315              	.LFB26:
+ 496:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 497:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 498:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set to Slave Mode
+ 499:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 500:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 501:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 502:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 503:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_slave_mode(uint32_t spi)
+ 504:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1316              		.loc 1 504 1
+ 1317              		.cfi_startproc
+ 1318              		@ args = 0, pretend = 0, frame = 8
+ 1319              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1320              		@ link register save eliminated.
+ 1321 0000 80B4     		push	{r7}
+ 1322              		.cfi_def_cfa_offset 4
+ 1323              		.cfi_offset 7, -4
+ 1324 0002 83B0     		sub	sp, sp, #12
+ 1325              		.cfi_def_cfa_offset 16
+ 1326 0004 00AF     		add	r7, sp, #0
+ 1327              		.cfi_def_cfa_register 7
+ 1328 0006 7860     		str	r0, [r7, #4]
+ 505:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_MSTR;
+ 1329              		.loc 1 505 15
+ 1330 0008 7B68     		ldr	r3, [r7, #4]
+ 1331 000a 1A68     		ldr	r2, [r3]
+ 1332 000c 7B68     		ldr	r3, [r7, #4]
+ 1333 000e 22F00402 		bic	r2, r2, #4
+ 1334 0012 1A60     		str	r2, [r3]
+ 506:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1335              		.loc 1 506 1
+ 1336 0014 00BF     		nop
+ 1337 0016 0C37     		adds	r7, r7, #12
+ 1338              		.cfi_def_cfa_offset 4
+ 1339 0018 BD46     		mov	sp, r7
+ 1340              		.cfi_def_cfa_register 13
+ 1341              		@ sp needed
+ 1342 001a 80BC     		pop	{r7}
+ 1343              		.cfi_restore 7
+ 1344              		.cfi_def_cfa_offset 0
+ 1345 001c 7047     		bx	lr
+ 1346              		.cfi_endproc
+ 1347              	.LFE26:
+ 1349              		.section	.text.spi_set_clock_polarity_1,"ax",%progbits
+ 1350              		.align	1
+ 1351              		.global	spi_set_clock_polarity_1
+ 1352              		.syntax unified
+ 1353              		.thumb
+ 1354              		.thumb_func
+ 1355              		.fpu softvfp
+ 1357              	spi_set_clock_polarity_1:
+ 1358              	.LFB27:
+ 507:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 508:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 509:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Clock Polarity to High when Idle
+ 510:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 511:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 512:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_polarity_0
+ 513:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 514:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 515:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_clock_polarity_1(uint32_t spi)
+ 516:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1359              		.loc 1 516 1
+ 1360              		.cfi_startproc
+ 1361              		@ args = 0, pretend = 0, frame = 8
+ 1362              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1363              		@ link register save eliminated.
+ 1364 0000 80B4     		push	{r7}
+ 1365              		.cfi_def_cfa_offset 4
+ 1366              		.cfi_offset 7, -4
+ 1367 0002 83B0     		sub	sp, sp, #12
+ 1368              		.cfi_def_cfa_offset 16
+ 1369 0004 00AF     		add	r7, sp, #0
+ 1370              		.cfi_def_cfa_register 7
+ 1371 0006 7860     		str	r0, [r7, #4]
+ 517:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_CPOL;
+ 1372              		.loc 1 517 15
+ 1373 0008 7B68     		ldr	r3, [r7, #4]
+ 1374 000a 1A68     		ldr	r2, [r3]
+ 1375 000c 7B68     		ldr	r3, [r7, #4]
+ 1376 000e 42F00202 		orr	r2, r2, #2
+ 1377 0012 1A60     		str	r2, [r3]
+ 518:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1378              		.loc 1 518 1
+ 1379 0014 00BF     		nop
+ 1380 0016 0C37     		adds	r7, r7, #12
+ 1381              		.cfi_def_cfa_offset 4
+ 1382 0018 BD46     		mov	sp, r7
+ 1383              		.cfi_def_cfa_register 13
+ 1384              		@ sp needed
+ 1385 001a 80BC     		pop	{r7}
+ 1386              		.cfi_restore 7
+ 1387              		.cfi_def_cfa_offset 0
+ 1388 001c 7047     		bx	lr
+ 1389              		.cfi_endproc
+ 1390              	.LFE27:
+ 1392              		.section	.text.spi_set_clock_polarity_0,"ax",%progbits
+ 1393              		.align	1
+ 1394              		.global	spi_set_clock_polarity_0
+ 1395              		.syntax unified
+ 1396              		.thumb
+ 1397              		.thumb_func
+ 1398              		.fpu softvfp
+ 1400              	spi_set_clock_polarity_0:
+ 1401              	.LFB28:
+ 519:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 520:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 521:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Clock Polarity to Low when Idle
+ 522:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 523:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 524:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_polarity_1
+ 525:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 526:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 527:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_clock_polarity_0(uint32_t spi)
+ 528:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1402              		.loc 1 528 1
+ 1403              		.cfi_startproc
+ 1404              		@ args = 0, pretend = 0, frame = 8
+ 1405              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1406              		@ link register save eliminated.
+ 1407 0000 80B4     		push	{r7}
+ 1408              		.cfi_def_cfa_offset 4
+ 1409              		.cfi_offset 7, -4
+ 1410 0002 83B0     		sub	sp, sp, #12
+ 1411              		.cfi_def_cfa_offset 16
+ 1412 0004 00AF     		add	r7, sp, #0
+ 1413              		.cfi_def_cfa_register 7
+ 1414 0006 7860     		str	r0, [r7, #4]
+ 529:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_CPOL;
+ 1415              		.loc 1 529 15
+ 1416 0008 7B68     		ldr	r3, [r7, #4]
+ 1417 000a 1A68     		ldr	r2, [r3]
+ 1418 000c 7B68     		ldr	r3, [r7, #4]
+ 1419 000e 22F00202 		bic	r2, r2, #2
+ 1420 0012 1A60     		str	r2, [r3]
+ 530:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1421              		.loc 1 530 1
+ 1422 0014 00BF     		nop
+ 1423 0016 0C37     		adds	r7, r7, #12
+ 1424              		.cfi_def_cfa_offset 4
+ 1425 0018 BD46     		mov	sp, r7
+ 1426              		.cfi_def_cfa_register 13
+ 1427              		@ sp needed
+ 1428 001a 80BC     		pop	{r7}
+ 1429              		.cfi_restore 7
+ 1430              		.cfi_def_cfa_offset 0
+ 1431 001c 7047     		bx	lr
+ 1432              		.cfi_endproc
+ 1433              	.LFE28:
+ 1435              		.section	.text.spi_set_clock_phase_1,"ax",%progbits
+ 1436              		.align	1
+ 1437              		.global	spi_set_clock_phase_1
+ 1438              		.syntax unified
+ 1439              		.thumb
+ 1440              		.thumb_func
+ 1441              		.fpu softvfp
+ 1443              	spi_set_clock_phase_1:
+ 1444              	.LFB29:
+ 531:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 532:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 533:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Clock Phase to Capture on Trailing Edge
+ 534:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 535:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 536:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_phase_0
+ 537:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 538:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 539:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_clock_phase_1(uint32_t spi)
+ 540:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1445              		.loc 1 540 1
+ 1446              		.cfi_startproc
+ 1447              		@ args = 0, pretend = 0, frame = 8
+ 1448              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1449              		@ link register save eliminated.
+ 1450 0000 80B4     		push	{r7}
+ 1451              		.cfi_def_cfa_offset 4
+ 1452              		.cfi_offset 7, -4
+ 1453 0002 83B0     		sub	sp, sp, #12
+ 1454              		.cfi_def_cfa_offset 16
+ 1455 0004 00AF     		add	r7, sp, #0
+ 1456              		.cfi_def_cfa_register 7
+ 1457 0006 7860     		str	r0, [r7, #4]
+ 541:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) |= SPI_CR1_CPHA;
+ 1458              		.loc 1 541 15
+ 1459 0008 7B68     		ldr	r3, [r7, #4]
+ 1460 000a 1A68     		ldr	r2, [r3]
+ 1461 000c 7B68     		ldr	r3, [r7, #4]
+ 1462 000e 42F00102 		orr	r2, r2, #1
+ 1463 0012 1A60     		str	r2, [r3]
+ 542:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1464              		.loc 1 542 1
+ 1465 0014 00BF     		nop
+ 1466 0016 0C37     		adds	r7, r7, #12
+ 1467              		.cfi_def_cfa_offset 4
+ 1468 0018 BD46     		mov	sp, r7
+ 1469              		.cfi_def_cfa_register 13
+ 1470              		@ sp needed
+ 1471 001a 80BC     		pop	{r7}
+ 1472              		.cfi_restore 7
+ 1473              		.cfi_def_cfa_offset 0
+ 1474 001c 7047     		bx	lr
+ 1475              		.cfi_endproc
+ 1476              	.LFE29:
+ 1478              		.section	.text.spi_set_clock_phase_0,"ax",%progbits
+ 1479              		.align	1
+ 1480              		.global	spi_set_clock_phase_0
+ 1481              		.syntax unified
+ 1482              		.thumb
+ 1483              		.thumb_func
+ 1484              		.fpu softvfp
+ 1486              	spi_set_clock_phase_0:
+ 1487              	.LFB30:
+ 543:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 544:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 545:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the Clock Phase to Capture on Leading Edge
+ 546:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 547:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 548:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_phase_1
+ 549:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 550:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 551:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_clock_phase_0(uint32_t spi)
+ 552:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1488              		.loc 1 552 1
+ 1489              		.cfi_startproc
+ 1490              		@ args = 0, pretend = 0, frame = 8
+ 1491              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1492              		@ link register save eliminated.
+ 1493 0000 80B4     		push	{r7}
+ 1494              		.cfi_def_cfa_offset 4
+ 1495              		.cfi_offset 7, -4
+ 1496 0002 83B0     		sub	sp, sp, #12
+ 1497              		.cfi_def_cfa_offset 16
+ 1498 0004 00AF     		add	r7, sp, #0
+ 1499              		.cfi_def_cfa_register 7
+ 1500 0006 7860     		str	r0, [r7, #4]
+ 553:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) &= ~SPI_CR1_CPHA;
+ 1501              		.loc 1 553 15
+ 1502 0008 7B68     		ldr	r3, [r7, #4]
+ 1503 000a 1A68     		ldr	r2, [r3]
+ 1504 000c 7B68     		ldr	r3, [r7, #4]
+ 1505 000e 22F00102 		bic	r2, r2, #1
+ 1506 0012 1A60     		str	r2, [r3]
+ 554:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1507              		.loc 1 554 1
+ 1508 0014 00BF     		nop
+ 1509 0016 0C37     		adds	r7, r7, #12
+ 1510              		.cfi_def_cfa_offset 4
+ 1511 0018 BD46     		mov	sp, r7
+ 1512              		.cfi_def_cfa_register 13
+ 1513              		@ sp needed
+ 1514 001a 80BC     		pop	{r7}
+ 1515              		.cfi_restore 7
+ 1516              		.cfi_def_cfa_offset 0
+ 1517 001c 7047     		bx	lr
+ 1518              		.cfi_endproc
+ 1519              	.LFE30:
+ 1521              		.section	.text.spi_enable_tx_buffer_empty_interrupt,"ax",%progbits
+ 1522              		.align	1
+ 1523              		.global	spi_enable_tx_buffer_empty_interrupt
+ 1524              		.syntax unified
+ 1525              		.thumb
+ 1526              		.thumb_func
+ 1527              		.fpu softvfp
+ 1529              	spi_enable_tx_buffer_empty_interrupt:
+ 1530              	.LFB31:
+ 555:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 556:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 557:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable the Transmit Buffer Empty Interrupt
+ 558:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 559:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 560:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 561:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 562:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_tx_buffer_empty_interrupt(uint32_t spi)
+ 563:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1531              		.loc 1 563 1
+ 1532              		.cfi_startproc
+ 1533              		@ args = 0, pretend = 0, frame = 8
+ 1534              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1535              		@ link register save eliminated.
+ 1536 0000 80B4     		push	{r7}
+ 1537              		.cfi_def_cfa_offset 4
+ 1538              		.cfi_offset 7, -4
+ 1539 0002 83B0     		sub	sp, sp, #12
+ 1540              		.cfi_def_cfa_offset 16
+ 1541 0004 00AF     		add	r7, sp, #0
+ 1542              		.cfi_def_cfa_register 7
+ 1543 0006 7860     		str	r0, [r7, #4]
+ 564:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_TXEIE;
+ 1544              		.loc 1 564 15
+ 1545 0008 7B68     		ldr	r3, [r7, #4]
+ 1546 000a 0433     		adds	r3, r3, #4
+ 1547 000c 1B68     		ldr	r3, [r3]
+ 1548 000e 7A68     		ldr	r2, [r7, #4]
+ 1549 0010 0432     		adds	r2, r2, #4
+ 1550 0012 43F08003 		orr	r3, r3, #128
+ 1551 0016 1360     		str	r3, [r2]
+ 565:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1552              		.loc 1 565 1
+ 1553 0018 00BF     		nop
+ 1554 001a 0C37     		adds	r7, r7, #12
+ 1555              		.cfi_def_cfa_offset 4
+ 1556 001c BD46     		mov	sp, r7
+ 1557              		.cfi_def_cfa_register 13
+ 1558              		@ sp needed
+ 1559 001e 80BC     		pop	{r7}
+ 1560              		.cfi_restore 7
+ 1561              		.cfi_def_cfa_offset 0
+ 1562 0020 7047     		bx	lr
+ 1563              		.cfi_endproc
+ 1564              	.LFE31:
+ 1566              		.section	.text.spi_disable_tx_buffer_empty_interrupt,"ax",%progbits
+ 1567              		.align	1
+ 1568              		.global	spi_disable_tx_buffer_empty_interrupt
+ 1569              		.syntax unified
+ 1570              		.thumb
+ 1571              		.thumb_func
+ 1572              		.fpu softvfp
+ 1574              	spi_disable_tx_buffer_empty_interrupt:
+ 1575              	.LFB32:
+ 566:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 567:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 568:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable the Transmit Buffer Empty Interrupt
+ 569:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 570:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 571:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 572:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 573:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_tx_buffer_empty_interrupt(uint32_t spi)
+ 574:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1576              		.loc 1 574 1
+ 1577              		.cfi_startproc
+ 1578              		@ args = 0, pretend = 0, frame = 8
+ 1579              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1580              		@ link register save eliminated.
+ 1581 0000 80B4     		push	{r7}
+ 1582              		.cfi_def_cfa_offset 4
+ 1583              		.cfi_offset 7, -4
+ 1584 0002 83B0     		sub	sp, sp, #12
+ 1585              		.cfi_def_cfa_offset 16
+ 1586 0004 00AF     		add	r7, sp, #0
+ 1587              		.cfi_def_cfa_register 7
+ 1588 0006 7860     		str	r0, [r7, #4]
+ 575:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_TXEIE;
+ 1589              		.loc 1 575 15
+ 1590 0008 7B68     		ldr	r3, [r7, #4]
+ 1591 000a 0433     		adds	r3, r3, #4
+ 1592 000c 1B68     		ldr	r3, [r3]
+ 1593 000e 7A68     		ldr	r2, [r7, #4]
+ 1594 0010 0432     		adds	r2, r2, #4
+ 1595 0012 23F08003 		bic	r3, r3, #128
+ 1596 0016 1360     		str	r3, [r2]
+ 576:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1597              		.loc 1 576 1
+ 1598 0018 00BF     		nop
+ 1599 001a 0C37     		adds	r7, r7, #12
+ 1600              		.cfi_def_cfa_offset 4
+ 1601 001c BD46     		mov	sp, r7
+ 1602              		.cfi_def_cfa_register 13
+ 1603              		@ sp needed
+ 1604 001e 80BC     		pop	{r7}
+ 1605              		.cfi_restore 7
+ 1606              		.cfi_def_cfa_offset 0
+ 1607 0020 7047     		bx	lr
+ 1608              		.cfi_endproc
+ 1609              	.LFE32:
+ 1611              		.section	.text.spi_enable_rx_buffer_not_empty_interrupt,"ax",%progbits
+ 1612              		.align	1
+ 1613              		.global	spi_enable_rx_buffer_not_empty_interrupt
+ 1614              		.syntax unified
+ 1615              		.thumb
+ 1616              		.thumb_func
+ 1617              		.fpu softvfp
+ 1619              	spi_enable_rx_buffer_not_empty_interrupt:
+ 1620              	.LFB33:
+ 577:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 578:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 579:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable the Receive Buffer Ready Interrupt
+ 580:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 581:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 582:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 583:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 584:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_rx_buffer_not_empty_interrupt(uint32_t spi)
+ 585:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1621              		.loc 1 585 1
+ 1622              		.cfi_startproc
+ 1623              		@ args = 0, pretend = 0, frame = 8
+ 1624              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1625              		@ link register save eliminated.
+ 1626 0000 80B4     		push	{r7}
+ 1627              		.cfi_def_cfa_offset 4
+ 1628              		.cfi_offset 7, -4
+ 1629 0002 83B0     		sub	sp, sp, #12
+ 1630              		.cfi_def_cfa_offset 16
+ 1631 0004 00AF     		add	r7, sp, #0
+ 1632              		.cfi_def_cfa_register 7
+ 1633 0006 7860     		str	r0, [r7, #4]
+ 586:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_RXNEIE;
+ 1634              		.loc 1 586 15
+ 1635 0008 7B68     		ldr	r3, [r7, #4]
+ 1636 000a 0433     		adds	r3, r3, #4
+ 1637 000c 1B68     		ldr	r3, [r3]
+ 1638 000e 7A68     		ldr	r2, [r7, #4]
+ 1639 0010 0432     		adds	r2, r2, #4
+ 1640 0012 43F04003 		orr	r3, r3, #64
+ 1641 0016 1360     		str	r3, [r2]
+ 587:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1642              		.loc 1 587 1
+ 1643 0018 00BF     		nop
+ 1644 001a 0C37     		adds	r7, r7, #12
+ 1645              		.cfi_def_cfa_offset 4
+ 1646 001c BD46     		mov	sp, r7
+ 1647              		.cfi_def_cfa_register 13
+ 1648              		@ sp needed
+ 1649 001e 80BC     		pop	{r7}
+ 1650              		.cfi_restore 7
+ 1651              		.cfi_def_cfa_offset 0
+ 1652 0020 7047     		bx	lr
+ 1653              		.cfi_endproc
+ 1654              	.LFE33:
+ 1656              		.section	.text.spi_disable_rx_buffer_not_empty_interrupt,"ax",%progbits
+ 1657              		.align	1
+ 1658              		.global	spi_disable_rx_buffer_not_empty_interrupt
+ 1659              		.syntax unified
+ 1660              		.thumb
+ 1661              		.thumb_func
+ 1662              		.fpu softvfp
+ 1664              	spi_disable_rx_buffer_not_empty_interrupt:
+ 1665              	.LFB34:
+ 588:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 589:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 590:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable the Receive Buffer Ready Interrupt
+ 591:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 592:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 593:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 594:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 595:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_rx_buffer_not_empty_interrupt(uint32_t spi)
+ 596:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1666              		.loc 1 596 1
+ 1667              		.cfi_startproc
+ 1668              		@ args = 0, pretend = 0, frame = 8
+ 1669              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1670              		@ link register save eliminated.
+ 1671 0000 80B4     		push	{r7}
+ 1672              		.cfi_def_cfa_offset 4
+ 1673              		.cfi_offset 7, -4
+ 1674 0002 83B0     		sub	sp, sp, #12
+ 1675              		.cfi_def_cfa_offset 16
+ 1676 0004 00AF     		add	r7, sp, #0
+ 1677              		.cfi_def_cfa_register 7
+ 1678 0006 7860     		str	r0, [r7, #4]
+ 597:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_RXNEIE;
+ 1679              		.loc 1 597 15
+ 1680 0008 7B68     		ldr	r3, [r7, #4]
+ 1681 000a 0433     		adds	r3, r3, #4
+ 1682 000c 1B68     		ldr	r3, [r3]
+ 1683 000e 7A68     		ldr	r2, [r7, #4]
+ 1684 0010 0432     		adds	r2, r2, #4
+ 1685 0012 23F04003 		bic	r3, r3, #64
+ 1686 0016 1360     		str	r3, [r2]
+ 598:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1687              		.loc 1 598 1
+ 1688 0018 00BF     		nop
+ 1689 001a 0C37     		adds	r7, r7, #12
+ 1690              		.cfi_def_cfa_offset 4
+ 1691 001c BD46     		mov	sp, r7
+ 1692              		.cfi_def_cfa_register 13
+ 1693              		@ sp needed
+ 1694 001e 80BC     		pop	{r7}
+ 1695              		.cfi_restore 7
+ 1696              		.cfi_def_cfa_offset 0
+ 1697 0020 7047     		bx	lr
+ 1698              		.cfi_endproc
+ 1699              	.LFE34:
+ 1701              		.section	.text.spi_enable_error_interrupt,"ax",%progbits
+ 1702              		.align	1
+ 1703              		.global	spi_enable_error_interrupt
+ 1704              		.syntax unified
+ 1705              		.thumb
+ 1706              		.thumb_func
+ 1707              		.fpu softvfp
+ 1709              	spi_enable_error_interrupt:
+ 1710              	.LFB35:
+ 599:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 600:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 601:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable the Error Interrupt
+ 602:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 603:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 604:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 605:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 606:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_error_interrupt(uint32_t spi)
+ 607:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1711              		.loc 1 607 1
+ 1712              		.cfi_startproc
+ 1713              		@ args = 0, pretend = 0, frame = 8
+ 1714              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1715              		@ link register save eliminated.
+ 1716 0000 80B4     		push	{r7}
+ 1717              		.cfi_def_cfa_offset 4
+ 1718              		.cfi_offset 7, -4
+ 1719 0002 83B0     		sub	sp, sp, #12
+ 1720              		.cfi_def_cfa_offset 16
+ 1721 0004 00AF     		add	r7, sp, #0
+ 1722              		.cfi_def_cfa_register 7
+ 1723 0006 7860     		str	r0, [r7, #4]
+ 608:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_ERRIE;
+ 1724              		.loc 1 608 15
+ 1725 0008 7B68     		ldr	r3, [r7, #4]
+ 1726 000a 0433     		adds	r3, r3, #4
+ 1727 000c 1B68     		ldr	r3, [r3]
+ 1728 000e 7A68     		ldr	r2, [r7, #4]
+ 1729 0010 0432     		adds	r2, r2, #4
+ 1730 0012 43F02003 		orr	r3, r3, #32
+ 1731 0016 1360     		str	r3, [r2]
+ 609:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1732              		.loc 1 609 1
+ 1733 0018 00BF     		nop
+ 1734 001a 0C37     		adds	r7, r7, #12
+ 1735              		.cfi_def_cfa_offset 4
+ 1736 001c BD46     		mov	sp, r7
+ 1737              		.cfi_def_cfa_register 13
+ 1738              		@ sp needed
+ 1739 001e 80BC     		pop	{r7}
+ 1740              		.cfi_restore 7
+ 1741              		.cfi_def_cfa_offset 0
+ 1742 0020 7047     		bx	lr
+ 1743              		.cfi_endproc
+ 1744              	.LFE35:
+ 1746              		.section	.text.spi_disable_error_interrupt,"ax",%progbits
+ 1747              		.align	1
+ 1748              		.global	spi_disable_error_interrupt
+ 1749              		.syntax unified
+ 1750              		.thumb
+ 1751              		.thumb_func
+ 1752              		.fpu softvfp
+ 1754              	spi_disable_error_interrupt:
+ 1755              	.LFB36:
+ 610:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 611:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 612:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable the Error Interrupt
+ 613:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 614:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 615:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 616:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 617:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_error_interrupt(uint32_t spi)
+ 618:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1756              		.loc 1 618 1
+ 1757              		.cfi_startproc
+ 1758              		@ args = 0, pretend = 0, frame = 8
+ 1759              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1760              		@ link register save eliminated.
+ 1761 0000 80B4     		push	{r7}
+ 1762              		.cfi_def_cfa_offset 4
+ 1763              		.cfi_offset 7, -4
+ 1764 0002 83B0     		sub	sp, sp, #12
+ 1765              		.cfi_def_cfa_offset 16
+ 1766 0004 00AF     		add	r7, sp, #0
+ 1767              		.cfi_def_cfa_register 7
+ 1768 0006 7860     		str	r0, [r7, #4]
+ 619:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_ERRIE;
+ 1769              		.loc 1 619 15
+ 1770 0008 7B68     		ldr	r3, [r7, #4]
+ 1771 000a 0433     		adds	r3, r3, #4
+ 1772 000c 1B68     		ldr	r3, [r3]
+ 1773 000e 7A68     		ldr	r2, [r7, #4]
+ 1774 0010 0432     		adds	r2, r2, #4
+ 1775 0012 23F02003 		bic	r3, r3, #32
+ 1776 0016 1360     		str	r3, [r2]
+ 620:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1777              		.loc 1 620 1
+ 1778 0018 00BF     		nop
+ 1779 001a 0C37     		adds	r7, r7, #12
+ 1780              		.cfi_def_cfa_offset 4
+ 1781 001c BD46     		mov	sp, r7
+ 1782              		.cfi_def_cfa_register 13
+ 1783              		@ sp needed
+ 1784 001e 80BC     		pop	{r7}
+ 1785              		.cfi_restore 7
+ 1786              		.cfi_def_cfa_offset 0
+ 1787 0020 7047     		bx	lr
+ 1788              		.cfi_endproc
+ 1789              	.LFE36:
+ 1791              		.section	.text.spi_enable_ss_output,"ax",%progbits
+ 1792              		.align	1
+ 1793              		.global	spi_enable_ss_output
+ 1794              		.syntax unified
+ 1795              		.thumb
+ 1796              		.thumb_func
+ 1797              		.fpu softvfp
+ 1799              	spi_enable_ss_output:
+ 1800              	.LFB37:
+ 621:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 622:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 623:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the NSS Pin as an Output
+ 624:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 625:../libopencm3/lib/stm32/common/spi_common_all.c **** Normally used in master mode to allows the master to place all devices on the
+ 626:../libopencm3/lib/stm32/common/spi_common_all.c **** SPI bus into slave mode. Multimaster mode is not possible.
+ 627:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 628:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 629:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 630:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 631:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_ss_output(uint32_t spi)
+ 632:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1801              		.loc 1 632 1
+ 1802              		.cfi_startproc
+ 1803              		@ args = 0, pretend = 0, frame = 8
+ 1804              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1805              		@ link register save eliminated.
+ 1806 0000 80B4     		push	{r7}
+ 1807              		.cfi_def_cfa_offset 4
+ 1808              		.cfi_offset 7, -4
+ 1809 0002 83B0     		sub	sp, sp, #12
+ 1810              		.cfi_def_cfa_offset 16
+ 1811 0004 00AF     		add	r7, sp, #0
+ 1812              		.cfi_def_cfa_register 7
+ 1813 0006 7860     		str	r0, [r7, #4]
+ 633:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_SSOE;
+ 1814              		.loc 1 633 15
+ 1815 0008 7B68     		ldr	r3, [r7, #4]
+ 1816 000a 0433     		adds	r3, r3, #4
+ 1817 000c 1B68     		ldr	r3, [r3]
+ 1818 000e 7A68     		ldr	r2, [r7, #4]
+ 1819 0010 0432     		adds	r2, r2, #4
+ 1820 0012 43F00403 		orr	r3, r3, #4
+ 1821 0016 1360     		str	r3, [r2]
+ 634:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1822              		.loc 1 634 1
+ 1823 0018 00BF     		nop
+ 1824 001a 0C37     		adds	r7, r7, #12
+ 1825              		.cfi_def_cfa_offset 4
+ 1826 001c BD46     		mov	sp, r7
+ 1827              		.cfi_def_cfa_register 13
+ 1828              		@ sp needed
+ 1829 001e 80BC     		pop	{r7}
+ 1830              		.cfi_restore 7
+ 1831              		.cfi_def_cfa_offset 0
+ 1832 0020 7047     		bx	lr
+ 1833              		.cfi_endproc
+ 1834              	.LFE37:
+ 1836              		.section	.text.spi_disable_ss_output,"ax",%progbits
+ 1837              		.align	1
+ 1838              		.global	spi_disable_ss_output
+ 1839              		.syntax unified
+ 1840              		.thumb
+ 1841              		.thumb_func
+ 1842              		.fpu softvfp
+ 1844              	spi_disable_ss_output:
+ 1845              	.LFB38:
+ 635:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 636:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 637:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Set the NSS Pin as an Input
+ 638:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 639:../libopencm3/lib/stm32/common/spi_common_all.c **** In master mode this allows the master to sense the presence of other masters. If
+ 640:../libopencm3/lib/stm32/common/spi_common_all.c **** NSS is then pulled low the master is placed into slave mode. In slave mode NSS
+ 641:../libopencm3/lib/stm32/common/spi_common_all.c **** becomes a slave enable.
+ 642:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 643:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 644:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 645:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 646:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_ss_output(uint32_t spi)
+ 647:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1846              		.loc 1 647 1
+ 1847              		.cfi_startproc
+ 1848              		@ args = 0, pretend = 0, frame = 8
+ 1849              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1850              		@ link register save eliminated.
+ 1851 0000 80B4     		push	{r7}
+ 1852              		.cfi_def_cfa_offset 4
+ 1853              		.cfi_offset 7, -4
+ 1854 0002 83B0     		sub	sp, sp, #12
+ 1855              		.cfi_def_cfa_offset 16
+ 1856 0004 00AF     		add	r7, sp, #0
+ 1857              		.cfi_def_cfa_register 7
+ 1858 0006 7860     		str	r0, [r7, #4]
+ 648:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_SSOE;
+ 1859              		.loc 1 648 15
+ 1860 0008 7B68     		ldr	r3, [r7, #4]
+ 1861 000a 0433     		adds	r3, r3, #4
+ 1862 000c 1B68     		ldr	r3, [r3]
+ 1863 000e 7A68     		ldr	r2, [r7, #4]
+ 1864 0010 0432     		adds	r2, r2, #4
+ 1865 0012 23F00403 		bic	r3, r3, #4
+ 1866 0016 1360     		str	r3, [r2]
+ 649:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1867              		.loc 1 649 1
+ 1868 0018 00BF     		nop
+ 1869 001a 0C37     		adds	r7, r7, #12
+ 1870              		.cfi_def_cfa_offset 4
+ 1871 001c BD46     		mov	sp, r7
+ 1872              		.cfi_def_cfa_register 13
+ 1873              		@ sp needed
+ 1874 001e 80BC     		pop	{r7}
+ 1875              		.cfi_restore 7
+ 1876              		.cfi_def_cfa_offset 0
+ 1877 0020 7047     		bx	lr
+ 1878              		.cfi_endproc
+ 1879              	.LFE38:
+ 1881              		.section	.text.spi_enable_tx_dma,"ax",%progbits
+ 1882              		.align	1
+ 1883              		.global	spi_enable_tx_dma
+ 1884              		.syntax unified
+ 1885              		.thumb
+ 1886              		.thumb_func
+ 1887              		.fpu softvfp
+ 1889              	spi_enable_tx_dma:
+ 1890              	.LFB39:
+ 650:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 651:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 652:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable Transmit Transfers via DMA
+ 653:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 654:../libopencm3/lib/stm32/common/spi_common_all.c **** This allows transmissions to proceed unattended using DMA to move data to the
+ 655:../libopencm3/lib/stm32/common/spi_common_all.c **** transmit buffer as it becomes available. The DMA channels provided for each
+ 656:../libopencm3/lib/stm32/common/spi_common_all.c **** SPI peripheral are given in the Technical Manual DMA section.
+ 657:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 658:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 659:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 660:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 661:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_tx_dma(uint32_t spi)
+ 662:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1891              		.loc 1 662 1
+ 1892              		.cfi_startproc
+ 1893              		@ args = 0, pretend = 0, frame = 8
+ 1894              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1895              		@ link register save eliminated.
+ 1896 0000 80B4     		push	{r7}
+ 1897              		.cfi_def_cfa_offset 4
+ 1898              		.cfi_offset 7, -4
+ 1899 0002 83B0     		sub	sp, sp, #12
+ 1900              		.cfi_def_cfa_offset 16
+ 1901 0004 00AF     		add	r7, sp, #0
+ 1902              		.cfi_def_cfa_register 7
+ 1903 0006 7860     		str	r0, [r7, #4]
+ 663:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_TXDMAEN;
+ 1904              		.loc 1 663 15
+ 1905 0008 7B68     		ldr	r3, [r7, #4]
+ 1906 000a 0433     		adds	r3, r3, #4
+ 1907 000c 1B68     		ldr	r3, [r3]
+ 1908 000e 7A68     		ldr	r2, [r7, #4]
+ 1909 0010 0432     		adds	r2, r2, #4
+ 1910 0012 43F00203 		orr	r3, r3, #2
+ 1911 0016 1360     		str	r3, [r2]
+ 664:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1912              		.loc 1 664 1
+ 1913 0018 00BF     		nop
+ 1914 001a 0C37     		adds	r7, r7, #12
+ 1915              		.cfi_def_cfa_offset 4
+ 1916 001c BD46     		mov	sp, r7
+ 1917              		.cfi_def_cfa_register 13
+ 1918              		@ sp needed
+ 1919 001e 80BC     		pop	{r7}
+ 1920              		.cfi_restore 7
+ 1921              		.cfi_def_cfa_offset 0
+ 1922 0020 7047     		bx	lr
+ 1923              		.cfi_endproc
+ 1924              	.LFE39:
+ 1926              		.section	.text.spi_disable_tx_dma,"ax",%progbits
+ 1927              		.align	1
+ 1928              		.global	spi_disable_tx_dma
+ 1929              		.syntax unified
+ 1930              		.thumb
+ 1931              		.thumb_func
+ 1932              		.fpu softvfp
+ 1934              	spi_disable_tx_dma:
+ 1935              	.LFB40:
+ 665:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 666:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 667:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable Transmit Transfers via DMA
+ 668:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 669:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 670:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 671:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 672:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_tx_dma(uint32_t spi)
+ 673:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1936              		.loc 1 673 1
+ 1937              		.cfi_startproc
+ 1938              		@ args = 0, pretend = 0, frame = 8
+ 1939              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1940              		@ link register save eliminated.
+ 1941 0000 80B4     		push	{r7}
+ 1942              		.cfi_def_cfa_offset 4
+ 1943              		.cfi_offset 7, -4
+ 1944 0002 83B0     		sub	sp, sp, #12
+ 1945              		.cfi_def_cfa_offset 16
+ 1946 0004 00AF     		add	r7, sp, #0
+ 1947              		.cfi_def_cfa_register 7
+ 1948 0006 7860     		str	r0, [r7, #4]
+ 674:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_TXDMAEN;
+ 1949              		.loc 1 674 15
+ 1950 0008 7B68     		ldr	r3, [r7, #4]
+ 1951 000a 0433     		adds	r3, r3, #4
+ 1952 000c 1B68     		ldr	r3, [r3]
+ 1953 000e 7A68     		ldr	r2, [r7, #4]
+ 1954 0010 0432     		adds	r2, r2, #4
+ 1955 0012 23F00203 		bic	r3, r3, #2
+ 1956 0016 1360     		str	r3, [r2]
+ 675:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 1957              		.loc 1 675 1
+ 1958 0018 00BF     		nop
+ 1959 001a 0C37     		adds	r7, r7, #12
+ 1960              		.cfi_def_cfa_offset 4
+ 1961 001c BD46     		mov	sp, r7
+ 1962              		.cfi_def_cfa_register 13
+ 1963              		@ sp needed
+ 1964 001e 80BC     		pop	{r7}
+ 1965              		.cfi_restore 7
+ 1966              		.cfi_def_cfa_offset 0
+ 1967 0020 7047     		bx	lr
+ 1968              		.cfi_endproc
+ 1969              	.LFE40:
+ 1971              		.section	.text.spi_enable_rx_dma,"ax",%progbits
+ 1972              		.align	1
+ 1973              		.global	spi_enable_rx_dma
+ 1974              		.syntax unified
+ 1975              		.thumb
+ 1976              		.thumb_func
+ 1977              		.fpu softvfp
+ 1979              	spi_enable_rx_dma:
+ 1980              	.LFB41:
+ 676:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 677:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 678:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Enable Receive Transfers via DMA
+ 679:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 680:../libopencm3/lib/stm32/common/spi_common_all.c **** This allows received data streams to proceed unattended using DMA to move data
+ 681:../libopencm3/lib/stm32/common/spi_common_all.c **** from the receive buffer as data becomes available. The DMA channels provided
+ 682:../libopencm3/lib/stm32/common/spi_common_all.c **** for each SPI peripheral are given in the Technical Manual DMA section.
+ 683:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 684:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 685:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 686:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 687:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_enable_rx_dma(uint32_t spi)
+ 688:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 1981              		.loc 1 688 1
+ 1982              		.cfi_startproc
+ 1983              		@ args = 0, pretend = 0, frame = 8
+ 1984              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1985              		@ link register save eliminated.
+ 1986 0000 80B4     		push	{r7}
+ 1987              		.cfi_def_cfa_offset 4
+ 1988              		.cfi_offset 7, -4
+ 1989 0002 83B0     		sub	sp, sp, #12
+ 1990              		.cfi_def_cfa_offset 16
+ 1991 0004 00AF     		add	r7, sp, #0
+ 1992              		.cfi_def_cfa_register 7
+ 1993 0006 7860     		str	r0, [r7, #4]
+ 689:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) |= SPI_CR2_RXDMAEN;
+ 1994              		.loc 1 689 15
+ 1995 0008 7B68     		ldr	r3, [r7, #4]
+ 1996 000a 0433     		adds	r3, r3, #4
+ 1997 000c 1B68     		ldr	r3, [r3]
+ 1998 000e 7A68     		ldr	r2, [r7, #4]
+ 1999 0010 0432     		adds	r2, r2, #4
+ 2000 0012 43F00103 		orr	r3, r3, #1
+ 2001 0016 1360     		str	r3, [r2]
+ 690:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 2002              		.loc 1 690 1
+ 2003 0018 00BF     		nop
+ 2004 001a 0C37     		adds	r7, r7, #12
+ 2005              		.cfi_def_cfa_offset 4
+ 2006 001c BD46     		mov	sp, r7
+ 2007              		.cfi_def_cfa_register 13
+ 2008              		@ sp needed
+ 2009 001e 80BC     		pop	{r7}
+ 2010              		.cfi_restore 7
+ 2011              		.cfi_def_cfa_offset 0
+ 2012 0020 7047     		bx	lr
+ 2013              		.cfi_endproc
+ 2014              	.LFE41:
+ 2016              		.section	.text.spi_disable_rx_dma,"ax",%progbits
+ 2017              		.align	1
+ 2018              		.global	spi_disable_rx_dma
+ 2019              		.syntax unified
+ 2020              		.thumb
+ 2021              		.thumb_func
+ 2022              		.fpu softvfp
+ 2024              	spi_disable_rx_dma:
+ 2025              	.LFB42:
+ 691:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 692:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 693:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Disable Receive Transfers via DMA
+ 694:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 695:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 696:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 697:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 698:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_disable_rx_dma(uint32_t spi)
+ 699:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 2026              		.loc 1 699 1
+ 2027              		.cfi_startproc
+ 2028              		@ args = 0, pretend = 0, frame = 8
+ 2029              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2030              		@ link register save eliminated.
+ 2031 0000 80B4     		push	{r7}
+ 2032              		.cfi_def_cfa_offset 4
+ 2033              		.cfi_offset 7, -4
+ 2034 0002 83B0     		sub	sp, sp, #12
+ 2035              		.cfi_def_cfa_offset 16
+ 2036 0004 00AF     		add	r7, sp, #0
+ 2037              		.cfi_def_cfa_register 7
+ 2038 0006 7860     		str	r0, [r7, #4]
+ 700:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR2(spi) &= ~SPI_CR2_RXDMAEN;
+ 2039              		.loc 1 700 15
+ 2040 0008 7B68     		ldr	r3, [r7, #4]
+ 2041 000a 0433     		adds	r3, r3, #4
+ 2042 000c 1B68     		ldr	r3, [r3]
+ 2043 000e 7A68     		ldr	r2, [r7, #4]
+ 2044 0010 0432     		adds	r2, r2, #4
+ 2045 0012 23F00103 		bic	r3, r3, #1
+ 2046 0016 1360     		str	r3, [r2]
+ 701:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 2047              		.loc 1 701 1
+ 2048 0018 00BF     		nop
+ 2049 001a 0C37     		adds	r7, r7, #12
+ 2050              		.cfi_def_cfa_offset 4
+ 2051 001c BD46     		mov	sp, r7
+ 2052              		.cfi_def_cfa_register 13
+ 2053              		@ sp needed
+ 2054 001e 80BC     		pop	{r7}
+ 2055              		.cfi_restore 7
+ 2056              		.cfi_def_cfa_offset 0
+ 2057 0020 7047     		bx	lr
+ 2058              		.cfi_endproc
+ 2059              	.LFE42:
+ 2061              		.section	.text.spi_set_standard_mode,"ax",%progbits
+ 2062              		.align	1
+ 2063              		.global	spi_set_standard_mode
+ 2064              		.syntax unified
+ 2065              		.thumb
+ 2066              		.thumb_func
+ 2067              		.fpu softvfp
+ 2069              	spi_set_standard_mode:
+ 2070              	.LFB43:
+ 702:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 703:../libopencm3/lib/stm32/common/spi_common_all.c **** /*---------------------------------------------------------------------------*/
+ 704:../libopencm3/lib/stm32/common/spi_common_all.c **** /** @brief SPI Standard Mode selection
+ 705:../libopencm3/lib/stm32/common/spi_common_all.c **** @details Set SPI standard Modes
+ 706:../libopencm3/lib/stm32/common/spi_common_all.c **** Mode | CPOL | CPHA
+ 707:../libopencm3/lib/stm32/common/spi_common_all.c **** ---- | ---- | ----
+ 708:../libopencm3/lib/stm32/common/spi_common_all.c ****  0   |  0   |  0
+ 709:../libopencm3/lib/stm32/common/spi_common_all.c ****  1   |  0   |  1
+ 710:../libopencm3/lib/stm32/common/spi_common_all.c ****  2   |  1   |  0
+ 711:../libopencm3/lib/stm32/common/spi_common_all.c ****  3   |  1   |  1
+ 712:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] spi Unsigned int32. SPI peripheral identifier @ref spi_reg_base.
+ 713:../libopencm3/lib/stm32/common/spi_common_all.c **** @param[in] mode Unsigned int8. Standard SPI mode (0, 1, 2, 3)
+ 714:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_phase_0 spi_set_clock_phase_1
+ 715:../libopencm3/lib/stm32/common/spi_common_all.c **** @sa spi_set_clock_polarity_0 spi_set_clock_polarity_1
+ 716:../libopencm3/lib/stm32/common/spi_common_all.c **** */
+ 717:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 718:../libopencm3/lib/stm32/common/spi_common_all.c **** void spi_set_standard_mode(uint32_t spi, uint8_t mode)
+ 719:../libopencm3/lib/stm32/common/spi_common_all.c **** {
+ 2071              		.loc 1 719 1
+ 2072              		.cfi_startproc
+ 2073              		@ args = 0, pretend = 0, frame = 16
+ 2074              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2075              		@ link register save eliminated.
+ 2076 0000 80B4     		push	{r7}
+ 2077              		.cfi_def_cfa_offset 4
+ 2078              		.cfi_offset 7, -4
+ 2079 0002 85B0     		sub	sp, sp, #20
+ 2080              		.cfi_def_cfa_offset 24
+ 2081 0004 00AF     		add	r7, sp, #0
+ 2082              		.cfi_def_cfa_register 7
+ 2083 0006 7860     		str	r0, [r7, #4]
+ 2084 0008 0B46     		mov	r3, r1
+ 2085 000a FB70     		strb	r3, [r7, #3]
+ 720:../libopencm3/lib/stm32/common/spi_common_all.c **** 	if (mode > 3) {
+ 2086              		.loc 1 720 5
+ 2087 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 2088 000e 032B     		cmp	r3, #3
+ 2089 0010 0AD8     		bhi	.L66
+ 721:../libopencm3/lib/stm32/common/spi_common_all.c **** 		return;
+ 722:../libopencm3/lib/stm32/common/spi_common_all.c **** 	}
+ 723:../libopencm3/lib/stm32/common/spi_common_all.c **** 
+ 724:../libopencm3/lib/stm32/common/spi_common_all.c **** 	uint32_t reg32 = SPI_CR1(spi) & ~(SPI_CR1_CPOL | SPI_CR1_CPHA);
+ 2090              		.loc 1 724 19
+ 2091 0012 7B68     		ldr	r3, [r7, #4]
+ 2092 0014 1B68     		ldr	r3, [r3]
+ 2093              		.loc 1 724 11
+ 2094 0016 23F00303 		bic	r3, r3, #3
+ 2095 001a FB60     		str	r3, [r7, #12]
+ 725:../libopencm3/lib/stm32/common/spi_common_all.c **** 	SPI_CR1(spi) = reg32 | mode;
+ 2096              		.loc 1 725 23
+ 2097 001c F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 2098              		.loc 1 725 2
+ 2099 001e 7B68     		ldr	r3, [r7, #4]
+ 2100              		.loc 1 725 23
+ 2101 0020 FA68     		ldr	r2, [r7, #12]
+ 2102 0022 0A43     		orrs	r2, r2, r1
+ 2103              		.loc 1 725 15
+ 2104 0024 1A60     		str	r2, [r3]
+ 2105 0026 00E0     		b	.L63
+ 2106              	.L66:
+ 721:../libopencm3/lib/stm32/common/spi_common_all.c **** 		return;
+ 2107              		.loc 1 721 3
+ 2108 0028 00BF     		nop
+ 2109              	.L63:
+ 726:../libopencm3/lib/stm32/common/spi_common_all.c **** }
+ 2110              		.loc 1 726 1
+ 2111 002a 1437     		adds	r7, r7, #20
+ 2112              		.cfi_def_cfa_offset 4
+ 2113 002c BD46     		mov	sp, r7
+ 2114              		.cfi_def_cfa_register 13
+ 2115              		@ sp needed
+ 2116 002e 80BC     		pop	{r7}
+ 2117              		.cfi_restore 7
+ 2118              		.cfi_def_cfa_offset 0
+ 2119 0030 7047     		bx	lr
+ 2120              		.cfi_endproc
+ 2121              	.LFE43:
+ 2123              		.text
+ 2124              	.Letext0:
+ 2125              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 2126              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 2127              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 spi_common_all.c
+     /tmp/ccGX1DjV.s:16     .text.spi_reset:0000000000000000 $t
+     /tmp/ccGX1DjV.s:24     .text.spi_reset:0000000000000000 spi_reset
+     /tmp/ccGX1DjV.s:85     .text.spi_reset:0000000000000048 $d
+     /tmp/ccGX1DjV.s:92     .text.spi_enable:0000000000000000 $t
+     /tmp/ccGX1DjV.s:99     .text.spi_enable:0000000000000000 spi_enable
+     /tmp/ccGX1DjV.s:135    .text.spi_disable:0000000000000000 $t
+     /tmp/ccGX1DjV.s:142    .text.spi_disable:0000000000000000 spi_disable
+     /tmp/ccGX1DjV.s:186    .text.spi_clean_disable:0000000000000000 $t
+     /tmp/ccGX1DjV.s:193    .text.spi_clean_disable:0000000000000000 spi_clean_disable
+     /tmp/ccGX1DjV.s:273    .text.spi_write:0000000000000000 $t
+     /tmp/ccGX1DjV.s:280    .text.spi_write:0000000000000000 spi_write
+     /tmp/ccGX1DjV.s:319    .text.spi_send:0000000000000000 $t
+     /tmp/ccGX1DjV.s:326    .text.spi_send:0000000000000000 spi_send
+     /tmp/ccGX1DjV.s:377    .text.spi_read:0000000000000000 $t
+     /tmp/ccGX1DjV.s:384    .text.spi_read:0000000000000000 spi_read
+     /tmp/ccGX1DjV.s:431    .text.spi_xfer:0000000000000000 $t
+     /tmp/ccGX1DjV.s:438    .text.spi_xfer:0000000000000000 spi_xfer
+     /tmp/ccGX1DjV.s:489    .text.spi_set_bidirectional_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:496    .text.spi_set_bidirectional_mode:0000000000000000 spi_set_bidirectional_mode
+     /tmp/ccGX1DjV.s:532    .text.spi_set_unidirectional_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:539    .text.spi_set_unidirectional_mode:0000000000000000 spi_set_unidirectional_mode
+     /tmp/ccGX1DjV.s:575    .text.spi_set_bidirectional_receive_only_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:582    .text.spi_set_bidirectional_receive_only_mode:0000000000000000 spi_set_bidirectional_receive_only_mode
+     /tmp/ccGX1DjV.s:624    .text.spi_set_bidirectional_transmit_only_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:631    .text.spi_set_bidirectional_transmit_only_mode:0000000000000000 spi_set_bidirectional_transmit_only_mode
+     /tmp/ccGX1DjV.s:673    .text.spi_enable_crc:0000000000000000 $t
+     /tmp/ccGX1DjV.s:680    .text.spi_enable_crc:0000000000000000 spi_enable_crc
+     /tmp/ccGX1DjV.s:716    .text.spi_disable_crc:0000000000000000 $t
+     /tmp/ccGX1DjV.s:723    .text.spi_disable_crc:0000000000000000 spi_disable_crc
+     /tmp/ccGX1DjV.s:759    .text.spi_set_next_tx_from_buffer:0000000000000000 $t
+     /tmp/ccGX1DjV.s:766    .text.spi_set_next_tx_from_buffer:0000000000000000 spi_set_next_tx_from_buffer
+     /tmp/ccGX1DjV.s:802    .text.spi_set_next_tx_from_crc:0000000000000000 $t
+     /tmp/ccGX1DjV.s:809    .text.spi_set_next_tx_from_crc:0000000000000000 spi_set_next_tx_from_crc
+     /tmp/ccGX1DjV.s:845    .text.spi_set_full_duplex_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:852    .text.spi_set_full_duplex_mode:0000000000000000 spi_set_full_duplex_mode
+     /tmp/ccGX1DjV.s:888    .text.spi_set_receive_only_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:895    .text.spi_set_receive_only_mode:0000000000000000 spi_set_receive_only_mode
+     /tmp/ccGX1DjV.s:931    .text.spi_disable_software_slave_management:0000000000000000 $t
+     /tmp/ccGX1DjV.s:938    .text.spi_disable_software_slave_management:0000000000000000 spi_disable_software_slave_management
+     /tmp/ccGX1DjV.s:974    .text.spi_enable_software_slave_management:0000000000000000 $t
+     /tmp/ccGX1DjV.s:981    .text.spi_enable_software_slave_management:0000000000000000 spi_enable_software_slave_management
+     /tmp/ccGX1DjV.s:1025   .text.spi_set_nss_high:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1032   .text.spi_set_nss_high:0000000000000000 spi_set_nss_high
+     /tmp/ccGX1DjV.s:1068   .text.spi_set_nss_low:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1075   .text.spi_set_nss_low:0000000000000000 spi_set_nss_low
+     /tmp/ccGX1DjV.s:1111   .text.spi_send_lsb_first:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1118   .text.spi_send_lsb_first:0000000000000000 spi_send_lsb_first
+     /tmp/ccGX1DjV.s:1154   .text.spi_send_msb_first:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1161   .text.spi_send_msb_first:0000000000000000 spi_send_msb_first
+     /tmp/ccGX1DjV.s:1197   .text.spi_set_baudrate_prescaler:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1204   .text.spi_set_baudrate_prescaler:0000000000000000 spi_set_baudrate_prescaler
+     /tmp/ccGX1DjV.s:1264   .text.spi_set_master_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1271   .text.spi_set_master_mode:0000000000000000 spi_set_master_mode
+     /tmp/ccGX1DjV.s:1307   .text.spi_set_slave_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1314   .text.spi_set_slave_mode:0000000000000000 spi_set_slave_mode
+     /tmp/ccGX1DjV.s:1350   .text.spi_set_clock_polarity_1:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1357   .text.spi_set_clock_polarity_1:0000000000000000 spi_set_clock_polarity_1
+     /tmp/ccGX1DjV.s:1393   .text.spi_set_clock_polarity_0:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1400   .text.spi_set_clock_polarity_0:0000000000000000 spi_set_clock_polarity_0
+     /tmp/ccGX1DjV.s:1436   .text.spi_set_clock_phase_1:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1443   .text.spi_set_clock_phase_1:0000000000000000 spi_set_clock_phase_1
+     /tmp/ccGX1DjV.s:1479   .text.spi_set_clock_phase_0:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1486   .text.spi_set_clock_phase_0:0000000000000000 spi_set_clock_phase_0
+     /tmp/ccGX1DjV.s:1522   .text.spi_enable_tx_buffer_empty_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1529   .text.spi_enable_tx_buffer_empty_interrupt:0000000000000000 spi_enable_tx_buffer_empty_interrupt
+     /tmp/ccGX1DjV.s:1567   .text.spi_disable_tx_buffer_empty_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1574   .text.spi_disable_tx_buffer_empty_interrupt:0000000000000000 spi_disable_tx_buffer_empty_interrupt
+     /tmp/ccGX1DjV.s:1612   .text.spi_enable_rx_buffer_not_empty_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1619   .text.spi_enable_rx_buffer_not_empty_interrupt:0000000000000000 spi_enable_rx_buffer_not_empty_interrupt
+     /tmp/ccGX1DjV.s:1657   .text.spi_disable_rx_buffer_not_empty_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1664   .text.spi_disable_rx_buffer_not_empty_interrupt:0000000000000000 spi_disable_rx_buffer_not_empty_interrupt
+     /tmp/ccGX1DjV.s:1702   .text.spi_enable_error_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1709   .text.spi_enable_error_interrupt:0000000000000000 spi_enable_error_interrupt
+     /tmp/ccGX1DjV.s:1747   .text.spi_disable_error_interrupt:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1754   .text.spi_disable_error_interrupt:0000000000000000 spi_disable_error_interrupt
+     /tmp/ccGX1DjV.s:1792   .text.spi_enable_ss_output:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1799   .text.spi_enable_ss_output:0000000000000000 spi_enable_ss_output
+     /tmp/ccGX1DjV.s:1837   .text.spi_disable_ss_output:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1844   .text.spi_disable_ss_output:0000000000000000 spi_disable_ss_output
+     /tmp/ccGX1DjV.s:1882   .text.spi_enable_tx_dma:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1889   .text.spi_enable_tx_dma:0000000000000000 spi_enable_tx_dma
+     /tmp/ccGX1DjV.s:1927   .text.spi_disable_tx_dma:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1934   .text.spi_disable_tx_dma:0000000000000000 spi_disable_tx_dma
+     /tmp/ccGX1DjV.s:1972   .text.spi_enable_rx_dma:0000000000000000 $t
+     /tmp/ccGX1DjV.s:1979   .text.spi_enable_rx_dma:0000000000000000 spi_enable_rx_dma
+     /tmp/ccGX1DjV.s:2017   .text.spi_disable_rx_dma:0000000000000000 $t
+     /tmp/ccGX1DjV.s:2024   .text.spi_disable_rx_dma:0000000000000000 spi_disable_rx_dma
+     /tmp/ccGX1DjV.s:2062   .text.spi_set_standard_mode:0000000000000000 $t
+     /tmp/ccGX1DjV.s:2069   .text.spi_set_standard_mode:0000000000000000 spi_set_standard_mode
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.spi_common_all.h.33.9ea0c3889826c83e4c563d215a234fb7
+                           .group:0000000000000000 wm4.spi_common_v1.h.45.4c39bc544842ead07085ffcc9b28593d
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+
+UNDEFINED SYMBOLS
+rcc_periph_reset_pulse

@@ -1,0 +1,2154 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"can.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.can_reset,"ax",%progbits
+  16              		.align	1
+  17              		.global	can_reset
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	can_reset:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/can.c"
+   1:../libopencm3/lib/stm32/can.c **** /** @defgroup can_file CAN
+   2:../libopencm3/lib/stm32/can.c **** 
+   3:../libopencm3/lib/stm32/can.c **** @ingroup STM32F_files
+   4:../libopencm3/lib/stm32/can.c **** 
+   5:../libopencm3/lib/stm32/can.c **** @brief <b>libopencm3 STM32Fxxx CAN</b>
+   6:../libopencm3/lib/stm32/can.c **** 
+   7:../libopencm3/lib/stm32/can.c **** @version 1.0.0
+   8:../libopencm3/lib/stm32/can.c **** 
+   9:../libopencm3/lib/stm32/can.c **** @author @htmlonly &copy; @endhtmlonly 2010 Piotr Esden-Tempski <piotr@esden.net>
+  10:../libopencm3/lib/stm32/can.c **** 
+  11:../libopencm3/lib/stm32/can.c **** @date 12 November 2012
+  12:../libopencm3/lib/stm32/can.c **** 
+  13:../libopencm3/lib/stm32/can.c **** Devices can have up to two CAN peripherals. The peripherals support up to 1MBit
+  14:../libopencm3/lib/stm32/can.c **** transmission rate. The peripheral has several filters for incoming messages that
+  15:../libopencm3/lib/stm32/can.c **** can be distributed between two FIFOs and three transmit mailboxes.
+  16:../libopencm3/lib/stm32/can.c **** 
+  17:../libopencm3/lib/stm32/can.c **** LGPL License Terms @ref lgpl_license
+  18:../libopencm3/lib/stm32/can.c **** */
+  19:../libopencm3/lib/stm32/can.c **** /*
+  20:../libopencm3/lib/stm32/can.c ****  * This file is part of the libopencm3 project.
+  21:../libopencm3/lib/stm32/can.c ****  *
+  22:../libopencm3/lib/stm32/can.c ****  * Copyright (C) 2010 Piotr Esden-Tempski <piotr@esden.net>
+  23:../libopencm3/lib/stm32/can.c ****  *
+  24:../libopencm3/lib/stm32/can.c ****  * This library is free software: you can redistribute it and/or modify
+  25:../libopencm3/lib/stm32/can.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  26:../libopencm3/lib/stm32/can.c ****  * the Free Software Foundation, either version 3 of the License, or
+  27:../libopencm3/lib/stm32/can.c ****  * (at your option) any later version.
+  28:../libopencm3/lib/stm32/can.c ****  *
+  29:../libopencm3/lib/stm32/can.c ****  * This library is distributed in the hope that it will be useful,
+  30:../libopencm3/lib/stm32/can.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  31:../libopencm3/lib/stm32/can.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  32:../libopencm3/lib/stm32/can.c ****  * GNU Lesser General Public License for more details.
+  33:../libopencm3/lib/stm32/can.c ****  *
+  34:../libopencm3/lib/stm32/can.c ****  * You should have received a copy of the GNU Lesser General Public License
+  35:../libopencm3/lib/stm32/can.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  36:../libopencm3/lib/stm32/can.c ****  */
+  37:../libopencm3/lib/stm32/can.c **** 
+  38:../libopencm3/lib/stm32/can.c **** #include <libopencm3/stm32/can.h>
+  39:../libopencm3/lib/stm32/can.c **** #include <libopencm3/stm32/rcc.h>
+  40:../libopencm3/lib/stm32/can.c **** 
+  41:../libopencm3/lib/stm32/can.c **** /* Timeout for CAN INIT acknowledge
+  42:../libopencm3/lib/stm32/can.c ****  * this value is difficult to define.
+  43:../libopencm3/lib/stm32/can.c ****  * INIT is set latest after finishing the current transfer.
+  44:../libopencm3/lib/stm32/can.c ****  * Assuming the lowest CAN speed of 100kbps one CAN frame may take about 1.6ms
+  45:../libopencm3/lib/stm32/can.c ****  * WAIT loop timeout varies on compiler switches, optimization, CPU architecture
+  46:../libopencm3/lib/stm32/can.c ****  * and CPU speed
+  47:../libopencm3/lib/stm32/can.c ****  *
+  48:../libopencm3/lib/stm32/can.c ****  * The same timeout value is used for leaving INIT where the longest time is
+  49:../libopencm3/lib/stm32/can.c ****  * 11 bits(110 us on 100 kbps).
+  50:../libopencm3/lib/stm32/can.c ****  */
+  51:../libopencm3/lib/stm32/can.c **** #define CAN_MSR_INAK_TIMEOUT 0x0000FFFF
+  52:../libopencm3/lib/stm32/can.c **** 
+  53:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+  54:../libopencm3/lib/stm32/can.c **** /** @brief CAN Reset
+  55:../libopencm3/lib/stm32/can.c **** 
+  56:../libopencm3/lib/stm32/can.c **** The CAN peripheral and all its associated configuration registers are placed in
+  57:../libopencm3/lib/stm32/can.c **** the reset condition. The reset is effective via the RCC peripheral reset
+  58:../libopencm3/lib/stm32/can.c **** system.
+  59:../libopencm3/lib/stm32/can.c **** 
+  60:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register address base @ref
+  61:../libopencm3/lib/stm32/can.c **** can_reg_base.
+  62:../libopencm3/lib/stm32/can.c ****  */
+  63:../libopencm3/lib/stm32/can.c **** void can_reset(uint32_t canport)
+  64:../libopencm3/lib/stm32/can.c **** {
+  27              		.loc 1 64 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 82B0     		sub	sp, sp, #8
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  65:../libopencm3/lib/stm32/can.c **** 	if (canport == CAN1) {
+  40              		.loc 1 65 5
+  41 0008 7B68     		ldr	r3, [r7, #4]
+  42 000a 084A     		ldr	r2, .L5
+  43 000c 9342     		cmp	r3, r2
+  44 000e 04D1     		bne	.L2
+  66:../libopencm3/lib/stm32/can.c **** 		rcc_periph_reset_pulse(RST_CAN1);
+  45              		.loc 1 66 3
+  46 0010 40F21920 		movw	r0, #537
+  47 0014 FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  67:../libopencm3/lib/stm32/can.c **** 	} else {
+  68:../libopencm3/lib/stm32/can.c **** #if defined(BX_CAN2_BASE)
+  69:../libopencm3/lib/stm32/can.c **** 		rcc_periph_reset_pulse(RST_CAN2);
+  70:../libopencm3/lib/stm32/can.c **** #endif
+  71:../libopencm3/lib/stm32/can.c **** 	}
+  72:../libopencm3/lib/stm32/can.c **** }
+  48              		.loc 1 72 1
+  49 0018 03E0     		b	.L4
+  50              	.L2:
+  69:../libopencm3/lib/stm32/can.c **** #endif
+  51              		.loc 1 69 3
+  52 001a 40F21A20 		movw	r0, #538
+  53 001e FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  54              	.L4:
+  55              		.loc 1 72 1
+  56 0022 00BF     		nop
+  57 0024 0837     		adds	r7, r7, #8
+  58              		.cfi_def_cfa_offset 8
+  59 0026 BD46     		mov	sp, r7
+  60              		.cfi_def_cfa_register 13
+  61              		@ sp needed
+  62 0028 80BD     		pop	{r7, pc}
+  63              	.L6:
+  64 002a 00BF     		.align	2
+  65              	.L5:
+  66 002c 00640040 		.word	1073767424
+  67              		.cfi_endproc
+  68              	.LFE0:
+  70              		.section	.text.can_init,"ax",%progbits
+  71              		.align	1
+  72              		.global	can_init
+  73              		.syntax unified
+  74              		.thumb
+  75              		.thumb_func
+  76              		.fpu softvfp
+  78              	can_init:
+  79              	.LFB1:
+  73:../libopencm3/lib/stm32/can.c **** 
+  74:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+  75:../libopencm3/lib/stm32/can.c **** /** @brief CAN Init
+  76:../libopencm3/lib/stm32/can.c **** 
+  77:../libopencm3/lib/stm32/can.c **** Initialize the selected CAN peripheral block.
+  78:../libopencm3/lib/stm32/can.c **** 
+  79:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigend int32. CAN register base address @ref can_reg_base.
+  80:../libopencm3/lib/stm32/can.c **** @param[in] ttcm bool. Time triggered communication mode.
+  81:../libopencm3/lib/stm32/can.c **** @param[in] abom bool. Automatic bus-off management.
+  82:../libopencm3/lib/stm32/can.c **** @param[in] awum bool. Automatic wakeup mode.
+  83:../libopencm3/lib/stm32/can.c **** @param[in] nart bool. No automatic retransmission.
+  84:../libopencm3/lib/stm32/can.c **** @param[in] rflm bool. Receive FIFO locked mode.
+  85:../libopencm3/lib/stm32/can.c **** @param[in] txfp bool. Transmit FIFO priority.
+  86:../libopencm3/lib/stm32/can.c **** @param[in] sjw Unsigned int32. Resynchronization time quanta jump width.
+  87:../libopencm3/lib/stm32/can.c **** @param[in] ts1 Unsigned int32. Time segment 1 time quanta width.
+  88:../libopencm3/lib/stm32/can.c **** @param[in] ts2 Unsigned int32. Time segment 2 time quanta width.
+  89:../libopencm3/lib/stm32/can.c **** @param[in] brp Unsigned int32. Baud rate prescaler.
+  90:../libopencm3/lib/stm32/can.c **** @returns int 0 on success, 1 on initialization failure.
+  91:../libopencm3/lib/stm32/can.c **** */
+  92:../libopencm3/lib/stm32/can.c **** int can_init(uint32_t canport, bool ttcm, bool abom, bool awum, bool nart,
+  93:../libopencm3/lib/stm32/can.c **** 	     bool rflm, bool txfp, uint32_t sjw, uint32_t ts1, uint32_t ts2,
+  94:../libopencm3/lib/stm32/can.c **** 	     uint32_t brp, bool loopback, bool silent)
+  95:../libopencm3/lib/stm32/can.c **** {
+  80              		.loc 1 95 1
+  81              		.cfi_startproc
+  82              		@ args = 36, pretend = 0, frame = 16
+  83              		@ frame_needed = 1, uses_anonymous_args = 0
+  84              		@ link register save eliminated.
+  85 0000 80B4     		push	{r7}
+  86              		.cfi_def_cfa_offset 4
+  87              		.cfi_offset 7, -4
+  88 0002 85B0     		sub	sp, sp, #20
+  89              		.cfi_def_cfa_offset 24
+  90 0004 00AF     		add	r7, sp, #0
+  91              		.cfi_def_cfa_register 7
+  92 0006 7860     		str	r0, [r7, #4]
+  93 0008 0846     		mov	r0, r1
+  94 000a 1146     		mov	r1, r2
+  95 000c 1A46     		mov	r2, r3
+  96 000e 0346     		mov	r3, r0
+  97 0010 FB70     		strb	r3, [r7, #3]
+  98 0012 0B46     		mov	r3, r1
+  99 0014 BB70     		strb	r3, [r7, #2]
+ 100 0016 1346     		mov	r3, r2
+ 101 0018 7B70     		strb	r3, [r7, #1]
+  96:../libopencm3/lib/stm32/can.c **** 	volatile uint32_t wait_ack;
+  97:../libopencm3/lib/stm32/can.c **** 	int ret = 0;
+ 102              		.loc 1 97 6
+ 103 001a 0023     		movs	r3, #0
+ 104 001c FB60     		str	r3, [r7, #12]
+  98:../libopencm3/lib/stm32/can.c **** 
+  99:../libopencm3/lib/stm32/can.c **** 	/* Exit from sleep mode. */
+ 100:../libopencm3/lib/stm32/can.c **** 	CAN_MCR(canport) &= ~CAN_MCR_SLEEP;
+ 105              		.loc 1 100 19
+ 106 001e 7B68     		ldr	r3, [r7, #4]
+ 107 0020 1A68     		ldr	r2, [r3]
+ 108 0022 7B68     		ldr	r3, [r7, #4]
+ 109 0024 22F00202 		bic	r2, r2, #2
+ 110 0028 1A60     		str	r2, [r3]
+ 101:../libopencm3/lib/stm32/can.c **** 
+ 102:../libopencm3/lib/stm32/can.c **** 	/* Request initialization "enter". */
+ 103:../libopencm3/lib/stm32/can.c **** 	CAN_MCR(canport) |= CAN_MCR_INRQ;
+ 111              		.loc 1 103 19
+ 112 002a 7B68     		ldr	r3, [r7, #4]
+ 113 002c 1A68     		ldr	r2, [r3]
+ 114 002e 7B68     		ldr	r3, [r7, #4]
+ 115 0030 42F00102 		orr	r2, r2, #1
+ 116 0034 1A60     		str	r2, [r3]
+ 104:../libopencm3/lib/stm32/can.c **** 
+ 105:../libopencm3/lib/stm32/can.c **** 	/* Wait for acknowledge. */
+ 106:../libopencm3/lib/stm32/can.c **** 	wait_ack = CAN_MSR_INAK_TIMEOUT;
+ 117              		.loc 1 106 11
+ 118 0036 4FF6FF73 		movw	r3, #65535
+ 119 003a BB60     		str	r3, [r7, #8]
+ 107:../libopencm3/lib/stm32/can.c **** 	while ((--wait_ack) &&
+ 120              		.loc 1 107 8
+ 121 003c 00BF     		nop
+ 122              	.L9:
+ 123              		.loc 1 107 10 discriminator 2
+ 124 003e BB68     		ldr	r3, [r7, #8]
+ 125 0040 013B     		subs	r3, r3, #1
+ 126              		.loc 1 107 8 discriminator 2
+ 127 0042 BB60     		str	r3, [r7, #8]
+ 128 0044 002B     		cmp	r3, #0
+ 129 0046 06D0     		beq	.L8
+ 108:../libopencm3/lib/stm32/can.c **** 		((CAN_MSR(canport) & CAN_MSR_INAK) != CAN_MSR_INAK));
+ 130              		.loc 1 108 5 discriminator 1
+ 131 0048 7B68     		ldr	r3, [r7, #4]
+ 132 004a 0433     		adds	r3, r3, #4
+ 133 004c 1B68     		ldr	r3, [r3]
+ 134              		.loc 1 108 22 discriminator 1
+ 135 004e 03F00103 		and	r3, r3, #1
+ 107:../libopencm3/lib/stm32/can.c **** 	while ((--wait_ack) &&
+ 136              		.loc 1 107 22 discriminator 1
+ 137 0052 012B     		cmp	r3, #1
+ 138 0054 F3D1     		bne	.L9
+ 139              	.L8:
+ 109:../libopencm3/lib/stm32/can.c **** 
+ 110:../libopencm3/lib/stm32/can.c **** 	/* Check the acknowledge. */
+ 111:../libopencm3/lib/stm32/can.c **** 	if ((CAN_MSR(canport) & CAN_MSR_INAK) != CAN_MSR_INAK) {
+ 140              		.loc 1 111 7
+ 141 0056 7B68     		ldr	r3, [r7, #4]
+ 142 0058 0433     		adds	r3, r3, #4
+ 143 005a 1B68     		ldr	r3, [r3]
+ 144              		.loc 1 111 24
+ 145 005c 03F00103 		and	r3, r3, #1
+ 146              		.loc 1 111 5
+ 147 0060 012B     		cmp	r3, #1
+ 148 0062 01D0     		beq	.L10
+ 112:../libopencm3/lib/stm32/can.c **** 		return 1;
+ 149              		.loc 1 112 10
+ 150 0064 0123     		movs	r3, #1
+ 151 0066 C0E0     		b	.L11
+ 152              	.L10:
+ 113:../libopencm3/lib/stm32/can.c **** 	}
+ 114:../libopencm3/lib/stm32/can.c **** 
+ 115:../libopencm3/lib/stm32/can.c **** 	/* clear can timing bits */
+ 116:../libopencm3/lib/stm32/can.c **** 	CAN_BTR(canport) = 0;
+ 153              		.loc 1 116 2
+ 154 0068 7B68     		ldr	r3, [r7, #4]
+ 155 006a 1C33     		adds	r3, r3, #28
+ 156 006c 1A46     		mov	r2, r3
+ 157              		.loc 1 116 19
+ 158 006e 0023     		movs	r3, #0
+ 159 0070 1360     		str	r3, [r2]
+ 117:../libopencm3/lib/stm32/can.c **** 
+ 118:../libopencm3/lib/stm32/can.c **** 	/* Set the automatic bus-off management. */
+ 119:../libopencm3/lib/stm32/can.c **** 	if (ttcm) {
+ 160              		.loc 1 119 5
+ 161 0072 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 162 0074 002B     		cmp	r3, #0
+ 163 0076 06D0     		beq	.L12
+ 120:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_TTCM;
+ 164              		.loc 1 120 20
+ 165 0078 7B68     		ldr	r3, [r7, #4]
+ 166 007a 1A68     		ldr	r2, [r3]
+ 167 007c 7B68     		ldr	r3, [r7, #4]
+ 168 007e 42F08002 		orr	r2, r2, #128
+ 169 0082 1A60     		str	r2, [r3]
+ 170 0084 05E0     		b	.L13
+ 171              	.L12:
+ 121:../libopencm3/lib/stm32/can.c **** 	} else {
+ 122:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_TTCM;
+ 172              		.loc 1 122 20
+ 173 0086 7B68     		ldr	r3, [r7, #4]
+ 174 0088 1A68     		ldr	r2, [r3]
+ 175 008a 7B68     		ldr	r3, [r7, #4]
+ 176 008c 22F08002 		bic	r2, r2, #128
+ 177 0090 1A60     		str	r2, [r3]
+ 178              	.L13:
+ 123:../libopencm3/lib/stm32/can.c **** 	}
+ 124:../libopencm3/lib/stm32/can.c **** 
+ 125:../libopencm3/lib/stm32/can.c **** 	if (abom) {
+ 179              		.loc 1 125 5
+ 180 0092 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 181 0094 002B     		cmp	r3, #0
+ 182 0096 06D0     		beq	.L14
+ 126:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_ABOM;
+ 183              		.loc 1 126 20
+ 184 0098 7B68     		ldr	r3, [r7, #4]
+ 185 009a 1A68     		ldr	r2, [r3]
+ 186 009c 7B68     		ldr	r3, [r7, #4]
+ 187 009e 42F04002 		orr	r2, r2, #64
+ 188 00a2 1A60     		str	r2, [r3]
+ 189 00a4 05E0     		b	.L15
+ 190              	.L14:
+ 127:../libopencm3/lib/stm32/can.c **** 	} else {
+ 128:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_ABOM;
+ 191              		.loc 1 128 20
+ 192 00a6 7B68     		ldr	r3, [r7, #4]
+ 193 00a8 1A68     		ldr	r2, [r3]
+ 194 00aa 7B68     		ldr	r3, [r7, #4]
+ 195 00ac 22F04002 		bic	r2, r2, #64
+ 196 00b0 1A60     		str	r2, [r3]
+ 197              	.L15:
+ 129:../libopencm3/lib/stm32/can.c **** 	}
+ 130:../libopencm3/lib/stm32/can.c **** 
+ 131:../libopencm3/lib/stm32/can.c **** 	if (awum) {
+ 198              		.loc 1 131 5
+ 199 00b2 7B78     		ldrb	r3, [r7, #1]	@ zero_extendqisi2
+ 200 00b4 002B     		cmp	r3, #0
+ 201 00b6 06D0     		beq	.L16
+ 132:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_AWUM;
+ 202              		.loc 1 132 20
+ 203 00b8 7B68     		ldr	r3, [r7, #4]
+ 204 00ba 1A68     		ldr	r2, [r3]
+ 205 00bc 7B68     		ldr	r3, [r7, #4]
+ 206 00be 42F02002 		orr	r2, r2, #32
+ 207 00c2 1A60     		str	r2, [r3]
+ 208 00c4 05E0     		b	.L17
+ 209              	.L16:
+ 133:../libopencm3/lib/stm32/can.c **** 	} else {
+ 134:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_AWUM;
+ 210              		.loc 1 134 20
+ 211 00c6 7B68     		ldr	r3, [r7, #4]
+ 212 00c8 1A68     		ldr	r2, [r3]
+ 213 00ca 7B68     		ldr	r3, [r7, #4]
+ 214 00cc 22F02002 		bic	r2, r2, #32
+ 215 00d0 1A60     		str	r2, [r3]
+ 216              	.L17:
+ 135:../libopencm3/lib/stm32/can.c **** 	}
+ 136:../libopencm3/lib/stm32/can.c **** 
+ 137:../libopencm3/lib/stm32/can.c **** 	if (nart) {
+ 217              		.loc 1 137 5
+ 218 00d2 3B7E     		ldrb	r3, [r7, #24]	@ zero_extendqisi2
+ 219 00d4 002B     		cmp	r3, #0
+ 220 00d6 06D0     		beq	.L18
+ 138:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_NART;
+ 221              		.loc 1 138 20
+ 222 00d8 7B68     		ldr	r3, [r7, #4]
+ 223 00da 1A68     		ldr	r2, [r3]
+ 224 00dc 7B68     		ldr	r3, [r7, #4]
+ 225 00de 42F01002 		orr	r2, r2, #16
+ 226 00e2 1A60     		str	r2, [r3]
+ 227 00e4 05E0     		b	.L19
+ 228              	.L18:
+ 139:../libopencm3/lib/stm32/can.c **** 	} else {
+ 140:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_NART;
+ 229              		.loc 1 140 20
+ 230 00e6 7B68     		ldr	r3, [r7, #4]
+ 231 00e8 1A68     		ldr	r2, [r3]
+ 232 00ea 7B68     		ldr	r3, [r7, #4]
+ 233 00ec 22F01002 		bic	r2, r2, #16
+ 234 00f0 1A60     		str	r2, [r3]
+ 235              	.L19:
+ 141:../libopencm3/lib/stm32/can.c **** 	}
+ 142:../libopencm3/lib/stm32/can.c **** 
+ 143:../libopencm3/lib/stm32/can.c **** 	if (rflm) {
+ 236              		.loc 1 143 5
+ 237 00f2 3B7F     		ldrb	r3, [r7, #28]	@ zero_extendqisi2
+ 238 00f4 002B     		cmp	r3, #0
+ 239 00f6 06D0     		beq	.L20
+ 144:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_RFLM;
+ 240              		.loc 1 144 20
+ 241 00f8 7B68     		ldr	r3, [r7, #4]
+ 242 00fa 1A68     		ldr	r2, [r3]
+ 243 00fc 7B68     		ldr	r3, [r7, #4]
+ 244 00fe 42F00802 		orr	r2, r2, #8
+ 245 0102 1A60     		str	r2, [r3]
+ 246 0104 05E0     		b	.L21
+ 247              	.L20:
+ 145:../libopencm3/lib/stm32/can.c **** 	} else {
+ 146:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_RFLM;
+ 248              		.loc 1 146 20
+ 249 0106 7B68     		ldr	r3, [r7, #4]
+ 250 0108 1A68     		ldr	r2, [r3]
+ 251 010a 7B68     		ldr	r3, [r7, #4]
+ 252 010c 22F00802 		bic	r2, r2, #8
+ 253 0110 1A60     		str	r2, [r3]
+ 254              	.L21:
+ 147:../libopencm3/lib/stm32/can.c **** 	}
+ 148:../libopencm3/lib/stm32/can.c **** 
+ 149:../libopencm3/lib/stm32/can.c **** 	if (txfp) {
+ 255              		.loc 1 149 5
+ 256 0112 97F82030 		ldrb	r3, [r7, #32]	@ zero_extendqisi2
+ 257 0116 002B     		cmp	r3, #0
+ 258 0118 06D0     		beq	.L22
+ 150:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) |= CAN_MCR_TXFP;
+ 259              		.loc 1 150 20
+ 260 011a 7B68     		ldr	r3, [r7, #4]
+ 261 011c 1A68     		ldr	r2, [r3]
+ 262 011e 7B68     		ldr	r3, [r7, #4]
+ 263 0120 42F00402 		orr	r2, r2, #4
+ 264 0124 1A60     		str	r2, [r3]
+ 265 0126 05E0     		b	.L23
+ 266              	.L22:
+ 151:../libopencm3/lib/stm32/can.c **** 	} else {
+ 152:../libopencm3/lib/stm32/can.c **** 		CAN_MCR(canport) &= ~CAN_MCR_TXFP;
+ 267              		.loc 1 152 20
+ 268 0128 7B68     		ldr	r3, [r7, #4]
+ 269 012a 1A68     		ldr	r2, [r3]
+ 270 012c 7B68     		ldr	r3, [r7, #4]
+ 271 012e 22F00402 		bic	r2, r2, #4
+ 272 0132 1A60     		str	r2, [r3]
+ 273              	.L23:
+ 153:../libopencm3/lib/stm32/can.c **** 	}
+ 154:../libopencm3/lib/stm32/can.c **** 
+ 155:../libopencm3/lib/stm32/can.c **** 	if (silent) {
+ 274              		.loc 1 155 5
+ 275 0134 97F83830 		ldrb	r3, [r7, #56]	@ zero_extendqisi2
+ 276 0138 002B     		cmp	r3, #0
+ 277 013a 08D0     		beq	.L24
+ 156:../libopencm3/lib/stm32/can.c **** 		CAN_BTR(canport) |= CAN_BTR_SILM;
+ 278              		.loc 1 156 20
+ 279 013c 7B68     		ldr	r3, [r7, #4]
+ 280 013e 1C33     		adds	r3, r3, #28
+ 281 0140 1B68     		ldr	r3, [r3]
+ 282 0142 7A68     		ldr	r2, [r7, #4]
+ 283 0144 1C32     		adds	r2, r2, #28
+ 284 0146 43F00043 		orr	r3, r3, #-2147483648
+ 285 014a 1360     		str	r3, [r2]
+ 286 014c 07E0     		b	.L25
+ 287              	.L24:
+ 157:../libopencm3/lib/stm32/can.c **** 	} else {
+ 158:../libopencm3/lib/stm32/can.c **** 		CAN_BTR(canport) &= ~CAN_BTR_SILM;
+ 288              		.loc 1 158 20
+ 289 014e 7B68     		ldr	r3, [r7, #4]
+ 290 0150 1C33     		adds	r3, r3, #28
+ 291 0152 1B68     		ldr	r3, [r3]
+ 292 0154 7A68     		ldr	r2, [r7, #4]
+ 293 0156 1C32     		adds	r2, r2, #28
+ 294 0158 23F00043 		bic	r3, r3, #-2147483648
+ 295 015c 1360     		str	r3, [r2]
+ 296              	.L25:
+ 159:../libopencm3/lib/stm32/can.c **** 	}
+ 160:../libopencm3/lib/stm32/can.c **** 
+ 161:../libopencm3/lib/stm32/can.c **** 	if (loopback) {
+ 297              		.loc 1 161 5
+ 298 015e 97F83430 		ldrb	r3, [r7, #52]	@ zero_extendqisi2
+ 299 0162 002B     		cmp	r3, #0
+ 300 0164 08D0     		beq	.L26
+ 162:../libopencm3/lib/stm32/can.c **** 		CAN_BTR(canport) |= CAN_BTR_LBKM;
+ 301              		.loc 1 162 20
+ 302 0166 7B68     		ldr	r3, [r7, #4]
+ 303 0168 1C33     		adds	r3, r3, #28
+ 304 016a 1B68     		ldr	r3, [r3]
+ 305 016c 7A68     		ldr	r2, [r7, #4]
+ 306 016e 1C32     		adds	r2, r2, #28
+ 307 0170 43F08043 		orr	r3, r3, #1073741824
+ 308 0174 1360     		str	r3, [r2]
+ 309 0176 07E0     		b	.L27
+ 310              	.L26:
+ 163:../libopencm3/lib/stm32/can.c **** 	} else {
+ 164:../libopencm3/lib/stm32/can.c **** 		CAN_BTR(canport) &= ~CAN_BTR_LBKM;
+ 311              		.loc 1 164 20
+ 312 0178 7B68     		ldr	r3, [r7, #4]
+ 313 017a 1C33     		adds	r3, r3, #28
+ 314 017c 1B68     		ldr	r3, [r3]
+ 315 017e 7A68     		ldr	r2, [r7, #4]
+ 316 0180 1C32     		adds	r2, r2, #28
+ 317 0182 23F08043 		bic	r3, r3, #1073741824
+ 318 0186 1360     		str	r3, [r2]
+ 319              	.L27:
+ 165:../libopencm3/lib/stm32/can.c **** 	}
+ 166:../libopencm3/lib/stm32/can.c **** 
+ 167:../libopencm3/lib/stm32/can.c **** 	/* Set bit timings. */
+ 168:../libopencm3/lib/stm32/can.c **** 	CAN_BTR(canport) |= sjw | ts2 | ts1 |
+ 320              		.loc 1 168 19
+ 321 0188 7B68     		ldr	r3, [r7, #4]
+ 322 018a 1C33     		adds	r3, r3, #28
+ 323 018c 1A68     		ldr	r2, [r3]
+ 324              		.loc 1 168 26
+ 325 018e 796A     		ldr	r1, [r7, #36]
+ 326 0190 FB6A     		ldr	r3, [r7, #44]
+ 327 0192 1943     		orrs	r1, r1, r3
+ 328              		.loc 1 168 32
+ 329 0194 BB6A     		ldr	r3, [r7, #40]
+ 330 0196 1943     		orrs	r1, r1, r3
+ 169:../libopencm3/lib/stm32/can.c **** 		((brp - 1ul) & CAN_BTR_BRP_MASK);
+ 331              		.loc 1 169 9
+ 332 0198 3B6B     		ldr	r3, [r7, #48]
+ 333 019a 013B     		subs	r3, r3, #1
+ 334              		.loc 1 169 16
+ 335 019c C3F30903 		ubfx	r3, r3, #0, #10
+ 168:../libopencm3/lib/stm32/can.c **** 		((brp - 1ul) & CAN_BTR_BRP_MASK);
+ 336              		.loc 1 168 38
+ 337 01a0 0B43     		orrs	r3, r3, r1
+ 168:../libopencm3/lib/stm32/can.c **** 		((brp - 1ul) & CAN_BTR_BRP_MASK);
+ 338              		.loc 1 168 19
+ 339 01a2 7968     		ldr	r1, [r7, #4]
+ 340 01a4 1C31     		adds	r1, r1, #28
+ 341 01a6 1343     		orrs	r3, r3, r2
+ 342 01a8 0B60     		str	r3, [r1]
+ 170:../libopencm3/lib/stm32/can.c **** 
+ 171:../libopencm3/lib/stm32/can.c **** 	/* Request initialization "leave". */
+ 172:../libopencm3/lib/stm32/can.c **** 	CAN_MCR(canport) &= ~CAN_MCR_INRQ;
+ 343              		.loc 1 172 19
+ 344 01aa 7B68     		ldr	r3, [r7, #4]
+ 345 01ac 1A68     		ldr	r2, [r3]
+ 346 01ae 7B68     		ldr	r3, [r7, #4]
+ 347 01b0 22F00102 		bic	r2, r2, #1
+ 348 01b4 1A60     		str	r2, [r3]
+ 173:../libopencm3/lib/stm32/can.c **** 
+ 174:../libopencm3/lib/stm32/can.c **** 	/* Wait for acknowledge. */
+ 175:../libopencm3/lib/stm32/can.c **** 	wait_ack = CAN_MSR_INAK_TIMEOUT;
+ 349              		.loc 1 175 11
+ 350 01b6 4FF6FF73 		movw	r3, #65535
+ 351 01ba BB60     		str	r3, [r7, #8]
+ 176:../libopencm3/lib/stm32/can.c **** 	while ((--wait_ack) &&
+ 352              		.loc 1 176 8
+ 353 01bc 00BF     		nop
+ 354              	.L29:
+ 355              		.loc 1 176 10 discriminator 2
+ 356 01be BB68     		ldr	r3, [r7, #8]
+ 357 01c0 013B     		subs	r3, r3, #1
+ 358              		.loc 1 176 8 discriminator 2
+ 359 01c2 BB60     		str	r3, [r7, #8]
+ 360 01c4 002B     		cmp	r3, #0
+ 361 01c6 06D0     		beq	.L28
+ 177:../libopencm3/lib/stm32/can.c **** 	       ((CAN_MSR(canport) & CAN_MSR_INAK) == CAN_MSR_INAK));
+ 362              		.loc 1 177 11 discriminator 1
+ 363 01c8 7B68     		ldr	r3, [r7, #4]
+ 364 01ca 0433     		adds	r3, r3, #4
+ 365 01cc 1B68     		ldr	r3, [r3]
+ 366              		.loc 1 177 28 discriminator 1
+ 367 01ce 03F00103 		and	r3, r3, #1
+ 176:../libopencm3/lib/stm32/can.c **** 	while ((--wait_ack) &&
+ 368              		.loc 1 176 22 discriminator 1
+ 369 01d2 012B     		cmp	r3, #1
+ 370 01d4 F3D0     		beq	.L29
+ 371              	.L28:
+ 178:../libopencm3/lib/stm32/can.c **** 
+ 179:../libopencm3/lib/stm32/can.c **** 	if ((CAN_MSR(canport) & CAN_MSR_INAK) == CAN_MSR_INAK) {
+ 372              		.loc 1 179 7
+ 373 01d6 7B68     		ldr	r3, [r7, #4]
+ 374 01d8 0433     		adds	r3, r3, #4
+ 375 01da 1B68     		ldr	r3, [r3]
+ 376              		.loc 1 179 24
+ 377 01dc 03F00103 		and	r3, r3, #1
+ 378              		.loc 1 179 5
+ 379 01e0 012B     		cmp	r3, #1
+ 380 01e2 01D1     		bne	.L30
+ 180:../libopencm3/lib/stm32/can.c **** 		ret = 1;
+ 381              		.loc 1 180 7
+ 382 01e4 0123     		movs	r3, #1
+ 383 01e6 FB60     		str	r3, [r7, #12]
+ 384              	.L30:
+ 181:../libopencm3/lib/stm32/can.c **** 	}
+ 182:../libopencm3/lib/stm32/can.c **** 
+ 183:../libopencm3/lib/stm32/can.c **** 	return ret;
+ 385              		.loc 1 183 9
+ 386 01e8 FB68     		ldr	r3, [r7, #12]
+ 387              	.L11:
+ 184:../libopencm3/lib/stm32/can.c **** }
+ 388              		.loc 1 184 1
+ 389 01ea 1846     		mov	r0, r3
+ 390 01ec 1437     		adds	r7, r7, #20
+ 391              		.cfi_def_cfa_offset 4
+ 392 01ee BD46     		mov	sp, r7
+ 393              		.cfi_def_cfa_register 13
+ 394              		@ sp needed
+ 395 01f0 80BC     		pop	{r7}
+ 396              		.cfi_restore 7
+ 397              		.cfi_def_cfa_offset 0
+ 398 01f2 7047     		bx	lr
+ 399              		.cfi_endproc
+ 400              	.LFE1:
+ 402              		.section	.text.can_filter_init,"ax",%progbits
+ 403              		.align	1
+ 404              		.global	can_filter_init
+ 405              		.syntax unified
+ 406              		.thumb
+ 407              		.thumb_func
+ 408              		.fpu softvfp
+ 410              	can_filter_init:
+ 411              	.LFB2:
+ 185:../libopencm3/lib/stm32/can.c **** 
+ 186:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 187:../libopencm3/lib/stm32/can.c **** /** @brief CAN Filter Init
+ 188:../libopencm3/lib/stm32/can.c **** 
+ 189:../libopencm3/lib/stm32/can.c **** Initialize incoming message filter and assign to FIFO.
+ 190:../libopencm3/lib/stm32/can.c **** 
+ 191:../libopencm3/lib/stm32/can.c **** @param[in] nr Unsigned int32. ID number of the filter.
+ 192:../libopencm3/lib/stm32/can.c **** @param[in] scale_32bit true for single 32bit, false for dual 16bit
+ 193:../libopencm3/lib/stm32/can.c **** @param[in] id_list_mode true for id lists, false for id/mask
+ 194:../libopencm3/lib/stm32/can.c **** @param[in] fr1 Unsigned int32. First filter register content.
+ 195:../libopencm3/lib/stm32/can.c **** @param[in] fr2 Unsigned int32. Second filter register content.
+ 196:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int32. FIFO id.
+ 197:../libopencm3/lib/stm32/can.c **** @param[in] enable bool. Enable filter?
+ 198:../libopencm3/lib/stm32/can.c ****  */
+ 199:../libopencm3/lib/stm32/can.c **** void can_filter_init(uint32_t nr, bool scale_32bit,
+ 200:../libopencm3/lib/stm32/can.c **** 		     bool id_list_mode, uint32_t fr1, uint32_t fr2,
+ 201:../libopencm3/lib/stm32/can.c **** 		     uint32_t fifo, bool enable)
+ 202:../libopencm3/lib/stm32/can.c **** {
+ 412              		.loc 1 202 1
+ 413              		.cfi_startproc
+ 414              		@ args = 12, pretend = 0, frame = 24
+ 415              		@ frame_needed = 1, uses_anonymous_args = 0
+ 416              		@ link register save eliminated.
+ 417 0000 80B4     		push	{r7}
+ 418              		.cfi_def_cfa_offset 4
+ 419              		.cfi_offset 7, -4
+ 420 0002 87B0     		sub	sp, sp, #28
+ 421              		.cfi_def_cfa_offset 32
+ 422 0004 00AF     		add	r7, sp, #0
+ 423              		.cfi_def_cfa_register 7
+ 424 0006 F860     		str	r0, [r7, #12]
+ 425 0008 7B60     		str	r3, [r7, #4]
+ 426 000a 0B46     		mov	r3, r1
+ 427 000c FB72     		strb	r3, [r7, #11]
+ 428 000e 1346     		mov	r3, r2
+ 429 0010 BB72     		strb	r3, [r7, #10]
+ 203:../libopencm3/lib/stm32/can.c **** 	uint32_t filter_select_bit = 0x00000001 << nr;
+ 430              		.loc 1 203 42
+ 431 0012 0122     		movs	r2, #1
+ 432 0014 FB68     		ldr	r3, [r7, #12]
+ 433 0016 02FA03F3 		lsl	r3, r2, r3
+ 434              		.loc 1 203 11
+ 435 001a 7B61     		str	r3, [r7, #20]
+ 204:../libopencm3/lib/stm32/can.c **** 
+ 205:../libopencm3/lib/stm32/can.c **** 	/* Request initialization "enter". */
+ 206:../libopencm3/lib/stm32/can.c **** 	CAN_FMR(CAN1) |= CAN_FMR_FINIT;
+ 436              		.loc 1 206 16
+ 437 001c 334B     		ldr	r3, .L39
+ 438 001e 1B68     		ldr	r3, [r3]
+ 439 0020 324A     		ldr	r2, .L39
+ 440 0022 43F00103 		orr	r3, r3, #1
+ 441 0026 1360     		str	r3, [r2]
+ 207:../libopencm3/lib/stm32/can.c **** 
+ 208:../libopencm3/lib/stm32/can.c **** 	/* Deactivate the filter. */
+ 209:../libopencm3/lib/stm32/can.c **** 	CAN_FA1R(CAN1) &= ~filter_select_bit;
+ 442              		.loc 1 209 17
+ 443 0028 314B     		ldr	r3, .L39+4
+ 444 002a 1A68     		ldr	r2, [r3]
+ 445              		.loc 1 209 20
+ 446 002c 7B69     		ldr	r3, [r7, #20]
+ 447 002e DB43     		mvns	r3, r3
+ 448              		.loc 1 209 17
+ 449 0030 2F49     		ldr	r1, .L39+4
+ 450 0032 1340     		ands	r3, r3, r2
+ 451 0034 0B60     		str	r3, [r1]
+ 210:../libopencm3/lib/stm32/can.c **** 
+ 211:../libopencm3/lib/stm32/can.c **** 	if (scale_32bit) {
+ 452              		.loc 1 211 5
+ 453 0036 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 454 0038 002B     		cmp	r3, #0
+ 455 003a 06D0     		beq	.L32
+ 212:../libopencm3/lib/stm32/can.c **** 		/* Set 32-bit scale for the filter. */
+ 213:../libopencm3/lib/stm32/can.c **** 		CAN_FS1R(CAN1) |= filter_select_bit;
+ 456              		.loc 1 213 18
+ 457 003c 2D4B     		ldr	r3, .L39+8
+ 458 003e 1A68     		ldr	r2, [r3]
+ 459 0040 2C49     		ldr	r1, .L39+8
+ 460 0042 7B69     		ldr	r3, [r7, #20]
+ 461 0044 1343     		orrs	r3, r3, r2
+ 462 0046 0B60     		str	r3, [r1]
+ 463 0048 06E0     		b	.L33
+ 464              	.L32:
+ 214:../libopencm3/lib/stm32/can.c **** 	} else {
+ 215:../libopencm3/lib/stm32/can.c **** 		/* Set 16-bit scale for the filter. */
+ 216:../libopencm3/lib/stm32/can.c **** 		CAN_FS1R(CAN1) &= ~filter_select_bit;
+ 465              		.loc 1 216 18
+ 466 004a 2A4B     		ldr	r3, .L39+8
+ 467 004c 1A68     		ldr	r2, [r3]
+ 468              		.loc 1 216 21
+ 469 004e 7B69     		ldr	r3, [r7, #20]
+ 470 0050 DB43     		mvns	r3, r3
+ 471              		.loc 1 216 18
+ 472 0052 2849     		ldr	r1, .L39+8
+ 473 0054 1340     		ands	r3, r3, r2
+ 474 0056 0B60     		str	r3, [r1]
+ 475              	.L33:
+ 217:../libopencm3/lib/stm32/can.c **** 	}
+ 218:../libopencm3/lib/stm32/can.c **** 
+ 219:../libopencm3/lib/stm32/can.c **** 	if (id_list_mode) {
+ 476              		.loc 1 219 5
+ 477 0058 BB7A     		ldrb	r3, [r7, #10]	@ zero_extendqisi2
+ 478 005a 002B     		cmp	r3, #0
+ 479 005c 06D0     		beq	.L34
+ 220:../libopencm3/lib/stm32/can.c **** 		/* Set filter mode to ID list mode. */
+ 221:../libopencm3/lib/stm32/can.c **** 		CAN_FM1R(CAN1) |= filter_select_bit;
+ 480              		.loc 1 221 18
+ 481 005e 264B     		ldr	r3, .L39+12
+ 482 0060 1A68     		ldr	r2, [r3]
+ 483 0062 2549     		ldr	r1, .L39+12
+ 484 0064 7B69     		ldr	r3, [r7, #20]
+ 485 0066 1343     		orrs	r3, r3, r2
+ 486 0068 0B60     		str	r3, [r1]
+ 487 006a 06E0     		b	.L35
+ 488              	.L34:
+ 222:../libopencm3/lib/stm32/can.c **** 	} else {
+ 223:../libopencm3/lib/stm32/can.c **** 		/* Set filter mode to id/mask mode. */
+ 224:../libopencm3/lib/stm32/can.c **** 		CAN_FM1R(CAN1) &= ~filter_select_bit;
+ 489              		.loc 1 224 18
+ 490 006c 224B     		ldr	r3, .L39+12
+ 491 006e 1A68     		ldr	r2, [r3]
+ 492              		.loc 1 224 21
+ 493 0070 7B69     		ldr	r3, [r7, #20]
+ 494 0072 DB43     		mvns	r3, r3
+ 495              		.loc 1 224 18
+ 496 0074 2049     		ldr	r1, .L39+12
+ 497 0076 1340     		ands	r3, r3, r2
+ 498 0078 0B60     		str	r3, [r1]
+ 499              	.L35:
+ 225:../libopencm3/lib/stm32/can.c **** 	}
+ 226:../libopencm3/lib/stm32/can.c **** 
+ 227:../libopencm3/lib/stm32/can.c **** 	/* Set the first filter register. */
+ 228:../libopencm3/lib/stm32/can.c **** 	CAN_FiR1(CAN1, nr) = fr1;
+ 500              		.loc 1 228 2
+ 501 007a FB68     		ldr	r3, [r7, #12]
+ 502 007c 03F10063 		add	r3, r3, #134217728
+ 503 0080 03F6C843 		addw	r3, r3, #3272
+ 504 0084 DB00     		lsls	r3, r3, #3
+ 505 0086 1A46     		mov	r2, r3
+ 506              		.loc 1 228 21
+ 507 0088 7B68     		ldr	r3, [r7, #4]
+ 508 008a 1360     		str	r3, [r2]
+ 229:../libopencm3/lib/stm32/can.c **** 
+ 230:../libopencm3/lib/stm32/can.c **** 	/* Set the second filter register. */
+ 231:../libopencm3/lib/stm32/can.c **** 	CAN_FiR2(CAN1, nr) = fr2;
+ 509              		.loc 1 231 2
+ 510 008c FB68     		ldr	r3, [r7, #12]
+ 511 008e 03F10063 		add	r3, r3, #134217728
+ 512 0092 03F6C843 		addw	r3, r3, #3272
+ 513 0096 DB00     		lsls	r3, r3, #3
+ 514 0098 0433     		adds	r3, r3, #4
+ 515 009a 1A46     		mov	r2, r3
+ 516              		.loc 1 231 21
+ 517 009c 3B6A     		ldr	r3, [r7, #32]
+ 518 009e 1360     		str	r3, [r2]
+ 232:../libopencm3/lib/stm32/can.c **** 
+ 233:../libopencm3/lib/stm32/can.c **** 	/* Select FIFO0 or FIFO1 as filter assignement. */
+ 234:../libopencm3/lib/stm32/can.c **** 	if (fifo) {
+ 519              		.loc 1 234 5
+ 520 00a0 7B6A     		ldr	r3, [r7, #36]
+ 521 00a2 002B     		cmp	r3, #0
+ 522 00a4 06D0     		beq	.L36
+ 235:../libopencm3/lib/stm32/can.c **** 		CAN_FFA1R(CAN1) |= filter_select_bit;  /* FIFO1 */
+ 523              		.loc 1 235 19
+ 524 00a6 154B     		ldr	r3, .L39+16
+ 525 00a8 1A68     		ldr	r2, [r3]
+ 526 00aa 1449     		ldr	r1, .L39+16
+ 527 00ac 7B69     		ldr	r3, [r7, #20]
+ 528 00ae 1343     		orrs	r3, r3, r2
+ 529 00b0 0B60     		str	r3, [r1]
+ 530 00b2 06E0     		b	.L37
+ 531              	.L36:
+ 236:../libopencm3/lib/stm32/can.c **** 	} else {
+ 237:../libopencm3/lib/stm32/can.c **** 		CAN_FFA1R(CAN1) &= ~filter_select_bit; /* FIFO0 */
+ 532              		.loc 1 237 19
+ 533 00b4 114B     		ldr	r3, .L39+16
+ 534 00b6 1A68     		ldr	r2, [r3]
+ 535              		.loc 1 237 22
+ 536 00b8 7B69     		ldr	r3, [r7, #20]
+ 537 00ba DB43     		mvns	r3, r3
+ 538              		.loc 1 237 19
+ 539 00bc 0F49     		ldr	r1, .L39+16
+ 540 00be 1340     		ands	r3, r3, r2
+ 541 00c0 0B60     		str	r3, [r1]
+ 542              	.L37:
+ 238:../libopencm3/lib/stm32/can.c **** 	}
+ 239:../libopencm3/lib/stm32/can.c **** 
+ 240:../libopencm3/lib/stm32/can.c **** 	if (enable) {
+ 543              		.loc 1 240 5
+ 544 00c2 97F82830 		ldrb	r3, [r7, #40]	@ zero_extendqisi2
+ 545 00c6 002B     		cmp	r3, #0
+ 546 00c8 05D0     		beq	.L38
+ 241:../libopencm3/lib/stm32/can.c **** 		CAN_FA1R(CAN1) |= filter_select_bit; /* Activate filter. */
+ 547              		.loc 1 241 18
+ 548 00ca 094B     		ldr	r3, .L39+4
+ 549 00cc 1A68     		ldr	r2, [r3]
+ 550 00ce 0849     		ldr	r1, .L39+4
+ 551 00d0 7B69     		ldr	r3, [r7, #20]
+ 552 00d2 1343     		orrs	r3, r3, r2
+ 553 00d4 0B60     		str	r3, [r1]
+ 554              	.L38:
+ 242:../libopencm3/lib/stm32/can.c **** 	}
+ 243:../libopencm3/lib/stm32/can.c **** 
+ 244:../libopencm3/lib/stm32/can.c **** 	/* Request initialization "leave". */
+ 245:../libopencm3/lib/stm32/can.c **** 	CAN_FMR(CAN1) &= ~CAN_FMR_FINIT;
+ 555              		.loc 1 245 16
+ 556 00d6 054B     		ldr	r3, .L39
+ 557 00d8 1B68     		ldr	r3, [r3]
+ 558 00da 044A     		ldr	r2, .L39
+ 559 00dc 23F00103 		bic	r3, r3, #1
+ 560 00e0 1360     		str	r3, [r2]
+ 246:../libopencm3/lib/stm32/can.c **** }
+ 561              		.loc 1 246 1
+ 562 00e2 00BF     		nop
+ 563 00e4 1C37     		adds	r7, r7, #28
+ 564              		.cfi_def_cfa_offset 4
+ 565 00e6 BD46     		mov	sp, r7
+ 566              		.cfi_def_cfa_register 13
+ 567              		@ sp needed
+ 568 00e8 80BC     		pop	{r7}
+ 569              		.cfi_restore 7
+ 570              		.cfi_def_cfa_offset 0
+ 571 00ea 7047     		bx	lr
+ 572              	.L40:
+ 573              		.align	2
+ 574              	.L39:
+ 575 00ec 00660040 		.word	1073767936
+ 576 00f0 1C660040 		.word	1073767964
+ 577 00f4 0C660040 		.word	1073767948
+ 578 00f8 04660040 		.word	1073767940
+ 579 00fc 14660040 		.word	1073767956
+ 580              		.cfi_endproc
+ 581              	.LFE2:
+ 583              		.section	.text.can_filter_id_mask_16bit_init,"ax",%progbits
+ 584              		.align	1
+ 585              		.global	can_filter_id_mask_16bit_init
+ 586              		.syntax unified
+ 587              		.thumb
+ 588              		.thumb_func
+ 589              		.fpu softvfp
+ 591              	can_filter_id_mask_16bit_init:
+ 592              	.LFB3:
+ 247:../libopencm3/lib/stm32/can.c **** 
+ 248:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 249:../libopencm3/lib/stm32/can.c **** /** @brief CAN Initialize a 16bit Message ID Mask Filter
+ 250:../libopencm3/lib/stm32/can.c **** 
+ 251:../libopencm3/lib/stm32/can.c **** @param[in] nr Unsigned int32. ID number of the filter.
+ 252:../libopencm3/lib/stm32/can.c **** @param[in] id1 Unsigned int16. First message ID to filter.
+ 253:../libopencm3/lib/stm32/can.c **** @param[in] mask1 Unsigned int16. First message ID bit mask.
+ 254:../libopencm3/lib/stm32/can.c **** @param[in] id2 Unsigned int16. Second message ID to filter.
+ 255:../libopencm3/lib/stm32/can.c **** @param[in] mask2 Unsigned int16. Second message ID bit mask.
+ 256:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int32. FIFO id.
+ 257:../libopencm3/lib/stm32/can.c **** @param[in] enable bool. Enable filter?
+ 258:../libopencm3/lib/stm32/can.c ****  */
+ 259:../libopencm3/lib/stm32/can.c **** void can_filter_id_mask_16bit_init(uint32_t nr, uint16_t id1,
+ 260:../libopencm3/lib/stm32/can.c **** 				   uint16_t mask1, uint16_t id2,
+ 261:../libopencm3/lib/stm32/can.c **** 				   uint16_t mask2, uint32_t fifo, bool enable)
+ 262:../libopencm3/lib/stm32/can.c **** {
+ 593              		.loc 1 262 1
+ 594              		.cfi_startproc
+ 595              		@ args = 12, pretend = 0, frame = 16
+ 596              		@ frame_needed = 1, uses_anonymous_args = 0
+ 597 0000 80B5     		push	{r7, lr}
+ 598              		.cfi_def_cfa_offset 8
+ 599              		.cfi_offset 7, -8
+ 600              		.cfi_offset 14, -4
+ 601 0002 88B0     		sub	sp, sp, #32
+ 602              		.cfi_def_cfa_offset 40
+ 603 0004 04AF     		add	r7, sp, #16
+ 604              		.cfi_def_cfa 7, 24
+ 605 0006 F860     		str	r0, [r7, #12]
+ 606 0008 0846     		mov	r0, r1
+ 607 000a 1146     		mov	r1, r2
+ 608 000c 1A46     		mov	r2, r3
+ 609 000e 0346     		mov	r3, r0	@ movhi
+ 610 0010 7B81     		strh	r3, [r7, #10]	@ movhi
+ 611 0012 0B46     		mov	r3, r1	@ movhi
+ 612 0014 3B81     		strh	r3, [r7, #8]	@ movhi
+ 613 0016 1346     		mov	r3, r2	@ movhi
+ 614 0018 FB80     		strh	r3, [r7, #6]	@ movhi
+ 263:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, false,
+ 264:../libopencm3/lib/stm32/can.c **** 			((uint32_t)mask1 << 16) | (uint32_t)id1,
+ 615              		.loc 1 264 5
+ 616 001a 3B89     		ldrh	r3, [r7, #8]
+ 617              		.loc 1 264 21
+ 618 001c 1A04     		lsls	r2, r3, #16
+ 619              		.loc 1 264 30
+ 620 001e 7B89     		ldrh	r3, [r7, #10]
+ 263:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, false,
+ 621              		.loc 1 263 2
+ 622 0020 42EA0301 		orr	r1, r2, r3
+ 265:../libopencm3/lib/stm32/can.c **** 			((uint32_t)mask2 << 16) | (uint32_t)id2, fifo, enable);
+ 623              		.loc 1 265 5
+ 624 0024 3B8B     		ldrh	r3, [r7, #24]
+ 625              		.loc 1 265 21
+ 626 0026 1A04     		lsls	r2, r3, #16
+ 627              		.loc 1 265 30
+ 628 0028 FB88     		ldrh	r3, [r7, #6]
+ 263:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, false,
+ 629              		.loc 1 263 2
+ 630 002a 1343     		orrs	r3, r3, r2
+ 631 002c 97F82020 		ldrb	r2, [r7, #32]	@ zero_extendqisi2
+ 632 0030 0292     		str	r2, [sp, #8]
+ 633 0032 FA69     		ldr	r2, [r7, #28]
+ 634 0034 0192     		str	r2, [sp, #4]
+ 635 0036 0093     		str	r3, [sp]
+ 636 0038 0B46     		mov	r3, r1
+ 637 003a 0022     		movs	r2, #0
+ 638 003c 0021     		movs	r1, #0
+ 639 003e F868     		ldr	r0, [r7, #12]
+ 640 0040 FFF7FEFF 		bl	can_filter_init(PLT)
+ 266:../libopencm3/lib/stm32/can.c **** }
+ 641              		.loc 1 266 1
+ 642 0044 00BF     		nop
+ 643 0046 1037     		adds	r7, r7, #16
+ 644              		.cfi_def_cfa_offset 8
+ 645 0048 BD46     		mov	sp, r7
+ 646              		.cfi_def_cfa_register 13
+ 647              		@ sp needed
+ 648 004a 80BD     		pop	{r7, pc}
+ 649              		.cfi_endproc
+ 650              	.LFE3:
+ 652              		.section	.text.can_filter_id_mask_32bit_init,"ax",%progbits
+ 653              		.align	1
+ 654              		.global	can_filter_id_mask_32bit_init
+ 655              		.syntax unified
+ 656              		.thumb
+ 657              		.thumb_func
+ 658              		.fpu softvfp
+ 660              	can_filter_id_mask_32bit_init:
+ 661              	.LFB4:
+ 267:../libopencm3/lib/stm32/can.c **** 
+ 268:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 269:../libopencm3/lib/stm32/can.c **** /** @brief CAN Initialize a 32bit Message ID Mask Filter
+ 270:../libopencm3/lib/stm32/can.c **** 
+ 271:../libopencm3/lib/stm32/can.c **** @param[in] nr Unsigned int32. ID number of the filter.
+ 272:../libopencm3/lib/stm32/can.c **** @param[in] id Unsigned int32. Message ID to filter.
+ 273:../libopencm3/lib/stm32/can.c **** @param[in] mask Unsigned int32. Message ID bit mask.
+ 274:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int32. FIFO id.
+ 275:../libopencm3/lib/stm32/can.c **** @param[in] enable bool. Enable filter?
+ 276:../libopencm3/lib/stm32/can.c ****  */
+ 277:../libopencm3/lib/stm32/can.c **** void can_filter_id_mask_32bit_init(uint32_t nr, uint32_t id,
+ 278:../libopencm3/lib/stm32/can.c **** 				   uint32_t mask, uint32_t fifo, bool enable)
+ 279:../libopencm3/lib/stm32/can.c **** {
+ 662              		.loc 1 279 1
+ 663              		.cfi_startproc
+ 664              		@ args = 4, pretend = 0, frame = 16
+ 665              		@ frame_needed = 1, uses_anonymous_args = 0
+ 666 0000 80B5     		push	{r7, lr}
+ 667              		.cfi_def_cfa_offset 8
+ 668              		.cfi_offset 7, -8
+ 669              		.cfi_offset 14, -4
+ 670 0002 88B0     		sub	sp, sp, #32
+ 671              		.cfi_def_cfa_offset 40
+ 672 0004 04AF     		add	r7, sp, #16
+ 673              		.cfi_def_cfa 7, 24
+ 674 0006 F860     		str	r0, [r7, #12]
+ 675 0008 B960     		str	r1, [r7, #8]
+ 676 000a 7A60     		str	r2, [r7, #4]
+ 677 000c 3B60     		str	r3, [r7]
+ 280:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, true, false, id, mask, fifo, enable);
+ 678              		.loc 1 280 2
+ 679 000e 3B7E     		ldrb	r3, [r7, #24]	@ zero_extendqisi2
+ 680 0010 0293     		str	r3, [sp, #8]
+ 681 0012 3B68     		ldr	r3, [r7]
+ 682 0014 0193     		str	r3, [sp, #4]
+ 683 0016 7B68     		ldr	r3, [r7, #4]
+ 684 0018 0093     		str	r3, [sp]
+ 685 001a BB68     		ldr	r3, [r7, #8]
+ 686 001c 0022     		movs	r2, #0
+ 687 001e 0121     		movs	r1, #1
+ 688 0020 F868     		ldr	r0, [r7, #12]
+ 689 0022 FFF7FEFF 		bl	can_filter_init(PLT)
+ 281:../libopencm3/lib/stm32/can.c **** }
+ 690              		.loc 1 281 1
+ 691 0026 00BF     		nop
+ 692 0028 1037     		adds	r7, r7, #16
+ 693              		.cfi_def_cfa_offset 8
+ 694 002a BD46     		mov	sp, r7
+ 695              		.cfi_def_cfa_register 13
+ 696              		@ sp needed
+ 697 002c 80BD     		pop	{r7, pc}
+ 698              		.cfi_endproc
+ 699              	.LFE4:
+ 701              		.section	.text.can_filter_id_list_16bit_init,"ax",%progbits
+ 702              		.align	1
+ 703              		.global	can_filter_id_list_16bit_init
+ 704              		.syntax unified
+ 705              		.thumb
+ 706              		.thumb_func
+ 707              		.fpu softvfp
+ 709              	can_filter_id_list_16bit_init:
+ 710              	.LFB5:
+ 282:../libopencm3/lib/stm32/can.c **** 
+ 283:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 284:../libopencm3/lib/stm32/can.c **** /** @brief CAN Initialize a 16bit Message ID List Filter
+ 285:../libopencm3/lib/stm32/can.c **** 
+ 286:../libopencm3/lib/stm32/can.c **** @param[in] nr Unsigned int32. ID number of the filter.
+ 287:../libopencm3/lib/stm32/can.c **** @param[in] id1 Unsigned int16. First message ID to match.
+ 288:../libopencm3/lib/stm32/can.c **** @param[in] id2 Unsigned int16. Second message ID to match.
+ 289:../libopencm3/lib/stm32/can.c **** @param[in] id3 Unsigned int16. Third message ID to match.
+ 290:../libopencm3/lib/stm32/can.c **** @param[in] id4 Unsigned int16. Fourth message ID to match.
+ 291:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int32. FIFO id.
+ 292:../libopencm3/lib/stm32/can.c **** @param[in] enable bool. Enable filter?
+ 293:../libopencm3/lib/stm32/can.c ****  */
+ 294:../libopencm3/lib/stm32/can.c **** void can_filter_id_list_16bit_init(uint32_t nr,
+ 295:../libopencm3/lib/stm32/can.c **** 				   uint16_t id1, uint16_t id2,
+ 296:../libopencm3/lib/stm32/can.c **** 				   uint16_t id3, uint16_t id4,
+ 297:../libopencm3/lib/stm32/can.c **** 				   uint32_t fifo, bool enable)
+ 298:../libopencm3/lib/stm32/can.c **** {
+ 711              		.loc 1 298 1
+ 712              		.cfi_startproc
+ 713              		@ args = 12, pretend = 0, frame = 16
+ 714              		@ frame_needed = 1, uses_anonymous_args = 0
+ 715 0000 80B5     		push	{r7, lr}
+ 716              		.cfi_def_cfa_offset 8
+ 717              		.cfi_offset 7, -8
+ 718              		.cfi_offset 14, -4
+ 719 0002 88B0     		sub	sp, sp, #32
+ 720              		.cfi_def_cfa_offset 40
+ 721 0004 04AF     		add	r7, sp, #16
+ 722              		.cfi_def_cfa 7, 24
+ 723 0006 F860     		str	r0, [r7, #12]
+ 724 0008 0846     		mov	r0, r1
+ 725 000a 1146     		mov	r1, r2
+ 726 000c 1A46     		mov	r2, r3
+ 727 000e 0346     		mov	r3, r0	@ movhi
+ 728 0010 7B81     		strh	r3, [r7, #10]	@ movhi
+ 729 0012 0B46     		mov	r3, r1	@ movhi
+ 730 0014 3B81     		strh	r3, [r7, #8]	@ movhi
+ 731 0016 1346     		mov	r3, r2	@ movhi
+ 732 0018 FB80     		strh	r3, [r7, #6]	@ movhi
+ 299:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, true,
+ 300:../libopencm3/lib/stm32/can.c **** 			((uint32_t)id1 << 16) | (uint32_t)id2,
+ 733              		.loc 1 300 5
+ 734 001a 7B89     		ldrh	r3, [r7, #10]
+ 735              		.loc 1 300 19
+ 736 001c 1A04     		lsls	r2, r3, #16
+ 737              		.loc 1 300 28
+ 738 001e 3B89     		ldrh	r3, [r7, #8]
+ 299:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, true,
+ 739              		.loc 1 299 2
+ 740 0020 42EA0301 		orr	r1, r2, r3
+ 301:../libopencm3/lib/stm32/can.c **** 			((uint32_t)id3 << 16) | (uint32_t)id4, fifo, enable);
+ 741              		.loc 1 301 5
+ 742 0024 FB88     		ldrh	r3, [r7, #6]
+ 743              		.loc 1 301 19
+ 744 0026 1A04     		lsls	r2, r3, #16
+ 745              		.loc 1 301 28
+ 746 0028 3B8B     		ldrh	r3, [r7, #24]
+ 299:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, false, true,
+ 747              		.loc 1 299 2
+ 748 002a 1343     		orrs	r3, r3, r2
+ 749 002c 97F82020 		ldrb	r2, [r7, #32]	@ zero_extendqisi2
+ 750 0030 0292     		str	r2, [sp, #8]
+ 751 0032 FA69     		ldr	r2, [r7, #28]
+ 752 0034 0192     		str	r2, [sp, #4]
+ 753 0036 0093     		str	r3, [sp]
+ 754 0038 0B46     		mov	r3, r1
+ 755 003a 0122     		movs	r2, #1
+ 756 003c 0021     		movs	r1, #0
+ 757 003e F868     		ldr	r0, [r7, #12]
+ 758 0040 FFF7FEFF 		bl	can_filter_init(PLT)
+ 302:../libopencm3/lib/stm32/can.c **** }
+ 759              		.loc 1 302 1
+ 760 0044 00BF     		nop
+ 761 0046 1037     		adds	r7, r7, #16
+ 762              		.cfi_def_cfa_offset 8
+ 763 0048 BD46     		mov	sp, r7
+ 764              		.cfi_def_cfa_register 13
+ 765              		@ sp needed
+ 766 004a 80BD     		pop	{r7, pc}
+ 767              		.cfi_endproc
+ 768              	.LFE5:
+ 770              		.section	.text.can_filter_id_list_32bit_init,"ax",%progbits
+ 771              		.align	1
+ 772              		.global	can_filter_id_list_32bit_init
+ 773              		.syntax unified
+ 774              		.thumb
+ 775              		.thumb_func
+ 776              		.fpu softvfp
+ 778              	can_filter_id_list_32bit_init:
+ 779              	.LFB6:
+ 303:../libopencm3/lib/stm32/can.c **** 
+ 304:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 305:../libopencm3/lib/stm32/can.c **** /** @brief CAN Initialize a 32bit Message ID List Filter
+ 306:../libopencm3/lib/stm32/can.c **** 
+ 307:../libopencm3/lib/stm32/can.c **** @param[in] nr Unsigned int32. ID number of the filter.
+ 308:../libopencm3/lib/stm32/can.c **** @param[in] id1 Unsigned int32. First message ID to match.
+ 309:../libopencm3/lib/stm32/can.c **** @param[in] id2 Unsigned int32. Second message ID to match.
+ 310:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int32. FIFO id.
+ 311:../libopencm3/lib/stm32/can.c **** @param[in] enable bool. Enable filter?
+ 312:../libopencm3/lib/stm32/can.c ****  */
+ 313:../libopencm3/lib/stm32/can.c **** void can_filter_id_list_32bit_init(uint32_t nr,
+ 314:../libopencm3/lib/stm32/can.c **** 				   uint32_t id1, uint32_t id2,
+ 315:../libopencm3/lib/stm32/can.c **** 				   uint32_t fifo, bool enable)
+ 316:../libopencm3/lib/stm32/can.c **** {
+ 780              		.loc 1 316 1
+ 781              		.cfi_startproc
+ 782              		@ args = 4, pretend = 0, frame = 16
+ 783              		@ frame_needed = 1, uses_anonymous_args = 0
+ 784 0000 80B5     		push	{r7, lr}
+ 785              		.cfi_def_cfa_offset 8
+ 786              		.cfi_offset 7, -8
+ 787              		.cfi_offset 14, -4
+ 788 0002 88B0     		sub	sp, sp, #32
+ 789              		.cfi_def_cfa_offset 40
+ 790 0004 04AF     		add	r7, sp, #16
+ 791              		.cfi_def_cfa 7, 24
+ 792 0006 F860     		str	r0, [r7, #12]
+ 793 0008 B960     		str	r1, [r7, #8]
+ 794 000a 7A60     		str	r2, [r7, #4]
+ 795 000c 3B60     		str	r3, [r7]
+ 317:../libopencm3/lib/stm32/can.c **** 	can_filter_init(nr, true, true, id1, id2, fifo, enable);
+ 796              		.loc 1 317 2
+ 797 000e 3B7E     		ldrb	r3, [r7, #24]	@ zero_extendqisi2
+ 798 0010 0293     		str	r3, [sp, #8]
+ 799 0012 3B68     		ldr	r3, [r7]
+ 800 0014 0193     		str	r3, [sp, #4]
+ 801 0016 7B68     		ldr	r3, [r7, #4]
+ 802 0018 0093     		str	r3, [sp]
+ 803 001a BB68     		ldr	r3, [r7, #8]
+ 804 001c 0122     		movs	r2, #1
+ 805 001e 0121     		movs	r1, #1
+ 806 0020 F868     		ldr	r0, [r7, #12]
+ 807 0022 FFF7FEFF 		bl	can_filter_init(PLT)
+ 318:../libopencm3/lib/stm32/can.c **** }
+ 808              		.loc 1 318 1
+ 809 0026 00BF     		nop
+ 810 0028 1037     		adds	r7, r7, #16
+ 811              		.cfi_def_cfa_offset 8
+ 812 002a BD46     		mov	sp, r7
+ 813              		.cfi_def_cfa_register 13
+ 814              		@ sp needed
+ 815 002c 80BD     		pop	{r7, pc}
+ 816              		.cfi_endproc
+ 817              	.LFE6:
+ 819              		.section	.text.can_enable_irq,"ax",%progbits
+ 820              		.align	1
+ 821              		.global	can_enable_irq
+ 822              		.syntax unified
+ 823              		.thumb
+ 824              		.thumb_func
+ 825              		.fpu softvfp
+ 827              	can_enable_irq:
+ 828              	.LFB7:
+ 319:../libopencm3/lib/stm32/can.c **** 
+ 320:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 321:../libopencm3/lib/stm32/can.c **** /** @brief CAN Enable IRQ
+ 322:../libopencm3/lib/stm32/can.c **** 
+ 323:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register base @ref can_reg_base.
+ 324:../libopencm3/lib/stm32/can.c **** @param[in] irq Unsigned int32. IRQ bit(s).
+ 325:../libopencm3/lib/stm32/can.c ****  */
+ 326:../libopencm3/lib/stm32/can.c **** void can_enable_irq(uint32_t canport, uint32_t irq)
+ 327:../libopencm3/lib/stm32/can.c **** {
+ 829              		.loc 1 327 1
+ 830              		.cfi_startproc
+ 831              		@ args = 0, pretend = 0, frame = 8
+ 832              		@ frame_needed = 1, uses_anonymous_args = 0
+ 833              		@ link register save eliminated.
+ 834 0000 80B4     		push	{r7}
+ 835              		.cfi_def_cfa_offset 4
+ 836              		.cfi_offset 7, -4
+ 837 0002 83B0     		sub	sp, sp, #12
+ 838              		.cfi_def_cfa_offset 16
+ 839 0004 00AF     		add	r7, sp, #0
+ 840              		.cfi_def_cfa_register 7
+ 841 0006 7860     		str	r0, [r7, #4]
+ 842 0008 3960     		str	r1, [r7]
+ 328:../libopencm3/lib/stm32/can.c **** 	CAN_IER(canport) |= irq;
+ 843              		.loc 1 328 19
+ 844 000a 7B68     		ldr	r3, [r7, #4]
+ 845 000c 1433     		adds	r3, r3, #20
+ 846 000e 1A68     		ldr	r2, [r3]
+ 847 0010 7B68     		ldr	r3, [r7, #4]
+ 848 0012 1433     		adds	r3, r3, #20
+ 849 0014 1946     		mov	r1, r3
+ 850 0016 3B68     		ldr	r3, [r7]
+ 851 0018 1343     		orrs	r3, r3, r2
+ 852 001a 0B60     		str	r3, [r1]
+ 329:../libopencm3/lib/stm32/can.c **** }
+ 853              		.loc 1 329 1
+ 854 001c 00BF     		nop
+ 855 001e 0C37     		adds	r7, r7, #12
+ 856              		.cfi_def_cfa_offset 4
+ 857 0020 BD46     		mov	sp, r7
+ 858              		.cfi_def_cfa_register 13
+ 859              		@ sp needed
+ 860 0022 80BC     		pop	{r7}
+ 861              		.cfi_restore 7
+ 862              		.cfi_def_cfa_offset 0
+ 863 0024 7047     		bx	lr
+ 864              		.cfi_endproc
+ 865              	.LFE7:
+ 867              		.section	.text.can_disable_irq,"ax",%progbits
+ 868              		.align	1
+ 869              		.global	can_disable_irq
+ 870              		.syntax unified
+ 871              		.thumb
+ 872              		.thumb_func
+ 873              		.fpu softvfp
+ 875              	can_disable_irq:
+ 876              	.LFB8:
+ 330:../libopencm3/lib/stm32/can.c **** 
+ 331:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 332:../libopencm3/lib/stm32/can.c **** /** @brief CAN Disable IRQ
+ 333:../libopencm3/lib/stm32/can.c **** 
+ 334:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register base @ref can_reg_base.
+ 335:../libopencm3/lib/stm32/can.c **** @param[in] irq Unsigned int32. IRQ bit(s).
+ 336:../libopencm3/lib/stm32/can.c ****  */
+ 337:../libopencm3/lib/stm32/can.c **** void can_disable_irq(uint32_t canport, uint32_t irq)
+ 338:../libopencm3/lib/stm32/can.c **** {
+ 877              		.loc 1 338 1
+ 878              		.cfi_startproc
+ 879              		@ args = 0, pretend = 0, frame = 8
+ 880              		@ frame_needed = 1, uses_anonymous_args = 0
+ 881              		@ link register save eliminated.
+ 882 0000 80B4     		push	{r7}
+ 883              		.cfi_def_cfa_offset 4
+ 884              		.cfi_offset 7, -4
+ 885 0002 83B0     		sub	sp, sp, #12
+ 886              		.cfi_def_cfa_offset 16
+ 887 0004 00AF     		add	r7, sp, #0
+ 888              		.cfi_def_cfa_register 7
+ 889 0006 7860     		str	r0, [r7, #4]
+ 890 0008 3960     		str	r1, [r7]
+ 339:../libopencm3/lib/stm32/can.c **** 	CAN_IER(canport) &= ~irq;
+ 891              		.loc 1 339 19
+ 892 000a 7B68     		ldr	r3, [r7, #4]
+ 893 000c 1433     		adds	r3, r3, #20
+ 894 000e 1A68     		ldr	r2, [r3]
+ 895              		.loc 1 339 22
+ 896 0010 3B68     		ldr	r3, [r7]
+ 897 0012 DB43     		mvns	r3, r3
+ 898              		.loc 1 339 19
+ 899 0014 7968     		ldr	r1, [r7, #4]
+ 900 0016 1431     		adds	r1, r1, #20
+ 901 0018 1340     		ands	r3, r3, r2
+ 902 001a 0B60     		str	r3, [r1]
+ 340:../libopencm3/lib/stm32/can.c **** }
+ 903              		.loc 1 340 1
+ 904 001c 00BF     		nop
+ 905 001e 0C37     		adds	r7, r7, #12
+ 906              		.cfi_def_cfa_offset 4
+ 907 0020 BD46     		mov	sp, r7
+ 908              		.cfi_def_cfa_register 13
+ 909              		@ sp needed
+ 910 0022 80BC     		pop	{r7}
+ 911              		.cfi_restore 7
+ 912              		.cfi_def_cfa_offset 0
+ 913 0024 7047     		bx	lr
+ 914              		.cfi_endproc
+ 915              	.LFE8:
+ 917              		.section	.text.can_transmit,"ax",%progbits
+ 918              		.align	1
+ 919              		.global	can_transmit
+ 920              		.syntax unified
+ 921              		.thumb
+ 922              		.thumb_func
+ 923              		.fpu softvfp
+ 925              	can_transmit:
+ 926              	.LFB9:
+ 341:../libopencm3/lib/stm32/can.c **** 
+ 342:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 343:../libopencm3/lib/stm32/can.c **** /** @brief CAN Transmit Message
+ 344:../libopencm3/lib/stm32/can.c **** 
+ 345:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register base @ref can_reg_base.
+ 346:../libopencm3/lib/stm32/can.c **** @param[in] id Unsigned int32. Message ID.
+ 347:../libopencm3/lib/stm32/can.c **** @param[in] ext bool. Extended message ID?
+ 348:../libopencm3/lib/stm32/can.c **** @param[in] rtr bool. Request transmit?
+ 349:../libopencm3/lib/stm32/can.c **** @param[in] length Unsigned int8. Message payload length.
+ 350:../libopencm3/lib/stm32/can.c **** @param[in] data Unsigned int8[]. Message payload data.
+ 351:../libopencm3/lib/stm32/can.c **** @returns int 0, 1 or 2 on success and depending on which outgoing mailbox got
+ 352:../libopencm3/lib/stm32/can.c **** selected. -1 if no mailbox was available and no transmission got queued.
+ 353:../libopencm3/lib/stm32/can.c ****  */
+ 354:../libopencm3/lib/stm32/can.c **** int can_transmit(uint32_t canport, uint32_t id, bool ext, bool rtr,
+ 355:../libopencm3/lib/stm32/can.c **** 		 uint8_t length, uint8_t *data)
+ 356:../libopencm3/lib/stm32/can.c **** {
+ 927              		.loc 1 356 1
+ 928              		.cfi_startproc
+ 929              		@ args = 8, pretend = 0, frame = 32
+ 930              		@ frame_needed = 1, uses_anonymous_args = 0
+ 931              		@ link register save eliminated.
+ 932 0000 80B4     		push	{r7}
+ 933              		.cfi_def_cfa_offset 4
+ 934              		.cfi_offset 7, -4
+ 935 0002 89B0     		sub	sp, sp, #36
+ 936              		.cfi_def_cfa_offset 40
+ 937 0004 00AF     		add	r7, sp, #0
+ 938              		.cfi_def_cfa_register 7
+ 939 0006 F860     		str	r0, [r7, #12]
+ 940 0008 B960     		str	r1, [r7, #8]
+ 941 000a 1146     		mov	r1, r2
+ 942 000c 1A46     		mov	r2, r3
+ 943 000e 0B46     		mov	r3, r1
+ 944 0010 FB71     		strb	r3, [r7, #7]
+ 945 0012 1346     		mov	r3, r2
+ 946 0014 BB71     		strb	r3, [r7, #6]
+ 357:../libopencm3/lib/stm32/can.c **** 	int ret = 0;
+ 947              		.loc 1 357 6
+ 948 0016 0023     		movs	r3, #0
+ 949 0018 FB61     		str	r3, [r7, #28]
+ 358:../libopencm3/lib/stm32/can.c **** 	uint32_t mailbox = 0;
+ 950              		.loc 1 358 11
+ 951 001a 0023     		movs	r3, #0
+ 952 001c BB61     		str	r3, [r7, #24]
+ 359:../libopencm3/lib/stm32/can.c **** 	union {
+ 360:../libopencm3/lib/stm32/can.c **** 		uint8_t data8[4];
+ 361:../libopencm3/lib/stm32/can.c **** 		uint32_t data32;
+ 362:../libopencm3/lib/stm32/can.c **** 	} tdlxr, tdhxr;
+ 363:../libopencm3/lib/stm32/can.c **** 
+ 364:../libopencm3/lib/stm32/can.c **** 	/* Check which transmit mailbox is empty if any. */
+ 365:../libopencm3/lib/stm32/can.c **** 	if ((CAN_TSR(canport) & CAN_TSR_TME0) == CAN_TSR_TME0) {
+ 953              		.loc 1 365 7
+ 954 001e FB68     		ldr	r3, [r7, #12]
+ 955 0020 0833     		adds	r3, r3, #8
+ 956 0022 1B68     		ldr	r3, [r3]
+ 957              		.loc 1 365 24
+ 958 0024 03F08063 		and	r3, r3, #67108864
+ 959              		.loc 1 365 5
+ 960 0028 B3F1806F 		cmp	r3, #67108864
+ 961 002c 05D1     		bne	.L48
+ 366:../libopencm3/lib/stm32/can.c **** 		ret = 0;
+ 962              		.loc 1 366 7
+ 963 002e 0023     		movs	r3, #0
+ 964 0030 FB61     		str	r3, [r7, #28]
+ 367:../libopencm3/lib/stm32/can.c **** 		mailbox = CAN_MBOX0;
+ 965              		.loc 1 367 11
+ 966 0032 4FF4C073 		mov	r3, #384
+ 967 0036 BB61     		str	r3, [r7, #24]
+ 968 0038 1EE0     		b	.L49
+ 969              	.L48:
+ 368:../libopencm3/lib/stm32/can.c **** 	} else if ((CAN_TSR(canport) & CAN_TSR_TME1) == CAN_TSR_TME1) {
+ 970              		.loc 1 368 14
+ 971 003a FB68     		ldr	r3, [r7, #12]
+ 972 003c 0833     		adds	r3, r3, #8
+ 973 003e 1B68     		ldr	r3, [r3]
+ 974              		.loc 1 368 31
+ 975 0040 03F00063 		and	r3, r3, #134217728
+ 976              		.loc 1 368 12
+ 977 0044 B3F1006F 		cmp	r3, #134217728
+ 978 0048 05D1     		bne	.L50
+ 369:../libopencm3/lib/stm32/can.c **** 		ret = 1;
+ 979              		.loc 1 369 7
+ 980 004a 0123     		movs	r3, #1
+ 981 004c FB61     		str	r3, [r7, #28]
+ 370:../libopencm3/lib/stm32/can.c **** 		mailbox = CAN_MBOX1;
+ 982              		.loc 1 370 11
+ 983 004e 4FF4C873 		mov	r3, #400
+ 984 0052 BB61     		str	r3, [r7, #24]
+ 985 0054 10E0     		b	.L49
+ 986              	.L50:
+ 371:../libopencm3/lib/stm32/can.c **** 	} else if ((CAN_TSR(canport) & CAN_TSR_TME2) == CAN_TSR_TME2) {
+ 987              		.loc 1 371 14
+ 988 0056 FB68     		ldr	r3, [r7, #12]
+ 989 0058 0833     		adds	r3, r3, #8
+ 990 005a 1B68     		ldr	r3, [r3]
+ 991              		.loc 1 371 31
+ 992 005c 03F08053 		and	r3, r3, #268435456
+ 993              		.loc 1 371 12
+ 994 0060 B3F1805F 		cmp	r3, #268435456
+ 995 0064 05D1     		bne	.L51
+ 372:../libopencm3/lib/stm32/can.c **** 		ret = 2;
+ 996              		.loc 1 372 7
+ 997 0066 0223     		movs	r3, #2
+ 998 0068 FB61     		str	r3, [r7, #28]
+ 373:../libopencm3/lib/stm32/can.c **** 		mailbox = CAN_MBOX2;
+ 999              		.loc 1 373 11
+ 1000 006a 4FF4D073 		mov	r3, #416
+ 1001 006e BB61     		str	r3, [r7, #24]
+ 1002 0070 02E0     		b	.L49
+ 1003              	.L51:
+ 374:../libopencm3/lib/stm32/can.c **** 	} else {
+ 375:../libopencm3/lib/stm32/can.c **** 		ret = -1;
+ 1004              		.loc 1 375 7
+ 1005 0072 4FF0FF33 		mov	r3, #-1
+ 1006 0076 FB61     		str	r3, [r7, #28]
+ 1007              	.L49:
+ 376:../libopencm3/lib/stm32/can.c **** 	}
+ 377:../libopencm3/lib/stm32/can.c **** 
+ 378:../libopencm3/lib/stm32/can.c **** 	/* If we have no empty mailbox return with an error. */
+ 379:../libopencm3/lib/stm32/can.c **** 	if (ret == -1) {
+ 1008              		.loc 1 379 5
+ 1009 0078 FB69     		ldr	r3, [r7, #28]
+ 1010 007a B3F1FF3F 		cmp	r3, #-1
+ 1011 007e 01D1     		bne	.L52
+ 380:../libopencm3/lib/stm32/can.c **** 		return ret;
+ 1012              		.loc 1 380 10
+ 1013 0080 FB69     		ldr	r3, [r7, #28]
+ 1014 0082 87E0     		b	.L67
+ 1015              	.L52:
+ 381:../libopencm3/lib/stm32/can.c **** 	}
+ 382:../libopencm3/lib/stm32/can.c **** 
+ 383:../libopencm3/lib/stm32/can.c **** 	if (ext) {
+ 1016              		.loc 1 383 5
+ 1017 0084 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1018 0086 002B     		cmp	r3, #0
+ 1019 0088 08D0     		beq	.L54
+ 384:../libopencm3/lib/stm32/can.c **** 		/* Set extended ID. */
+ 385:../libopencm3/lib/stm32/can.c **** 		CAN_TIxR(canport, mailbox) = (id << CAN_TIxR_EXID_SHIFT) |
+ 1020              		.loc 1 385 36
+ 1021 008a BB68     		ldr	r3, [r7, #8]
+ 1022 008c DB00     		lsls	r3, r3, #3
+ 1023              		.loc 1 385 3
+ 1024 008e F968     		ldr	r1, [r7, #12]
+ 1025 0090 BA69     		ldr	r2, [r7, #24]
+ 1026 0092 0A44     		add	r2, r2, r1
+ 1027              		.loc 1 385 60
+ 1028 0094 43F00403 		orr	r3, r3, #4
+ 1029              		.loc 1 385 30
+ 1030 0098 1360     		str	r3, [r2]
+ 1031 009a 06E0     		b	.L55
+ 1032              	.L54:
+ 386:../libopencm3/lib/stm32/can.c **** 			CAN_TIxR_IDE;
+ 387:../libopencm3/lib/stm32/can.c **** 	} else {
+ 388:../libopencm3/lib/stm32/can.c **** 		/* Set standard ID. */
+ 389:../libopencm3/lib/stm32/can.c **** 		CAN_TIxR(canport, mailbox) = id << CAN_TIxR_STID_SHIFT;
+ 1033              		.loc 1 389 3
+ 1034 009c FA68     		ldr	r2, [r7, #12]
+ 1035 009e BB69     		ldr	r3, [r7, #24]
+ 1036 00a0 1344     		add	r3, r3, r2
+ 1037 00a2 1A46     		mov	r2, r3
+ 1038              		.loc 1 389 35
+ 1039 00a4 BB68     		ldr	r3, [r7, #8]
+ 1040 00a6 5B05     		lsls	r3, r3, #21
+ 1041              		.loc 1 389 30
+ 1042 00a8 1360     		str	r3, [r2]
+ 1043              	.L55:
+ 390:../libopencm3/lib/stm32/can.c **** 	}
+ 391:../libopencm3/lib/stm32/can.c **** 
+ 392:../libopencm3/lib/stm32/can.c **** 	/* Set/clear remote transmission request bit. */
+ 393:../libopencm3/lib/stm32/can.c **** 	if (rtr) {
+ 1044              		.loc 1 393 5
+ 1045 00aa BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 1046 00ac 002B     		cmp	r3, #0
+ 1047 00ae 09D0     		beq	.L56
+ 394:../libopencm3/lib/stm32/can.c **** 		CAN_TIxR(canport, mailbox) |= CAN_TIxR_RTR; /* Set */
+ 1048              		.loc 1 394 30
+ 1049 00b0 FA68     		ldr	r2, [r7, #12]
+ 1050 00b2 BB69     		ldr	r3, [r7, #24]
+ 1051 00b4 1344     		add	r3, r3, r2
+ 1052 00b6 1B68     		ldr	r3, [r3]
+ 1053 00b8 F968     		ldr	r1, [r7, #12]
+ 1054 00ba BA69     		ldr	r2, [r7, #24]
+ 1055 00bc 0A44     		add	r2, r2, r1
+ 1056 00be 43F00203 		orr	r3, r3, #2
+ 1057 00c2 1360     		str	r3, [r2]
+ 1058              	.L56:
+ 395:../libopencm3/lib/stm32/can.c **** 	}
+ 396:../libopencm3/lib/stm32/can.c **** 
+ 397:../libopencm3/lib/stm32/can.c **** 	/* Set the DLC. */
+ 398:../libopencm3/lib/stm32/can.c **** 	CAN_TDTxR(canport, mailbox) &= ~CAN_TDTxR_DLC_MASK;
+ 1059              		.loc 1 398 30
+ 1060 00c4 FA68     		ldr	r2, [r7, #12]
+ 1061 00c6 BB69     		ldr	r3, [r7, #24]
+ 1062 00c8 1344     		add	r3, r3, r2
+ 1063 00ca 0433     		adds	r3, r3, #4
+ 1064 00cc 1B68     		ldr	r3, [r3]
+ 1065 00ce F968     		ldr	r1, [r7, #12]
+ 1066 00d0 BA69     		ldr	r2, [r7, #24]
+ 1067 00d2 0A44     		add	r2, r2, r1
+ 1068 00d4 0432     		adds	r2, r2, #4
+ 1069 00d6 23F00F03 		bic	r3, r3, #15
+ 1070 00da 1360     		str	r3, [r2]
+ 399:../libopencm3/lib/stm32/can.c **** 	CAN_TDTxR(canport, mailbox) |= (length & CAN_TDTxR_DLC_MASK);
+ 1071              		.loc 1 399 30
+ 1072 00dc FA68     		ldr	r2, [r7, #12]
+ 1073 00de BB69     		ldr	r3, [r7, #24]
+ 1074 00e0 1344     		add	r3, r3, r2
+ 1075 00e2 0433     		adds	r3, r3, #4
+ 1076 00e4 1A68     		ldr	r2, [r3]
+ 1077              		.loc 1 399 41
+ 1078 00e6 97F82830 		ldrb	r3, [r7, #40]	@ zero_extendqisi2
+ 1079 00ea 03F00F03 		and	r3, r3, #15
+ 1080              		.loc 1 399 30
+ 1081 00ee F868     		ldr	r0, [r7, #12]
+ 1082 00f0 B969     		ldr	r1, [r7, #24]
+ 1083 00f2 0144     		add	r1, r1, r0
+ 1084 00f4 0431     		adds	r1, r1, #4
+ 1085 00f6 1343     		orrs	r3, r3, r2
+ 1086 00f8 0B60     		str	r3, [r1]
+ 400:../libopencm3/lib/stm32/can.c **** 
+ 401:../libopencm3/lib/stm32/can.c **** 	switch (length) {
+ 1087              		.loc 1 401 2
+ 1088 00fa 97F82830 		ldrb	r3, [r7, #40]	@ zero_extendqisi2
+ 1089 00fe 013B     		subs	r3, r3, #1
+ 1090 0100 072B     		cmp	r3, #7
+ 1091 0102 2DD8     		bhi	.L69
+ 1092 0104 02A2     		adr	r2, .L59
+ 1093 0106 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 1094 010a 1A44     		add	r2, r2, r3
+ 1095 010c 1047     		bx	r2
+ 1096 010e 00BF     		.p2align 2
+ 1097              	.L59:
+ 1098 0110 4B000000 		.word	.L66+1-.L59
+ 1099 0114 45000000 		.word	.L65+1-.L59
+ 1100 0118 3F000000 		.word	.L64+1-.L59
+ 1101 011c 39000000 		.word	.L63+1-.L59
+ 1102 0120 33000000 		.word	.L62+1-.L59
+ 1103 0124 2D000000 		.word	.L61+1-.L59
+ 1104 0128 27000000 		.word	.L60+1-.L59
+ 1105 012c 21000000 		.word	.L58+1-.L59
+ 1106              		.p2align 1
+ 1107              	.L58:
+ 402:../libopencm3/lib/stm32/can.c **** 	case 8:
+ 403:../libopencm3/lib/stm32/can.c **** 		tdhxr.data8[3] = data[7];
+ 1108              		.loc 1 403 18
+ 1109 0130 FB6A     		ldr	r3, [r7, #44]
+ 1110 0132 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1111 0134 FB74     		strb	r3, [r7, #19]
+ 1112              	.L60:
+ 404:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 405:../libopencm3/lib/stm32/can.c **** 	case 7:
+ 406:../libopencm3/lib/stm32/can.c **** 		tdhxr.data8[2] = data[6];
+ 1113              		.loc 1 406 18
+ 1114 0136 FB6A     		ldr	r3, [r7, #44]
+ 1115 0138 9B79     		ldrb	r3, [r3, #6]	@ zero_extendqisi2
+ 1116 013a BB74     		strb	r3, [r7, #18]
+ 1117              	.L61:
+ 407:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 408:../libopencm3/lib/stm32/can.c **** 	case 6:
+ 409:../libopencm3/lib/stm32/can.c **** 		tdhxr.data8[1] = data[5];
+ 1118              		.loc 1 409 18
+ 1119 013c FB6A     		ldr	r3, [r7, #44]
+ 1120 013e 5B79     		ldrb	r3, [r3, #5]	@ zero_extendqisi2
+ 1121 0140 7B74     		strb	r3, [r7, #17]
+ 1122              	.L62:
+ 410:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 411:../libopencm3/lib/stm32/can.c **** 	case 5:
+ 412:../libopencm3/lib/stm32/can.c **** 		tdhxr.data8[0] = data[4];
+ 1123              		.loc 1 412 18
+ 1124 0142 FB6A     		ldr	r3, [r7, #44]
+ 1125 0144 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+ 1126 0146 3B74     		strb	r3, [r7, #16]
+ 1127              	.L63:
+ 413:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 414:../libopencm3/lib/stm32/can.c **** 	case 4:
+ 415:../libopencm3/lib/stm32/can.c **** 		tdlxr.data8[3] = data[3];
+ 1128              		.loc 1 415 18
+ 1129 0148 FB6A     		ldr	r3, [r7, #44]
+ 1130 014a DB78     		ldrb	r3, [r3, #3]	@ zero_extendqisi2
+ 1131 014c FB75     		strb	r3, [r7, #23]
+ 1132              	.L64:
+ 416:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 417:../libopencm3/lib/stm32/can.c **** 	case 3:
+ 418:../libopencm3/lib/stm32/can.c **** 		tdlxr.data8[2] = data[2];
+ 1133              		.loc 1 418 18
+ 1134 014e FB6A     		ldr	r3, [r7, #44]
+ 1135 0150 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 1136 0152 BB75     		strb	r3, [r7, #22]
+ 1137              	.L65:
+ 419:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 420:../libopencm3/lib/stm32/can.c **** 	case 2:
+ 421:../libopencm3/lib/stm32/can.c **** 		tdlxr.data8[1] = data[1];
+ 1138              		.loc 1 421 18
+ 1139 0154 FB6A     		ldr	r3, [r7, #44]
+ 1140 0156 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 1141 0158 7B75     		strb	r3, [r7, #21]
+ 1142              	.L66:
+ 422:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 423:../libopencm3/lib/stm32/can.c **** 	case 1:
+ 424:../libopencm3/lib/stm32/can.c **** 		tdlxr.data8[0] = data[0];
+ 1143              		.loc 1 424 24
+ 1144 015a FB6A     		ldr	r3, [r7, #44]
+ 1145 015c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1146              		.loc 1 424 18
+ 1147 015e 3B75     		strb	r3, [r7, #20]
+ 1148              	.L69:
+ 425:../libopencm3/lib/stm32/can.c **** 		/* fall through */
+ 426:../libopencm3/lib/stm32/can.c **** 	default:
+ 427:../libopencm3/lib/stm32/can.c **** 		break;
+ 1149              		.loc 1 427 3
+ 1150 0160 00BF     		nop
+ 428:../libopencm3/lib/stm32/can.c **** 	}
+ 429:../libopencm3/lib/stm32/can.c **** 	/* Set the data. */
+ 430:../libopencm3/lib/stm32/can.c **** 
+ 431:../libopencm3/lib/stm32/can.c **** 	CAN_TDLxR(canport, mailbox) = tdlxr.data32;
+ 1151              		.loc 1 431 2
+ 1152 0162 FA68     		ldr	r2, [r7, #12]
+ 1153 0164 BB69     		ldr	r3, [r7, #24]
+ 1154 0166 1344     		add	r3, r3, r2
+ 1155 0168 0833     		adds	r3, r3, #8
+ 1156 016a 1A46     		mov	r2, r3
+ 1157              		.loc 1 431 37
+ 1158 016c 7B69     		ldr	r3, [r7, #20]
+ 1159              		.loc 1 431 30
+ 1160 016e 1360     		str	r3, [r2]
+ 432:../libopencm3/lib/stm32/can.c **** 	CAN_TDHxR(canport, mailbox) = tdhxr.data32;
+ 1161              		.loc 1 432 2
+ 1162 0170 FA68     		ldr	r2, [r7, #12]
+ 1163 0172 BB69     		ldr	r3, [r7, #24]
+ 1164 0174 1344     		add	r3, r3, r2
+ 1165 0176 0C33     		adds	r3, r3, #12
+ 1166 0178 1A46     		mov	r2, r3
+ 1167              		.loc 1 432 37
+ 1168 017a 3B69     		ldr	r3, [r7, #16]
+ 1169              		.loc 1 432 30
+ 1170 017c 1360     		str	r3, [r2]
+ 433:../libopencm3/lib/stm32/can.c **** 
+ 434:../libopencm3/lib/stm32/can.c **** 	/* Request transmission. */
+ 435:../libopencm3/lib/stm32/can.c **** 	CAN_TIxR(canport, mailbox) |= CAN_TIxR_TXRQ;
+ 1171              		.loc 1 435 29
+ 1172 017e FA68     		ldr	r2, [r7, #12]
+ 1173 0180 BB69     		ldr	r3, [r7, #24]
+ 1174 0182 1344     		add	r3, r3, r2
+ 1175 0184 1B68     		ldr	r3, [r3]
+ 1176 0186 F968     		ldr	r1, [r7, #12]
+ 1177 0188 BA69     		ldr	r2, [r7, #24]
+ 1178 018a 0A44     		add	r2, r2, r1
+ 1179 018c 43F00103 		orr	r3, r3, #1
+ 1180 0190 1360     		str	r3, [r2]
+ 436:../libopencm3/lib/stm32/can.c **** 
+ 437:../libopencm3/lib/stm32/can.c **** 	return ret;
+ 1181              		.loc 1 437 9
+ 1182 0192 FB69     		ldr	r3, [r7, #28]
+ 1183              	.L67:
+ 438:../libopencm3/lib/stm32/can.c **** }
+ 1184              		.loc 1 438 1 discriminator 1
+ 1185 0194 1846     		mov	r0, r3
+ 1186 0196 2437     		adds	r7, r7, #36
+ 1187              		.cfi_def_cfa_offset 4
+ 1188 0198 BD46     		mov	sp, r7
+ 1189              		.cfi_def_cfa_register 13
+ 1190              		@ sp needed
+ 1191 019a 80BC     		pop	{r7}
+ 1192              		.cfi_restore 7
+ 1193              		.cfi_def_cfa_offset 0
+ 1194 019c 7047     		bx	lr
+ 1195              		.cfi_endproc
+ 1196              	.LFE9:
+ 1198              		.section	.text.can_fifo_release,"ax",%progbits
+ 1199              		.align	1
+ 1200              		.global	can_fifo_release
+ 1201              		.syntax unified
+ 1202              		.thumb
+ 1203              		.thumb_func
+ 1204              		.fpu softvfp
+ 1206              	can_fifo_release:
+ 1207              	.LFB10:
+ 439:../libopencm3/lib/stm32/can.c **** 
+ 440:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 441:../libopencm3/lib/stm32/can.c **** /** @brief CAN Release FIFO
+ 442:../libopencm3/lib/stm32/can.c **** 
+ 443:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register base @ref can_reg_base.
+ 444:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int8. FIFO id.
+ 445:../libopencm3/lib/stm32/can.c ****  */
+ 446:../libopencm3/lib/stm32/can.c **** void can_fifo_release(uint32_t canport, uint8_t fifo)
+ 447:../libopencm3/lib/stm32/can.c **** {
+ 1208              		.loc 1 447 1
+ 1209              		.cfi_startproc
+ 1210              		@ args = 0, pretend = 0, frame = 8
+ 1211              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1212              		@ link register save eliminated.
+ 1213 0000 80B4     		push	{r7}
+ 1214              		.cfi_def_cfa_offset 4
+ 1215              		.cfi_offset 7, -4
+ 1216 0002 83B0     		sub	sp, sp, #12
+ 1217              		.cfi_def_cfa_offset 16
+ 1218 0004 00AF     		add	r7, sp, #0
+ 1219              		.cfi_def_cfa_register 7
+ 1220 0006 7860     		str	r0, [r7, #4]
+ 1221 0008 0B46     		mov	r3, r1
+ 1222 000a FB70     		strb	r3, [r7, #3]
+ 448:../libopencm3/lib/stm32/can.c **** 	if (fifo == 0) {
+ 1223              		.loc 1 448 5
+ 1224 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1225 000e 002B     		cmp	r3, #0
+ 1226 0010 08D1     		bne	.L71
+ 449:../libopencm3/lib/stm32/can.c **** 		CAN_RF0R(canport) |= CAN_RF1R_RFOM1;
+ 1227              		.loc 1 449 21
+ 1228 0012 7B68     		ldr	r3, [r7, #4]
+ 1229 0014 0C33     		adds	r3, r3, #12
+ 1230 0016 1B68     		ldr	r3, [r3]
+ 1231 0018 7A68     		ldr	r2, [r7, #4]
+ 1232 001a 0C32     		adds	r2, r2, #12
+ 1233 001c 43F02003 		orr	r3, r3, #32
+ 1234 0020 1360     		str	r3, [r2]
+ 450:../libopencm3/lib/stm32/can.c **** 	} else {
+ 451:../libopencm3/lib/stm32/can.c **** 		CAN_RF1R(canport) |= CAN_RF1R_RFOM1;
+ 452:../libopencm3/lib/stm32/can.c **** 	}
+ 453:../libopencm3/lib/stm32/can.c **** }
+ 1235              		.loc 1 453 1
+ 1236 0022 07E0     		b	.L73
+ 1237              	.L71:
+ 451:../libopencm3/lib/stm32/can.c **** 	}
+ 1238              		.loc 1 451 21
+ 1239 0024 7B68     		ldr	r3, [r7, #4]
+ 1240 0026 1033     		adds	r3, r3, #16
+ 1241 0028 1B68     		ldr	r3, [r3]
+ 1242 002a 7A68     		ldr	r2, [r7, #4]
+ 1243 002c 1032     		adds	r2, r2, #16
+ 1244 002e 43F02003 		orr	r3, r3, #32
+ 1245 0032 1360     		str	r3, [r2]
+ 1246              	.L73:
+ 1247              		.loc 1 453 1
+ 1248 0034 00BF     		nop
+ 1249 0036 0C37     		adds	r7, r7, #12
+ 1250              		.cfi_def_cfa_offset 4
+ 1251 0038 BD46     		mov	sp, r7
+ 1252              		.cfi_def_cfa_register 13
+ 1253              		@ sp needed
+ 1254 003a 80BC     		pop	{r7}
+ 1255              		.cfi_restore 7
+ 1256              		.cfi_def_cfa_offset 0
+ 1257 003c 7047     		bx	lr
+ 1258              		.cfi_endproc
+ 1259              	.LFE10:
+ 1261              		.section	.rodata
+ 1262              		.align	2
+ 1263              	.LC0:
+ 1264 0000 B0010000 		.word	432
+ 1265 0004 C0010000 		.word	448
+ 1266              		.section	.text.can_receive,"ax",%progbits
+ 1267              		.align	1
+ 1268              		.global	can_receive
+ 1269              		.syntax unified
+ 1270              		.thumb
+ 1271              		.thumb_func
+ 1272              		.fpu softvfp
+ 1274              	can_receive:
+ 1275              	.LFB11:
+ 454:../libopencm3/lib/stm32/can.c **** 
+ 455:../libopencm3/lib/stm32/can.c **** /*---------------------------------------------------------------------------*/
+ 456:../libopencm3/lib/stm32/can.c **** /** @brief CAN Receive Message
+ 457:../libopencm3/lib/stm32/can.c **** 
+ 458:../libopencm3/lib/stm32/can.c **** @param[in] canport Unsigned int32. CAN block register base @ref can_reg_base.
+ 459:../libopencm3/lib/stm32/can.c **** @param[in] fifo Unsigned int8. FIFO id.
+ 460:../libopencm3/lib/stm32/can.c **** @param[in] release bool. Release the FIFO automatically after coping data out.
+ 461:../libopencm3/lib/stm32/can.c **** @param[out] id Unsigned int32 pointer. Message ID.
+ 462:../libopencm3/lib/stm32/can.c **** @param[out] ext bool pointer. The message ID is extended?
+ 463:../libopencm3/lib/stm32/can.c **** @param[out] rtr bool pointer. Request of transmission?
+ 464:../libopencm3/lib/stm32/can.c **** @param[out] fmi Unsigned int8 pointer. ID of the matched filter.
+ 465:../libopencm3/lib/stm32/can.c **** @param[out] length Unsigned int8 pointer. Length of message payload.
+ 466:../libopencm3/lib/stm32/can.c **** @param[out] data Unsigned int8[]. Message payload data.
+ 467:../libopencm3/lib/stm32/can.c **** @param[out] timestamp Pointer to store the message timestamp.
+ 468:../libopencm3/lib/stm32/can.c **** 			Only valid on time triggered CAN. Use NULL to ignore.
+ 469:../libopencm3/lib/stm32/can.c ****  */
+ 470:../libopencm3/lib/stm32/can.c **** void can_receive(uint32_t canport, uint8_t fifo, bool release, uint32_t *id,
+ 471:../libopencm3/lib/stm32/can.c **** 		 bool *ext, bool *rtr, uint8_t *fmi, uint8_t *length,
+ 472:../libopencm3/lib/stm32/can.c **** 		 uint8_t *data, uint16_t *timestamp)
+ 473:../libopencm3/lib/stm32/can.c **** {
+ 1276              		.loc 1 473 1
+ 1277              		.cfi_startproc
+ 1278              		@ args = 24, pretend = 0, frame = 40
+ 1279              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1280 0000 80B5     		push	{r7, lr}
+ 1281              		.cfi_def_cfa_offset 8
+ 1282              		.cfi_offset 7, -8
+ 1283              		.cfi_offset 14, -4
+ 1284 0002 8AB0     		sub	sp, sp, #40
+ 1285              		.cfi_def_cfa_offset 48
+ 1286 0004 00AF     		add	r7, sp, #0
+ 1287              		.cfi_def_cfa_register 7
+ 1288 0006 F860     		str	r0, [r7, #12]
+ 1289 0008 7B60     		str	r3, [r7, #4]
+ 1290 000a 0B46     		mov	r3, r1
+ 1291 000c FB72     		strb	r3, [r7, #11]
+ 1292 000e 1346     		mov	r3, r2
+ 1293 0010 BB72     		strb	r3, [r7, #10]
+ 474:../libopencm3/lib/stm32/can.c **** 	uint32_t fifo_id = 0;
+ 1294              		.loc 1 474 11
+ 1295 0012 0023     		movs	r3, #0
+ 1296 0014 7B62     		str	r3, [r7, #36]
+ 475:../libopencm3/lib/stm32/can.c **** 	union {
+ 476:../libopencm3/lib/stm32/can.c **** 		uint8_t data8[4];
+ 477:../libopencm3/lib/stm32/can.c **** 		uint32_t data32;
+ 478:../libopencm3/lib/stm32/can.c **** 	} rdlxr, rdhxr;
+ 479:../libopencm3/lib/stm32/can.c **** 	const uint32_t fifoid_array[2] = {CAN_FIFO0, CAN_FIFO1};
+ 1297              		.loc 1 479 17
+ 1298 0016 4E4B     		ldr	r3, .L82
+ 1299              	.LPIC0:
+ 1300 0018 7B44     		add	r3, pc
+ 1301 001a 1A46     		mov	r2, r3
+ 1302 001c 07F11403 		add	r3, r7, #20
+ 1303 0020 92E80300 		ldm	r2, {r0, r1}
+ 1304 0024 83E80300 		stm	r3, {r0, r1}
+ 480:../libopencm3/lib/stm32/can.c **** 
+ 481:../libopencm3/lib/stm32/can.c **** 	fifo_id = fifoid_array[fifo];
+ 1305              		.loc 1 481 24
+ 1306 0028 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1307              		.loc 1 481 10
+ 1308 002a 9B00     		lsls	r3, r3, #2
+ 1309 002c 07F12802 		add	r2, r7, #40
+ 1310 0030 1344     		add	r3, r3, r2
+ 1311 0032 53F8143C 		ldr	r3, [r3, #-20]
+ 1312 0036 7B62     		str	r3, [r7, #36]
+ 482:../libopencm3/lib/stm32/can.c **** 
+ 483:../libopencm3/lib/stm32/can.c **** 	/* Get type of CAN ID and CAN ID. */
+ 484:../libopencm3/lib/stm32/can.c **** 	if (CAN_RIxR(canport, fifo_id) & CAN_RIxR_IDE) {
+ 1313              		.loc 1 484 6
+ 1314 0038 FA68     		ldr	r2, [r7, #12]
+ 1315 003a 7B6A     		ldr	r3, [r7, #36]
+ 1316 003c 1344     		add	r3, r3, r2
+ 1317 003e 1B68     		ldr	r3, [r3]
+ 1318              		.loc 1 484 33
+ 1319 0040 03F00403 		and	r3, r3, #4
+ 1320              		.loc 1 484 5
+ 1321 0044 002B     		cmp	r3, #0
+ 1322 0046 0CD0     		beq	.L75
+ 485:../libopencm3/lib/stm32/can.c **** 		*ext = true;
+ 1323              		.loc 1 485 8
+ 1324 0048 3B6B     		ldr	r3, [r7, #48]
+ 1325 004a 0122     		movs	r2, #1
+ 1326 004c 1A70     		strb	r2, [r3]
+ 486:../libopencm3/lib/stm32/can.c **** 		/* Get extended CAN ID. */
+ 487:../libopencm3/lib/stm32/can.c **** 		*id = (CAN_RIxR(canport, fifo_id) >> CAN_RIxR_EXID_SHIFT) &
+ 1327              		.loc 1 487 10
+ 1328 004e FA68     		ldr	r2, [r7, #12]
+ 1329 0050 7B6A     		ldr	r3, [r7, #36]
+ 1330 0052 1344     		add	r3, r3, r2
+ 1331 0054 1B68     		ldr	r3, [r3]
+ 1332              		.loc 1 487 37
+ 1333 0056 DB08     		lsrs	r3, r3, #3
+ 1334              		.loc 1 487 61
+ 1335 0058 23F06042 		bic	r2, r3, #-536870912
+ 1336              		.loc 1 487 7
+ 1337 005c 7B68     		ldr	r3, [r7, #4]
+ 1338 005e 1A60     		str	r2, [r3]
+ 1339 0060 0BE0     		b	.L76
+ 1340              	.L75:
+ 488:../libopencm3/lib/stm32/can.c **** 			CAN_RIxR_EXID_MASK;
+ 489:../libopencm3/lib/stm32/can.c **** 	} else {
+ 490:../libopencm3/lib/stm32/can.c **** 		*ext = false;
+ 1341              		.loc 1 490 8
+ 1342 0062 3B6B     		ldr	r3, [r7, #48]
+ 1343 0064 0022     		movs	r2, #0
+ 1344 0066 1A70     		strb	r2, [r3]
+ 491:../libopencm3/lib/stm32/can.c **** 		/* Get standard CAN ID. */
+ 492:../libopencm3/lib/stm32/can.c **** 		*id = (CAN_RIxR(canport, fifo_id) >> CAN_RIxR_STID_SHIFT) &
+ 1345              		.loc 1 492 10
+ 1346 0068 FA68     		ldr	r2, [r7, #12]
+ 1347 006a 7B6A     		ldr	r3, [r7, #36]
+ 1348 006c 1344     		add	r3, r3, r2
+ 1349 006e 1B68     		ldr	r3, [r3]
+ 1350              		.loc 1 492 37
+ 1351 0070 5B0D     		lsrs	r3, r3, #21
+ 1352              		.loc 1 492 61
+ 1353 0072 C3F30A02 		ubfx	r2, r3, #0, #11
+ 1354              		.loc 1 492 7
+ 1355 0076 7B68     		ldr	r3, [r7, #4]
+ 1356 0078 1A60     		str	r2, [r3]
+ 1357              	.L76:
+ 493:../libopencm3/lib/stm32/can.c **** 			CAN_RIxR_STID_MASK;
+ 494:../libopencm3/lib/stm32/can.c **** 	}
+ 495:../libopencm3/lib/stm32/can.c **** 
+ 496:../libopencm3/lib/stm32/can.c **** 	/* Get remote transmit flag. */
+ 497:../libopencm3/lib/stm32/can.c **** 	if (CAN_RIxR(canport, fifo_id) & CAN_RIxR_RTR) {
+ 1358              		.loc 1 497 6
+ 1359 007a FA68     		ldr	r2, [r7, #12]
+ 1360 007c 7B6A     		ldr	r3, [r7, #36]
+ 1361 007e 1344     		add	r3, r3, r2
+ 1362 0080 1B68     		ldr	r3, [r3]
+ 1363              		.loc 1 497 33
+ 1364 0082 03F00203 		and	r3, r3, #2
+ 1365              		.loc 1 497 5
+ 1366 0086 002B     		cmp	r3, #0
+ 1367 0088 03D0     		beq	.L77
+ 498:../libopencm3/lib/stm32/can.c **** 		*rtr = true;
+ 1368              		.loc 1 498 8
+ 1369 008a 7B6B     		ldr	r3, [r7, #52]
+ 1370 008c 0122     		movs	r2, #1
+ 1371 008e 1A70     		strb	r2, [r3]
+ 1372 0090 02E0     		b	.L78
+ 1373              	.L77:
+ 499:../libopencm3/lib/stm32/can.c **** 	} else {
+ 500:../libopencm3/lib/stm32/can.c **** 		*rtr = false;
+ 1374              		.loc 1 500 8
+ 1375 0092 7B6B     		ldr	r3, [r7, #52]
+ 1376 0094 0022     		movs	r2, #0
+ 1377 0096 1A70     		strb	r2, [r3]
+ 1378              	.L78:
+ 501:../libopencm3/lib/stm32/can.c **** 	}
+ 502:../libopencm3/lib/stm32/can.c **** 
+ 503:../libopencm3/lib/stm32/can.c **** 	/* Get filter match ID. */
+ 504:../libopencm3/lib/stm32/can.c **** 	*fmi = ((CAN_RDTxR(canport, fifo_id) & CAN_RDTxR_FMI_MASK) >>
+ 1379              		.loc 1 504 11
+ 1380 0098 FA68     		ldr	r2, [r7, #12]
+ 1381 009a 7B6A     		ldr	r3, [r7, #36]
+ 1382 009c 1344     		add	r3, r3, r2
+ 1383 009e 0433     		adds	r3, r3, #4
+ 1384 00a0 1B68     		ldr	r3, [r3]
+ 1385              		.loc 1 504 61
+ 1386 00a2 1B0A     		lsrs	r3, r3, #8
+ 1387              		.loc 1 504 7
+ 1388 00a4 DAB2     		uxtb	r2, r3
+ 1389 00a6 BB6B     		ldr	r3, [r7, #56]
+ 1390 00a8 1A70     		strb	r2, [r3]
+ 505:../libopencm3/lib/stm32/can.c **** 		CAN_RDTxR_FMI_SHIFT);
+ 506:../libopencm3/lib/stm32/can.c **** 
+ 507:../libopencm3/lib/stm32/can.c **** 	/* Get data length. */
+ 508:../libopencm3/lib/stm32/can.c **** 	*length = CAN_RDTxR(canport, fifo_id) & CAN_RDTxR_DLC_MASK;
+ 1391              		.loc 1 508 12
+ 1392 00aa FA68     		ldr	r2, [r7, #12]
+ 1393 00ac 7B6A     		ldr	r3, [r7, #36]
+ 1394 00ae 1344     		add	r3, r3, r2
+ 1395 00b0 0433     		adds	r3, r3, #4
+ 1396 00b2 1B68     		ldr	r3, [r3]
+ 1397              		.loc 1 508 40
+ 1398 00b4 DBB2     		uxtb	r3, r3
+ 1399 00b6 03F00F03 		and	r3, r3, #15
+ 1400 00ba DAB2     		uxtb	r2, r3
+ 1401              		.loc 1 508 10
+ 1402 00bc FB6B     		ldr	r3, [r7, #60]
+ 1403 00be 1A70     		strb	r2, [r3]
+ 509:../libopencm3/lib/stm32/can.c **** 	/* accelerate reception by copying the CAN data from the controller
+ 510:../libopencm3/lib/stm32/can.c **** 	 * memory to the fast internal RAM
+ 511:../libopencm3/lib/stm32/can.c **** 	 */
+ 512:../libopencm3/lib/stm32/can.c **** 
+ 513:../libopencm3/lib/stm32/can.c **** 	if (timestamp) {
+ 1404              		.loc 1 513 5
+ 1405 00c0 7B6C     		ldr	r3, [r7, #68]
+ 1406 00c2 002B     		cmp	r3, #0
+ 1407 00c4 08D0     		beq	.L79
+ 514:../libopencm3/lib/stm32/can.c **** 		*timestamp = (CAN_RDTxR(canport, fifo_id) &
+ 1408              		.loc 1 514 17
+ 1409 00c6 FA68     		ldr	r2, [r7, #12]
+ 1410 00c8 7B6A     		ldr	r3, [r7, #36]
+ 1411 00ca 1344     		add	r3, r3, r2
+ 1412 00cc 0433     		adds	r3, r3, #4
+ 1413 00ce 1B68     		ldr	r3, [r3]
+ 515:../libopencm3/lib/stm32/can.c **** 			CAN_RDTxR_TIME_MASK) >> CAN_RDTxR_TIME_SHIFT;
+ 1414              		.loc 1 515 25
+ 1415 00d0 1B0C     		lsrs	r3, r3, #16
+ 514:../libopencm3/lib/stm32/can.c **** 		*timestamp = (CAN_RDTxR(canport, fifo_id) &
+ 1416              		.loc 1 514 14
+ 1417 00d2 9AB2     		uxth	r2, r3
+ 1418 00d4 7B6C     		ldr	r3, [r7, #68]
+ 1419 00d6 1A80     		strh	r2, [r3]	@ movhi
+ 1420              	.L79:
+ 516:../libopencm3/lib/stm32/can.c **** 	}
+ 517:../libopencm3/lib/stm32/can.c **** 
+ 518:../libopencm3/lib/stm32/can.c **** 	rdlxr.data32 = CAN_RDLxR(canport, fifo_id);
+ 1421              		.loc 1 518 17
+ 1422 00d8 FA68     		ldr	r2, [r7, #12]
+ 1423 00da 7B6A     		ldr	r3, [r7, #36]
+ 1424 00dc 1344     		add	r3, r3, r2
+ 1425 00de 0833     		adds	r3, r3, #8
+ 1426 00e0 1B68     		ldr	r3, [r3]
+ 1427              		.loc 1 518 15
+ 1428 00e2 3B62     		str	r3, [r7, #32]
+ 519:../libopencm3/lib/stm32/can.c **** 	rdhxr.data32 = CAN_RDHxR(canport, fifo_id);
+ 1429              		.loc 1 519 17
+ 1430 00e4 FA68     		ldr	r2, [r7, #12]
+ 1431 00e6 7B6A     		ldr	r3, [r7, #36]
+ 1432 00e8 1344     		add	r3, r3, r2
+ 1433 00ea 0C33     		adds	r3, r3, #12
+ 1434 00ec 1B68     		ldr	r3, [r3]
+ 1435              		.loc 1 519 15
+ 1436 00ee FB61     		str	r3, [r7, #28]
+ 520:../libopencm3/lib/stm32/can.c **** 	/* */
+ 521:../libopencm3/lib/stm32/can.c **** 	/* Get data.
+ 522:../libopencm3/lib/stm32/can.c **** 	 * Byte wise copy is needed because we do not know the alignment
+ 523:../libopencm3/lib/stm32/can.c **** 	 * of the input buffer.
+ 524:../libopencm3/lib/stm32/can.c **** 	 * Here copying 8 bytes unconditionally is faster than using loop
+ 525:../libopencm3/lib/stm32/can.c **** 	 *
+ 526:../libopencm3/lib/stm32/can.c **** 	 * It is OK to copy all 8 bytes because the upper layer must be
+ 527:../libopencm3/lib/stm32/can.c **** 	 * prepared for data length bigger expected.
+ 528:../libopencm3/lib/stm32/can.c **** 	 * In contrary the driver has no information about the intended size.
+ 529:../libopencm3/lib/stm32/can.c **** 	 * This could be different if the max length would be handed over
+ 530:../libopencm3/lib/stm32/can.c **** 	 * to the function, but it is not the case
+ 531:../libopencm3/lib/stm32/can.c **** 	 */
+ 532:../libopencm3/lib/stm32/can.c **** 	data[0] = rdlxr.data8[0];
+ 1437              		.loc 1 532 23
+ 1438 00f0 97F82020 		ldrb	r2, [r7, #32]	@ zero_extendqisi2
+ 1439              		.loc 1 532 10
+ 1440 00f4 3B6C     		ldr	r3, [r7, #64]
+ 1441 00f6 1A70     		strb	r2, [r3]
+ 533:../libopencm3/lib/stm32/can.c **** 	data[1] = rdlxr.data8[1];
+ 1442              		.loc 1 533 6
+ 1443 00f8 3B6C     		ldr	r3, [r7, #64]
+ 1444 00fa 0133     		adds	r3, r3, #1
+ 1445              		.loc 1 533 23
+ 1446 00fc 97F82120 		ldrb	r2, [r7, #33]	@ zero_extendqisi2
+ 1447              		.loc 1 533 10
+ 1448 0100 1A70     		strb	r2, [r3]
+ 534:../libopencm3/lib/stm32/can.c **** 	data[2] = rdlxr.data8[2];
+ 1449              		.loc 1 534 6
+ 1450 0102 3B6C     		ldr	r3, [r7, #64]
+ 1451 0104 0233     		adds	r3, r3, #2
+ 1452              		.loc 1 534 23
+ 1453 0106 97F82220 		ldrb	r2, [r7, #34]	@ zero_extendqisi2
+ 1454              		.loc 1 534 10
+ 1455 010a 1A70     		strb	r2, [r3]
+ 535:../libopencm3/lib/stm32/can.c **** 	data[3] = rdlxr.data8[3];
+ 1456              		.loc 1 535 6
+ 1457 010c 3B6C     		ldr	r3, [r7, #64]
+ 1458 010e 0333     		adds	r3, r3, #3
+ 1459              		.loc 1 535 23
+ 1460 0110 97F82320 		ldrb	r2, [r7, #35]	@ zero_extendqisi2
+ 1461              		.loc 1 535 10
+ 1462 0114 1A70     		strb	r2, [r3]
+ 536:../libopencm3/lib/stm32/can.c **** 	data[4] = rdhxr.data8[0];
+ 1463              		.loc 1 536 6
+ 1464 0116 3B6C     		ldr	r3, [r7, #64]
+ 1465 0118 0433     		adds	r3, r3, #4
+ 1466              		.loc 1 536 23
+ 1467 011a 3A7F     		ldrb	r2, [r7, #28]	@ zero_extendqisi2
+ 1468              		.loc 1 536 10
+ 1469 011c 1A70     		strb	r2, [r3]
+ 537:../libopencm3/lib/stm32/can.c **** 	data[5] = rdhxr.data8[1];
+ 1470              		.loc 1 537 6
+ 1471 011e 3B6C     		ldr	r3, [r7, #64]
+ 1472 0120 0533     		adds	r3, r3, #5
+ 1473              		.loc 1 537 23
+ 1474 0122 7A7F     		ldrb	r2, [r7, #29]	@ zero_extendqisi2
+ 1475              		.loc 1 537 10
+ 1476 0124 1A70     		strb	r2, [r3]
+ 538:../libopencm3/lib/stm32/can.c **** 	data[6] = rdhxr.data8[2];
+ 1477              		.loc 1 538 6
+ 1478 0126 3B6C     		ldr	r3, [r7, #64]
+ 1479 0128 0633     		adds	r3, r3, #6
+ 1480              		.loc 1 538 23
+ 1481 012a BA7F     		ldrb	r2, [r7, #30]	@ zero_extendqisi2
+ 1482              		.loc 1 538 10
+ 1483 012c 1A70     		strb	r2, [r3]
+ 539:../libopencm3/lib/stm32/can.c **** 	data[7] = rdhxr.data8[3];
+ 1484              		.loc 1 539 6
+ 1485 012e 3B6C     		ldr	r3, [r7, #64]
+ 1486 0130 0733     		adds	r3, r3, #7
+ 1487              		.loc 1 539 23
+ 1488 0132 FA7F     		ldrb	r2, [r7, #31]	@ zero_extendqisi2
+ 1489              		.loc 1 539 10
+ 1490 0134 1A70     		strb	r2, [r3]
+ 540:../libopencm3/lib/stm32/can.c **** 
+ 541:../libopencm3/lib/stm32/can.c **** 	/* Release the FIFO. */
+ 542:../libopencm3/lib/stm32/can.c **** 	if (release) {
+ 1491              		.loc 1 542 5
+ 1492 0136 BB7A     		ldrb	r3, [r7, #10]	@ zero_extendqisi2
+ 1493 0138 002B     		cmp	r3, #0
+ 1494 013a 04D0     		beq	.L81
+ 543:../libopencm3/lib/stm32/can.c **** 		can_fifo_release(canport, fifo);
+ 1495              		.loc 1 543 3
+ 1496 013c FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1497 013e 1946     		mov	r1, r3
+ 1498 0140 F868     		ldr	r0, [r7, #12]
+ 1499 0142 FFF7FEFF 		bl	can_fifo_release(PLT)
+ 1500              	.L81:
+ 544:../libopencm3/lib/stm32/can.c **** 	}
+ 545:../libopencm3/lib/stm32/can.c **** }
+ 1501              		.loc 1 545 1
+ 1502 0146 00BF     		nop
+ 1503 0148 2837     		adds	r7, r7, #40
+ 1504              		.cfi_def_cfa_offset 8
+ 1505 014a BD46     		mov	sp, r7
+ 1506              		.cfi_def_cfa_register 13
+ 1507              		@ sp needed
+ 1508 014c 80BD     		pop	{r7, pc}
+ 1509              	.L83:
+ 1510 014e 00BF     		.align	2
+ 1511              	.L82:
+ 1512 0150 34010000 		.word	.LC0-(.LPIC0+4)
+ 1513              		.cfi_endproc
+ 1514              	.LFE11:
+ 1516              		.section	.text.can_available_mailbox,"ax",%progbits
+ 1517              		.align	1
+ 1518              		.global	can_available_mailbox
+ 1519              		.syntax unified
+ 1520              		.thumb
+ 1521              		.thumb_func
+ 1522              		.fpu softvfp
+ 1524              	can_available_mailbox:
+ 1525              	.LFB12:
+ 546:../libopencm3/lib/stm32/can.c **** 
+ 547:../libopencm3/lib/stm32/can.c **** bool can_available_mailbox(uint32_t canport)
+ 548:../libopencm3/lib/stm32/can.c **** {
+ 1526              		.loc 1 548 1
+ 1527              		.cfi_startproc
+ 1528              		@ args = 0, pretend = 0, frame = 8
+ 1529              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1530              		@ link register save eliminated.
+ 1531 0000 80B4     		push	{r7}
+ 1532              		.cfi_def_cfa_offset 4
+ 1533              		.cfi_offset 7, -4
+ 1534 0002 83B0     		sub	sp, sp, #12
+ 1535              		.cfi_def_cfa_offset 16
+ 1536 0004 00AF     		add	r7, sp, #0
+ 1537              		.cfi_def_cfa_register 7
+ 1538 0006 7860     		str	r0, [r7, #4]
+ 549:../libopencm3/lib/stm32/can.c **** 	return CAN_TSR(canport) & (CAN_TSR_TME0 | CAN_TSR_TME1 | CAN_TSR_TME2);
+ 1539              		.loc 1 549 9
+ 1540 0008 7B68     		ldr	r3, [r7, #4]
+ 1541 000a 0833     		adds	r3, r3, #8
+ 1542 000c 1B68     		ldr	r3, [r3]
+ 1543              		.loc 1 549 26
+ 1544 000e 03F0E053 		and	r3, r3, #469762048
+ 1545 0012 002B     		cmp	r3, #0
+ 1546 0014 14BF     		ite	ne
+ 1547 0016 0123     		movne	r3, #1
+ 1548 0018 0023     		moveq	r3, #0
+ 1549 001a DBB2     		uxtb	r3, r3
+ 550:../libopencm3/lib/stm32/can.c **** }
+ 1550              		.loc 1 550 1
+ 1551 001c 1846     		mov	r0, r3
+ 1552 001e 0C37     		adds	r7, r7, #12
+ 1553              		.cfi_def_cfa_offset 4
+ 1554 0020 BD46     		mov	sp, r7
+ 1555              		.cfi_def_cfa_register 13
+ 1556              		@ sp needed
+ 1557 0022 80BC     		pop	{r7}
+ 1558              		.cfi_restore 7
+ 1559              		.cfi_def_cfa_offset 0
+ 1560 0024 7047     		bx	lr
+ 1561              		.cfi_endproc
+ 1562              	.LFE12:
+ 1564              		.text
+ 1565              	.Letext0:
+ 1566              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1567              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1568              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 can.c
+     /tmp/ccRmlLmD.s:16     .text.can_reset:0000000000000000 $t
+     /tmp/ccRmlLmD.s:24     .text.can_reset:0000000000000000 can_reset
+     /tmp/ccRmlLmD.s:66     .text.can_reset:000000000000002c $d
+     /tmp/ccRmlLmD.s:71     .text.can_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:78     .text.can_init:0000000000000000 can_init
+     /tmp/ccRmlLmD.s:403    .text.can_filter_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:410    .text.can_filter_init:0000000000000000 can_filter_init
+     /tmp/ccRmlLmD.s:575    .text.can_filter_init:00000000000000ec $d
+     /tmp/ccRmlLmD.s:584    .text.can_filter_id_mask_16bit_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:591    .text.can_filter_id_mask_16bit_init:0000000000000000 can_filter_id_mask_16bit_init
+     /tmp/ccRmlLmD.s:653    .text.can_filter_id_mask_32bit_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:660    .text.can_filter_id_mask_32bit_init:0000000000000000 can_filter_id_mask_32bit_init
+     /tmp/ccRmlLmD.s:702    .text.can_filter_id_list_16bit_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:709    .text.can_filter_id_list_16bit_init:0000000000000000 can_filter_id_list_16bit_init
+     /tmp/ccRmlLmD.s:771    .text.can_filter_id_list_32bit_init:0000000000000000 $t
+     /tmp/ccRmlLmD.s:778    .text.can_filter_id_list_32bit_init:0000000000000000 can_filter_id_list_32bit_init
+     /tmp/ccRmlLmD.s:820    .text.can_enable_irq:0000000000000000 $t
+     /tmp/ccRmlLmD.s:827    .text.can_enable_irq:0000000000000000 can_enable_irq
+     /tmp/ccRmlLmD.s:868    .text.can_disable_irq:0000000000000000 $t
+     /tmp/ccRmlLmD.s:875    .text.can_disable_irq:0000000000000000 can_disable_irq
+     /tmp/ccRmlLmD.s:918    .text.can_transmit:0000000000000000 $t
+     /tmp/ccRmlLmD.s:925    .text.can_transmit:0000000000000000 can_transmit
+     /tmp/ccRmlLmD.s:1098   .text.can_transmit:0000000000000110 $d
+     /tmp/ccRmlLmD.s:1106   .text.can_transmit:0000000000000130 $t
+     /tmp/ccRmlLmD.s:1199   .text.can_fifo_release:0000000000000000 $t
+     /tmp/ccRmlLmD.s:1206   .text.can_fifo_release:0000000000000000 can_fifo_release
+     /tmp/ccRmlLmD.s:1262   .rodata:0000000000000000 $d
+     /tmp/ccRmlLmD.s:1267   .text.can_receive:0000000000000000 $t
+     /tmp/ccRmlLmD.s:1274   .text.can_receive:0000000000000000 can_receive
+     /tmp/ccRmlLmD.s:1512   .text.can_receive:0000000000000150 $d
+     /tmp/ccRmlLmD.s:1517   .text.can_available_mailbox:0000000000000000 $t
+     /tmp/ccRmlLmD.s:1524   .text.can_available_mailbox:0000000000000000 can_available_mailbox
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.can.h.50.d5cec3d7572d89e18c9c9a2ccd077c25
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+
+UNDEFINED SYMBOLS
+rcc_periph_reset_pulse

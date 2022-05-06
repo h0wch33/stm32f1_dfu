@@ -1,0 +1,301 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"phy_ksz80x1.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.phy_link_status,"ax",%progbits
+  16              		.align	1
+  17              		.global	phy_link_status
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	phy_link_status:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/ethernet/phy_ksz80x1.c"
+   1:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /** @defgroup ethernet_phy_ksz8051mll_file PHY KSZ8051MLL
+   2:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+   3:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @ingroup ETH
+   4:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+   5:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @brief <b>Ethernet PHY STM32Fxx7 Drivers</b>
+   6:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+   7:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @version 1.0.0
+   8:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @author @htmlonly &copy; @endhtmlonly 2013 Frantisek Burian <BuFran@seznam.cz>
+   9:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  10:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @date 1 September 2013
+  11:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  12:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * LGPL License Terms @ref lgpl_license
+  13:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  */
+  14:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  15:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /*
+  16:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * This file is part of the libopencm3 project.
+  17:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  18:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * Copyright (C) 2013 Frantisek Burian <BuFran@seznam.cz>
+  19:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  20:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * This library is free software: you can redistribute it and/or modify
+  21:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  22:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * the Free Software Foundation, either version 3 of the License, or
+  23:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * (at your option) any later version.
+  24:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  25:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * This library is distributed in the hope that it will be useful,
+  26:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * GNU Lesser General Public License for more details.
+  29:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  30:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * You should have received a copy of the GNU Lesser General Public License
+  31:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  32:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  */
+  33:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  34:../libopencm3/lib/ethernet/phy_ksz80x1.c **** #include <libopencm3/ethernet/mac.h>
+  35:../libopencm3/lib/ethernet/phy_ksz80x1.c **** #include <libopencm3/ethernet/phy.h>
+  36:../libopencm3/lib/ethernet/phy_ksz80x1.c **** #include <libopencm3/ethernet/phy_ksz80x1.h>
+  37:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  38:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  39:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /**@{*/
+  40:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  41:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /*---------------------------------------------------------------------------*/
+  42:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /** @brief Get the current link status
+  43:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  44:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * Retrieve the link speed and duplex status of the link.
+  45:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  46:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @param[in] phy uint8_t phy ID of the PHY
+  47:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @returns ::phy_status Link status
+  48:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  */
+  49:../libopencm3/lib/ethernet/phy_ksz80x1.c **** enum phy_status phy_link_status(uint8_t phy)
+  50:../libopencm3/lib/ethernet/phy_ksz80x1.c **** {
+  27              		.loc 1 50 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 82B0     		sub	sp, sp, #8
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 0346     		mov	r3, r0
+  40 0008 FB71     		strb	r3, [r7, #7]
+  51:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	return eth_smi_read(phy, KSZ80X1_CR1) & 0x07;
+  41              		.loc 1 51 9
+  42 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  43 000c 1E21     		movs	r1, #30
+  44 000e 1846     		mov	r0, r3
+  45 0010 FFF7FEFF 		bl	eth_smi_read(PLT)
+  46 0014 0346     		mov	r3, r0
+  47              		.loc 1 51 40
+  48 0016 DBB2     		uxtb	r3, r3
+  49 0018 03F00703 		and	r3, r3, #7
+  50 001c DBB2     		uxtb	r3, r3
+  52:../libopencm3/lib/ethernet/phy_ksz80x1.c **** }
+  51              		.loc 1 52 1
+  52 001e 1846     		mov	r0, r3
+  53 0020 0837     		adds	r7, r7, #8
+  54              		.cfi_def_cfa_offset 8
+  55 0022 BD46     		mov	sp, r7
+  56              		.cfi_def_cfa_register 13
+  57              		@ sp needed
+  58 0024 80BD     		pop	{r7, pc}
+  59              		.cfi_endproc
+  60              	.LFE0:
+  62              		.section	.text.phy_autoneg_force,"ax",%progbits
+  63              		.align	1
+  64              		.global	phy_autoneg_force
+  65              		.syntax unified
+  66              		.thumb
+  67              		.thumb_func
+  68              		.fpu softvfp
+  70              	phy_autoneg_force:
+  71              	.LFB1:
+  53:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  54:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /*---------------------------------------------------------------------------*/
+  55:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /** @brief Force autonegotiation
+  56:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  57:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * Force the autonegotiation and set link speed and duplex mode of the link
+  58:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  59:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @param[in] phy uint8_t phy ID of the PHY
+  60:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @param[in] mode enum phy_status Desired link status
+  61:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  */
+  62:../libopencm3/lib/ethernet/phy_ksz80x1.c **** void phy_autoneg_force(uint8_t phy, enum phy_status mode)
+  63:../libopencm3/lib/ethernet/phy_ksz80x1.c **** {
+  72              		.loc 1 63 1
+  73              		.cfi_startproc
+  74              		@ args = 0, pretend = 0, frame = 16
+  75              		@ frame_needed = 1, uses_anonymous_args = 0
+  76 0000 80B5     		push	{r7, lr}
+  77              		.cfi_def_cfa_offset 8
+  78              		.cfi_offset 7, -8
+  79              		.cfi_offset 14, -4
+  80 0002 84B0     		sub	sp, sp, #16
+  81              		.cfi_def_cfa_offset 24
+  82 0004 00AF     		add	r7, sp, #0
+  83              		.cfi_def_cfa_register 7
+  84 0006 0346     		mov	r3, r0
+  85 0008 0A46     		mov	r2, r1
+  86 000a FB71     		strb	r3, [r7, #7]
+  87 000c 1346     		mov	r3, r2
+  88 000e BB71     		strb	r3, [r7, #6]
+  64:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	uint16_t bst = 0;
+  89              		.loc 1 64 11
+  90 0010 0023     		movs	r3, #0
+  91 0012 FB81     		strh	r3, [r7, #14]	@ movhi
+  65:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  66:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	if ((mode == LINK_FD_10M) || (mode == LINK_FD_100M) ||
+  92              		.loc 1 66 5
+  93 0014 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+  94 0016 052B     		cmp	r3, #5
+  95 0018 08D0     		beq	.L4
+  96              		.loc 1 66 28 discriminator 1
+  97 001a BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+  98 001c 062B     		cmp	r3, #6
+  99 001e 05D0     		beq	.L4
+ 100              		.loc 1 66 54 discriminator 2
+ 101 0020 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 102 0022 072B     		cmp	r3, #7
+ 103 0024 02D0     		beq	.L4
+  67:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	    (mode == LINK_FD_1000M) || (mode == LINK_FD_10000M)) {
+ 104              		.loc 1 67 30
+ 105 0026 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 106 0028 082B     		cmp	r3, #8
+ 107 002a 03D1     		bne	.L5
+ 108              	.L4:
+  68:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 		bst |= PHY_REG_BCR_FD;
+ 109              		.loc 1 68 7
+ 110 002c FB89     		ldrh	r3, [r7, #14]	@ movhi
+ 111 002e 43F48073 		orr	r3, r3, #256
+ 112 0032 FB81     		strh	r3, [r7, #14]	@ movhi
+ 113              	.L5:
+  69:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	}
+  70:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  71:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	if ((mode == LINK_FD_100M) || (mode == LINK_HD_100M)) {
+ 114              		.loc 1 71 5
+ 115 0034 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 116 0036 062B     		cmp	r3, #6
+ 117 0038 02D0     		beq	.L6
+ 118              		.loc 1 71 29 discriminator 1
+ 119 003a BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 120 003c 022B     		cmp	r3, #2
+ 121 003e 03D1     		bne	.L7
+ 122              	.L6:
+  72:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 		bst |= PHY_REG_BCR_100M;
+ 123              		.loc 1 72 7
+ 124 0040 FB89     		ldrh	r3, [r7, #14]	@ movhi
+ 125 0042 43F40053 		orr	r3, r3, #8192
+ 126 0046 FB81     		strh	r3, [r7, #14]	@ movhi
+ 127              	.L7:
+  73:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	}
+  74:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  75:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	eth_smi_bit_op(phy, PHY_REG_BCR, bst,
+ 128              		.loc 1 75 2
+ 129 0048 FA89     		ldrh	r2, [r7, #14]
+ 130 004a F879     		ldrb	r0, [r7, #7]	@ zero_extendqisi2
+ 131 004c 4CF6FF63 		movw	r3, #52991
+ 132 0050 0021     		movs	r1, #0
+ 133 0052 FFF7FEFF 		bl	eth_smi_bit_op(PLT)
+  76:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 		    ~(PHY_REG_BCR_AN | PHY_REG_BCR_100M | PHY_REG_BCR_FD));
+  77:../libopencm3/lib/ethernet/phy_ksz80x1.c **** }
+ 134              		.loc 1 77 1
+ 135 0056 00BF     		nop
+ 136 0058 1037     		adds	r7, r7, #16
+ 137              		.cfi_def_cfa_offset 8
+ 138 005a BD46     		mov	sp, r7
+ 139              		.cfi_def_cfa_register 13
+ 140              		@ sp needed
+ 141 005c 80BD     		pop	{r7, pc}
+ 142              		.cfi_endproc
+ 143              	.LFE1:
+ 145              		.section	.text.phy_autoneg_enable,"ax",%progbits
+ 146              		.align	1
+ 147              		.global	phy_autoneg_enable
+ 148              		.syntax unified
+ 149              		.thumb
+ 150              		.thumb_func
+ 151              		.fpu softvfp
+ 153              	phy_autoneg_enable:
+ 154              	.LFB2:
+  78:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 
+  79:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /*---------------------------------------------------------------------------*/
+  80:../libopencm3/lib/ethernet/phy_ksz80x1.c **** /** @brief Enable the autonegotiation
+  81:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  82:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * Enable the autonegotiation of the link speed and duplex mode
+  83:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  *
+  84:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  * @param[in] phy uint8_t phy ID of the PHY
+  85:../libopencm3/lib/ethernet/phy_ksz80x1.c ****  */
+  86:../libopencm3/lib/ethernet/phy_ksz80x1.c **** void phy_autoneg_enable(uint8_t phy)
+  87:../libopencm3/lib/ethernet/phy_ksz80x1.c **** {
+ 155              		.loc 1 87 1
+ 156              		.cfi_startproc
+ 157              		@ args = 0, pretend = 0, frame = 8
+ 158              		@ frame_needed = 1, uses_anonymous_args = 0
+ 159 0000 80B5     		push	{r7, lr}
+ 160              		.cfi_def_cfa_offset 8
+ 161              		.cfi_offset 7, -8
+ 162              		.cfi_offset 14, -4
+ 163 0002 82B0     		sub	sp, sp, #8
+ 164              		.cfi_def_cfa_offset 16
+ 165 0004 00AF     		add	r7, sp, #0
+ 166              		.cfi_def_cfa_register 7
+ 167 0006 0346     		mov	r3, r0
+ 168 0008 FB71     		strb	r3, [r7, #7]
+  88:../libopencm3/lib/ethernet/phy_ksz80x1.c **** 	eth_smi_bit_set(phy, PHY_REG_BCR, PHY_REG_BCR_AN | PHY_REG_BCR_ANRST);
+ 169              		.loc 1 88 2
+ 170 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 171 000c 4FF49052 		mov	r2, #4608
+ 172 0010 0021     		movs	r1, #0
+ 173 0012 1846     		mov	r0, r3
+ 174 0014 FFF7FEFF 		bl	eth_smi_bit_set(PLT)
+  89:../libopencm3/lib/ethernet/phy_ksz80x1.c **** }
+ 175              		.loc 1 89 1
+ 176 0018 00BF     		nop
+ 177 001a 0837     		adds	r7, r7, #8
+ 178              		.cfi_def_cfa_offset 8
+ 179 001c BD46     		mov	sp, r7
+ 180              		.cfi_def_cfa_register 13
+ 181              		@ sp needed
+ 182 001e 80BD     		pop	{r7, pc}
+ 183              		.cfi_endproc
+ 184              	.LFE2:
+ 186              		.text
+ 187              	.Letext0:
+ 188              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 189              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 190              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/ethernet/phy.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 phy_ksz80x1.c
+     /tmp/ccXUXHk5.s:16     .text.phy_link_status:0000000000000000 $t
+     /tmp/ccXUXHk5.s:24     .text.phy_link_status:0000000000000000 phy_link_status
+     /tmp/ccXUXHk5.s:63     .text.phy_autoneg_force:0000000000000000 $t
+     /tmp/ccXUXHk5.s:70     .text.phy_autoneg_force:0000000000000000 phy_autoneg_force
+     /tmp/ccXUXHk5.s:146    .text.phy_autoneg_enable:0000000000000000 $t
+     /tmp/ccXUXHk5.s:153    .text.phy_autoneg_enable:0000000000000000 phy_autoneg_enable
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.mac_stm32fxx7.h.51.744719e25fe42bc6859e0e370e4857da
+                           .group:0000000000000000 wm4.phy.h.34.adf7f3db071b9fe4f2c46e612a9f2775
+                           .group:0000000000000000 wm4.phy_ksz80x1.h.36.606b1af5afb7385896cb4590dd9a4977
+
+UNDEFINED SYMBOLS
+eth_smi_read
+eth_smi_bit_op
+eth_smi_bit_set

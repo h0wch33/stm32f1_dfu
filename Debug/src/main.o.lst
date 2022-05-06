@@ -1,0 +1,3173 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	usbd_control_buffer,1024,4
+  16              		.global	usbdfu_state
+  17              		.section	.data.usbdfu_state,"aw"
+  20              	usbdfu_state:
+  21 0000 02       		.byte	2
+  22              		.comm	prog,1036,4
+  23              		.global	dev
+  24              		.section	.rodata.dev,"a"
+  25              		.align	2
+  28              	dev:
+  29 0000 12       		.byte	18
+  30 0001 01       		.byte	1
+  31 0002 0002     		.short	512
+  32 0004 00       		.byte	0
+  33 0005 00       		.byte	0
+  34 0006 00       		.byte	0
+  35 0007 40       		.byte	64
+  36 0008 8304     		.short	1155
+  37 000a 11DF     		.short	-8431
+  38 000c 0002     		.short	512
+  39 000e 01       		.byte	1
+  40 000f 02       		.byte	2
+  41 0010 03       		.byte	3
+  42 0011 01       		.byte	1
+  43              		.global	dfu_function
+  44              		.section	.rodata.dfu_function,"a"
+  45              		.align	2
+  48              	dfu_function:
+  49 0000 09       		.byte	9
+  50 0001 21       		.byte	33
+  51 0002 09       		.byte	9
+  52 0003 FF00     		.2byte	255
+  53 0005 0004     		.2byte	1024
+  54 0007 1A01     		.2byte	282
+  55              		.global	iface
+  56              		.section	.data.rel.iface,"aw"
+  57              		.align	2
+  60              	iface:
+  61 0000 09       		.byte	9
+  62 0001 04       		.byte	4
+  63 0002 00       		.byte	0
+  64 0003 00       		.byte	0
+  65 0004 00       		.byte	0
+  66 0005 FE       		.byte	-2
+  67 0006 01       		.byte	1
+  68 0007 02       		.byte	2
+  69 0008 04       		.byte	4
+  70 0009 00000000 		.space	4
+  71 000d 00000000 		.4byte	dfu_function
+  72 0011 09000000 		.4byte	9
+  73              		.global	ifaces
+  74              		.section	.data.rel.ifaces,"aw"
+  75              		.align	2
+  78              	ifaces:
+  79 0000 00000000 		.space	4
+  80 0004 01       		.byte	1
+  81 0005 00000000 		.space	7
+  81      000000
+  82 000c 00000000 		.word	iface
+  83              		.global	config
+  84              		.section	.data.rel.config,"aw"
+  85              		.align	2
+  88              	config:
+  89 0000 09       		.byte	9
+  90 0001 02       		.byte	2
+  91 0002 0000     		.short	0
+  92 0004 01       		.byte	1
+  93 0005 01       		.byte	1
+  94 0006 00       		.byte	0
+  95 0007 C0       		.byte	-64
+  96 0008 32       		.byte	50
+  97 0009 00000000 		.4byte	ifaces
+  98              		.comm	dfuse_str,60,4
+  99              		.comm	serial_str,30,4
+ 100              		.section	.bss.usb_strings,"aw",%nobits
+ 101              		.align	2
+ 104              	usb_strings:
+ 105 0000 00000000 		.space	16
+ 105      00000000 
+ 105      00000000 
+ 105      00000000 
+ 106              		.section	.text.usbdfu_getstatus,"ax",%progbits
+ 107              		.align	1
+ 108              		.arch armv7-m
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu softvfp
+ 114              	usbdfu_getstatus:
+ 115              	.LFB0:
+ 116              		.file 1 "../src/main.c"
+   1:../src/main.c **** /*
+   2:../src/main.c ****  * STM32F1 DFU
+   3:../src/main.c ****  *
+   4:../src/main.c ****  * Copyright (C) 2022 Hew How Chee <howchee@gmail.com>
+   5:../src/main.c ****  *
+   6:../src/main.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../src/main.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../src/main.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../src/main.c ****  * (at your option) any later version.
+  10:../src/main.c ****  *
+  11:../src/main.c ****  * This library is distributed in the hope that it will be useful,
+  12:../src/main.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../src/main.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../src/main.c ****  * GNU Lesser General Public License for more details.
+  15:../src/main.c ****  *
+  16:../src/main.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../src/main.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../src/main.c ****  */
+  19:../src/main.c **** 
+  20:../src/main.c **** #include <string.h>
+  21:../src/main.c **** #include <libopencm3/stm32/rcc.h>
+  22:../src/main.c **** #include <libopencm3/stm32/gpio.h>
+  23:../src/main.c **** #include <libopencm3/stm32/flash.h>
+  24:../src/main.c **** #include <libopencm3/cm3/scb.h>
+  25:../src/main.c **** #include <libopencm3/usb/usbd.h>
+  26:../src/main.c **** #include <libopencm3/usb/dfu.h>
+  27:../src/main.c **** #include "../libopencm3/lib/usb/usb_private.h"
+  28:../src/main.c **** #include "../libopencm3/lib/stm32/common/st_usbfs_core.h"
+  29:../src/main.c **** #define APP_ADDRESS	(FLASH_BASE + 0x1c)
+  30:../src/main.c **** /* Commands sent with wBlockNum == 0 as per ST implementation. */
+  31:../src/main.c **** #define CMD_SETADDR	0x21
+  32:../src/main.c **** #define CMD_ERASE	0x41
+  33:../src/main.c **** /* We need a special large control buffer for this device: */
+  34:../src/main.c **** uint8_t usbd_control_buffer[1024];
+  35:../src/main.c **** //uint8_t written;
+  36:../src/main.c **** enum dfu_state usbdfu_state = STATE_DFU_IDLE;
+  37:../src/main.c **** 
+  38:../src/main.c **** struct {
+  39:../src/main.c **** 	uint8_t buf[sizeof(usbd_control_buffer)];
+  40:../src/main.c **** 	uint16_t len;
+  41:../src/main.c **** 	uint32_t addr;
+  42:../src/main.c **** 	uint16_t blocknum;
+  43:../src/main.c **** } prog;
+  44:../src/main.c **** 
+  45:../src/main.c **** const struct usb_device_descriptor dev = {
+  46:../src/main.c **** 	.bLength = USB_DT_DEVICE_SIZE,
+  47:../src/main.c **** 	.bDescriptorType = USB_DT_DEVICE,
+  48:../src/main.c **** 	.bcdUSB = 0x0200,
+  49:../src/main.c **** 	.bDeviceClass = 0,
+  50:../src/main.c **** 	.bDeviceSubClass = 0,
+  51:../src/main.c **** 	.bDeviceProtocol = 0,
+  52:../src/main.c **** 	.bMaxPacketSize0 = 64,
+  53:../src/main.c **** 	.idVendor = 0x0483,
+  54:../src/main.c **** 	.idProduct = 0xDF11,
+  55:../src/main.c **** 	.bcdDevice = 0x0200,
+  56:../src/main.c **** 	.iManufacturer = 1,
+  57:../src/main.c **** 	.iProduct = 2,
+  58:../src/main.c **** 	.iSerialNumber = 3,
+  59:../src/main.c **** 	.bNumConfigurations = 1,
+  60:../src/main.c **** };
+  61:../src/main.c **** 
+  62:../src/main.c **** const struct usb_dfu_descriptor dfu_function = {
+  63:../src/main.c **** 	.bLength = sizeof(struct usb_dfu_descriptor),
+  64:../src/main.c **** 	.bDescriptorType = DFU_FUNCTIONAL,
+  65:../src/main.c **** 	.bmAttributes = USB_DFU_CAN_DOWNLOAD | USB_DFU_WILL_DETACH,
+  66:../src/main.c **** 	.wDetachTimeout = 255,
+  67:../src/main.c **** 	.wTransferSize = 1024,
+  68:../src/main.c **** 	.bcdDFUVersion = 0x011A,
+  69:../src/main.c **** };
+  70:../src/main.c **** 
+  71:../src/main.c **** /*const*/ struct usb_interface_descriptor iface = {
+  72:../src/main.c **** 	.bLength = USB_DT_INTERFACE_SIZE,
+  73:../src/main.c **** 	.bDescriptorType = USB_DT_INTERFACE,
+  74:../src/main.c **** 	.bInterfaceNumber = 0,
+  75:../src/main.c **** 	.bAlternateSetting = 0,
+  76:../src/main.c **** 	.bNumEndpoints = 0,
+  77:../src/main.c **** 	.bInterfaceClass = 0xFE, /* Device Firmware Upgrade */
+  78:../src/main.c **** 	.bInterfaceSubClass = 1,
+  79:../src/main.c **** 	.bInterfaceProtocol = 2,
+  80:../src/main.c **** 
+  81:../src/main.c **** 	/* The ST Microelectronics DfuSe application needs this string.
+  82:../src/main.c **** 	 * The format isn't documented... */
+  83:../src/main.c **** 	.iInterface = 4,
+  84:../src/main.c **** 
+  85:../src/main.c **** 	.extra = &dfu_function,
+  86:../src/main.c **** 	.extralen = sizeof(dfu_function),
+  87:../src/main.c **** };
+  88:../src/main.c **** 
+  89:../src/main.c ****  struct usb_interface ifaces[] = {{
+  90:../src/main.c **** 	.num_altsetting = 1,
+  91:../src/main.c **** 	.altsetting = &iface,
+  92:../src/main.c **** }};
+  93:../src/main.c **** 
+  94:../src/main.c ****  struct usb_config_descriptor config = {
+  95:../src/main.c **** 	.bLength = USB_DT_CONFIGURATION_SIZE,
+  96:../src/main.c **** 	.bDescriptorType = USB_DT_CONFIGURATION,
+  97:../src/main.c **** 	.wTotalLength = 0,
+  98:../src/main.c **** 	.bNumInterfaces = 1,
+  99:../src/main.c **** 	.bConfigurationValue = 1,
+ 100:../src/main.c **** 	.iConfiguration = 0,
+ 101:../src/main.c **** 	.bmAttributes = 0xC0,
+ 102:../src/main.c **** 	.bMaxPower = 0x32,
+ 103:../src/main.c **** 
+ 104:../src/main.c **** 	.interface = ifaces,
+ 105:../src/main.c **** };
+ 106:../src/main.c **** 
+ 107:../src/main.c ****  char dfuse_str[60];
+ 108:../src/main.c ****  char serial_str[30];
+ 109:../src/main.c **** #if 0
+ 110:../src/main.c **** char * usb_strings[] = {
+ 111:../src/main.c **** 	"Black Sphere Technologies",
+ 112:../src/main.c **** 	"DFU Demo",
+ 113:../src/main.c **** 	"DEMO",
+ 114:../src/main.c **** 	/* This string is used by ST Microelectronics' DfuSe utility. */
+ 115:../src/main.c **** 	dfuse_str
+ 116:../src/main.c **** //	"@Internal Flash   /0x08000000/8*001Ka,56*001Kg",
+ 117:../src/main.c **** };
+ 118:../src/main.c **** #else
+ 119:../src/main.c **** __attribute__((used)) static const char * usb_strings[4] ;
+ 120:../src/main.c **** 
+ 121:../src/main.c **** #endif
+ 122:../src/main.c **** static uint8_t usbdfu_getstatus(usbd_device *usbd_dev, uint32_t *bwPollTimeout)
+ 123:../src/main.c **** {
+ 117              		.loc 1 123 1
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 8
+ 120              		@ frame_needed = 1, uses_anonymous_args = 0
+ 121              		@ link register save eliminated.
+ 122 0000 80B4     		push	{r7}
+ 123              		.cfi_def_cfa_offset 4
+ 124              		.cfi_offset 7, -4
+ 125 0002 83B0     		sub	sp, sp, #12
+ 126              		.cfi_def_cfa_offset 16
+ 127 0004 00AF     		add	r7, sp, #0
+ 128              		.cfi_def_cfa_register 7
+ 129 0006 7860     		str	r0, [r7, #4]
+ 130 0008 3960     		str	r1, [r7]
+ 124:../src/main.c **** 	(void)usbd_dev;
+ 125:../src/main.c **** 
+ 126:../src/main.c **** 	switch (usbdfu_state) {
+ 131              		.loc 1 126 2
+ 132 000a 104B     		ldr	r3, .L7
+ 133 000c 59F80330 		ldr	r3, [r9, r3]
+ 134 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 135 0012 032B     		cmp	r3, #3
+ 136 0014 02D0     		beq	.L2
+ 137 0016 062B     		cmp	r3, #6
+ 138 0018 0AD0     		beq	.L3
+ 139 001a 10E0     		b	.L6
+ 140              	.L2:
+ 127:../src/main.c **** 	case STATE_DFU_DNLOAD_SYNC:
+ 128:../src/main.c **** 		usbdfu_state = STATE_DFU_DNBUSY;
+ 141              		.loc 1 128 16
+ 142 001c 0B4B     		ldr	r3, .L7
+ 143 001e 59F80330 		ldr	r3, [r9, r3]
+ 144 0022 0422     		movs	r2, #4
+ 145 0024 1A70     		strb	r2, [r3]
+ 129:../src/main.c **** 		*bwPollTimeout = 100;
+ 146              		.loc 1 129 18
+ 147 0026 3B68     		ldr	r3, [r7]
+ 148 0028 6422     		movs	r2, #100
+ 149 002a 1A60     		str	r2, [r3]
+ 130:../src/main.c **** 		return DFU_STATUS_OK;
+ 150              		.loc 1 130 10
+ 151 002c 0023     		movs	r3, #0
+ 152 002e 07E0     		b	.L5
+ 153              	.L3:
+ 131:../src/main.c **** 	case STATE_DFU_MANIFEST_SYNC:
+ 132:../src/main.c **** 		/* Device will reset when read is complete. */
+ 133:../src/main.c **** 		usbdfu_state = STATE_DFU_MANIFEST;
+ 154              		.loc 1 133 16
+ 155 0030 064B     		ldr	r3, .L7
+ 156 0032 59F80330 		ldr	r3, [r9, r3]
+ 157 0036 0722     		movs	r2, #7
+ 158 0038 1A70     		strb	r2, [r3]
+ 134:../src/main.c **** 		return DFU_STATUS_OK;
+ 159              		.loc 1 134 10
+ 160 003a 0023     		movs	r3, #0
+ 161 003c 00E0     		b	.L5
+ 162              	.L6:
+ 135:../src/main.c **** 	default:
+ 136:../src/main.c **** 		return DFU_STATUS_OK;
+ 163              		.loc 1 136 10
+ 164 003e 0023     		movs	r3, #0
+ 165              	.L5:
+ 137:../src/main.c **** 	}
+ 138:../src/main.c **** }
+ 166              		.loc 1 138 1
+ 167 0040 1846     		mov	r0, r3
+ 168 0042 0C37     		adds	r7, r7, #12
+ 169              		.cfi_def_cfa_offset 4
+ 170 0044 BD46     		mov	sp, r7
+ 171              		.cfi_def_cfa_register 13
+ 172              		@ sp needed
+ 173 0046 80BC     		pop	{r7}
+ 174              		.cfi_restore 7
+ 175              		.cfi_def_cfa_offset 0
+ 176 0048 7047     		bx	lr
+ 177              	.L8:
+ 178 004a 00BF     		.align	2
+ 179              	.L7:
+ 180 004c 00000000 		.word	usbdfu_state(GOT)
+ 181              		.cfi_endproc
+ 182              	.LFE0:
+ 184              		.section	.text.usbdfu_getstatus_complete,"ax",%progbits
+ 185              		.align	1
+ 186              		.syntax unified
+ 187              		.thumb
+ 188              		.thumb_func
+ 189              		.fpu softvfp
+ 191              	usbdfu_getstatus_complete:
+ 192              	.LFB1:
+ 139:../src/main.c **** 
+ 140:../src/main.c **** static void usbdfu_getstatus_complete(usbd_device *usbd_dev, struct usb_setup_data *req)
+ 141:../src/main.c **** {
+ 193              		.loc 1 141 1
+ 194              		.cfi_startproc
+ 195              		@ args = 0, pretend = 0, frame = 40
+ 196              		@ frame_needed = 1, uses_anonymous_args = 0
+ 197 0000 80B5     		push	{r7, lr}
+ 198              		.cfi_def_cfa_offset 8
+ 199              		.cfi_offset 7, -8
+ 200              		.cfi_offset 14, -4
+ 201 0002 8AB0     		sub	sp, sp, #40
+ 202              		.cfi_def_cfa_offset 48
+ 203 0004 00AF     		add	r7, sp, #0
+ 204              		.cfi_def_cfa_register 7
+ 205 0006 7860     		str	r0, [r7, #4]
+ 206 0008 3960     		str	r1, [r7]
+ 142:../src/main.c **** 	int i;
+ 143:../src/main.c **** 	(void)req;
+ 144:../src/main.c **** 	(void)usbd_dev;
+ 145:../src/main.c **** 
+ 146:../src/main.c **** 	switch (usbdfu_state) {
+ 207              		.loc 1 146 2
+ 208 000a 5C4B     		ldr	r3, .L23+4
+ 209 000c 59F80330 		ldr	r3, [r9, r3]
+ 210 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 211 0012 042B     		cmp	r3, #4
+ 212 0014 03D0     		beq	.L10
+ 213 0016 072B     		cmp	r3, #7
+ 214 0018 00F0A880 		beq	.L11
+ 147:../src/main.c **** 	case STATE_DFU_DNBUSY:
+ 148:../src/main.c **** 		flash_unlock();
+ 149:../src/main.c **** 		if (prog.blocknum == 0) {
+ 150:../src/main.c **** 			switch (prog.buf[0]) {
+ 151:../src/main.c **** 			case CMD_ERASE:
+ 152:../src/main.c **** 				{
+ 153:../src/main.c **** 					uint32_t *dat = (uint32_t *)(prog.buf + 1);
+ 154:../src/main.c **** 					if(*dat == (FLASH_BASE)) {
+ 155:../src/main.c **** 						//skip it
+ 156:../src/main.c **** 					} else {
+ 157:../src/main.c **** 						flash_erase_page(*dat);
+ 158:../src/main.c **** 					}
+ 159:../src/main.c **** 				}
+ 160:../src/main.c **** 				break;
+ 161:../src/main.c **** 			case CMD_SETADDR:
+ 162:../src/main.c **** 				{
+ 163:../src/main.c **** 					uint32_t *dat = (uint32_t *)(prog.buf + 1);
+ 164:../src/main.c **** 					prog.addr = *dat;
+ 165:../src/main.c **** 				}
+ 166:../src/main.c **** 				break;
+ 167:../src/main.c **** 			}
+ 168:../src/main.c **** 		} else {
+ 169:../src/main.c **** 			uint32_t t1,t2;
+ 170:../src/main.c **** 			uint32_t baseaddr = prog.addr + ((prog.blocknum - 2) *
+ 171:../src/main.c **** 				       dfu_function.wTransferSize);
+ 172:../src/main.c **** 			if(baseaddr == (FLASH_BASE)) {// && baseaddr < (FLASH_BASE + page_nb_size)) {
+ 173:../src/main.c **** 				//memcpy(prog.page0, prog.buf, prog.len);
+ 174:../src/main.c **** 				//prog.page0_size = prog.len;
+ 175:../src/main.c **** 
+ 176:../src/main.c **** 
+ 177:../src/main.c **** 				if(*((uint32_t *)(&prog.buf[0x1c])) == 0
+ 178:../src/main.c **** 						&& *((uint32_t *)(&prog.buf[0x20])) == 0) {
+ 179:../src/main.c **** 					t1 = *(uint32_t *)FLASH_BASE;
+ 180:../src/main.c **** 					t2 = *(uint32_t *)(FLASH_BASE + 4);
+ 181:../src/main.c **** 					flash_erase_page(FLASH_BASE);
+ 182:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x1c]) = *(uint32_t *)(&prog.buf[0]);
+ 183:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x20]) = *(uint32_t *)(&prog.buf[4]);
+ 184:../src/main.c **** 					*(uint32_t *)(&prog.buf[0]) = t1;
+ 185:../src/main.c **** 					*(uint32_t *)(&prog.buf[4]) = t2;
+ 186:../src/main.c **** 				}
+ 187:../src/main.c **** 			}
+ 188:../src/main.c **** 			//written = 1;
+ 189:../src/main.c **** 			for (i = 0; i < prog.len; i += 2) {
+ 190:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 191:../src/main.c **** 				flash_program_half_word(baseaddr + i,
+ 192:../src/main.c **** 						*dat);
+ 193:../src/main.c **** 			}
+ 194:../src/main.c **** 
+ 195:../src/main.c **** 		}
+ 196:../src/main.c **** 		flash_lock();
+ 197:../src/main.c **** 
+ 198:../src/main.c **** 		/* Jump straight to dfuDNLOAD-IDLE, skipping dfuDNLOAD-SYNC. */
+ 199:../src/main.c **** 		usbdfu_state = STATE_DFU_DNLOAD_IDLE;
+ 200:../src/main.c **** 		return;
+ 201:../src/main.c **** 	case STATE_DFU_MANIFEST:
+ 202:../src/main.c **** 		/* USB device must detach, we just reset... */
+ 203:../src/main.c **** 		scb_reset_system();
+ 204:../src/main.c **** 		return; /* Will never return. */
+ 205:../src/main.c **** 	default:
+ 206:../src/main.c **** 		return;
+ 215              		.loc 1 206 3
+ 216 001c A8E0     		b	.L9
+ 217              	.L10:
+ 148:../src/main.c **** 		if (prog.blocknum == 0) {
+ 218              		.loc 1 148 3
+ 219 001e FFF7FEFF 		bl	flash_unlock(PLT)
+ 149:../src/main.c **** 			switch (prog.buf[0]) {
+ 220              		.loc 1 149 11
+ 221 0022 574B     		ldr	r3, .L23+8
+ 222 0024 59F80330 		ldr	r3, [r9, r3]
+ 223 0028 B3F80834 		ldrh	r3, [r3, #1032]
+ 149:../src/main.c **** 			switch (prog.buf[0]) {
+ 224              		.loc 1 149 6
+ 225 002c 002B     		cmp	r3, #0
+ 226 002e 27D1     		bne	.L13
+ 150:../src/main.c **** 			case CMD_ERASE:
+ 227              		.loc 1 150 20
+ 228 0030 534B     		ldr	r3, .L23+8
+ 229 0032 59F80330 		ldr	r3, [r9, r3]
+ 230 0036 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 231 0038 212B     		cmp	r3, #33
+ 232 003a 13D0     		beq	.L14
+ 233 003c 412B     		cmp	r3, #65
+ 234 003e 40F08D80 		bne	.L17
+ 235              	.LBB2:
+ 153:../src/main.c **** 					if(*dat == (FLASH_BASE)) {
+ 236              		.loc 1 153 16
+ 237 0042 4F4B     		ldr	r3, .L23+8
+ 238 0044 59F80330 		ldr	r3, [r9, r3]
+ 239 0048 0133     		adds	r3, r3, #1
+ 240 004a 3B62     		str	r3, [r7, #32]
+ 154:../src/main.c **** 						//skip it
+ 241              		.loc 1 154 9
+ 242 004c 3B6A     		ldr	r3, [r7, #32]
+ 243 004e 1B68     		ldr	r3, [r3]
+ 154:../src/main.c **** 						//skip it
+ 244              		.loc 1 154 8
+ 245 0050 B3F1006F 		cmp	r3, #134217728
+ 246 0054 00F08180 		beq	.L22
+ 157:../src/main.c **** 					}
+ 247              		.loc 1 157 7
+ 248 0058 3B6A     		ldr	r3, [r7, #32]
+ 249 005a 1B68     		ldr	r3, [r3]
+ 250 005c 1846     		mov	r0, r3
+ 251 005e FFF7FEFF 		bl	flash_erase_page(PLT)
+ 252              	.LBE2:
+ 160:../src/main.c **** 			case CMD_SETADDR:
+ 253              		.loc 1 160 5
+ 254 0062 7AE0     		b	.L22
+ 255              	.L14:
+ 256              	.LBB3:
+ 163:../src/main.c **** 					prog.addr = *dat;
+ 257              		.loc 1 163 16
+ 258 0064 464B     		ldr	r3, .L23+8
+ 259 0066 59F80330 		ldr	r3, [r9, r3]
+ 260 006a 0133     		adds	r3, r3, #1
+ 261 006c FB61     		str	r3, [r7, #28]
+ 164:../src/main.c **** 				}
+ 262              		.loc 1 164 18
+ 263 006e FB69     		ldr	r3, [r7, #28]
+ 264 0070 1B68     		ldr	r3, [r3]
+ 164:../src/main.c **** 				}
+ 265              		.loc 1 164 16
+ 266 0072 434A     		ldr	r2, .L23+8
+ 267 0074 59F80220 		ldr	r2, [r9, r2]
+ 268 0078 C2F80434 		str	r3, [r2, #1028]
+ 269              	.LBE3:
+ 166:../src/main.c **** 			}
+ 270              		.loc 1 166 5
+ 271 007c 00BF     		nop
+ 272 007e 6DE0     		b	.L17
+ 273              	.L13:
+ 274              	.LBB4:
+ 170:../src/main.c **** 				       dfu_function.wTransferSize);
+ 275              		.loc 1 170 28
+ 276 0080 3F4B     		ldr	r3, .L23+8
+ 277 0082 59F80330 		ldr	r3, [r9, r3]
+ 278 0086 D3F80434 		ldr	r3, [r3, #1028]
+ 170:../src/main.c **** 				       dfu_function.wTransferSize);
+ 279              		.loc 1 170 42
+ 280 008a 3D4A     		ldr	r2, .L23+8
+ 281 008c 59F80220 		ldr	r2, [r9, r2]
+ 282 0090 B2F80824 		ldrh	r2, [r2, #1032]
+ 170:../src/main.c **** 				       dfu_function.wTransferSize);
+ 283              		.loc 1 170 52
+ 284 0094 023A     		subs	r2, r2, #2
+ 171:../src/main.c **** 			if(baseaddr == (FLASH_BASE)) {// && baseaddr < (FLASH_BASE + page_nb_size)) {
+ 285              		.loc 1 171 24
+ 286 0096 4FF48061 		mov	r1, #1024
+ 170:../src/main.c **** 				       dfu_function.wTransferSize);
+ 287              		.loc 1 170 57
+ 288 009a 01FB02F2 		mul	r2, r1, r2
+ 170:../src/main.c **** 				       dfu_function.wTransferSize);
+ 289              		.loc 1 170 13
+ 290 009e 1344     		add	r3, r3, r2
+ 291 00a0 BB61     		str	r3, [r7, #24]
+ 172:../src/main.c **** 				//memcpy(prog.page0, prog.buf, prog.len);
+ 292              		.loc 1 172 6
+ 293 00a2 BB69     		ldr	r3, [r7, #24]
+ 294 00a4 B3F1006F 		cmp	r3, #134217728
+ 295 00a8 38D1     		bne	.L18
+ 177:../src/main.c **** 						&& *((uint32_t *)(&prog.buf[0x20])) == 0) {
+ 296              		.loc 1 177 23
+ 297 00aa 354B     		ldr	r3, .L23+8
+ 298 00ac 59F80330 		ldr	r3, [r9, r3]
+ 299 00b0 1C33     		adds	r3, r3, #28
+ 177:../src/main.c **** 						&& *((uint32_t *)(&prog.buf[0x20])) == 0) {
+ 300              		.loc 1 177 8
+ 301 00b2 1B68     		ldr	r3, [r3]
+ 177:../src/main.c **** 						&& *((uint32_t *)(&prog.buf[0x20])) == 0) {
+ 302              		.loc 1 177 7
+ 303 00b4 002B     		cmp	r3, #0
+ 304 00b6 31D1     		bne	.L18
+ 178:../src/main.c **** 					t1 = *(uint32_t *)FLASH_BASE;
+ 305              		.loc 1 178 25
+ 306 00b8 314B     		ldr	r3, .L23+8
+ 307 00ba 59F80330 		ldr	r3, [r9, r3]
+ 308 00be 2033     		adds	r3, r3, #32
+ 178:../src/main.c **** 					t1 = *(uint32_t *)FLASH_BASE;
+ 309              		.loc 1 178 10
+ 310 00c0 1B68     		ldr	r3, [r3]
+ 178:../src/main.c **** 					t1 = *(uint32_t *)FLASH_BASE;
+ 311              		.loc 1 178 7
+ 312 00c2 002B     		cmp	r3, #0
+ 313 00c4 2AD1     		bne	.L18
+ 179:../src/main.c **** 					t2 = *(uint32_t *)(FLASH_BASE + 4);
+ 314              		.loc 1 179 11
+ 315 00c6 4FF00063 		mov	r3, #134217728
+ 179:../src/main.c **** 					t2 = *(uint32_t *)(FLASH_BASE + 4);
+ 316              		.loc 1 179 9
+ 317 00ca 1B68     		ldr	r3, [r3]
+ 318 00cc 7B61     		str	r3, [r7, #20]
+ 180:../src/main.c **** 					flash_erase_page(FLASH_BASE);
+ 319              		.loc 1 180 11
+ 320 00ce 2A4B     		ldr	r3, .L23
+ 180:../src/main.c **** 					flash_erase_page(FLASH_BASE);
+ 321              		.loc 1 180 9
+ 322 00d0 1B68     		ldr	r3, [r3]
+ 323 00d2 3B61     		str	r3, [r7, #16]
+ 181:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x1c]) = *(uint32_t *)(&prog.buf[0]);
+ 324              		.loc 1 181 6
+ 325 00d4 4FF00060 		mov	r0, #134217728
+ 326 00d8 FFF7FEFF 		bl	flash_erase_page(PLT)
+ 182:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x20]) = *(uint32_t *)(&prog.buf[4]);
+ 327              		.loc 1 182 53
+ 328 00dc 284B     		ldr	r3, .L23+8
+ 329 00de 59F80330 		ldr	r3, [r9, r3]
+ 330 00e2 1A46     		mov	r2, r3
+ 182:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x20]) = *(uint32_t *)(&prog.buf[4]);
+ 331              		.loc 1 182 20
+ 332 00e4 264B     		ldr	r3, .L23+8
+ 333 00e6 59F80330 		ldr	r3, [r9, r3]
+ 334 00ea 1C33     		adds	r3, r3, #28
+ 182:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x20]) = *(uint32_t *)(&prog.buf[4]);
+ 335              		.loc 1 182 39
+ 336 00ec 1268     		ldr	r2, [r2]
+ 182:../src/main.c **** 					*(uint32_t *)(&prog.buf[0x20]) = *(uint32_t *)(&prog.buf[4]);
+ 337              		.loc 1 182 37
+ 338 00ee 1A60     		str	r2, [r3]
+ 183:../src/main.c **** 					*(uint32_t *)(&prog.buf[0]) = t1;
+ 339              		.loc 1 183 53
+ 340 00f0 234B     		ldr	r3, .L23+8
+ 341 00f2 59F80330 		ldr	r3, [r9, r3]
+ 342 00f6 1A1D     		adds	r2, r3, #4
+ 183:../src/main.c **** 					*(uint32_t *)(&prog.buf[0]) = t1;
+ 343              		.loc 1 183 20
+ 344 00f8 214B     		ldr	r3, .L23+8
+ 345 00fa 59F80330 		ldr	r3, [r9, r3]
+ 346 00fe 2033     		adds	r3, r3, #32
+ 183:../src/main.c **** 					*(uint32_t *)(&prog.buf[0]) = t1;
+ 347              		.loc 1 183 39
+ 348 0100 1268     		ldr	r2, [r2]
+ 183:../src/main.c **** 					*(uint32_t *)(&prog.buf[0]) = t1;
+ 349              		.loc 1 183 37
+ 350 0102 1A60     		str	r2, [r3]
+ 184:../src/main.c **** 					*(uint32_t *)(&prog.buf[4]) = t2;
+ 351              		.loc 1 184 20
+ 352 0104 1E4B     		ldr	r3, .L23+8
+ 353 0106 59F80330 		ldr	r3, [r9, r3]
+ 354 010a 1A46     		mov	r2, r3
+ 184:../src/main.c **** 					*(uint32_t *)(&prog.buf[4]) = t2;
+ 355              		.loc 1 184 34
+ 356 010c 7B69     		ldr	r3, [r7, #20]
+ 357 010e 1360     		str	r3, [r2]
+ 185:../src/main.c **** 				}
+ 358              		.loc 1 185 20
+ 359 0110 1B4B     		ldr	r3, .L23+8
+ 360 0112 59F80330 		ldr	r3, [r9, r3]
+ 361 0116 0433     		adds	r3, r3, #4
+ 185:../src/main.c **** 				}
+ 362              		.loc 1 185 34
+ 363 0118 3A69     		ldr	r2, [r7, #16]
+ 364 011a 1A60     		str	r2, [r3]
+ 365              	.L18:
+ 189:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 366              		.loc 1 189 11
+ 367 011c 0023     		movs	r3, #0
+ 368 011e 7B62     		str	r3, [r7, #36]
+ 189:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 369              		.loc 1 189 4
+ 370 0120 11E0     		b	.L19
+ 371              	.L20:
+ 372              	.LBB5:
+ 190:../src/main.c **** 				flash_program_half_word(baseaddr + i,
+ 373              		.loc 1 190 21 discriminator 3
+ 374 0122 7B6A     		ldr	r3, [r7, #36]
+ 190:../src/main.c **** 				flash_program_half_word(baseaddr + i,
+ 375              		.loc 1 190 15 discriminator 3
+ 376 0124 164A     		ldr	r2, .L23+8
+ 377 0126 59F80220 		ldr	r2, [r9, r2]
+ 378 012a 1344     		add	r3, r3, r2
+ 379 012c FB60     		str	r3, [r7, #12]
+ 191:../src/main.c **** 						*dat);
+ 380              		.loc 1 191 5 discriminator 3
+ 381 012e 7A6A     		ldr	r2, [r7, #36]
+ 382 0130 BB69     		ldr	r3, [r7, #24]
+ 383 0132 1A44     		add	r2, r2, r3
+ 384 0134 FB68     		ldr	r3, [r7, #12]
+ 385 0136 1B88     		ldrh	r3, [r3]
+ 386 0138 1946     		mov	r1, r3
+ 387 013a 1046     		mov	r0, r2
+ 388 013c FFF7FEFF 		bl	flash_program_half_word(PLT)
+ 389              	.LBE5:
+ 189:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 390              		.loc 1 189 32 discriminator 3
+ 391 0140 7B6A     		ldr	r3, [r7, #36]
+ 392 0142 0233     		adds	r3, r3, #2
+ 393 0144 7B62     		str	r3, [r7, #36]
+ 394              	.L19:
+ 189:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 395              		.loc 1 189 24 discriminator 1
+ 396 0146 0E4B     		ldr	r3, .L23+8
+ 397 0148 59F80330 		ldr	r3, [r9, r3]
+ 398 014c B3F80034 		ldrh	r3, [r3, #1024]
+ 399 0150 1A46     		mov	r2, r3
+ 189:../src/main.c **** 				uint16_t *dat = (uint16_t *)(prog.buf + i);
+ 400              		.loc 1 189 4 discriminator 1
+ 401 0152 7B6A     		ldr	r3, [r7, #36]
+ 402 0154 9342     		cmp	r3, r2
+ 403 0156 E4DB     		blt	.L20
+ 404 0158 00E0     		b	.L17
+ 405              	.L22:
+ 406              	.LBE4:
+ 160:../src/main.c **** 			case CMD_SETADDR:
+ 407              		.loc 1 160 5
+ 408 015a 00BF     		nop
+ 409              	.L17:
+ 196:../src/main.c **** 
+ 410              		.loc 1 196 3
+ 411 015c FFF7FEFF 		bl	flash_lock(PLT)
+ 199:../src/main.c **** 		return;
+ 412              		.loc 1 199 16
+ 413 0160 064B     		ldr	r3, .L23+4
+ 414 0162 59F80330 		ldr	r3, [r9, r3]
+ 415 0166 0522     		movs	r2, #5
+ 416 0168 1A70     		strb	r2, [r3]
+ 200:../src/main.c **** 	case STATE_DFU_MANIFEST:
+ 417              		.loc 1 200 3
+ 418 016a 01E0     		b	.L9
+ 419              	.L11:
+ 203:../src/main.c **** 		return; /* Will never return. */
+ 420              		.loc 1 203 3
+ 421 016c FFF7FEFF 		bl	scb_reset_system(PLT)
+ 422              	.L9:
+ 207:../src/main.c **** 	}
+ 208:../src/main.c **** }
+ 423              		.loc 1 208 1
+ 424 0170 2837     		adds	r7, r7, #40
+ 425              		.cfi_def_cfa_offset 8
+ 426 0172 BD46     		mov	sp, r7
+ 427              		.cfi_def_cfa_register 13
+ 428              		@ sp needed
+ 429 0174 80BD     		pop	{r7, pc}
+ 430              	.L24:
+ 431 0176 00BF     		.align	2
+ 432              	.L23:
+ 433 0178 04000008 		.word	134217732
+ 434 017c 00000000 		.word	usbdfu_state(GOT)
+ 435 0180 00000000 		.word	prog(GOT)
+ 436              		.cfi_endproc
+ 437              	.LFE1:
+ 439              		.section	.text.usbdfu_usb_reset,"ax",%progbits
+ 440              		.align	1
+ 441              		.syntax unified
+ 442              		.thumb
+ 443              		.thumb_func
+ 444              		.fpu softvfp
+ 446              	usbdfu_usb_reset:
+ 447              	.LFB2:
+ 209:../src/main.c **** static void usbdfu_usb_reset(void)//usbd_device *usbd_dev, uint16_t wValue)
+ 210:../src/main.c **** {
+ 448              		.loc 1 210 1
+ 449              		.cfi_startproc
+ 450              		@ args = 0, pretend = 0, frame = 0
+ 451              		@ frame_needed = 1, uses_anonymous_args = 0
+ 452 0000 80B5     		push	{r7, lr}
+ 453              		.cfi_def_cfa_offset 8
+ 454              		.cfi_offset 7, -8
+ 455              		.cfi_offset 14, -4
+ 456 0002 00AF     		add	r7, sp, #0
+ 457              		.cfi_def_cfa_register 7
+ 211:../src/main.c **** 	//if(written)
+ 212:../src/main.c **** 	scb_reset_system();
+ 458              		.loc 1 212 2
+ 459 0004 FFF7FEFF 		bl	scb_reset_system(PLT)
+ 460              		.cfi_endproc
+ 461              	.LFE2:
+ 463              		.section	.text.usbdfu_standard_request,"ax",%progbits
+ 464              		.align	1
+ 465              		.syntax unified
+ 466              		.thumb
+ 467              		.thumb_func
+ 468              		.fpu softvfp
+ 470              	usbdfu_standard_request:
+ 471              	.LFB3:
+ 213:../src/main.c **** 	while(1);
+ 214:../src/main.c **** }
+ 215:../src/main.c **** 
+ 216:../src/main.c **** static enum usbd_request_return_codes usbdfu_standard_request(usbd_device *usbd_dev, struct usb_set
+ 217:../src/main.c **** 		uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
+ 218:../src/main.c **** {
+ 472              		.loc 1 218 1
+ 473              		.cfi_startproc
+ 474              		@ args = 4, pretend = 0, frame = 16
+ 475              		@ frame_needed = 1, uses_anonymous_args = 0
+ 476 0000 80B5     		push	{r7, lr}
+ 477              		.cfi_def_cfa_offset 8
+ 478              		.cfi_offset 7, -8
+ 479              		.cfi_offset 14, -4
+ 480 0002 84B0     		sub	sp, sp, #16
+ 481              		.cfi_def_cfa_offset 24
+ 482 0004 00AF     		add	r7, sp, #0
+ 483              		.cfi_def_cfa_register 7
+ 484 0006 F860     		str	r0, [r7, #12]
+ 485 0008 B960     		str	r1, [r7, #8]
+ 486 000a 7A60     		str	r2, [r7, #4]
+ 487 000c 3B60     		str	r3, [r7]
+ 219:../src/main.c **** 	usbd_register_reset_callback(usbd_dev, usbdfu_usb_reset);
+ 488              		.loc 1 219 2
+ 489 000e 054B     		ldr	r3, .L27
+ 490              	.LPIC0:
+ 491 0010 7B44     		add	r3, pc
+ 492 0012 1946     		mov	r1, r3
+ 493 0014 F868     		ldr	r0, [r7, #12]
+ 494 0016 FFF7FEFF 		bl	usbd_register_reset_callback(PLT)
+ 220:../src/main.c **** }
+ 495              		.loc 1 220 1
+ 496 001a 00BF     		nop
+ 497 001c 1846     		mov	r0, r3
+ 498 001e 1037     		adds	r7, r7, #16
+ 499              		.cfi_def_cfa_offset 8
+ 500 0020 BD46     		mov	sp, r7
+ 501              		.cfi_def_cfa_register 13
+ 502              		@ sp needed
+ 503 0022 80BD     		pop	{r7, pc}
+ 504              	.L28:
+ 505              		.align	2
+ 506              	.L27:
+ 507 0024 10000000 		.word	usbdfu_usb_reset-(.LPIC0+4)
+ 508              		.cfi_endproc
+ 509              	.LFE3:
+ 511              		.section	.text.usbdfu_control_request,"ax",%progbits
+ 512              		.align	1
+ 513              		.syntax unified
+ 514              		.thumb
+ 515              		.thumb_func
+ 516              		.fpu softvfp
+ 518              	usbdfu_control_request:
+ 519              	.LFB4:
+ 221:../src/main.c **** static enum usbd_request_return_codes usbdfu_control_request(usbd_device *usbd_dev, struct usb_setu
+ 222:../src/main.c **** 		uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
+ 223:../src/main.c **** {
+ 520              		.loc 1 223 1
+ 521              		.cfi_startproc
+ 522              		@ args = 4, pretend = 0, frame = 24
+ 523              		@ frame_needed = 1, uses_anonymous_args = 0
+ 524 0000 90B5     		push	{r4, r7, lr}
+ 525              		.cfi_def_cfa_offset 12
+ 526              		.cfi_offset 4, -12
+ 527              		.cfi_offset 7, -8
+ 528              		.cfi_offset 14, -4
+ 529 0002 87B0     		sub	sp, sp, #28
+ 530              		.cfi_def_cfa_offset 40
+ 531 0004 00AF     		add	r7, sp, #0
+ 532              		.cfi_def_cfa_register 7
+ 533 0006 F860     		str	r0, [r7, #12]
+ 534 0008 B960     		str	r1, [r7, #8]
+ 535 000a 7A60     		str	r2, [r7, #4]
+ 536 000c 3B60     		str	r3, [r7]
+ 224:../src/main.c **** 	if ((req->bmRequestType & 0x7F) != 0x21)
+ 537              		.loc 1 224 10
+ 538 000e BB68     		ldr	r3, [r7, #8]
+ 539 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 540              		.loc 1 224 26
+ 541 0012 03F07F03 		and	r3, r3, #127
+ 542              		.loc 1 224 5
+ 543 0016 212B     		cmp	r3, #33
+ 544 0018 01D0     		beq	.L30
+ 225:../src/main.c **** 		return USBD_REQ_NOTSUPP; /* Only accept class request. */
+ 545              		.loc 1 225 10
+ 546 001a 0023     		movs	r3, #0
+ 547 001c 9DE0     		b	.L31
+ 548              	.L30:
+ 226:../src/main.c **** 
+ 227:../src/main.c **** 	switch (req->bRequest) {
+ 549              		.loc 1 227 13
+ 550 001e BB68     		ldr	r3, [r7, #8]
+ 551 0020 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 552              		.loc 1 227 2
+ 553 0022 013B     		subs	r3, r3, #1
+ 554 0024 052B     		cmp	r3, #5
+ 555 0026 00F29780 		bhi	.L32
+ 556 002a 02A2     		adr	r2, .L34
+ 557 002c 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 558 0030 1A44     		add	r2, r2, r3
+ 559 0032 1047     		bx	r2
+ 560              		.p2align 2
+ 561              	.L34:
+ 562 0034 19000000 		.word	.L39+1-.L34
+ 563 0038 9D000000 		.word	.L38+1-.L34
+ 564 003c A1000000 		.word	.L37+1-.L34
+ 565 0040 75000000 		.word	.L36+1-.L34
+ 566 0044 0D010000 		.word	.L35+1-.L34
+ 567 0048 8F000000 		.word	.L33+1-.L34
+ 568              		.p2align 1
+ 569              	.L39:
+ 228:../src/main.c **** 	case DFU_DNLOAD:
+ 229:../src/main.c **** 		if ((len == NULL) || (*len == 0)) {
+ 570              		.loc 1 229 6
+ 571 004c 3B68     		ldr	r3, [r7]
+ 572 004e 002B     		cmp	r3, #0
+ 573 0050 03D0     		beq	.L40
+ 574              		.loc 1 229 25 discriminator 1
+ 575 0052 3B68     		ldr	r3, [r7]
+ 576 0054 1B88     		ldrh	r3, [r3]
+ 577              		.loc 1 229 21 discriminator 1
+ 578 0056 002B     		cmp	r3, #0
+ 579 0058 05D1     		bne	.L41
+ 580              	.L40:
+ 230:../src/main.c **** 			usbdfu_state = STATE_DFU_MANIFEST_SYNC;
+ 581              		.loc 1 230 17
+ 582 005a 424B     		ldr	r3, .L44
+ 583 005c 59F80330 		ldr	r3, [r9, r3]
+ 584 0060 0622     		movs	r2, #6
+ 585 0062 1A70     		strb	r2, [r3]
+ 586 0064 1EE0     		b	.L42
+ 587              	.L41:
+ 231:../src/main.c **** 		} else {
+ 232:../src/main.c **** 			/* Copy download data for use on GET_STATUS. */
+ 233:../src/main.c **** 			prog.blocknum = req->wValue;
+ 588              		.loc 1 233 23
+ 589 0066 BB68     		ldr	r3, [r7, #8]
+ 590 0068 5B88     		ldrh	r3, [r3, #2]	@ unaligned
+ 591 006a 9AB2     		uxth	r2, r3
+ 592              		.loc 1 233 18
+ 593 006c 3E4B     		ldr	r3, .L44+4
+ 594 006e 59F80330 		ldr	r3, [r9, r3]
+ 595 0072 A3F80824 		strh	r2, [r3, #1032]	@ movhi
+ 234:../src/main.c **** 			prog.len = *len;
+ 596              		.loc 1 234 15
+ 597 0076 3B68     		ldr	r3, [r7]
+ 598 0078 1A88     		ldrh	r2, [r3]
+ 599              		.loc 1 234 13
+ 600 007a 3B4B     		ldr	r3, .L44+4
+ 601 007c 59F80330 		ldr	r3, [r9, r3]
+ 602 0080 A3F80024 		strh	r2, [r3, #1024]	@ movhi
+ 235:../src/main.c **** 			memcpy(prog.buf, *buf, *len);
+ 603              		.loc 1 235 4
+ 604 0084 7B68     		ldr	r3, [r7, #4]
+ 605 0086 1968     		ldr	r1, [r3]
+ 606              		.loc 1 235 27
+ 607 0088 3B68     		ldr	r3, [r7]
+ 608 008a 1B88     		ldrh	r3, [r3]
+ 609              		.loc 1 235 4
+ 610 008c 1A46     		mov	r2, r3
+ 611 008e 364B     		ldr	r3, .L44+4
+ 612 0090 59F80330 		ldr	r3, [r9, r3]
+ 613 0094 1846     		mov	r0, r3
+ 614 0096 FFF7FEFF 		bl	memcpy(PLT)
+ 236:../src/main.c **** 			usbdfu_state = STATE_DFU_DNLOAD_SYNC;
+ 615              		.loc 1 236 17
+ 616 009a 324B     		ldr	r3, .L44
+ 617 009c 59F80330 		ldr	r3, [r9, r3]
+ 618 00a0 0322     		movs	r2, #3
+ 619 00a2 1A70     		strb	r2, [r3]
+ 620              	.L42:
+ 237:../src/main.c **** 		}
+ 238:../src/main.c **** 		return USBD_REQ_HANDLED;
+ 621              		.loc 1 238 10
+ 622 00a4 0123     		movs	r3, #1
+ 623 00a6 58E0     		b	.L31
+ 624              	.L36:
+ 239:../src/main.c **** 	case DFU_CLRSTATUS:
+ 240:../src/main.c **** 		/* Clear error and return to dfuIDLE. */
+ 241:../src/main.c **** 		if (usbdfu_state == STATE_DFU_ERROR)
+ 625              		.loc 1 241 20
+ 626 00a8 2E4B     		ldr	r3, .L44
+ 627 00aa 59F80330 		ldr	r3, [r9, r3]
+ 628 00ae 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 629              		.loc 1 241 6
+ 630 00b0 0A2B     		cmp	r3, #10
+ 631 00b2 04D1     		bne	.L43
+ 242:../src/main.c **** 			usbdfu_state = STATE_DFU_IDLE;
+ 632              		.loc 1 242 17
+ 633 00b4 2B4B     		ldr	r3, .L44
+ 634 00b6 59F80330 		ldr	r3, [r9, r3]
+ 635 00ba 0222     		movs	r2, #2
+ 636 00bc 1A70     		strb	r2, [r3]
+ 637              	.L43:
+ 243:../src/main.c **** 		return USBD_REQ_HANDLED;
+ 638              		.loc 1 243 10
+ 639 00be 0123     		movs	r3, #1
+ 640 00c0 4BE0     		b	.L31
+ 641              	.L33:
+ 244:../src/main.c **** 	case DFU_ABORT:
+ 245:../src/main.c **** 		/* Abort returns to dfuIDLE state. */
+ 246:../src/main.c **** 		usbdfu_state = STATE_DFU_IDLE;
+ 642              		.loc 1 246 16
+ 643 00c2 284B     		ldr	r3, .L44
+ 644 00c4 59F80330 		ldr	r3, [r9, r3]
+ 645 00c8 0222     		movs	r2, #2
+ 646 00ca 1A70     		strb	r2, [r3]
+ 247:../src/main.c **** 		return USBD_REQ_HANDLED;
+ 647              		.loc 1 247 10
+ 648 00cc 0123     		movs	r3, #1
+ 649 00ce 44E0     		b	.L31
+ 650              	.L38:
+ 248:../src/main.c **** 	case DFU_UPLOAD:
+ 249:../src/main.c **** 		/* Upload not supported for now. */
+ 250:../src/main.c **** 		return USBD_REQ_NOTSUPP;
+ 651              		.loc 1 250 10
+ 652 00d0 0023     		movs	r3, #0
+ 653 00d2 42E0     		b	.L31
+ 654              	.L37:
+ 655              	.LBB6:
+ 251:../src/main.c **** 	case DFU_GETSTATUS: {
+ 252:../src/main.c **** 		uint32_t bwPollTimeout = 0; /* 24-bit integer in DFU class spec */
+ 656              		.loc 1 252 12
+ 657 00d4 0023     		movs	r3, #0
+ 658 00d6 7B61     		str	r3, [r7, #20]
+ 253:../src/main.c **** 		(*buf)[0] = usbdfu_getstatus(usbd_dev, &bwPollTimeout);
+ 659              		.loc 1 253 4
+ 660 00d8 7B68     		ldr	r3, [r7, #4]
+ 661 00da 1C68     		ldr	r4, [r3]
+ 662              		.loc 1 253 15
+ 663 00dc 07F11403 		add	r3, r7, #20
+ 664 00e0 1946     		mov	r1, r3
+ 665 00e2 F868     		ldr	r0, [r7, #12]
+ 666 00e4 FFF7FEFF 		bl	usbdfu_getstatus(PLT)
+ 667 00e8 0346     		mov	r3, r0
+ 668              		.loc 1 253 13
+ 669 00ea 2370     		strb	r3, [r4]
+ 254:../src/main.c **** 		(*buf)[1] = bwPollTimeout & 0xFF;
+ 670              		.loc 1 254 13
+ 671 00ec 7A69     		ldr	r2, [r7, #20]
+ 672              		.loc 1 254 4
+ 673 00ee 7B68     		ldr	r3, [r7, #4]
+ 674 00f0 1B68     		ldr	r3, [r3]
+ 675              		.loc 1 254 9
+ 676 00f2 0133     		adds	r3, r3, #1
+ 677              		.loc 1 254 13
+ 678 00f4 D2B2     		uxtb	r2, r2
+ 679 00f6 1A70     		strb	r2, [r3]
+ 255:../src/main.c **** 		(*buf)[2] = (bwPollTimeout >> 8) & 0xFF;
+ 680              		.loc 1 255 30
+ 681 00f8 7B69     		ldr	r3, [r7, #20]
+ 682 00fa 1A0A     		lsrs	r2, r3, #8
+ 683              		.loc 1 255 4
+ 684 00fc 7B68     		ldr	r3, [r7, #4]
+ 685 00fe 1B68     		ldr	r3, [r3]
+ 686              		.loc 1 255 9
+ 687 0100 0233     		adds	r3, r3, #2
+ 688              		.loc 1 255 13
+ 689 0102 D2B2     		uxtb	r2, r2
+ 690 0104 1A70     		strb	r2, [r3]
+ 256:../src/main.c **** 		(*buf)[3] = (bwPollTimeout >> 16) & 0xFF;
+ 691              		.loc 1 256 30
+ 692 0106 7B69     		ldr	r3, [r7, #20]
+ 693 0108 1A0C     		lsrs	r2, r3, #16
+ 694              		.loc 1 256 4
+ 695 010a 7B68     		ldr	r3, [r7, #4]
+ 696 010c 1B68     		ldr	r3, [r3]
+ 697              		.loc 1 256 9
+ 698 010e 0333     		adds	r3, r3, #3
+ 699              		.loc 1 256 13
+ 700 0110 D2B2     		uxtb	r2, r2
+ 701 0112 1A70     		strb	r2, [r3]
+ 257:../src/main.c **** 		(*buf)[4] = usbdfu_state;
+ 702              		.loc 1 257 4
+ 703 0114 7B68     		ldr	r3, [r7, #4]
+ 704 0116 1B68     		ldr	r3, [r3]
+ 705              		.loc 1 257 9
+ 706 0118 0433     		adds	r3, r3, #4
+ 707              		.loc 1 257 13
+ 708 011a 124A     		ldr	r2, .L44
+ 709 011c 59F80220 		ldr	r2, [r9, r2]
+ 710 0120 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 711 0122 1A70     		strb	r2, [r3]
+ 258:../src/main.c **** 		(*buf)[5] = 0; /* iString not used here */
+ 712              		.loc 1 258 4
+ 713 0124 7B68     		ldr	r3, [r7, #4]
+ 714 0126 1B68     		ldr	r3, [r3]
+ 715              		.loc 1 258 9
+ 716 0128 0533     		adds	r3, r3, #5
+ 717              		.loc 1 258 13
+ 718 012a 0022     		movs	r2, #0
+ 719 012c 1A70     		strb	r2, [r3]
+ 259:../src/main.c **** 		*len = 6;
+ 720              		.loc 1 259 8
+ 721 012e 3B68     		ldr	r3, [r7]
+ 722 0130 0622     		movs	r2, #6
+ 723 0132 1A80     		strh	r2, [r3]	@ movhi
+ 260:../src/main.c **** 		*complete = usbdfu_getstatus_complete;
+ 724              		.loc 1 260 13
+ 725 0134 BB6A     		ldr	r3, [r7, #40]
+ 726 0136 0D4A     		ldr	r2, .L44+8
+ 727              	.LPIC1:
+ 728 0138 7A44     		add	r2, pc
+ 729 013a 1A60     		str	r2, [r3]
+ 261:../src/main.c **** 		return USBD_REQ_HANDLED;
+ 730              		.loc 1 261 10
+ 731 013c 0123     		movs	r3, #1
+ 732 013e 0CE0     		b	.L31
+ 733              	.L35:
+ 734              	.LBE6:
+ 262:../src/main.c **** 		}
+ 263:../src/main.c **** 	case DFU_GETSTATE:
+ 264:../src/main.c **** 		/* Return state with no state transision. */
+ 265:../src/main.c **** 		*buf[0] = usbdfu_state;
+ 735              		.loc 1 265 7
+ 736 0140 7B68     		ldr	r3, [r7, #4]
+ 737 0142 1B68     		ldr	r3, [r3]
+ 738              		.loc 1 265 11
+ 739 0144 074A     		ldr	r2, .L44
+ 740 0146 59F80220 		ldr	r2, [r9, r2]
+ 741 014a 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 742 014c 1A70     		strb	r2, [r3]
+ 266:../src/main.c **** 		*len = 1;
+ 743              		.loc 1 266 8
+ 744 014e 3B68     		ldr	r3, [r7]
+ 745 0150 0122     		movs	r2, #1
+ 746 0152 1A80     		strh	r2, [r3]	@ movhi
+ 267:../src/main.c **** 		return USBD_REQ_HANDLED;
+ 747              		.loc 1 267 10
+ 748 0154 0123     		movs	r3, #1
+ 749 0156 00E0     		b	.L31
+ 750              	.L32:
+ 268:../src/main.c **** 	}
+ 269:../src/main.c **** 
+ 270:../src/main.c **** 	return USBD_REQ_NOTSUPP;
+ 751              		.loc 1 270 9
+ 752 0158 0023     		movs	r3, #0
+ 753              	.L31:
+ 271:../src/main.c **** }
+ 754              		.loc 1 271 1 discriminator 1
+ 755 015a 1846     		mov	r0, r3
+ 756 015c 1C37     		adds	r7, r7, #28
+ 757              		.cfi_def_cfa_offset 12
+ 758 015e BD46     		mov	sp, r7
+ 759              		.cfi_def_cfa_register 13
+ 760              		@ sp needed
+ 761 0160 90BD     		pop	{r4, r7, pc}
+ 762              	.L45:
+ 763 0162 00BF     		.align	2
+ 764              	.L44:
+ 765 0164 00000000 		.word	usbdfu_state(GOT)
+ 766 0168 00000000 		.word	prog(GOT)
+ 767 016c 30000000 		.word	usbdfu_getstatus_complete-(.LPIC1+4)
+ 768              		.cfi_endproc
+ 769              	.LFE4:
+ 771              		.section	.text.usbdfu_set_config,"ax",%progbits
+ 772              		.align	1
+ 773              		.syntax unified
+ 774              		.thumb
+ 775              		.thumb_func
+ 776              		.fpu softvfp
+ 778              	usbdfu_set_config:
+ 779              	.LFB5:
+ 272:../src/main.c **** 
+ 273:../src/main.c **** static void usbdfu_set_config(usbd_device *usbd_dev, uint16_t wValue)
+ 274:../src/main.c **** {
+ 780              		.loc 1 274 1
+ 781              		.cfi_startproc
+ 782              		@ args = 0, pretend = 0, frame = 8
+ 783              		@ frame_needed = 1, uses_anonymous_args = 0
+ 784 0000 80B5     		push	{r7, lr}
+ 785              		.cfi_def_cfa_offset 8
+ 786              		.cfi_offset 7, -8
+ 787              		.cfi_offset 14, -4
+ 788 0002 82B0     		sub	sp, sp, #8
+ 789              		.cfi_def_cfa_offset 16
+ 790 0004 00AF     		add	r7, sp, #0
+ 791              		.cfi_def_cfa_register 7
+ 792 0006 7860     		str	r0, [r7, #4]
+ 793 0008 0B46     		mov	r3, r1
+ 794 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 275:../src/main.c **** 	(void)wValue;
+ 276:../src/main.c **** 
+ 277:../src/main.c **** 	usbd_register_control_callback(
+ 795              		.loc 1 277 2
+ 796 000c 084B     		ldr	r3, .L47
+ 797              	.LPIC2:
+ 798 000e 7B44     		add	r3, pc
+ 799 0010 7F22     		movs	r2, #127
+ 800 0012 2121     		movs	r1, #33
+ 801 0014 7868     		ldr	r0, [r7, #4]
+ 802 0016 FFF7FEFF 		bl	usbd_register_control_callback(PLT)
+ 278:../src/main.c **** 				usbd_dev,
+ 279:../src/main.c **** 				USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
+ 280:../src/main.c **** 				USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+ 281:../src/main.c **** 				usbdfu_control_request);
+ 282:../src/main.c **** 
+ 283:../src/main.c **** 
+ 284:../src/main.c **** 	usbd_register_control_callback(
+ 803              		.loc 1 284 2
+ 804 001a 064B     		ldr	r3, .L47+4
+ 805              	.LPIC3:
+ 806 001c 7B44     		add	r3, pc
+ 807 001e 0022     		movs	r2, #0
+ 808 0020 0021     		movs	r1, #0
+ 809 0022 7868     		ldr	r0, [r7, #4]
+ 810 0024 FFF7FEFF 		bl	usbd_register_control_callback(PLT)
+ 285:../src/main.c **** 					usbd_dev,
+ 286:../src/main.c **** 					USB_REQ_TYPE_STANDARD,
+ 287:../src/main.c **** 					USB_REQ_TYPE_STANDARD,
+ 288:../src/main.c **** 					usbdfu_standard_request);
+ 289:../src/main.c **** }
+ 811              		.loc 1 289 1
+ 812 0028 00BF     		nop
+ 813 002a 0837     		adds	r7, r7, #8
+ 814              		.cfi_def_cfa_offset 8
+ 815 002c BD46     		mov	sp, r7
+ 816              		.cfi_def_cfa_register 13
+ 817              		@ sp needed
+ 818 002e 80BD     		pop	{r7, pc}
+ 819              	.L48:
+ 820              		.align	2
+ 821              	.L47:
+ 822 0030 1E000000 		.word	usbdfu_control_request-(.LPIC2+4)
+ 823 0034 14000000 		.word	usbdfu_standard_request-(.LPIC3+4)
+ 824              		.cfi_endproc
+ 825              	.LFE5:
+ 827              		.section	move_it_sect,"ax",%progbits
+ 828              		.align	1
+ 829              		.global	flash_check
+ 830              		.syntax unified
+ 831              		.thumb
+ 832              		.thumb_func
+ 833              		.fpu softvfp
+ 835              	flash_check:
+ 836              	.LFB7:
+ 290:../src/main.c **** 
+ 291:../src/main.c **** void flash_check(void)  __attribute__ ((section ("move_it_sect")));
+ 292:../src/main.c **** unsigned int get_flash_size(void)  __attribute__ ((section ("move_it_sect")));
+ 293:../src/main.c **** void move_it(void)  __attribute__ ((section ("move_it_sect")));
+ 294:../src/main.c **** int main(void)  __attribute__ ((section ("move_it_sect")));
+ 295:../src/main.c **** void reset_handler(void)  __attribute__ ((section ("move_it_sect_first")));
+ 296:../src/main.c **** 
+ 297:../src/main.c **** unsigned int get_flash_size()
+ 298:../src/main.c **** {
+ 299:../src/main.c **** 	unsigned int sz = (unsigned int)*((unsigned short *)(0x1ffff7e0));
+ 300:../src/main.c **** 	sz *= 1024;
+ 301:../src/main.c **** 
+ 302:../src/main.c **** 	return sz;
+ 303:../src/main.c **** 
+ 304:../src/main.c **** }
+ 305:../src/main.c **** extern void * _estack;
+ 306:../src/main.c **** extern void * vector_table;
+ 307:../src/main.c **** extern void * __etext;
+ 308:../src/main.c **** extern void * _ebss;
+ 309:../src/main.c **** extern void * _data;
+ 310:../src/main.c **** extern void * _edata;
+ 311:../src/main.c **** extern void * _data_loadaddr;
+ 312:../src/main.c **** void flash_check()
+ 313:../src/main.c **** {
+ 837              		.loc 1 313 1
+ 838              		.cfi_startproc
+ 839              		@ args = 0, pretend = 0, frame = 8
+ 840              		@ frame_needed = 1, uses_anonymous_args = 0
+ 841 0000 80B5     		push	{r7, lr}
+ 842              		.cfi_def_cfa_offset 8
+ 843              		.cfi_offset 7, -8
+ 844              		.cfi_offset 14, -4
+ 845 0002 82B0     		sub	sp, sp, #8
+ 846              		.cfi_def_cfa_offset 16
+ 847 0004 00AF     		add	r7, sp, #0
+ 848              		.cfi_def_cfa_register 7
+ 314:../src/main.c **** 	unsigned int flash_status;
+ 315:../src/main.c **** 	flash_status = flash_get_status_flags();
+ 849              		.loc 1 315 17
+ 850 0006 FFF7FEFF 		bl	flash_get_status_flags(PLT)
+ 851 000a 7860     		str	r0, [r7, #4]
+ 316:../src/main.c **** 	if(flash_status != FLASH_SR_EOP) {
+ 852              		.loc 1 316 4
+ 853 000c 7B68     		ldr	r3, [r7, #4]
+ 854 000e 202B     		cmp	r3, #32
+ 855 0010 00D0     		beq	.L52
+ 856              	.L51:
+ 317:../src/main.c **** 		//hang on unexpected result
+ 318:../src/main.c **** 		while(1);
+ 857              		.loc 1 318 8 discriminator 1
+ 858 0012 FEE7     		b	.L51
+ 859              	.L52:
+ 319:../src/main.c **** 	}
+ 320:../src/main.c **** 
+ 321:../src/main.c **** 					;
+ 322:../src/main.c **** 
+ 323:../src/main.c **** }
+ 860              		.loc 1 323 1
+ 861 0014 00BF     		nop
+ 862 0016 0837     		adds	r7, r7, #8
+ 863              		.cfi_def_cfa_offset 8
+ 864 0018 BD46     		mov	sp, r7
+ 865              		.cfi_def_cfa_register 13
+ 866              		@ sp needed
+ 867 001a 80BD     		pop	{r7, pc}
+ 868              		.cfi_endproc
+ 869              	.LFE7:
+ 871              		.align	1
+ 872              		.global	get_flash_size
+ 873              		.syntax unified
+ 874              		.thumb
+ 875              		.thumb_func
+ 876              		.fpu softvfp
+ 878              	get_flash_size:
+ 879              	.LFB6:
+ 298:../src/main.c **** 	unsigned int sz = (unsigned int)*((unsigned short *)(0x1ffff7e0));
+ 880              		.loc 1 298 1
+ 881              		.cfi_startproc
+ 882              		@ args = 0, pretend = 0, frame = 8
+ 883              		@ frame_needed = 1, uses_anonymous_args = 0
+ 884              		@ link register save eliminated.
+ 885 001c 80B4     		push	{r7}
+ 886              		.cfi_def_cfa_offset 4
+ 887              		.cfi_offset 7, -4
+ 888 001e 83B0     		sub	sp, sp, #12
+ 889              		.cfi_def_cfa_offset 16
+ 890 0020 00AF     		add	r7, sp, #0
+ 891              		.cfi_def_cfa_register 7
+ 299:../src/main.c **** 	sz *= 1024;
+ 892              		.loc 1 299 34
+ 893 0022 064B     		ldr	r3, .L55
+ 894 0024 1B88     		ldrh	r3, [r3]
+ 299:../src/main.c **** 	sz *= 1024;
+ 895              		.loc 1 299 15
+ 896 0026 7B60     		str	r3, [r7, #4]
+ 300:../src/main.c **** 
+ 897              		.loc 1 300 5
+ 898 0028 7B68     		ldr	r3, [r7, #4]
+ 899 002a 9B02     		lsls	r3, r3, #10
+ 900 002c 7B60     		str	r3, [r7, #4]
+ 302:../src/main.c **** 
+ 901              		.loc 1 302 9
+ 902 002e 7B68     		ldr	r3, [r7, #4]
+ 304:../src/main.c **** extern void * _estack;
+ 903              		.loc 1 304 1
+ 904 0030 1846     		mov	r0, r3
+ 905 0032 0C37     		adds	r7, r7, #12
+ 906              		.cfi_def_cfa_offset 4
+ 907 0034 BD46     		mov	sp, r7
+ 908              		.cfi_def_cfa_register 13
+ 909              		@ sp needed
+ 910 0036 80BC     		pop	{r7}
+ 911              		.cfi_restore 7
+ 912              		.cfi_def_cfa_offset 0
+ 913 0038 7047     		bx	lr
+ 914              	.L56:
+ 915 003a 00BF     		.align	2
+ 916              	.L55:
+ 917 003c E0F7FF1F 		.word	536868832
+ 918              		.cfi_endproc
+ 919              	.LFE6:
+ 921              		.section	.rodata
+ 922              		.align	2
+ 923              	.LC0:
+ 924 0000 40496E74 		.ascii	"@Internal Flash   /0x08000000/\000"
+ 924      65726E61 
+ 924      6C20466C 
+ 924      61736820 
+ 924      20202F30 
+ 925 001f 00       		.align	2
+ 926              	.LC1:
+ 927 0020 2A303031 		.ascii	"*001Kg,\000"
+ 927      4B672C00 
+ 928              		.align	2
+ 929              	.LC2:
+ 930 0028 2A303031 		.ascii	"*001Ka\000"
+ 930      4B6100
+ 931              		.section	move_it_sect
+ 932              		.align	1
+ 933              		.global	move_it
+ 934              		.syntax unified
+ 935              		.thumb
+ 936              		.thumb_func
+ 937              		.fpu softvfp
+ 939              	move_it:
+ 940              	.LFB11:
+ 324:../src/main.c **** //int g_ofs;
+ 325:../src/main.c **** void num2str(unsigned int n, char outstr[12])
+ 326:../src/main.c **** {
+ 327:../src/main.c **** 	char tmp[12];
+ 328:../src/main.c **** 	int pos = 0;
+ 329:../src/main.c **** 	unsigned int r;
+ 330:../src/main.c **** 	if(n == 0) {
+ 331:../src/main.c **** 		outstr[0] = '0';
+ 332:../src/main.c **** 		return;
+ 333:../src/main.c **** 	}
+ 334:../src/main.c **** 	while(n != 0) {
+ 335:../src/main.c **** 		r = n % 10;
+ 336:../src/main.c **** 		tmp[pos++] = '0' + r;
+ 337:../src/main.c **** 		n /= 10;
+ 338:../src/main.c **** 	}
+ 339:../src/main.c **** 	while(pos > 0) {
+ 340:../src/main.c **** 		pos--;
+ 341:../src/main.c **** 		*outstr = tmp[pos];
+ 342:../src/main.c **** 		outstr++;
+ 343:../src/main.c **** 	}
+ 344:../src/main.c **** 	*outstr = 0;
+ 345:../src/main.c **** 
+ 346:../src/main.c **** }
+ 347:../src/main.c ****  void nibble2str(unsigned char v, char *p)
+ 348:../src/main.c ****  {
+ 349:../src/main.c **** 	 if(v > 9) {
+ 350:../src/main.c **** 		 *p = v - 10 + 'A';
+ 351:../src/main.c **** 	 } else {
+ 352:../src/main.c **** 		 *p = '0' + v;
+ 353:../src/main.c **** 	 }
+ 354:../src/main.c ****  }
+ 355:../src/main.c **** void gen_serial()
+ 356:../src/main.c **** {
+ 357:../src/main.c **** 	const unsigned char *p = (const unsigned char *)0x1ffff7e8;
+ 358:../src/main.c **** 	char *q = serial_str;
+ 359:../src/main.c **** 	int i;
+ 360:../src/main.c **** 	unsigned char v;
+ 361:../src/main.c **** 	for(i = 11;i >= 0; i--) {
+ 362:../src/main.c **** 		v = p[i];
+ 363:../src/main.c **** 		nibble2str(v >> 4, q++);
+ 364:../src/main.c **** 		nibble2str(v & 0xf, q++);
+ 365:../src/main.c **** 	}
+ 366:../src/main.c **** 	*q = 0;
+ 367:../src/main.c **** 
+ 368:../src/main.c **** }
+ 369:../src/main.c **** void move_it()
+ 370:../src/main.c **** {
+ 941              		.loc 1 370 1
+ 942              		.cfi_startproc
+ 943              		@ args = 0, pretend = 0, frame = 56
+ 944              		@ frame_needed = 1, uses_anonymous_args = 0
+ 945 0040 B0B5     		push	{r4, r5, r7, lr}
+ 946              		.cfi_def_cfa_offset 16
+ 947              		.cfi_offset 4, -16
+ 948              		.cfi_offset 5, -12
+ 949              		.cfi_offset 7, -8
+ 950              		.cfi_offset 14, -4
+ 951 0042 8EB0     		sub	sp, sp, #56
+ 952              		.cfi_def_cfa_offset 72
+ 953 0044 00AF     		add	r7, sp, #0
+ 954              		.cfi_def_cfa_register 7
+ 371:../src/main.c **** 
+ 372:../src/main.c **** 	register unsigned int r1 asm("r1");
+ 373:../src/main.c **** 	unsigned int etext;// = (unsigned int)&__etext;
+ 374:../src/main.c **** 	unsigned int f_size = get_flash_size();
+ 955              		.loc 1 374 24
+ 956 0046 FFF7FEFF 		bl	get_flash_size(PLT)
+ 957 004a 3862     		str	r0, [r7, #32]
+ 375:../src/main.c **** 	unsigned int val;
+ 376:../src/main.c **** 	int nb;
+ 377:../src/main.c **** 	int cnt;
+ 378:../src/main.c **** 	volatile unsigned int *src = FLASH_BASE;
+ 958              		.loc 1 378 25
+ 959 004c 4FF00063 		mov	r3, #134217728
+ 960 0050 FB62     		str	r3, [r7, #44]
+ 379:../src/main.c **** 	volatile unsigned int *dest;
+ 380:../src/main.c **** 	unsigned int *dest_org;// = dest;
+ 381:../src/main.c **** 	unsigned char *rst_handler =  reset_handler;//*(unsigned char **)(FLASH_BASE + 4);
+ 961              		.loc 1 381 17
+ 962 0052 8B4B     		ldr	r3, .L76+16
+ 963 0054 59F80330 		ldr	r3, [r9, r3]
+ 964 0058 FB61     		str	r3, [r7, #28]
+ 382:../src/main.c **** 	unsigned char *ptr;
+ 383:../src/main.c **** 	char buff[12];
+ 384:../src/main.c **** 
+ 385:../src/main.c **** 
+ 386:../src/main.c **** 
+ 387:../src/main.c **** 	asm("ldr r1,=_etext");
+ 965              		.loc 1 387 2
+ 966              		.syntax unified
+ 967              	@ 387 "../src/main.c" 1
+ 968 005a DFF8C414 		ldr r1,=_etext
+ 969              	@ 0 "" 2
+ 388:../src/main.c **** 
+ 389:../src/main.c **** 	etext = r1;
+ 970              		.loc 1 389 8
+ 971              		.thumb
+ 972              		.syntax unified
+ 973 005e B961     		str	r1, [r7, #24]
+ 390:../src/main.c **** 	nb = (int)(((etext + 1023) & ~0x3ff) - FLASH_BASE);
+ 974              		.loc 1 390 21
+ 975 0060 BB69     		ldr	r3, [r7, #24]
+ 976 0062 03F2FF33 		addw	r3, r3, #1023
+ 977              		.loc 1 390 29
+ 978 0066 23F47F73 		bic	r3, r3, #1020
+ 979 006a 23F00303 		bic	r3, r3, #3
+ 980              		.loc 1 390 39
+ 981 006e 03F17843 		add	r3, r3, #-134217728
+ 982              		.loc 1 390 5
+ 983 0072 7B61     		str	r3, [r7, #20]
+ 391:../src/main.c **** 	dest = FLASH_BASE + f_size - nb;
+ 984              		.loc 1 391 29
+ 985 0074 7B69     		ldr	r3, [r7, #20]
+ 986 0076 3A6A     		ldr	r2, [r7, #32]
+ 987 0078 D31A     		subs	r3, r2, r3
+ 988 007a 03F10063 		add	r3, r3, #134217728
+ 989              		.loc 1 391 7
+ 990 007e BB62     		str	r3, [r7, #40]
+ 392:../src/main.c **** 	dest_org = dest;
+ 991              		.loc 1 392 11
+ 992 0080 BB6A     		ldr	r3, [r7, #40]
+ 993 0082 3B61     		str	r3, [r7, #16]
+ 393:../src/main.c **** 
+ 394:../src/main.c **** 	strcpy(dfuse_str,"@Internal Flash   /0x08000000/");//8*001Kg,56*001Ka");
+ 994              		.loc 1 394 2
+ 995 0084 7F4B     		ldr	r3, .L76+20
+ 996 0086 59F80330 		ldr	r3, [r9, r3]
+ 997 008a 1A46     		mov	r2, r3
+ 998 008c 7E4B     		ldr	r3, .L76+24
+ 999              	.LPIC4:
+ 1000 008e 7B44     		add	r3, pc
+ 1001 0090 1546     		mov	r5, r2
+ 1002 0092 1C46     		mov	r4, r3
+ 1003 0094 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1004 0096 2860     		str	r0, [r5]	@ unaligned
+ 1005 0098 6960     		str	r1, [r5, #4]	@ unaligned
+ 1006 009a AA60     		str	r2, [r5, #8]	@ unaligned
+ 1007 009c EB60     		str	r3, [r5, #12]	@ unaligned
+ 1008 009e 07CC     		ldmia	r4!, {r0, r1, r2}
+ 1009 00a0 2861     		str	r0, [r5, #16]	@ unaligned
+ 1010 00a2 6961     		str	r1, [r5, #20]	@ unaligned
+ 1011 00a4 AA61     		str	r2, [r5, #24]	@ unaligned
+ 1012 00a6 2388     		ldrh	r3, [r4]	@ unaligned
+ 1013 00a8 A278     		ldrb	r2, [r4, #2]
+ 1014 00aa AB83     		strh	r3, [r5, #28]	@ unaligned
+ 1015 00ac 1346     		mov	r3, r2
+ 1016 00ae AB77     		strb	r3, [r5, #30]
+ 395:../src/main.c **** 	num2str((f_size - nb) / 1024, buff);
+ 1017              		.loc 1 395 18
+ 1018 00b0 7B69     		ldr	r3, [r7, #20]
+ 1019 00b2 3A6A     		ldr	r2, [r7, #32]
+ 1020 00b4 D31A     		subs	r3, r2, r3
+ 1021              		.loc 1 395 2
+ 1022 00b6 9B0A     		lsrs	r3, r3, #10
+ 1023 00b8 3A1D     		adds	r2, r7, #4
+ 1024 00ba 1146     		mov	r1, r2
+ 1025 00bc 1846     		mov	r0, r3
+ 1026 00be FFF7FEFF 		bl	num2str(PLT)
+ 396:../src/main.c **** 	//num2str((f_size - nb) / 2048, buff);
+ 397:../src/main.c **** 	strcat(dfuse_str,buff);
+ 1027              		.loc 1 397 2
+ 1028 00c2 3B1D     		adds	r3, r7, #4
+ 1029 00c4 1946     		mov	r1, r3
+ 1030 00c6 6F4B     		ldr	r3, .L76+20
+ 1031 00c8 59F80330 		ldr	r3, [r9, r3]
+ 1032 00cc 1846     		mov	r0, r3
+ 1033 00ce FFF7FEFF 		bl	strcat(PLT)
+ 398:../src/main.c **** 	strcat(dfuse_str, "*001Kg,");
+ 1034              		.loc 1 398 2
+ 1035 00d2 6C4B     		ldr	r3, .L76+20
+ 1036 00d4 59F80330 		ldr	r3, [r9, r3]
+ 1037 00d8 1846     		mov	r0, r3
+ 1038 00da FFF7FEFF 		bl	strlen(PLT)
+ 1039 00de 0346     		mov	r3, r0
+ 1040 00e0 1A46     		mov	r2, r3
+ 1041 00e2 684B     		ldr	r3, .L76+20
+ 1042 00e4 59F80330 		ldr	r3, [r9, r3]
+ 1043 00e8 1344     		add	r3, r3, r2
+ 1044 00ea 684A     		ldr	r2, .L76+28
+ 1045              	.LPIC5:
+ 1046 00ec 7A44     		add	r2, pc
+ 1047 00ee 1146     		mov	r1, r2
+ 1048 00f0 1A46     		mov	r2, r3
+ 1049 00f2 0B46     		mov	r3, r1
+ 1050 00f4 03CB     		ldmia	r3!, {r0, r1}
+ 1051 00f6 1060     		str	r0, [r2]	@ unaligned
+ 1052 00f8 5160     		str	r1, [r2, #4]	@ unaligned
+ 399:../src/main.c **** 	num2str(nb / 1024, buff);
+ 1053              		.loc 1 399 13
+ 1054 00fa 7B69     		ldr	r3, [r7, #20]
+ 1055 00fc 002B     		cmp	r3, #0
+ 1056 00fe 01DA     		bge	.L58
+ 1057 0100 03F2FF33 		addw	r3, r3, #1023
+ 1058              	.L58:
+ 1059 0104 9B12     		asrs	r3, r3, #10
+ 1060              		.loc 1 399 2
+ 1061 0106 1A46     		mov	r2, r3
+ 1062 0108 3B1D     		adds	r3, r7, #4
+ 1063 010a 1946     		mov	r1, r3
+ 1064 010c 1046     		mov	r0, r2
+ 1065 010e FFF7FEFF 		bl	num2str(PLT)
+ 400:../src/main.c **** 	//num2str(nb / 2048, buff);
+ 401:../src/main.c **** 	strcat(dfuse_str,buff);
+ 1066              		.loc 1 401 2
+ 1067 0112 3B1D     		adds	r3, r7, #4
+ 1068 0114 1946     		mov	r1, r3
+ 1069 0116 5B4B     		ldr	r3, .L76+20
+ 1070 0118 59F80330 		ldr	r3, [r9, r3]
+ 1071 011c 1846     		mov	r0, r3
+ 1072 011e FFF7FEFF 		bl	strcat(PLT)
+ 402:../src/main.c **** 	strcat(dfuse_str, "*001Ka");
+ 1073              		.loc 1 402 2
+ 1074 0122 584B     		ldr	r3, .L76+20
+ 1075 0124 59F80330 		ldr	r3, [r9, r3]
+ 1076 0128 1846     		mov	r0, r3
+ 1077 012a FFF7FEFF 		bl	strlen(PLT)
+ 1078 012e 0346     		mov	r3, r0
+ 1079 0130 1A46     		mov	r2, r3
+ 1080 0132 544B     		ldr	r3, .L76+20
+ 1081 0134 59F80330 		ldr	r3, [r9, r3]
+ 1082 0138 1344     		add	r3, r3, r2
+ 1083 013a 554A     		ldr	r2, .L76+32
+ 1084              	.LPIC6:
+ 1085 013c 7A44     		add	r2, pc
+ 1086 013e 1068     		ldr	r0, [r2]
+ 1087 0140 1860     		str	r0, [r3]	@ unaligned
+ 1088 0142 9188     		ldrh	r1, [r2, #4]	@ unaligned
+ 1089 0144 9279     		ldrb	r2, [r2, #6]
+ 1090 0146 9980     		strh	r1, [r3, #4]	@ unaligned
+ 1091 0148 9A71     		strb	r2, [r3, #6]
+ 403:../src/main.c **** 
+ 404:../src/main.c **** 
+ 405:../src/main.c **** 
+ 406:../src/main.c **** 	if(rst_handler > dest) {
+ 1092              		.loc 1 406 4
+ 1093 014a FA69     		ldr	r2, [r7, #28]
+ 1094 014c BB6A     		ldr	r3, [r7, #40]
+ 1095 014e 9A42     		cmp	r2, r3
+ 1096 0150 00F28A80 		bhi	.L75
+ 407:../src/main.c **** 		return;
+ 408:../src/main.c **** 
+ 409:../src/main.c **** 	}
+ 410:../src/main.c **** 
+ 411:../src/main.c **** 	flash_unlock();
+ 1097              		.loc 1 411 2
+ 1098 0154 FFF7FEFF 		bl	flash_unlock(PLT)
+ 412:../src/main.c **** 	ptr = dest;
+ 1099              		.loc 1 412 6
+ 1100 0158 BB6A     		ldr	r3, [r7, #40]
+ 1101 015a 7B62     		str	r3, [r7, #36]
+ 413:../src/main.c **** 	while(ptr < (FLASH_BASE + f_size)) {
+ 1102              		.loc 1 413 7
+ 1103 015c 09E0     		b	.L61
+ 1104              	.L62:
+ 414:../src/main.c **** 		flash_erase_page(ptr);
+ 1105              		.loc 1 414 3
+ 1106 015e 7B6A     		ldr	r3, [r7, #36]
+ 1107 0160 1846     		mov	r0, r3
+ 1108 0162 FFF7FEFF 		bl	flash_erase_page(PLT)
+ 415:../src/main.c **** 		flash_check();
+ 1109              		.loc 1 415 3
+ 1110 0166 FFF7FEFF 		bl	flash_check(PLT)
+ 416:../src/main.c **** 		ptr += 1024;
+ 1111              		.loc 1 416 7
+ 1112 016a 7B6A     		ldr	r3, [r7, #36]
+ 1113 016c 03F58063 		add	r3, r3, #1024
+ 1114 0170 7B62     		str	r3, [r7, #36]
+ 1115              	.L61:
+ 413:../src/main.c **** 		flash_erase_page(ptr);
+ 1116              		.loc 1 413 26
+ 1117 0172 3B6A     		ldr	r3, [r7, #32]
+ 1118 0174 03F10063 		add	r3, r3, #134217728
+ 1119 0178 1A46     		mov	r2, r3
+ 413:../src/main.c **** 		flash_erase_page(ptr);
+ 1120              		.loc 1 413 7
+ 1121 017a 7B6A     		ldr	r3, [r7, #36]
+ 1122 017c 9342     		cmp	r3, r2
+ 1123 017e EED3     		bcc	.L62
+ 417:../src/main.c **** 	}
+ 418:../src/main.c **** 	cnt = nb;
+ 1124              		.loc 1 418 6
+ 1125 0180 7B69     		ldr	r3, [r7, #20]
+ 1126 0182 3B63     		str	r3, [r7, #48]
+ 419:../src/main.c **** 	while(cnt > 0) {
+ 1127              		.loc 1 419 7
+ 1128 0184 47E0     		b	.L63
+ 1129              	.L71:
+ 420:../src/main.c **** 		if(src == FLASH_BASE) {
+ 1130              		.loc 1 420 5
+ 1131 0186 FB6A     		ldr	r3, [r7, #44]
+ 1132 0188 B3F1006F 		cmp	r3, #134217728
+ 1133 018c 04D1     		bne	.L64
+ 421:../src/main.c **** 			val = &_estack;
+ 1134              		.loc 1 421 8
+ 1135 018e 414B     		ldr	r3, .L76+36
+ 1136 0190 59F80330 		ldr	r3, [r9, r3]
+ 1137 0194 7B63     		str	r3, [r7, #52]
+ 1138 0196 28E0     		b	.L65
+ 1139              	.L64:
+ 422:../src/main.c **** 		} else if(src == (FLASH_BASE + 4)) {
+ 1140              		.loc 1 422 12
+ 1141 0198 FB6A     		ldr	r3, [r7, #44]
+ 1142 019a 354A     		ldr	r2, .L76
+ 1143 019c 9342     		cmp	r3, r2
+ 1144 019e 06D1     		bne	.L66
+ 423:../src/main.c **** 			//val = reset_handler;
+ 424:../src/main.c **** 			val = (unsigned int)rst_handler + f_size - nb;
+ 1145              		.loc 1 424 10
+ 1146 01a0 FA69     		ldr	r2, [r7, #28]
+ 1147              		.loc 1 424 36
+ 1148 01a2 3B6A     		ldr	r3, [r7, #32]
+ 1149 01a4 1A44     		add	r2, r2, r3
+ 1150              		.loc 1 424 45
+ 1151 01a6 7B69     		ldr	r3, [r7, #20]
+ 1152              		.loc 1 424 8
+ 1153 01a8 D31A     		subs	r3, r2, r3
+ 1154 01aa 7B63     		str	r3, [r7, #52]
+ 1155 01ac 1DE0     		b	.L65
+ 1156              	.L66:
+ 425:../src/main.c **** 		} else if(src >= (FLASH_BASE + 8) && src < (FLASH_BASE + 0x1c)) {
+ 1157              		.loc 1 425 12
+ 1158 01ae FB6A     		ldr	r3, [r7, #44]
+ 1159 01b0 304A     		ldr	r2, .L76+4
+ 1160 01b2 9342     		cmp	r3, r2
+ 1161 01b4 0BD9     		bls	.L67
+ 1162              		.loc 1 425 37 discriminator 1
+ 1163 01b6 FB6A     		ldr	r3, [r7, #44]
+ 1164 01b8 2F4A     		ldr	r2, .L76+8
+ 1165 01ba 9342     		cmp	r3, r2
+ 1166 01bc 07D8     		bhi	.L67
+ 426:../src/main.c **** 
+ 427:../src/main.c **** 			val = *src + f_size - nb;
+ 1167              		.loc 1 427 10
+ 1168 01be FB6A     		ldr	r3, [r7, #44]
+ 1169 01c0 1A68     		ldr	r2, [r3]
+ 1170              		.loc 1 427 15
+ 1171 01c2 3B6A     		ldr	r3, [r7, #32]
+ 1172 01c4 1A44     		add	r2, r2, r3
+ 1173              		.loc 1 427 24
+ 1174 01c6 7B69     		ldr	r3, [r7, #20]
+ 1175              		.loc 1 427 8
+ 1176 01c8 D31A     		subs	r3, r2, r3
+ 1177 01ca 7B63     		str	r3, [r7, #52]
+ 1178 01cc 0DE0     		b	.L65
+ 1179              	.L67:
+ 428:../src/main.c **** 
+ 429:../src/main.c **** 		} else if(src >= (FLASH_BASE + 0x1c) && src < (FLASH_BASE + 0x24)) {
+ 1180              		.loc 1 429 12
+ 1181 01ce FB6A     		ldr	r3, [r7, #44]
+ 1182 01d0 294A     		ldr	r2, .L76+8
+ 1183 01d2 9342     		cmp	r3, r2
+ 1184 01d4 06D9     		bls	.L68
+ 1185              		.loc 1 429 40 discriminator 1
+ 1186 01d6 FB6A     		ldr	r3, [r7, #44]
+ 1187 01d8 284A     		ldr	r2, .L76+12
+ 1188 01da 9342     		cmp	r3, r2
+ 1189 01dc 02D8     		bhi	.L68
+ 430:../src/main.c **** 			val = 0;
+ 1190              		.loc 1 430 8
+ 1191 01de 0023     		movs	r3, #0
+ 1192 01e0 7B63     		str	r3, [r7, #52]
+ 1193 01e2 02E0     		b	.L65
+ 1194              	.L68:
+ 431:../src/main.c **** 		} else {
+ 432:../src/main.c **** 			val = *src;
+ 1195              		.loc 1 432 8
+ 1196 01e4 FB6A     		ldr	r3, [r7, #44]
+ 1197 01e6 1B68     		ldr	r3, [r3]
+ 1198 01e8 7B63     		str	r3, [r7, #52]
+ 1199              	.L65:
+ 433:../src/main.c **** 		}
+ 434:../src/main.c **** 	//		val = f_size - nb;
+ 435:../src/main.c **** 		//} else {
+ 436:../src/main.c **** 			//val = 0;
+ 437:../src/main.c **** 		//}
+ 438:../src/main.c **** 		//val = 0;
+ 439:../src/main.c **** 		//flash_program_word(dest, *src + val);
+ 440:../src/main.c **** 		flash_program_word(dest, val);
+ 1200              		.loc 1 440 3
+ 1201 01ea BB6A     		ldr	r3, [r7, #40]
+ 1202 01ec 796B     		ldr	r1, [r7, #52]
+ 1203 01ee 1846     		mov	r0, r3
+ 1204 01f0 FFF7FEFF 		bl	flash_program_word(PLT)
+ 441:../src/main.c **** 		flash_check();
+ 1205              		.loc 1 441 3
+ 1206 01f4 FFF7FEFF 		bl	flash_check(PLT)
+ 442:../src/main.c **** 		if(*dest != val) {
+ 1207              		.loc 1 442 6
+ 1208 01f8 BB6A     		ldr	r3, [r7, #40]
+ 1209 01fa 1B68     		ldr	r3, [r3]
+ 1210              		.loc 1 442 5
+ 1211 01fc 7A6B     		ldr	r2, [r7, #52]
+ 1212 01fe 9A42     		cmp	r2, r3
+ 1213 0200 00D0     		beq	.L69
+ 1214              	.L70:
+ 443:../src/main.c **** 			while(1);
+ 1215              		.loc 1 443 9 discriminator 1
+ 1216 0202 FEE7     		b	.L70
+ 1217              	.L69:
+ 444:../src/main.c **** 		}
+ 445:../src/main.c **** 		src++;
+ 1218              		.loc 1 445 6
+ 1219 0204 FB6A     		ldr	r3, [r7, #44]
+ 1220 0206 0433     		adds	r3, r3, #4
+ 1221 0208 FB62     		str	r3, [r7, #44]
+ 446:../src/main.c **** 		dest++;
+ 1222              		.loc 1 446 7
+ 1223 020a BB6A     		ldr	r3, [r7, #40]
+ 1224 020c 0433     		adds	r3, r3, #4
+ 1225 020e BB62     		str	r3, [r7, #40]
+ 447:../src/main.c **** 		cnt -= 4;
+ 1226              		.loc 1 447 7
+ 1227 0210 3B6B     		ldr	r3, [r7, #48]
+ 1228 0212 043B     		subs	r3, r3, #4
+ 1229 0214 3B63     		str	r3, [r7, #48]
+ 1230              	.L63:
+ 419:../src/main.c **** 		if(src == FLASH_BASE) {
+ 1231              		.loc 1 419 7
+ 1232 0216 3B6B     		ldr	r3, [r7, #48]
+ 1233 0218 002B     		cmp	r3, #0
+ 1234 021a B4DC     		bgt	.L71
+ 448:../src/main.c **** 	}
+ 449:../src/main.c **** 
+ 450:../src/main.c **** 	flash_erase_page(FLASH_BASE);
+ 1235              		.loc 1 450 2
+ 1236 021c 4FF00060 		mov	r0, #134217728
+ 1237 0220 FFF7FEFF 		bl	flash_erase_page(PLT)
+ 451:../src/main.c **** 	flash_check();
+ 1238              		.loc 1 451 2
+ 1239 0224 FFF7FEFF 		bl	flash_check(PLT)
+ 452:../src/main.c **** 	dest = dest_org;
+ 1240              		.loc 1 452 7
+ 1241 0228 3B69     		ldr	r3, [r7, #16]
+ 1242 022a BB62     		str	r3, [r7, #40]
+ 453:../src/main.c **** 	src = FLASH_BASE;
+ 1243              		.loc 1 453 6
+ 1244 022c 4FF00063 		mov	r3, #134217728
+ 1245 0230 FB62     		str	r3, [r7, #44]
+ 454:../src/main.c **** 	for(cnt = 0; cnt < 7; cnt++) {
+ 1246              		.loc 1 454 10
+ 1247 0232 0023     		movs	r3, #0
+ 1248 0234 3B63     		str	r3, [r7, #48]
+ 1249              		.loc 1 454 2
+ 1250 0236 10E0     		b	.L72
+ 1251              	.L73:
+ 455:../src/main.c **** 		val = ((unsigned int)dest[cnt]);
+ 1252              		.loc 1 455 28 discriminator 3
+ 1253 0238 3B6B     		ldr	r3, [r7, #48]
+ 1254 023a 9B00     		lsls	r3, r3, #2
+ 1255 023c BA6A     		ldr	r2, [r7, #40]
+ 1256 023e 1344     		add	r3, r3, r2
+ 1257              		.loc 1 455 7 discriminator 3
+ 1258 0240 1B68     		ldr	r3, [r3]
+ 1259 0242 7B63     		str	r3, [r7, #52]
+ 456:../src/main.c **** 		//if(cnt != 0) {
+ 457:../src/main.c **** 			//val += f_size - nb;
+ 458:../src/main.c **** 		//}
+ 459:../src/main.c **** 		flash_program_word(&src[cnt], val);
+ 1260              		.loc 1 459 26 discriminator 3
+ 1261 0244 3B6B     		ldr	r3, [r7, #48]
+ 1262 0246 9B00     		lsls	r3, r3, #2
+ 1263              		.loc 1 459 22 discriminator 3
+ 1264 0248 FA6A     		ldr	r2, [r7, #44]
+ 1265 024a 1344     		add	r3, r3, r2
+ 1266              		.loc 1 459 3 discriminator 3
+ 1267 024c 796B     		ldr	r1, [r7, #52]
+ 1268 024e 1846     		mov	r0, r3
+ 1269 0250 FFF7FEFF 		bl	flash_program_word(PLT)
+ 454:../src/main.c **** 		val = ((unsigned int)dest[cnt]);
+ 1270              		.loc 1 454 27 discriminator 3
+ 1271 0254 3B6B     		ldr	r3, [r7, #48]
+ 1272 0256 0133     		adds	r3, r3, #1
+ 1273 0258 3B63     		str	r3, [r7, #48]
+ 1274              	.L72:
+ 454:../src/main.c **** 		val = ((unsigned int)dest[cnt]);
+ 1275              		.loc 1 454 2 discriminator 1
+ 1276 025a 3B6B     		ldr	r3, [r7, #48]
+ 1277 025c 062B     		cmp	r3, #6
+ 1278 025e EBDD     		ble	.L73
+ 460:../src/main.c **** 	}
+ 461:../src/main.c **** 
+ 462:../src/main.c **** 	flash_lock();
+ 1279              		.loc 1 462 2
+ 1280 0260 FFF7FEFF 		bl	flash_lock(PLT)
+ 463:../src/main.c **** 	//for(cnt = 0; cnt <500000000;cnt++);
+ 464:../src/main.c **** 	scb_reset_system();
+ 1281              		.loc 1 464 2
+ 1282 0264 FFF7FEFF 		bl	scb_reset_system(PLT)
+ 1283              	.L75:
+ 407:../src/main.c **** 
+ 1284              		.loc 1 407 3
+ 1285 0268 00BF     		nop
+ 465:../src/main.c **** 
+ 466:../src/main.c **** }
+ 1286              		.loc 1 466 1
+ 1287 026a 3837     		adds	r7, r7, #56
+ 1288              		.cfi_def_cfa_offset 16
+ 1289 026c BD46     		mov	sp, r7
+ 1290              		.cfi_def_cfa_register 13
+ 1291              		@ sp needed
+ 1292 026e B0BD     		pop	{r4, r5, r7, pc}
+ 1293              	.L77:
+ 1294              		.align	2
+ 1295              	.L76:
+ 1296 0270 04000008 		.word	134217732
+ 1297 0274 07000008 		.word	134217735
+ 1298 0278 1B000008 		.word	134217755
+ 1299 027c 23000008 		.word	134217763
+ 1300 0280 00000000 		.word	reset_handler(GOT)
+ 1301 0284 00000000 		.word	dfuse_str(GOT)
+ 1302 0288 F6010000 		.word	.LC0-(.LPIC4+4)
+ 1303 028c BC010000 		.word	.LC1-(.LPIC5+4)
+ 1304 0290 78010000 		.word	.LC2-(.LPIC6+4)
+ 1305 0294 00000000 		.word	_estack(GOT)
+ 1306              		.cfi_endproc
+ 1307              	.LFE11:
+ 1309              		.section	.rodata
+ 1310 002f 00       		.align	2
+ 1311              	.LC3:
+ 1312 0030 48434845 		.ascii	"HCHEW\000"
+ 1312      5700
+ 1313 0036 0000     		.align	2
+ 1314              	.LC4:
+ 1315 0038 53544D33 		.ascii	"STM32 DFU Emulation\000"
+ 1315      32204446 
+ 1315      5520456D 
+ 1315      756C6174 
+ 1315      696F6E00 
+ 1316              		.section	move_it_sect
+ 1317              		.align	1
+ 1318              		.global	main
+ 1319              		.syntax unified
+ 1320              		.thumb
+ 1321              		.thumb_func
+ 1322              		.fpu softvfp
+ 1324              	main:
+ 1325              	.LFB14:
+ 467:../src/main.c **** 
+ 468:../src/main.c **** typedef void (*funcp_t) (void);
+ 469:../src/main.c **** extern funcp_t __preinit_array_start, __preinit_array_end;
+ 470:../src/main.c **** extern funcp_t __init_array_start, __init_array_end;
+ 471:../src/main.c **** extern funcp_t __fini_array_start, __fini_array_end;
+ 472:../src/main.c **** //__attribute__((used)) const unsigned int eedata = &_data_loadaddr ;
+ 473:../src/main.c **** //extern const void * const eedata;
+ 474:../src/main.c **** extern void *__data_regions_array_start;
+ 475:../src/main.c **** 
+ 476:../src/main.c **** void reset_handler(void)
+ 477:../src/main.c **** {
+ 478:../src/main.c **** 	volatile unsigned *src, *dest, *destend, *bssend;
+ 479:../src/main.c **** 	funcp_t *fp;
+ 480:../src/main.c **** 	register unsigned int r1 asm("r1");
+ 481:../src/main.c **** 
+ 482:../src/main.c **** 	int ofs;
+ 483:../src/main.c **** 	asm("mov r1,pc");
+ 484:../src/main.c **** 	fp = (r1 & ~31) | 1;
+ 485:../src/main.c **** 	asm("ldr r1,=__ram_start");
+ 486:../src/main.c **** 	dest = r1;
+ 487:../src/main.c **** 	asm("mov r1,sp");
+ 488:../src/main.c **** 	destend = r1;
+ 489:../src/main.c **** 	while(dest < destend) {
+ 490:../src/main.c **** 		*dest++ = 0;
+ 491:../src/main.c **** 	}
+ 492:../src/main.c **** 	asm("ldr r9,=__rgot_begin");
+ 493:../src/main.c **** 	//fp = *(void **)(FLASH_BASE + 4);
+ 494:../src/main.c **** 	asm("ldr r1,=reset_handler");
+ 495:../src/main.c **** 	ofs = (unsigned int)fp - r1;
+ 496:../src/main.c **** 
+ 497:../src/main.c **** 
+ 498:../src/main.c **** 	asm("ldr r1,=__fgot_begin");
+ 499:../src/main.c **** 	src = r1 + ofs;
+ 500:../src/main.c **** 	asm("ldr r1,=__rgot_begin");
+ 501:../src/main.c **** 	dest = r1;
+ 502:../src/main.c **** 	asm("ldr r1,=__rgot_end");
+ 503:../src/main.c **** 	destend = r1;
+ 504:../src/main.c **** 	while(dest < destend) {
+ 505:../src/main.c **** 		if(*src < 0x20000000) {
+ 506:../src/main.c **** 			*dest++ = ((unsigned int)*src++) + ofs;
+ 507:../src/main.c **** 		} else {
+ 508:../src/main.c **** 			*dest++ = *src++;
+ 509:../src/main.c **** 		}
+ 510:../src/main.c **** 
+ 511:../src/main.c **** 	}
+ 512:../src/main.c **** 
+ 513:../src/main.c **** 
+ 514:../src/main.c **** 	src = &_data_loadaddr;
+ 515:../src/main.c **** 	dest = &_data;
+ 516:../src/main.c **** 	for (src = &_data_loadaddr, dest = &_data;
+ 517:../src/main.c **** 		dest < &_edata;
+ 518:../src/main.c **** 		src++, dest++) {
+ 519:../src/main.c **** 		*dest = *src;
+ 520:../src/main.c **** 	}
+ 521:../src/main.c **** 
+ 522:../src/main.c **** 	/* Ensure 8-byte alignment of stack pointer on interrupts */
+ 523:../src/main.c **** 	/* Enabled by default on most Cortex-M parts, but not M3 r1 */
+ 524:../src/main.c **** 	SCB_CCR |= SCB_CCR_STKALIGN;
+ 525:../src/main.c **** 
+ 526:../src/main.c **** 	(void)main();
+ 527:../src/main.c **** }
+ 528:../src/main.c **** const unsigned int diff = (unsigned int)&reset_handler;
+ 529:../src/main.c **** 
+ 530:../src/main.c **** /** Initialize the USB device controller hardware of the STM32. */
+ 531:../src/main.c **** usbd_device *st_usbfs_v1_usbd_init_xx(void)
+ 532:../src/main.c **** {
+ 533:../src/main.c **** 	rcc_periph_clock_enable(RCC_USB);
+ 534:../src/main.c **** 	SET_REG(USB_CNTR_REG, 0);
+ 535:../src/main.c **** 	SET_REG(USB_BTABLE_REG, 0);
+ 536:../src/main.c **** 	SET_REG(USB_ISTR_REG, 0);
+ 537:../src/main.c **** 
+ 538:../src/main.c **** 	/* Enable RESET, SUSPEND, RESUME and CTR interrupts. */
+ 539:../src/main.c **** 	SET_REG(USB_CNTR_REG, USB_CNTR_RESETM | USB_CNTR_CTRM |
+ 540:../src/main.c **** 		USB_CNTR_SUSPM | USB_CNTR_WKUPM);
+ 541:../src/main.c **** 	return &st_usbfs_dev;
+ 542:../src/main.c **** }
+ 543:../src/main.c **** 
+ 544:../src/main.c **** struct _usbd_driver usb_drv = {0};
+ 545:../src/main.c **** 
+ 546:../src/main.c **** int main(void)
+ 547:../src/main.c **** {
+ 1326              		.loc 1 547 1
+ 1327              		.cfi_startproc
+ 1328              		@ args = 0, pretend = 0, frame = 24
+ 1329              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1330 0298 80B5     		push	{r7, lr}
+ 1331              		.cfi_def_cfa_offset 8
+ 1332              		.cfi_offset 7, -8
+ 1333              		.cfi_offset 14, -4
+ 1334 029a 8AB0     		sub	sp, sp, #40
+ 1335              		.cfi_def_cfa_offset 48
+ 1336 029c 04AF     		add	r7, sp, #16
+ 1337              		.cfi_def_cfa 7, 32
+ 548:../src/main.c **** 	unsigned int c,d,e;
+ 549:../src/main.c **** 	const char **p;
+ 550:../src/main.c **** 	register unsigned int r1 asm("r1");
+ 551:../src/main.c **** 	usbd_device *usbd_dev;
+ 552:../src/main.c **** 
+ 553:../src/main.c **** 	move_it();
+ 1338              		.loc 1 553 2
+ 1339 029e FFF7FEFF 		bl	move_it(PLT)
+ 554:../src/main.c **** 
+ 555:../src/main.c **** 	asm("ldr r1,=__ram_start");
+ 1340              		.loc 1 555 2
+ 1341              		.syntax unified
+ 1342              	@ 555 "../src/main.c" 1
+ 1343 02a2 A049     		ldr r1,=__ram_start
+ 1344              	@ 0 "" 2
+ 556:../src/main.c **** 
+ 557:../src/main.c **** 	c = RCC_CSR;
+ 1345              		.loc 1 557 6
+ 1346              		.thumb
+ 1347              		.syntax unified
+ 1348 02a4 814B     		ldr	r3, .L84
+ 1349              		.loc 1 557 4
+ 1350 02a6 1B68     		ldr	r3, [r3]
+ 1351 02a8 7B61     		str	r3, [r7, #20]
+ 558:../src/main.c **** 
+ 559:../src/main.c **** 	RCC_CSR = c | RCC_CSR_RMVF;
+ 1352              		.loc 1 559 2
+ 1353 02aa 804A     		ldr	r2, .L84
+ 1354              		.loc 1 559 14
+ 1355 02ac 7B69     		ldr	r3, [r7, #20]
+ 1356 02ae 43F08073 		orr	r3, r3, #16777216
+ 1357              		.loc 1 559 10
+ 1358 02b2 1360     		str	r3, [r2]
+ 560:../src/main.c **** 
+ 561:../src/main.c **** 	if((c & (RCC_CSR_PORRSTF | RCC_CSR_PINRSTF)) == (RCC_CSR_PORRSTF | RCC_CSR_PINRSTF)
+ 1359              		.loc 1 561 8
+ 1360 02b4 7B69     		ldr	r3, [r7, #20]
+ 1361 02b6 03F04063 		and	r3, r3, #201326592
+ 1362              		.loc 1 561 4
+ 1363 02ba B3F1406F 		cmp	r3, #201326592
+ 1364 02be 04D0     		beq	.L79
+ 562:../src/main.c **** 	|| (c & RCC_CSR_SFTRSTF)) {
+ 1365              		.loc 1 562 8
+ 1366 02c0 7B69     		ldr	r3, [r7, #20]
+ 1367 02c2 03F08053 		and	r3, r3, #268435456
+ 1368              		.loc 1 562 2
+ 1369 02c6 002B     		cmp	r3, #0
+ 1370 02c8 25D0     		beq	.L80
+ 1371              	.L79:
+ 563:../src/main.c **** 
+ 564:../src/main.c **** 		asm("nop");
+ 1372              		.loc 1 564 3
+ 1373              		.syntax unified
+ 1374              	@ 564 "../src/main.c" 1
+ 1375 02ca 00BF     		nop
+ 1376              	@ 0 "" 2
+ 565:../src/main.c **** 		asm("nop");
+ 1377              		.loc 1 565 3
+ 1378              	@ 565 "../src/main.c" 1
+ 1379 02cc 00BF     		nop
+ 1380              	@ 0 "" 2
+ 566:../src/main.c **** 		c = vector_table;
+ 1381              		.loc 1 566 5
+ 1382              		.thumb
+ 1383              		.syntax unified
+ 1384 02ce 7C4B     		ldr	r3, .L84+20
+ 1385 02d0 59F80330 		ldr	r3, [r9, r3]
+ 1386 02d4 1B68     		ldr	r3, [r3]
+ 1387 02d6 7B61     		str	r3, [r7, #20]
+ 567:../src/main.c **** 		d = *(uint32_t *)(FLASH_BASE + 0x20);
+ 1388              		.loc 1 567 7
+ 1389 02d8 754B     		ldr	r3, .L84+4
+ 1390              		.loc 1 567 5
+ 1391 02da 1B68     		ldr	r3, [r3]
+ 1392 02dc 3B61     		str	r3, [r7, #16]
+ 568:../src/main.c **** 		e = *(uint32_t *)(FLASH_BASE + 0x1c);
+ 1393              		.loc 1 568 7
+ 1394 02de 754B     		ldr	r3, .L84+8
+ 1395              		.loc 1 568 5
+ 1396 02e0 1B68     		ldr	r3, [r3]
+ 1397 02e2 FB60     		str	r3, [r7, #12]
+ 569:../src/main.c **** 		if(d >= FLASH_BASE && d < c &&
+ 1398              		.loc 1 569 5
+ 1399 02e4 3B69     		ldr	r3, [r7, #16]
+ 1400 02e6 B3F1006F 		cmp	r3, #134217728
+ 1401 02ea 14D3     		bcc	.L80
+ 1402              		.loc 1 569 22 discriminator 1
+ 1403 02ec 3A69     		ldr	r2, [r7, #16]
+ 1404 02ee 7B69     		ldr	r3, [r7, #20]
+ 1405 02f0 9A42     		cmp	r2, r3
+ 1406 02f2 10D2     		bcs	.L80
+ 570:../src/main.c **** 		e >= r1 && e <= (r1 + (96 * 1024))) {
+ 1407              		.loc 1 570 5 discriminator 2
+ 1408 02f4 0A46     		mov	r2, r1
+ 569:../src/main.c **** 		if(d >= FLASH_BASE && d < c &&
+ 1409              		.loc 1 569 31 discriminator 2
+ 1410 02f6 FB68     		ldr	r3, [r7, #12]
+ 1411 02f8 9342     		cmp	r3, r2
+ 1412 02fa 0CD3     		bcc	.L80
+ 1413              		.loc 1 570 23
+ 1414 02fc 0B46     		mov	r3, r1
+ 1415 02fe 03F5C033 		add	r3, r3, #98304
+ 1416              		.loc 1 570 11
+ 1417 0302 FA68     		ldr	r2, [r7, #12]
+ 1418 0304 9A42     		cmp	r2, r3
+ 1419 0306 06D8     		bhi	.L80
+ 571:../src/main.c **** 
+ 572:../src/main.c **** 			//user will see reset flags in RCC_CSR cleared
+ 573:../src/main.c **** 
+ 574:../src/main.c **** 			asm volatile("msr msp, %0"::"g"
+ 575:../src/main.c **** 				     (*(volatile uint32_t *)APP_ADDRESS));
+ 1420              		.loc 1 575 11
+ 1421 0308 6A4B     		ldr	r3, .L84+8
+ 1422 030a 1B68     		ldr	r3, [r3]
+ 574:../src/main.c **** 				     (*(volatile uint32_t *)APP_ADDRESS));
+ 1423              		.loc 1 574 4
+ 1424              		.syntax unified
+ 1425              	@ 574 "../src/main.c" 1
+ 1426 030c 83F30888 		msr msp, r3
+ 1427              	@ 0 "" 2
+ 576:../src/main.c **** 			/* Jump to application. */
+ 577:../src/main.c **** 			(*(void (**)())(APP_ADDRESS + 4))();
+ 1428              		.loc 1 577 5
+ 1429              		.thumb
+ 1430              		.syntax unified
+ 1431 0310 674B     		ldr	r3, .L84+4
+ 1432 0312 1B68     		ldr	r3, [r3]
+ 1433 0314 9847     		blx	r3
+ 1434              	.LVL0:
+ 1435              	.L80:
+ 578:../src/main.c **** 
+ 579:../src/main.c **** 
+ 580:../src/main.c **** 		}
+ 581:../src/main.c **** 
+ 582:../src/main.c **** 	}
+ 583:../src/main.c **** 
+ 584:../src/main.c **** 	gen_serial();
+ 1436              		.loc 1 584 2
+ 1437 0316 FFF7FEFF 		bl	gen_serial(PLT)
+ 585:../src/main.c **** 
+ 586:../src/main.c **** 	rcc_periph_clock_enable(RCC_GPIOA);
+ 1438              		.loc 1 586 2
+ 1439 031a 40F20230 		movw	r0, #770
+ 1440 031e FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 587:../src/main.c **** 
+ 588:../src/main.c **** 	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
+ 1441              		.loc 1 588 2
+ 1442 0322 684B     		ldr	r3, .L84+24
+ 1443 0324 59F80330 		ldr	r3, [r9, r3]
+ 1444 0328 03F17000 		add	r0, r3, #112
+ 1445 032c FFF7FEFF 		bl	rcc_clock_setup_pll(PLT)
+ 589:../src/main.c **** 
+ 590:../src/main.c **** 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
+ 1446              		.loc 1 590 2
+ 1447 0330 4FF48053 		mov	r3, #4096
+ 1448 0334 0122     		movs	r2, #1
+ 1449 0336 0321     		movs	r1, #3
+ 1450 0338 5F48     		ldr	r0, .L84+12
+ 1451 033a FFF7FEFF 		bl	gpio_set_mode(PLT)
+ 591:../src/main.c **** 		GPIO_CNF_OUTPUT_OPENDRAIN, GPIO12);
+ 592:../src/main.c **** 	gpio_clear(GPIOA, GPIO12);
+ 1452              		.loc 1 592 2
+ 1453 033e 4FF48051 		mov	r1, #4096
+ 1454 0342 5D48     		ldr	r0, .L84+12
+ 1455 0344 FFF7FEFF 		bl	gpio_clear(PLT)
+ 593:../src/main.c **** 	for(c = 0; c < 5000000; c++);
+ 1456              		.loc 1 593 8
+ 1457 0348 0023     		movs	r3, #0
+ 1458 034a 7B61     		str	r3, [r7, #20]
+ 1459              		.loc 1 593 2
+ 1460 034c 02E0     		b	.L81
+ 1461              	.L82:
+ 1462              		.loc 1 593 27 discriminator 3
+ 1463 034e 7B69     		ldr	r3, [r7, #20]
+ 1464 0350 0133     		adds	r3, r3, #1
+ 1465 0352 7B61     		str	r3, [r7, #20]
+ 1466              	.L81:
+ 1467              		.loc 1 593 2 discriminator 1
+ 1468 0354 7B69     		ldr	r3, [r7, #20]
+ 1469 0356 594A     		ldr	r2, .L84+16
+ 1470 0358 9342     		cmp	r3, r2
+ 1471 035a F8D9     		bls	.L82
+ 594:../src/main.c **** 	gpio_set(GPIOA, GPIO12);
+ 1472              		.loc 1 594 2
+ 1473 035c 4FF48051 		mov	r1, #4096
+ 1474 0360 5548     		ldr	r0, .L84+12
+ 1475 0362 FFF7FEFF 		bl	gpio_set(PLT)
+ 595:../src/main.c **** 
+ 596:../src/main.c **** 	config.interface = ifaces;
+ 1476              		.loc 1 596 19
+ 1477 0366 584B     		ldr	r3, .L84+28
+ 1478 0368 59F80330 		ldr	r3, [r9, r3]
+ 1479 036c 1A46     		mov	r2, r3
+ 1480 036e 574B     		ldr	r3, .L84+32
+ 1481 0370 59F80330 		ldr	r3, [r9, r3]
+ 1482 0374 C2F80930 		str	r3, [r2, #9]	@ unaligned
+ 597:../src/main.c **** 	ifaces[0].altsetting = &iface;
+ 1483              		.loc 1 597 23
+ 1484 0378 544B     		ldr	r3, .L84+32
+ 1485 037a 59F80330 		ldr	r3, [r9, r3]
+ 1486 037e 1A46     		mov	r2, r3
+ 1487 0380 534B     		ldr	r3, .L84+36
+ 1488 0382 59F80330 		ldr	r3, [r9, r3]
+ 1489 0386 D360     		str	r3, [r2, #12]
+ 598:../src/main.c **** 	iface.extra = &dfu_function;
+ 1490              		.loc 1 598 14
+ 1491 0388 514B     		ldr	r3, .L84+36
+ 1492 038a 59F80330 		ldr	r3, [r9, r3]
+ 1493 038e 1A46     		mov	r2, r3
+ 1494 0390 504B     		ldr	r3, .L84+40
+ 1495 0392 59F80330 		ldr	r3, [r9, r3]
+ 1496 0396 C2F80D30 		str	r3, [r2, #13]	@ unaligned
+ 599:../src/main.c **** 	asm ("ldr r1,=usb_strings");
+ 1497              		.loc 1 599 2
+ 1498              		.syntax unified
+ 1499              	@ 599 "../src/main.c" 1
+ 1500 039a 6349     		ldr r1,=usb_strings
+ 1501              	@ 0 "" 2
+ 600:../src/main.c **** 	p = r1;
+ 1502              		.loc 1 600 4
+ 1503              		.thumb
+ 1504              		.syntax unified
+ 1505 039c 0B46     		mov	r3, r1
+ 1506 039e BB60     		str	r3, [r7, #8]
+ 601:../src/main.c **** 
+ 602:../src/main.c **** 	p[0] = "HCHEW";
+ 1507              		.loc 1 602 7
+ 1508 03a0 BB68     		ldr	r3, [r7, #8]
+ 1509 03a2 4D4A     		ldr	r2, .L84+44
+ 1510              	.LPIC7:
+ 1511 03a4 7A44     		add	r2, pc
+ 1512 03a6 1A60     		str	r2, [r3]
+ 603:../src/main.c **** 	p[1] = "STM32 DFU Emulation";
+ 1513              		.loc 1 603 3
+ 1514 03a8 BB68     		ldr	r3, [r7, #8]
+ 1515 03aa 0433     		adds	r3, r3, #4
+ 1516              		.loc 1 603 7
+ 1517 03ac 4B4A     		ldr	r2, .L84+48
+ 1518              	.LPIC8:
+ 1519 03ae 7A44     		add	r2, pc
+ 1520 03b0 1A60     		str	r2, [r3]
+ 604:../src/main.c **** 	p[2] = serial_str;//"DEMO";
+ 1521              		.loc 1 604 3
+ 1522 03b2 BB68     		ldr	r3, [r7, #8]
+ 1523 03b4 0833     		adds	r3, r3, #8
+ 1524              		.loc 1 604 7
+ 1525 03b6 4A4A     		ldr	r2, .L84+52
+ 1526 03b8 59F80220 		ldr	r2, [r9, r2]
+ 1527 03bc 1A60     		str	r2, [r3]
+ 605:../src/main.c **** 	/* This string is used by ST Microelectronics' DfuSe utility. */
+ 606:../src/main.c **** 
+ 607:../src/main.c **** 	p[3] = dfuse_str;
+ 1528              		.loc 1 607 3
+ 1529 03be BB68     		ldr	r3, [r7, #8]
+ 1530 03c0 0C33     		adds	r3, r3, #12
+ 1531              		.loc 1 607 7
+ 1532 03c2 484A     		ldr	r2, .L84+56
+ 1533 03c4 59F80220 		ldr	r2, [r9, r2]
+ 1534 03c8 1A60     		str	r2, [r3]
+ 608:../src/main.c **** 
+ 609:../src/main.c **** 	usb_drv.init = st_usbfs_v1_usbd_init_xx;
+ 1535              		.loc 1 609 15
+ 1536 03ca 474B     		ldr	r3, .L84+60
+ 1537 03cc 59F80330 		ldr	r3, [r9, r3]
+ 1538 03d0 1A46     		mov	r2, r3
+ 1539 03d2 464B     		ldr	r3, .L84+64
+ 1540 03d4 59F80330 		ldr	r3, [r9, r3]
+ 1541 03d8 1360     		str	r3, [r2]
+ 610:../src/main.c **** 	usb_drv.set_address = st_usbfs_set_address;
+ 1542              		.loc 1 610 22
+ 1543 03da 434B     		ldr	r3, .L84+60
+ 1544 03dc 59F80330 		ldr	r3, [r9, r3]
+ 1545 03e0 1A46     		mov	r2, r3
+ 1546 03e2 434B     		ldr	r3, .L84+68
+ 1547 03e4 59F80330 		ldr	r3, [r9, r3]
+ 1548 03e8 5360     		str	r3, [r2, #4]
+ 611:../src/main.c **** 	usb_drv.ep_setup = st_usbfs_ep_setup;
+ 1549              		.loc 1 611 19
+ 1550 03ea 3F4B     		ldr	r3, .L84+60
+ 1551 03ec 59F80330 		ldr	r3, [r9, r3]
+ 1552 03f0 1A46     		mov	r2, r3
+ 1553 03f2 404B     		ldr	r3, .L84+72
+ 1554 03f4 59F80330 		ldr	r3, [r9, r3]
+ 1555 03f8 9360     		str	r3, [r2, #8]
+ 612:../src/main.c **** 	usb_drv.ep_reset = st_usbfs_endpoints_reset;
+ 1556              		.loc 1 612 19
+ 1557 03fa 3B4B     		ldr	r3, .L84+60
+ 1558 03fc 59F80330 		ldr	r3, [r9, r3]
+ 1559 0400 1A46     		mov	r2, r3
+ 1560 0402 3D4B     		ldr	r3, .L84+76
+ 1561 0404 59F80330 		ldr	r3, [r9, r3]
+ 1562 0408 D360     		str	r3, [r2, #12]
+ 613:../src/main.c **** 	usb_drv.ep_stall_set = st_usbfs_ep_stall_set;
+ 1563              		.loc 1 613 23
+ 1564 040a 374B     		ldr	r3, .L84+60
+ 1565 040c 59F80330 		ldr	r3, [r9, r3]
+ 1566 0410 1A46     		mov	r2, r3
+ 1567 0412 3A4B     		ldr	r3, .L84+80
+ 1568 0414 59F80330 		ldr	r3, [r9, r3]
+ 1569 0418 1361     		str	r3, [r2, #16]
+ 614:../src/main.c **** 	usb_drv.ep_stall_get = st_usbfs_ep_stall_get;
+ 1570              		.loc 1 614 23
+ 1571 041a 334B     		ldr	r3, .L84+60
+ 1572 041c 59F80330 		ldr	r3, [r9, r3]
+ 1573 0420 1A46     		mov	r2, r3
+ 1574 0422 374B     		ldr	r3, .L84+84
+ 1575 0424 59F80330 		ldr	r3, [r9, r3]
+ 1576 0428 9361     		str	r3, [r2, #24]
+ 615:../src/main.c **** 	usb_drv.ep_nak_set = st_usbfs_ep_nak_set;
+ 1577              		.loc 1 615 21
+ 1578 042a 2F4B     		ldr	r3, .L84+60
+ 1579 042c 59F80330 		ldr	r3, [r9, r3]
+ 1580 0430 1A46     		mov	r2, r3
+ 1581 0432 344B     		ldr	r3, .L84+88
+ 1582 0434 59F80330 		ldr	r3, [r9, r3]
+ 1583 0438 5361     		str	r3, [r2, #20]
+ 616:../src/main.c **** 	usb_drv.ep_write_packet = st_usbfs_ep_write_packet;
+ 1584              		.loc 1 616 26
+ 1585 043a 2B4B     		ldr	r3, .L84+60
+ 1586 043c 59F80330 		ldr	r3, [r9, r3]
+ 1587 0440 1A46     		mov	r2, r3
+ 1588 0442 314B     		ldr	r3, .L84+92
+ 1589 0444 59F80330 		ldr	r3, [r9, r3]
+ 1590 0448 D361     		str	r3, [r2, #28]
+ 617:../src/main.c **** 	usb_drv.ep_read_packet = st_usbfs_ep_read_packet;
+ 1591              		.loc 1 617 25
+ 1592 044a 274B     		ldr	r3, .L84+60
+ 1593 044c 59F80330 		ldr	r3, [r9, r3]
+ 1594 0450 1A46     		mov	r2, r3
+ 1595 0452 2E4B     		ldr	r3, .L84+96
+ 1596 0454 59F80330 		ldr	r3, [r9, r3]
+ 1597 0458 1362     		str	r3, [r2, #32]
+ 618:../src/main.c **** 	usb_drv.poll = st_usbfs_poll;
+ 1598              		.loc 1 618 15
+ 1599 045a 234B     		ldr	r3, .L84+60
+ 1600 045c 59F80330 		ldr	r3, [r9, r3]
+ 1601 0460 1A46     		mov	r2, r3
+ 1602 0462 2B4B     		ldr	r3, .L84+100
+ 1603 0464 59F80330 		ldr	r3, [r9, r3]
+ 1604 0468 5362     		str	r3, [r2, #36]
+ 619:../src/main.c **** 
+ 620:../src/main.c **** 	usbd_dev = usbd_init(&usb_drv, &dev, &config, p, 4, usbd_control_buffer, sizeof(usbd_control_buffe
+ 1605              		.loc 1 620 13
+ 1606 046a 4FF48063 		mov	r3, #1024
+ 1607 046e 0293     		str	r3, [sp, #8]
+ 1608 0470 284B     		ldr	r3, .L84+104
+ 1609 0472 59F80330 		ldr	r3, [r9, r3]
+ 1610 0476 0193     		str	r3, [sp, #4]
+ 1611 0478 0423     		movs	r3, #4
+ 1612 047a 0093     		str	r3, [sp]
+ 1613 047c BB68     		ldr	r3, [r7, #8]
+ 1614 047e 124A     		ldr	r2, .L84+28
+ 1615 0480 59F80220 		ldr	r2, [r9, r2]
+ 1616 0484 2449     		ldr	r1, .L84+108
+ 1617 0486 59F80110 		ldr	r1, [r9, r1]
+ 1618 048a 1748     		ldr	r0, .L84+60
+ 1619 048c 59F80000 		ldr	r0, [r9, r0]
+ 1620 0490 FFF7FEFF 		bl	usbd_init(PLT)
+ 1621 0494 7860     		str	r0, [r7, #4]
+ 621:../src/main.c **** 	usbd_register_set_config_callback(usbd_dev, usbdfu_set_config);
+ 1622              		.loc 1 621 2
+ 1623 0496 214B     		ldr	r3, .L84+112
+ 1624              	.LPIC9:
+ 1625 0498 7B44     		add	r3, pc
+ 1626 049a 1946     		mov	r1, r3
+ 1627 049c 7868     		ldr	r0, [r7, #4]
+ 1628 049e FFF7FEFF 		bl	usbd_register_set_config_callback(PLT)
+ 1629              	.L83:
+ 622:../src/main.c **** 	//usbd_register_reset_callback(usbd_dev, usbdfu_usb_reset);
+ 623:../src/main.c **** 	while (1)
+ 624:../src/main.c **** 		usbd_poll(usbd_dev);
+ 1630              		.loc 1 624 3 discriminator 1
+ 1631 04a2 7868     		ldr	r0, [r7, #4]
+ 1632 04a4 FFF7FEFF 		bl	usbd_poll(PLT)
+ 1633 04a8 FBE7     		b	.L83
+ 1634              	.L85:
+ 1635 04aa 00BF     		.align	2
+ 1636              	.L84:
+ 1637 04ac 24100240 		.word	1073877028
+ 1638 04b0 20000008 		.word	134217760
+ 1639 04b4 1C000008 		.word	134217756
+ 1640 04b8 00080140 		.word	1073809408
+ 1641 04bc 3F4B4C00 		.word	4999999
+ 1642 04c0 00000000 		.word	vector_table(GOT)
+ 1643 04c4 00000000 		.word	rcc_hse_configs(GOT)
+ 1644 04c8 00000000 		.word	config(GOT)
+ 1645 04cc 00000000 		.word	ifaces(GOT)
+ 1646 04d0 00000000 		.word	iface(GOT)
+ 1647 04d4 00000000 		.word	dfu_function(GOT)
+ 1648 04d8 60010000 		.word	.LC3-(.LPIC7+4)
+ 1649 04dc 62010000 		.word	.LC4-(.LPIC8+4)
+ 1650 04e0 00000000 		.word	serial_str(GOT)
+ 1651 04e4 00000000 		.word	dfuse_str(GOT)
+ 1652 04e8 00000000 		.word	usb_drv(GOT)
+ 1653 04ec 00000000 		.word	st_usbfs_v1_usbd_init_xx(GOT)
+ 1654 04f0 00000000 		.word	st_usbfs_set_address(GOT)
+ 1655 04f4 00000000 		.word	st_usbfs_ep_setup(GOT)
+ 1656 04f8 00000000 		.word	st_usbfs_endpoints_reset(GOT)
+ 1657 04fc 00000000 		.word	st_usbfs_ep_stall_set(GOT)
+ 1658 0500 00000000 		.word	st_usbfs_ep_stall_get(GOT)
+ 1659 0504 00000000 		.word	st_usbfs_ep_nak_set(GOT)
+ 1660 0508 00000000 		.word	st_usbfs_ep_write_packet(GOT)
+ 1661 050c 00000000 		.word	st_usbfs_ep_read_packet(GOT)
+ 1662 0510 00000000 		.word	st_usbfs_poll(GOT)
+ 1663 0514 00000000 		.word	usbd_control_buffer(GOT)
+ 1664 0518 00000000 		.word	dev(GOT)
+ 1665 051c 80000000 		.word	usbdfu_set_config-(.LPIC9+4)
+ 1666              		.cfi_endproc
+ 1667              	.LFE14:
+ 1669              		.section	move_it_sect_first,"ax",%progbits
+ 1670              		.align	1
+ 1671              		.global	reset_handler
+ 1672              		.syntax unified
+ 1673              		.thumb
+ 1674              		.thumb_func
+ 1675              		.fpu softvfp
+ 1677              	reset_handler:
+ 1678              	.LFB12:
+ 477:../src/main.c **** 	volatile unsigned *src, *dest, *destend, *bssend;
+ 1679              		.loc 1 477 1
+ 1680              		.cfi_startproc
+ 1681              		@ args = 0, pretend = 0, frame = 24
+ 1682              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1683 0000 80B5     		push	{r7, lr}
+ 1684              		.cfi_def_cfa_offset 8
+ 1685              		.cfi_offset 7, -8
+ 1686              		.cfi_offset 14, -4
+ 1687 0002 86B0     		sub	sp, sp, #24
+ 1688              		.cfi_def_cfa_offset 32
+ 1689 0004 00AF     		add	r7, sp, #0
+ 1690              		.cfi_def_cfa_register 7
+ 483:../src/main.c **** 	fp = (r1 & ~31) | 1;
+ 1691              		.loc 1 483 2
+ 1692              		.syntax unified
+ 1693              	@ 483 "../src/main.c" 1
+ 1694 0006 7946     		mov r1,pc
+ 1695              	@ 0 "" 2
+ 484:../src/main.c **** 	asm("ldr r1,=__ram_start");
+ 1696              		.loc 1 484 11
+ 1697              		.thumb
+ 1698              		.syntax unified
+ 1699 0008 0B46     		mov	r3, r1
+ 1700 000a 23F01F03 		bic	r3, r3, #31
+ 484:../src/main.c **** 	asm("ldr r1,=__ram_start");
+ 1701              		.loc 1 484 18
+ 1702 000e 43F00103 		orr	r3, r3, #1
+ 484:../src/main.c **** 	asm("ldr r1,=__ram_start");
+ 1703              		.loc 1 484 5
+ 1704 0012 FB60     		str	r3, [r7, #12]
+ 485:../src/main.c **** 	dest = r1;
+ 1705              		.loc 1 485 2
+ 1706              		.syntax unified
+ 1707              	@ 485 "../src/main.c" 1
+ 1708 0014 3949     		ldr r1,=__ram_start
+ 1709              	@ 0 "" 2
+ 486:../src/main.c **** 	asm("mov r1,sp");
+ 1710              		.loc 1 486 7
+ 1711              		.thumb
+ 1712              		.syntax unified
+ 1713 0016 0B46     		mov	r3, r1
+ 1714 0018 3B61     		str	r3, [r7, #16]
+ 487:../src/main.c **** 	destend = r1;
+ 1715              		.loc 1 487 2
+ 1716              		.syntax unified
+ 1717              	@ 487 "../src/main.c" 1
+ 1718 001a 6946     		mov r1,sp
+ 1719              	@ 0 "" 2
+ 488:../src/main.c **** 	while(dest < destend) {
+ 1720              		.loc 1 488 10
+ 1721              		.thumb
+ 1722              		.syntax unified
+ 1723 001c 0B46     		mov	r3, r1
+ 1724 001e BB60     		str	r3, [r7, #8]
+ 489:../src/main.c **** 		*dest++ = 0;
+ 1725              		.loc 1 489 7
+ 1726 0020 04E0     		b	.L87
+ 1727              	.L88:
+ 490:../src/main.c **** 	}
+ 1728              		.loc 1 490 8
+ 1729 0022 3B69     		ldr	r3, [r7, #16]
+ 1730 0024 1A1D     		adds	r2, r3, #4
+ 1731 0026 3A61     		str	r2, [r7, #16]
+ 490:../src/main.c **** 	}
+ 1732              		.loc 1 490 11
+ 1733 0028 0022     		movs	r2, #0
+ 1734 002a 1A60     		str	r2, [r3]
+ 1735              	.L87:
+ 489:../src/main.c **** 		*dest++ = 0;
+ 1736              		.loc 1 489 7
+ 1737 002c 3A69     		ldr	r2, [r7, #16]
+ 1738 002e BB68     		ldr	r3, [r7, #8]
+ 1739 0030 9A42     		cmp	r2, r3
+ 1740 0032 F6D3     		bcc	.L88
+ 492:../src/main.c **** 	//fp = *(void **)(FLASH_BASE + 4);
+ 1741              		.loc 1 492 2
+ 1742              		.syntax unified
+ 1743              	@ 492 "../src/main.c" 1
+ 1744 0034 DFF8C890 		ldr r9,=__rgot_begin
+ 1745              	@ 0 "" 2
+ 494:../src/main.c **** 	ofs = (unsigned int)fp - r1;
+ 1746              		.loc 1 494 2
+ 1747              	@ 494 "../src/main.c" 1
+ 1748 0038 3249     		ldr r1,=reset_handler
+ 1749              	@ 0 "" 2
+ 495:../src/main.c **** 
+ 1750              		.loc 1 495 8
+ 1751              		.thumb
+ 1752              		.syntax unified
+ 1753 003a FB68     		ldr	r3, [r7, #12]
+ 495:../src/main.c **** 
+ 1754              		.loc 1 495 25
+ 1755 003c 0A46     		mov	r2, r1
+ 1756 003e 9B1A     		subs	r3, r3, r2
+ 495:../src/main.c **** 
+ 1757              		.loc 1 495 6
+ 1758 0040 7B60     		str	r3, [r7, #4]
+ 498:../src/main.c **** 	src = r1 + ofs;
+ 1759              		.loc 1 498 2
+ 1760              		.syntax unified
+ 1761              	@ 498 "../src/main.c" 1
+ 1762 0042 3149     		ldr r1,=__fgot_begin
+ 1763              	@ 0 "" 2
+ 499:../src/main.c **** 	asm("ldr r1,=__rgot_begin");
+ 1764              		.loc 1 499 11
+ 1765              		.thumb
+ 1766              		.syntax unified
+ 1767 0044 0A46     		mov	r2, r1
+ 1768 0046 7B68     		ldr	r3, [r7, #4]
+ 1769 0048 1344     		add	r3, r3, r2
+ 499:../src/main.c **** 	asm("ldr r1,=__rgot_begin");
+ 1770              		.loc 1 499 6
+ 1771 004a 7B61     		str	r3, [r7, #20]
+ 500:../src/main.c **** 	dest = r1;
+ 1772              		.loc 1 500 2
+ 1773              		.syntax unified
+ 1774              	@ 500 "../src/main.c" 1
+ 1775 004c 2C49     		ldr r1,=__rgot_begin
+ 1776              	@ 0 "" 2
+ 501:../src/main.c **** 	asm("ldr r1,=__rgot_end");
+ 1777              		.loc 1 501 7
+ 1778              		.thumb
+ 1779              		.syntax unified
+ 1780 004e 0B46     		mov	r3, r1
+ 1781 0050 3B61     		str	r3, [r7, #16]
+ 502:../src/main.c **** 	destend = r1;
+ 1782              		.loc 1 502 2
+ 1783              		.syntax unified
+ 1784              	@ 502 "../src/main.c" 1
+ 1785 0052 2E49     		ldr r1,=__rgot_end
+ 1786              	@ 0 "" 2
+ 503:../src/main.c **** 	while(dest < destend) {
+ 1787              		.loc 1 503 10
+ 1788              		.thumb
+ 1789              		.syntax unified
+ 1790 0054 0B46     		mov	r3, r1
+ 1791 0056 BB60     		str	r3, [r7, #8]
+ 504:../src/main.c **** 		if(*src < 0x20000000) {
+ 1792              		.loc 1 504 7
+ 1793 0058 17E0     		b	.L89
+ 1794              	.L91:
+ 505:../src/main.c **** 			*dest++ = ((unsigned int)*src++) + ofs;
+ 1795              		.loc 1 505 6
+ 1796 005a 7B69     		ldr	r3, [r7, #20]
+ 1797 005c 1B68     		ldr	r3, [r3]
+ 505:../src/main.c **** 			*dest++ = ((unsigned int)*src++) + ofs;
+ 1798              		.loc 1 505 5
+ 1799 005e B3F1005F 		cmp	r3, #536870912
+ 1800 0062 0AD2     		bcs	.L90
+ 506:../src/main.c **** 		} else {
+ 1801              		.loc 1 506 33
+ 1802 0064 7B69     		ldr	r3, [r7, #20]
+ 1803 0066 1A1D     		adds	r2, r3, #4
+ 1804 0068 7A61     		str	r2, [r7, #20]
+ 506:../src/main.c **** 		} else {
+ 1805              		.loc 1 506 15
+ 1806 006a 1968     		ldr	r1, [r3]
+ 506:../src/main.c **** 		} else {
+ 1807              		.loc 1 506 37
+ 1808 006c 7A68     		ldr	r2, [r7, #4]
+ 506:../src/main.c **** 		} else {
+ 1809              		.loc 1 506 9
+ 1810 006e 3B69     		ldr	r3, [r7, #16]
+ 1811 0070 181D     		adds	r0, r3, #4
+ 1812 0072 3861     		str	r0, [r7, #16]
+ 506:../src/main.c **** 		} else {
+ 1813              		.loc 1 506 37
+ 1814 0074 0A44     		add	r2, r2, r1
+ 506:../src/main.c **** 		} else {
+ 1815              		.loc 1 506 12
+ 1816 0076 1A60     		str	r2, [r3]
+ 1817 0078 07E0     		b	.L89
+ 1818              	.L90:
+ 508:../src/main.c **** 		}
+ 1819              		.loc 1 508 18
+ 1820 007a 7A69     		ldr	r2, [r7, #20]
+ 1821 007c 131D     		adds	r3, r2, #4
+ 1822 007e 7B61     		str	r3, [r7, #20]
+ 508:../src/main.c **** 		}
+ 1823              		.loc 1 508 9
+ 1824 0080 3B69     		ldr	r3, [r7, #16]
+ 1825 0082 191D     		adds	r1, r3, #4
+ 1826 0084 3961     		str	r1, [r7, #16]
+ 508:../src/main.c **** 		}
+ 1827              		.loc 1 508 14
+ 1828 0086 1268     		ldr	r2, [r2]
+ 508:../src/main.c **** 		}
+ 1829              		.loc 1 508 12
+ 1830 0088 1A60     		str	r2, [r3]
+ 1831              	.L89:
+ 504:../src/main.c **** 		if(*src < 0x20000000) {
+ 1832              		.loc 1 504 7
+ 1833 008a 3A69     		ldr	r2, [r7, #16]
+ 1834 008c BB68     		ldr	r3, [r7, #8]
+ 1835 008e 9A42     		cmp	r2, r3
+ 1836 0090 E3D3     		bcc	.L91
+ 514:../src/main.c **** 	dest = &_data;
+ 1837              		.loc 1 514 6
+ 1838 0092 174B     		ldr	r3, .L94+4
+ 1839 0094 59F80330 		ldr	r3, [r9, r3]
+ 1840 0098 7B61     		str	r3, [r7, #20]
+ 515:../src/main.c **** 	for (src = &_data_loadaddr, dest = &_data;
+ 1841              		.loc 1 515 7
+ 1842 009a 164B     		ldr	r3, .L94+8
+ 1843 009c 59F80330 		ldr	r3, [r9, r3]
+ 1844 00a0 3B61     		str	r3, [r7, #16]
+ 516:../src/main.c **** 		dest < &_edata;
+ 1845              		.loc 1 516 11
+ 1846 00a2 134B     		ldr	r3, .L94+4
+ 1847 00a4 59F80330 		ldr	r3, [r9, r3]
+ 1848 00a8 7B61     		str	r3, [r7, #20]
+ 516:../src/main.c **** 		dest < &_edata;
+ 1849              		.loc 1 516 35
+ 1850 00aa 124B     		ldr	r3, .L94+8
+ 1851 00ac 59F80330 		ldr	r3, [r9, r3]
+ 1852 00b0 3B61     		str	r3, [r7, #16]
+ 516:../src/main.c **** 		dest < &_edata;
+ 1853              		.loc 1 516 2
+ 1854 00b2 09E0     		b	.L92
+ 1855              	.L93:
+ 519:../src/main.c **** 	}
+ 1856              		.loc 1 519 11
+ 1857 00b4 7B69     		ldr	r3, [r7, #20]
+ 1858 00b6 1A68     		ldr	r2, [r3]
+ 519:../src/main.c **** 	}
+ 1859              		.loc 1 519 9
+ 1860 00b8 3B69     		ldr	r3, [r7, #16]
+ 1861 00ba 1A60     		str	r2, [r3]
+ 518:../src/main.c **** 		*dest = *src;
+ 1862              		.loc 1 518 6
+ 1863 00bc 7B69     		ldr	r3, [r7, #20]
+ 1864 00be 0433     		adds	r3, r3, #4
+ 1865 00c0 7B61     		str	r3, [r7, #20]
+ 518:../src/main.c **** 		*dest = *src;
+ 1866              		.loc 1 518 14
+ 1867 00c2 3B69     		ldr	r3, [r7, #16]
+ 1868 00c4 0433     		adds	r3, r3, #4
+ 1869 00c6 3B61     		str	r3, [r7, #16]
+ 1870              	.L92:
+ 516:../src/main.c **** 		dest < &_edata;
+ 1871              		.loc 1 516 2 discriminator 1
+ 1872 00c8 3B69     		ldr	r3, [r7, #16]
+ 1873 00ca 0B4A     		ldr	r2, .L94+12
+ 1874 00cc 59F80220 		ldr	r2, [r9, r2]
+ 1875 00d0 9342     		cmp	r3, r2
+ 1876 00d2 EFD3     		bcc	.L93
+ 524:../src/main.c **** 
+ 1877              		.loc 1 524 10
+ 1878 00d4 054B     		ldr	r3, .L94
+ 1879 00d6 1B68     		ldr	r3, [r3]
+ 1880 00d8 044A     		ldr	r2, .L94
+ 1881 00da 43F40073 		orr	r3, r3, #512
+ 1882 00de 1360     		str	r3, [r2]
+ 526:../src/main.c **** }
+ 1883              		.loc 1 526 8
+ 1884 00e0 FFF7FEFF 		bl	main(PLT)
+ 527:../src/main.c **** const unsigned int diff = (unsigned int)&reset_handler;
+ 1885              		.loc 1 527 1
+ 1886 00e4 00BF     		nop
+ 1887 00e6 1837     		adds	r7, r7, #24
+ 1888              		.cfi_def_cfa_offset 8
+ 1889 00e8 BD46     		mov	sp, r7
+ 1890              		.cfi_def_cfa_register 13
+ 1891              		@ sp needed
+ 1892 00ea 80BD     		pop	{r7, pc}
+ 1893              	.L95:
+ 1894              		.align	2
+ 1895              	.L94:
+ 1896 00ec 14ED00E0 		.word	-536810220
+ 1897 00f0 00000000 		.word	_data_loadaddr(GOT)
+ 1898 00f4 00000000 		.word	_data(GOT)
+ 1899 00f8 00000000 		.word	_edata(GOT)
+ 1900              		.cfi_endproc
+ 1901              	.LFE12:
+ 1903              		.section	.text.num2str,"ax",%progbits
+ 1904              		.align	1
+ 1905              		.global	num2str
+ 1906              		.syntax unified
+ 1907              		.thumb
+ 1908              		.thumb_func
+ 1909              		.fpu softvfp
+ 1911              	num2str:
+ 1912              	.LFB8:
+ 326:../src/main.c **** 	char tmp[12];
+ 1913              		.loc 1 326 1
+ 1914              		.cfi_startproc
+ 1915              		@ args = 0, pretend = 0, frame = 32
+ 1916              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1917              		@ link register save eliminated.
+ 1918 0000 80B4     		push	{r7}
+ 1919              		.cfi_def_cfa_offset 4
+ 1920              		.cfi_offset 7, -4
+ 1921 0002 89B0     		sub	sp, sp, #36
+ 1922              		.cfi_def_cfa_offset 40
+ 1923 0004 00AF     		add	r7, sp, #0
+ 1924              		.cfi_def_cfa_register 7
+ 1925 0006 7860     		str	r0, [r7, #4]
+ 1926 0008 3960     		str	r1, [r7]
+ 328:../src/main.c **** 	unsigned int r;
+ 1927              		.loc 1 328 6
+ 1928 000a 0023     		movs	r3, #0
+ 1929 000c FB61     		str	r3, [r7, #28]
+ 330:../src/main.c **** 		outstr[0] = '0';
+ 1930              		.loc 1 330 4
+ 1931 000e 7B68     		ldr	r3, [r7, #4]
+ 1932 0010 002B     		cmp	r3, #0
+ 1933 0012 21D1     		bne	.L99
+ 331:../src/main.c **** 		return;
+ 1934              		.loc 1 331 13
+ 1935 0014 3B68     		ldr	r3, [r7]
+ 1936 0016 3022     		movs	r2, #48
+ 1937 0018 1A70     		strb	r2, [r3]
+ 1938 001a 35E0     		b	.L96
+ 1939              	.L100:
+ 335:../src/main.c **** 		tmp[pos++] = '0' + r;
+ 1940              		.loc 1 335 5
+ 1941 001c 7A68     		ldr	r2, [r7, #4]
+ 1942 001e 1C4B     		ldr	r3, .L103
+ 1943 0020 A3FB0213 		umull	r1, r3, r3, r2
+ 1944 0024 D908     		lsrs	r1, r3, #3
+ 1945 0026 0B46     		mov	r3, r1
+ 1946 0028 9B00     		lsls	r3, r3, #2
+ 1947 002a 0B44     		add	r3, r3, r1
+ 1948 002c 5B00     		lsls	r3, r3, #1
+ 1949 002e D31A     		subs	r3, r2, r3
+ 1950 0030 BB61     		str	r3, [r7, #24]
+ 336:../src/main.c **** 		n /= 10;
+ 1951              		.loc 1 336 20
+ 1952 0032 BB69     		ldr	r3, [r7, #24]
+ 1953 0034 DBB2     		uxtb	r3, r3
+ 1954 0036 3033     		adds	r3, r3, #48
+ 1955 0038 D9B2     		uxtb	r1, r3
+ 336:../src/main.c **** 		n /= 10;
+ 1956              		.loc 1 336 10
+ 1957 003a FB69     		ldr	r3, [r7, #28]
+ 1958 003c 5A1C     		adds	r2, r3, #1
+ 1959 003e FA61     		str	r2, [r7, #28]
+ 336:../src/main.c **** 		n /= 10;
+ 1960              		.loc 1 336 20
+ 1961 0040 4AB2     		sxtb	r2, r1
+ 336:../src/main.c **** 		n /= 10;
+ 1962              		.loc 1 336 14
+ 1963 0042 07F12001 		add	r1, r7, #32
+ 1964 0046 0B44     		add	r3, r3, r1
+ 1965 0048 03F8142C 		strb	r2, [r3, #-20]
+ 337:../src/main.c **** 	}
+ 1966              		.loc 1 337 5
+ 1967 004c 7B68     		ldr	r3, [r7, #4]
+ 1968 004e 104A     		ldr	r2, .L103
+ 1969 0050 A2FB0323 		umull	r2, r3, r2, r3
+ 1970 0054 DB08     		lsrs	r3, r3, #3
+ 1971 0056 7B60     		str	r3, [r7, #4]
+ 1972              	.L99:
+ 334:../src/main.c **** 		r = n % 10;
+ 1973              		.loc 1 334 7
+ 1974 0058 7B68     		ldr	r3, [r7, #4]
+ 1975 005a 002B     		cmp	r3, #0
+ 1976 005c DED1     		bne	.L100
+ 339:../src/main.c **** 		pos--;
+ 1977              		.loc 1 339 7
+ 1978 005e 0DE0     		b	.L101
+ 1979              	.L102:
+ 340:../src/main.c **** 		*outstr = tmp[pos];
+ 1980              		.loc 1 340 6
+ 1981 0060 FB69     		ldr	r3, [r7, #28]
+ 1982 0062 013B     		subs	r3, r3, #1
+ 1983 0064 FB61     		str	r3, [r7, #28]
+ 341:../src/main.c **** 		outstr++;
+ 1984              		.loc 1 341 16
+ 1985 0066 07F10C02 		add	r2, r7, #12
+ 1986 006a FB69     		ldr	r3, [r7, #28]
+ 1987 006c 1344     		add	r3, r3, r2
+ 1988 006e 93F90020 		ldrsb	r2, [r3]
+ 341:../src/main.c **** 		outstr++;
+ 1989              		.loc 1 341 11
+ 1990 0072 3B68     		ldr	r3, [r7]
+ 1991 0074 1A70     		strb	r2, [r3]
+ 342:../src/main.c **** 	}
+ 1992              		.loc 1 342 9
+ 1993 0076 3B68     		ldr	r3, [r7]
+ 1994 0078 0133     		adds	r3, r3, #1
+ 1995 007a 3B60     		str	r3, [r7]
+ 1996              	.L101:
+ 339:../src/main.c **** 		pos--;
+ 1997              		.loc 1 339 7
+ 1998 007c FB69     		ldr	r3, [r7, #28]
+ 1999 007e 002B     		cmp	r3, #0
+ 2000 0080 EEDC     		bgt	.L102
+ 344:../src/main.c **** 
+ 2001              		.loc 1 344 10
+ 2002 0082 3B68     		ldr	r3, [r7]
+ 2003 0084 0022     		movs	r2, #0
+ 2004 0086 1A70     		strb	r2, [r3]
+ 2005              	.L96:
+ 346:../src/main.c ****  void nibble2str(unsigned char v, char *p)
+ 2006              		.loc 1 346 1
+ 2007 0088 2437     		adds	r7, r7, #36
+ 2008              		.cfi_def_cfa_offset 4
+ 2009 008a BD46     		mov	sp, r7
+ 2010              		.cfi_def_cfa_register 13
+ 2011              		@ sp needed
+ 2012 008c 80BC     		pop	{r7}
+ 2013              		.cfi_restore 7
+ 2014              		.cfi_def_cfa_offset 0
+ 2015 008e 7047     		bx	lr
+ 2016              	.L104:
+ 2017              		.align	2
+ 2018              	.L103:
+ 2019 0090 CDCCCCCC 		.word	-858993459
+ 2020              		.cfi_endproc
+ 2021              	.LFE8:
+ 2023              		.section	.text.nibble2str,"ax",%progbits
+ 2024              		.align	1
+ 2025              		.global	nibble2str
+ 2026              		.syntax unified
+ 2027              		.thumb
+ 2028              		.thumb_func
+ 2029              		.fpu softvfp
+ 2031              	nibble2str:
+ 2032              	.LFB9:
+ 348:../src/main.c **** 	 if(v > 9) {
+ 2033              		.loc 1 348 2
+ 2034              		.cfi_startproc
+ 2035              		@ args = 0, pretend = 0, frame = 8
+ 2036              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2037              		@ link register save eliminated.
+ 2038 0000 80B4     		push	{r7}
+ 2039              		.cfi_def_cfa_offset 4
+ 2040              		.cfi_offset 7, -4
+ 2041 0002 83B0     		sub	sp, sp, #12
+ 2042              		.cfi_def_cfa_offset 16
+ 2043 0004 00AF     		add	r7, sp, #0
+ 2044              		.cfi_def_cfa_register 7
+ 2045 0006 0346     		mov	r3, r0
+ 2046 0008 3960     		str	r1, [r7]
+ 2047 000a FB71     		strb	r3, [r7, #7]
+ 349:../src/main.c **** 		 *p = v - 10 + 'A';
+ 2048              		.loc 1 349 5
+ 2049 000c FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 2050 000e 092B     		cmp	r3, #9
+ 2051 0010 06D9     		bls	.L106
+ 350:../src/main.c **** 	 } else {
+ 2052              		.loc 1 350 16
+ 2053 0012 FB79     		ldrb	r3, [r7, #7]
+ 2054 0014 3733     		adds	r3, r3, #55
+ 2055 0016 DBB2     		uxtb	r3, r3
+ 2056 0018 5AB2     		sxtb	r2, r3
+ 350:../src/main.c **** 	 } else {
+ 2057              		.loc 1 350 7
+ 2058 001a 3B68     		ldr	r3, [r7]
+ 2059 001c 1A70     		strb	r2, [r3]
+ 354:../src/main.c **** void gen_serial()
+ 2060              		.loc 1 354 2
+ 2061 001e 05E0     		b	.L108
+ 2062              	.L106:
+ 352:../src/main.c **** 	 }
+ 2063              		.loc 1 352 13
+ 2064 0020 FB79     		ldrb	r3, [r7, #7]
+ 2065 0022 3033     		adds	r3, r3, #48
+ 2066 0024 DBB2     		uxtb	r3, r3
+ 2067 0026 5AB2     		sxtb	r2, r3
+ 352:../src/main.c **** 	 }
+ 2068              		.loc 1 352 7
+ 2069 0028 3B68     		ldr	r3, [r7]
+ 2070 002a 1A70     		strb	r2, [r3]
+ 2071              	.L108:
+ 354:../src/main.c **** void gen_serial()
+ 2072              		.loc 1 354 2
+ 2073 002c 00BF     		nop
+ 2074 002e 0C37     		adds	r7, r7, #12
+ 2075              		.cfi_def_cfa_offset 4
+ 2076 0030 BD46     		mov	sp, r7
+ 2077              		.cfi_def_cfa_register 13
+ 2078              		@ sp needed
+ 2079 0032 80BC     		pop	{r7}
+ 2080              		.cfi_restore 7
+ 2081              		.cfi_def_cfa_offset 0
+ 2082 0034 7047     		bx	lr
+ 2083              		.cfi_endproc
+ 2084              	.LFE9:
+ 2086              		.section	.text.gen_serial,"ax",%progbits
+ 2087              		.align	1
+ 2088              		.global	gen_serial
+ 2089              		.syntax unified
+ 2090              		.thumb
+ 2091              		.thumb_func
+ 2092              		.fpu softvfp
+ 2094              	gen_serial:
+ 2095              	.LFB10:
+ 356:../src/main.c **** 	const unsigned char *p = (const unsigned char *)0x1ffff7e8;
+ 2096              		.loc 1 356 1
+ 2097              		.cfi_startproc
+ 2098              		@ args = 0, pretend = 0, frame = 16
+ 2099              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2100 0000 80B5     		push	{r7, lr}
+ 2101              		.cfi_def_cfa_offset 8
+ 2102              		.cfi_offset 7, -8
+ 2103              		.cfi_offset 14, -4
+ 2104 0002 84B0     		sub	sp, sp, #16
+ 2105              		.cfi_def_cfa_offset 24
+ 2106 0004 00AF     		add	r7, sp, #0
+ 2107              		.cfi_def_cfa_register 7
+ 357:../src/main.c **** 	char *q = serial_str;
+ 2108              		.loc 1 357 23
+ 2109 0006 174B     		ldr	r3, .L112
+ 2110 0008 7B60     		str	r3, [r7, #4]
+ 358:../src/main.c **** 	int i;
+ 2111              		.loc 1 358 8
+ 2112 000a 174B     		ldr	r3, .L112+4
+ 2113 000c 59F80330 		ldr	r3, [r9, r3]
+ 2114 0010 FB60     		str	r3, [r7, #12]
+ 361:../src/main.c **** 		v = p[i];
+ 2115              		.loc 1 361 8
+ 2116 0012 0B23     		movs	r3, #11
+ 2117 0014 BB60     		str	r3, [r7, #8]
+ 361:../src/main.c **** 		v = p[i];
+ 2118              		.loc 1 361 2
+ 2119 0016 1AE0     		b	.L110
+ 2120              	.L111:
+ 362:../src/main.c **** 		nibble2str(v >> 4, q++);
+ 2121              		.loc 1 362 8 discriminator 3
+ 2122 0018 BB68     		ldr	r3, [r7, #8]
+ 2123 001a 7A68     		ldr	r2, [r7, #4]
+ 2124 001c 1344     		add	r3, r3, r2
+ 362:../src/main.c **** 		nibble2str(v >> 4, q++);
+ 2125              		.loc 1 362 5 discriminator 3
+ 2126 001e 1B78     		ldrb	r3, [r3]
+ 2127 0020 FB70     		strb	r3, [r7, #3]
+ 363:../src/main.c **** 		nibble2str(v & 0xf, q++);
+ 2128              		.loc 1 363 3 discriminator 3
+ 2129 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 2130 0024 1B09     		lsrs	r3, r3, #4
+ 2131 0026 D8B2     		uxtb	r0, r3
+ 2132 0028 FB68     		ldr	r3, [r7, #12]
+ 2133 002a 5A1C     		adds	r2, r3, #1
+ 2134 002c FA60     		str	r2, [r7, #12]
+ 2135 002e 1946     		mov	r1, r3
+ 2136 0030 FFF7FEFF 		bl	nibble2str(PLT)
+ 364:../src/main.c **** 	}
+ 2137              		.loc 1 364 3 discriminator 3
+ 2138 0034 FB78     		ldrb	r3, [r7, #3]
+ 2139 0036 03F00F03 		and	r3, r3, #15
+ 2140 003a D8B2     		uxtb	r0, r3
+ 2141 003c FB68     		ldr	r3, [r7, #12]
+ 2142 003e 5A1C     		adds	r2, r3, #1
+ 2143 0040 FA60     		str	r2, [r7, #12]
+ 2144 0042 1946     		mov	r1, r3
+ 2145 0044 FFF7FEFF 		bl	nibble2str(PLT)
+ 361:../src/main.c **** 		v = p[i];
+ 2146              		.loc 1 361 22 discriminator 3
+ 2147 0048 BB68     		ldr	r3, [r7, #8]
+ 2148 004a 013B     		subs	r3, r3, #1
+ 2149 004c BB60     		str	r3, [r7, #8]
+ 2150              	.L110:
+ 361:../src/main.c **** 		v = p[i];
+ 2151              		.loc 1 361 2 discriminator 1
+ 2152 004e BB68     		ldr	r3, [r7, #8]
+ 2153 0050 002B     		cmp	r3, #0
+ 2154 0052 E1DA     		bge	.L111
+ 366:../src/main.c **** 
+ 2155              		.loc 1 366 5
+ 2156 0054 FB68     		ldr	r3, [r7, #12]
+ 2157 0056 0022     		movs	r2, #0
+ 2158 0058 1A70     		strb	r2, [r3]
+ 368:../src/main.c **** void move_it()
+ 2159              		.loc 1 368 1
+ 2160 005a 00BF     		nop
+ 2161 005c 1037     		adds	r7, r7, #16
+ 2162              		.cfi_def_cfa_offset 8
+ 2163 005e BD46     		mov	sp, r7
+ 2164              		.cfi_def_cfa_register 13
+ 2165              		@ sp needed
+ 2166 0060 80BD     		pop	{r7, pc}
+ 2167              	.L113:
+ 2168 0062 00BF     		.align	2
+ 2169              	.L112:
+ 2170 0064 E8F7FF1F 		.word	536868840
+ 2171 0068 00000000 		.word	serial_str(GOT)
+ 2172              		.cfi_endproc
+ 2173              	.LFE10:
+ 2175              		.global	diff
+ 2176              		.section	.data.rel.ro.diff,"aw"
+ 2177              		.align	2
+ 2180              	diff:
+ 2181 0000 00000000 		.word	reset_handler
+ 2182              		.section	.text.st_usbfs_v1_usbd_init_xx,"ax",%progbits
+ 2183              		.align	1
+ 2184              		.global	st_usbfs_v1_usbd_init_xx
+ 2185              		.syntax unified
+ 2186              		.thumb
+ 2187              		.thumb_func
+ 2188              		.fpu softvfp
+ 2190              	st_usbfs_v1_usbd_init_xx:
+ 2191              	.LFB13:
+ 532:../src/main.c **** 	rcc_periph_clock_enable(RCC_USB);
+ 2192              		.loc 1 532 1
+ 2193              		.cfi_startproc
+ 2194              		@ args = 0, pretend = 0, frame = 0
+ 2195              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2196 0000 80B5     		push	{r7, lr}
+ 2197              		.cfi_def_cfa_offset 8
+ 2198              		.cfi_offset 7, -8
+ 2199              		.cfi_offset 14, -4
+ 2200 0002 00AF     		add	r7, sp, #0
+ 2201              		.cfi_def_cfa_register 7
+ 533:../src/main.c **** 	SET_REG(USB_CNTR_REG, 0);
+ 2202              		.loc 1 533 2
+ 2203 0004 40F29730 		movw	r0, #919
+ 2204 0008 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 534:../src/main.c **** 	SET_REG(USB_BTABLE_REG, 0);
+ 2205              		.loc 1 534 2
+ 2206 000c 084B     		ldr	r3, .L116
+ 2207 000e 0022     		movs	r2, #0
+ 2208 0010 1A60     		str	r2, [r3]
+ 535:../src/main.c **** 	SET_REG(USB_ISTR_REG, 0);
+ 2209              		.loc 1 535 2
+ 2210 0012 084B     		ldr	r3, .L116+4
+ 2211 0014 0022     		movs	r2, #0
+ 2212 0016 1A60     		str	r2, [r3]
+ 536:../src/main.c **** 
+ 2213              		.loc 1 536 2
+ 2214 0018 074B     		ldr	r3, .L116+8
+ 2215 001a 0022     		movs	r2, #0
+ 2216 001c 1A60     		str	r2, [r3]
+ 539:../src/main.c **** 		USB_CNTR_SUSPM | USB_CNTR_WKUPM);
+ 2217              		.loc 1 539 2
+ 2218 001e 044B     		ldr	r3, .L116
+ 2219 0020 4FF41C42 		mov	r2, #39936
+ 2220 0024 1A60     		str	r2, [r3]
+ 541:../src/main.c **** }
+ 2221              		.loc 1 541 9
+ 2222 0026 054B     		ldr	r3, .L116+12
+ 2223 0028 59F80330 		ldr	r3, [r9, r3]
+ 542:../src/main.c **** 
+ 2224              		.loc 1 542 1
+ 2225 002c 1846     		mov	r0, r3
+ 2226 002e 80BD     		pop	{r7, pc}
+ 2227              	.L117:
+ 2228              		.align	2
+ 2229              	.L116:
+ 2230 0030 405C0040 		.word	1073765440
+ 2231 0034 505C0040 		.word	1073765456
+ 2232 0038 445C0040 		.word	1073765444
+ 2233 003c 00000000 		.word	st_usbfs_dev(GOT)
+ 2234              		.cfi_endproc
+ 2235              	.LFE13:
+ 2237              		.global	usb_drv
+ 2238              		.section	.bss.usb_drv,"aw",%nobits
+ 2239              		.align	2
+ 2242              	usb_drv:
+ 2243 0000 00000000 		.space	52
+ 2243      00000000 
+ 2243      00000000 
+ 2243      00000000 
+ 2243      00000000 
+ 2244              		.text
+ 2245              	.Letext0:
+ 2246              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 2247              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 2248              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 2249              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 2250              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 2251              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 2252              		.file 8 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+ 2253              		.file 9 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbstd.h"
+ 2254              		.file 10 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbd.h"
+ 2255              		.file 11 "../src/../libopencm3/lib/usb/usb_private.h"
+ 2256              		.file 12 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/dfu.h"
+ 2257              		.file 13 "../src/../libopencm3/lib/stm32/common/st_usbfs_core.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+                            *COM*:0000000000000400 usbd_control_buffer
+     /tmp/ccEdNya4.s:20     .data.usbdfu_state:0000000000000000 usbdfu_state
+                            *COM*:000000000000040c prog
+     /tmp/ccEdNya4.s:28     .rodata.dev:0000000000000000 dev
+     /tmp/ccEdNya4.s:25     .rodata.dev:0000000000000000 $d
+     /tmp/ccEdNya4.s:48     .rodata.dfu_function:0000000000000000 dfu_function
+     /tmp/ccEdNya4.s:45     .rodata.dfu_function:0000000000000000 $d
+     /tmp/ccEdNya4.s:60     .data.rel.iface:0000000000000000 iface
+     /tmp/ccEdNya4.s:57     .data.rel.iface:0000000000000000 $d
+     /tmp/ccEdNya4.s:78     .data.rel.ifaces:0000000000000000 ifaces
+     /tmp/ccEdNya4.s:75     .data.rel.ifaces:0000000000000000 $d
+     /tmp/ccEdNya4.s:88     .data.rel.config:0000000000000000 config
+     /tmp/ccEdNya4.s:85     .data.rel.config:0000000000000000 $d
+                            *COM*:000000000000003c dfuse_str
+                            *COM*:000000000000001e serial_str
+     /tmp/ccEdNya4.s:101    .bss.usb_strings:0000000000000000 $d
+     /tmp/ccEdNya4.s:104    .bss.usb_strings:0000000000000000 usb_strings
+     /tmp/ccEdNya4.s:107    .text.usbdfu_getstatus:0000000000000000 $t
+     /tmp/ccEdNya4.s:114    .text.usbdfu_getstatus:0000000000000000 usbdfu_getstatus
+     /tmp/ccEdNya4.s:180    .text.usbdfu_getstatus:000000000000004c $d
+     /tmp/ccEdNya4.s:185    .text.usbdfu_getstatus_complete:0000000000000000 $t
+     /tmp/ccEdNya4.s:191    .text.usbdfu_getstatus_complete:0000000000000000 usbdfu_getstatus_complete
+     /tmp/ccEdNya4.s:433    .text.usbdfu_getstatus_complete:0000000000000178 $d
+     /tmp/ccEdNya4.s:440    .text.usbdfu_usb_reset:0000000000000000 $t
+     /tmp/ccEdNya4.s:446    .text.usbdfu_usb_reset:0000000000000000 usbdfu_usb_reset
+     /tmp/ccEdNya4.s:464    .text.usbdfu_standard_request:0000000000000000 $t
+     /tmp/ccEdNya4.s:470    .text.usbdfu_standard_request:0000000000000000 usbdfu_standard_request
+     /tmp/ccEdNya4.s:507    .text.usbdfu_standard_request:0000000000000024 $d
+     /tmp/ccEdNya4.s:512    .text.usbdfu_control_request:0000000000000000 $t
+     /tmp/ccEdNya4.s:518    .text.usbdfu_control_request:0000000000000000 usbdfu_control_request
+     /tmp/ccEdNya4.s:562    .text.usbdfu_control_request:0000000000000034 $d
+     /tmp/ccEdNya4.s:568    .text.usbdfu_control_request:000000000000004c $t
+     /tmp/ccEdNya4.s:765    .text.usbdfu_control_request:0000000000000164 $d
+     /tmp/ccEdNya4.s:772    .text.usbdfu_set_config:0000000000000000 $t
+     /tmp/ccEdNya4.s:778    .text.usbdfu_set_config:0000000000000000 usbdfu_set_config
+     /tmp/ccEdNya4.s:822    .text.usbdfu_set_config:0000000000000030 $d
+     /tmp/ccEdNya4.s:828    move_it_sect:0000000000000000 $t
+     /tmp/ccEdNya4.s:835    move_it_sect:0000000000000000 flash_check
+     /tmp/ccEdNya4.s:878    move_it_sect:000000000000001c get_flash_size
+     /tmp/ccEdNya4.s:917    move_it_sect:000000000000003c $d
+     /tmp/ccEdNya4.s:922    .rodata:0000000000000000 $d
+     /tmp/ccEdNya4.s:932    move_it_sect:0000000000000040 $t
+     /tmp/ccEdNya4.s:939    move_it_sect:0000000000000040 move_it
+     /tmp/ccEdNya4.s:1911   .text.num2str:0000000000000000 num2str
+     /tmp/ccEdNya4.s:1296   move_it_sect:0000000000000270 $d
+     /tmp/ccEdNya4.s:1677   move_it_sect_first:0000000000000000 reset_handler
+     /tmp/ccEdNya4.s:1317   move_it_sect:0000000000000298 $t
+     /tmp/ccEdNya4.s:1324   move_it_sect:0000000000000298 main
+     /tmp/ccEdNya4.s:2094   .text.gen_serial:0000000000000000 gen_serial
+     /tmp/ccEdNya4.s:1637   move_it_sect:00000000000004ac $d
+     /tmp/ccEdNya4.s:2242   .bss.usb_drv:0000000000000000 usb_drv
+     /tmp/ccEdNya4.s:2190   .text.st_usbfs_v1_usbd_init_xx:0000000000000000 st_usbfs_v1_usbd_init_xx
+     /tmp/ccEdNya4.s:1670   move_it_sect_first:0000000000000000 $t
+     /tmp/ccEdNya4.s:1896   move_it_sect_first:00000000000000ec $d
+     /tmp/ccEdNya4.s:1904   .text.num2str:0000000000000000 $t
+     /tmp/ccEdNya4.s:2019   .text.num2str:0000000000000090 $d
+     /tmp/ccEdNya4.s:2024   .text.nibble2str:0000000000000000 $t
+     /tmp/ccEdNya4.s:2031   .text.nibble2str:0000000000000000 nibble2str
+     /tmp/ccEdNya4.s:2087   .text.gen_serial:0000000000000000 $t
+     /tmp/ccEdNya4.s:2170   .text.gen_serial:0000000000000064 $d
+     /tmp/ccEdNya4.s:2180   .data.rel.ro.diff:0000000000000000 diff
+     /tmp/ccEdNya4.s:2177   .data.rel.ro.diff:0000000000000000 $d
+     /tmp/ccEdNya4.s:2183   .text.st_usbfs_v1_usbd_init_xx:0000000000000000 $t
+     /tmp/ccEdNya4.s:2230   .text.st_usbfs_v1_usbd_init_xx:0000000000000030 $d
+     /tmp/ccEdNya4.s:2239   .bss.usb_drv:0000000000000000 $d
+     /tmp/ccEdNya4.s:20878  move_it_sect_first:00000000000000fc $d
+     /tmp/ccEdNya4.s:20878  move_it_sect:0000000000000520 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4.features.h.22.fad1cec3bc7ff06488171438dbdcfd02
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stddef.h.39.a38874c8f8a57e66301090908ec2a69f
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.string.h.15.dab3980bf35408a4c507182805e2de3a
+                           .group:0000000000000000 wm4.stddef.h.161.19e15733342b50ead2919490b095303e
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+                           .group:0000000000000000 wm4.gpio_common_all.h.37.fedbbcb9179f773c905aa3c3e4b7dbdd
+                           .group:0000000000000000 wm4.gpio.h.49.d09d289f6b7cafdf34d45f4623a2b0fb
+                           .group:0000000000000000 wm4.flash_common_f01.h.35.08a510204460b203acd9a4d6dd59edc6
+                           .group:0000000000000000 wm4.flash.h.55.42f95aa46a0865597bcfe2be66f7631d
+                           .group:0000000000000000 wm4.scb.h.22.61c22bf8b010bccd598da2df01a4e130
+                           .group:0000000000000000 wm4.usbstd.h.44.4afe4d1bc74038b0efb850274c9ca72f
+                           .group:0000000000000000 wm4.usbd.h.59.36297d267a452a295a2169d9133104f5
+                           .group:0000000000000000 wm4.dfu.h.39.ab6fe1507840f545a8d56480666f0289
+                           .group:0000000000000000 wm4.usb_private.h.39.0319c55b21f25116dad040a5212d0c5d
+                           .group:0000000000000000 wm4.tools.h.21.75e74419488d11c9cf865f0f24faab06
+                           .group:0000000000000000 wm4.st_usbfs_common.h.60.1b4ae073d9dc9dcc6e1f45ad59cc3cc0
+                           .group:0000000000000000 wm4.st_usbfs_v1.h.41.336c57bfbb116837563fbcc9c59e2ab7
+
+UNDEFINED SYMBOLS
+flash_unlock
+flash_erase_page
+flash_program_half_word
+flash_lock
+scb_reset_system
+usbd_register_reset_callback
+memcpy
+usbd_register_control_callback
+flash_get_status_flags
+_etext
+strcat
+strlen
+flash_program_word
+_estack
+__ram_start
+rcc_periph_clock_enable
+rcc_clock_setup_pll
+gpio_set_mode
+gpio_clear
+gpio_set
+usbd_init
+usbd_register_set_config_callback
+usbd_poll
+vector_table
+rcc_hse_configs
+st_usbfs_set_address
+st_usbfs_ep_setup
+st_usbfs_endpoints_reset
+st_usbfs_ep_stall_set
+st_usbfs_ep_stall_get
+st_usbfs_ep_nak_set
+st_usbfs_ep_write_packet
+st_usbfs_ep_read_packet
+st_usbfs_poll
+__rgot_begin
+__fgot_begin
+__rgot_end
+_data_loadaddr
+_data
+_edata
+st_usbfs_dev

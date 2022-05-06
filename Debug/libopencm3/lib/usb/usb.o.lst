@@ -1,0 +1,1080 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"usb.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.usbd_init,"ax",%progbits
+  16              		.align	1
+  17              		.global	usbd_init
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	usbd_init:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/usb/usb.c"
+   1:../libopencm3/lib/usb/usb.c **** /** @defgroup usb_drivers_file Generic USB Drivers
+   2:../libopencm3/lib/usb/usb.c **** 
+   3:../libopencm3/lib/usb/usb.c **** @ingroup USB
+   4:../libopencm3/lib/usb/usb.c **** 
+   5:../libopencm3/lib/usb/usb.c **** @brief <b>Generic USB Drivers</b>
+   6:../libopencm3/lib/usb/usb.c **** 
+   7:../libopencm3/lib/usb/usb.c **** @version 1.0.0
+   8:../libopencm3/lib/usb/usb.c **** 
+   9:../libopencm3/lib/usb/usb.c **** @author @htmlonly &copy; @endhtmlonly 2010
+  10:../libopencm3/lib/usb/usb.c **** Gareth McMullin <gareth@blacksphere.co.nz>
+  11:../libopencm3/lib/usb/usb.c **** 
+  12:../libopencm3/lib/usb/usb.c **** @date 10 March 2013
+  13:../libopencm3/lib/usb/usb.c **** 
+  14:../libopencm3/lib/usb/usb.c **** LGPL License Terms @ref lgpl_license
+  15:../libopencm3/lib/usb/usb.c **** */
+  16:../libopencm3/lib/usb/usb.c **** 
+  17:../libopencm3/lib/usb/usb.c **** /*
+  18:../libopencm3/lib/usb/usb.c ****  * This file is part of the libopencm3 project.
+  19:../libopencm3/lib/usb/usb.c ****  *
+  20:../libopencm3/lib/usb/usb.c ****  * Copyright (C) 2010 Gareth McMullin <gareth@blacksphere.co.nz>
+  21:../libopencm3/lib/usb/usb.c ****  *
+  22:../libopencm3/lib/usb/usb.c ****  * This library is free software: you can redistribute it and/or modify
+  23:../libopencm3/lib/usb/usb.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  24:../libopencm3/lib/usb/usb.c ****  * the Free Software Foundation, either version 3 of the License, or
+  25:../libopencm3/lib/usb/usb.c ****  * (at your option) any later version.
+  26:../libopencm3/lib/usb/usb.c ****  *
+  27:../libopencm3/lib/usb/usb.c ****  * This library is distributed in the hope that it will be useful,
+  28:../libopencm3/lib/usb/usb.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  29:../libopencm3/lib/usb/usb.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  30:../libopencm3/lib/usb/usb.c ****  * GNU Lesser General Public License for more details.
+  31:../libopencm3/lib/usb/usb.c ****  *
+  32:../libopencm3/lib/usb/usb.c ****  * You should have received a copy of the GNU Lesser General Public License
+  33:../libopencm3/lib/usb/usb.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  34:../libopencm3/lib/usb/usb.c ****  */
+  35:../libopencm3/lib/usb/usb.c **** 
+  36:../libopencm3/lib/usb/usb.c **** /**@{*/
+  37:../libopencm3/lib/usb/usb.c **** 
+  38:../libopencm3/lib/usb/usb.c **** #include <string.h>
+  39:../libopencm3/lib/usb/usb.c **** #include <libopencm3/usb/usbd.h>
+  40:../libopencm3/lib/usb/usb.c **** #include "usb_private.h"
+  41:../libopencm3/lib/usb/usb.c **** 
+  42:../libopencm3/lib/usb/usb.c **** usbd_device *usbd_init(const usbd_driver *driver,
+  43:../libopencm3/lib/usb/usb.c **** 		       const struct usb_device_descriptor *dev,
+  44:../libopencm3/lib/usb/usb.c **** 		       const struct usb_config_descriptor *conf,
+  45:../libopencm3/lib/usb/usb.c **** 		       const char * const *strings, int num_strings,
+  46:../libopencm3/lib/usb/usb.c **** 		       uint8_t *control_buffer, uint16_t control_buffer_size)
+  47:../libopencm3/lib/usb/usb.c **** {
+  27              		.loc 1 47 1
+  28              		.cfi_startproc
+  29              		@ args = 12, pretend = 0, frame = 24
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 86B0     		sub	sp, sp, #24
+  36              		.cfi_def_cfa_offset 32
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 F860     		str	r0, [r7, #12]
+  40 0008 B960     		str	r1, [r7, #8]
+  41 000a 7A60     		str	r2, [r7, #4]
+  42 000c 3B60     		str	r3, [r7]
+  48:../libopencm3/lib/usb/usb.c **** 	usbd_device *usbd_dev;
+  49:../libopencm3/lib/usb/usb.c **** 
+  50:../libopencm3/lib/usb/usb.c **** 	usbd_dev = driver->init();
+  43              		.loc 1 50 19
+  44 000e FB68     		ldr	r3, [r7, #12]
+  45 0010 1B68     		ldr	r3, [r3]
+  46              		.loc 1 50 13
+  47 0012 9847     		blx	r3
+  48              	.LVL0:
+  49 0014 3861     		str	r0, [r7, #16]
+  51:../libopencm3/lib/usb/usb.c **** 
+  52:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver = driver;
+  50              		.loc 1 52 19
+  51 0016 3B69     		ldr	r3, [r7, #16]
+  52 0018 FA68     		ldr	r2, [r7, #12]
+  53 001a C3F8DC20 		str	r2, [r3, #220]
+  53:../libopencm3/lib/usb/usb.c **** 	usbd_dev->desc = dev;
+  54              		.loc 1 53 17
+  55 001e 3B69     		ldr	r3, [r7, #16]
+  56 0020 BA68     		ldr	r2, [r7, #8]
+  57 0022 1A60     		str	r2, [r3]
+  54:../libopencm3/lib/usb/usb.c **** 	usbd_dev->config = conf;
+  58              		.loc 1 54 19
+  59 0024 3B69     		ldr	r3, [r7, #16]
+  60 0026 7A68     		ldr	r2, [r7, #4]
+  61 0028 5A60     		str	r2, [r3, #4]
+  55:../libopencm3/lib/usb/usb.c **** 	usbd_dev->strings = strings;
+  62              		.loc 1 55 20
+  63 002a 3B69     		ldr	r3, [r7, #16]
+  64 002c 3A68     		ldr	r2, [r7]
+  65 002e 9A60     		str	r2, [r3, #8]
+  56:../libopencm3/lib/usb/usb.c **** 	usbd_dev->num_strings = num_strings;
+  66              		.loc 1 56 24
+  67 0030 3B69     		ldr	r3, [r7, #16]
+  68 0032 3A6A     		ldr	r2, [r7, #32]
+  69 0034 DA60     		str	r2, [r3, #12]
+  57:../libopencm3/lib/usb/usb.c **** 	usbd_dev->extra_string_idx = 0;
+  70              		.loc 1 57 29
+  71 0036 3B69     		ldr	r3, [r7, #16]
+  72 0038 0022     		movs	r2, #0
+  73 003a C3F8E020 		str	r2, [r3, #224]
+  58:../libopencm3/lib/usb/usb.c **** 	usbd_dev->extra_string = NULL;
+  74              		.loc 1 58 25
+  75 003e 3B69     		ldr	r3, [r7, #16]
+  76 0040 0022     		movs	r2, #0
+  77 0042 C3F8E420 		str	r2, [r3, #228]
+  59:../libopencm3/lib/usb/usb.c **** 	usbd_dev->ctrl_buf = control_buffer;
+  78              		.loc 1 59 21
+  79 0046 3B69     		ldr	r3, [r7, #16]
+  80 0048 7A6A     		ldr	r2, [r7, #36]
+  81 004a 1A61     		str	r2, [r3, #16]
+  60:../libopencm3/lib/usb/usb.c **** 	usbd_dev->ctrl_buf_len = control_buffer_size;
+  82              		.loc 1 60 25
+  83 004c 3B69     		ldr	r3, [r7, #16]
+  84 004e 3A8D     		ldrh	r2, [r7, #40]	@ movhi
+  85 0050 9A82     		strh	r2, [r3, #20]	@ movhi
+  61:../libopencm3/lib/usb/usb.c **** 
+  62:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_ctr[0][USB_TRANSACTION_SETUP] =
+  86              		.loc 1 62 56
+  87 0052 3B69     		ldr	r3, [r7, #16]
+  88 0054 104A     		ldr	r2, .L5
+  89 0056 59F80220 		ldr	r2, [r9, r2]
+  90 005a 1A67     		str	r2, [r3, #112]
+  63:../libopencm3/lib/usb/usb.c **** 	    _usbd_control_setup;
+  64:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_ctr[0][USB_TRANSACTION_OUT] =
+  91              		.loc 1 64 54
+  92 005c 3B69     		ldr	r3, [r7, #16]
+  93 005e 0F4A     		ldr	r2, .L5+4
+  94 0060 59F80220 		ldr	r2, [r9, r2]
+  95 0064 DA66     		str	r2, [r3, #108]
+  65:../libopencm3/lib/usb/usb.c **** 	    _usbd_control_out;
+  66:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_ctr[0][USB_TRANSACTION_IN] =
+  96              		.loc 1 66 53
+  97 0066 3B69     		ldr	r3, [r7, #16]
+  98 0068 0D4A     		ldr	r2, .L5+8
+  99 006a 59F80220 		ldr	r2, [r9, r2]
+ 100 006e 9A66     		str	r2, [r3, #104]
+  67:../libopencm3/lib/usb/usb.c **** 	    _usbd_control_in;
+  68:../libopencm3/lib/usb/usb.c **** 
+  69:../libopencm3/lib/usb/usb.c **** 	int i;
+  70:../libopencm3/lib/usb/usb.c **** 	for (i = 0; i < MAX_USER_SET_CONFIG_CALLBACK; i++) {
+ 101              		.loc 1 70 9
+ 102 0070 0023     		movs	r3, #0
+ 103 0072 7B61     		str	r3, [r7, #20]
+ 104              		.loc 1 70 2
+ 105 0074 08E0     		b	.L2
+ 106              	.L3:
+  71:../libopencm3/lib/usb/usb.c **** 		usbd_dev->user_callback_set_config[i] = NULL;
+ 107              		.loc 1 71 41 discriminator 3
+ 108 0076 3B69     		ldr	r3, [r7, #16]
+ 109 0078 7A69     		ldr	r2, [r7, #20]
+ 110 007a 3232     		adds	r2, r2, #50
+ 111 007c 0021     		movs	r1, #0
+ 112 007e 43F82210 		str	r1, [r3, r2, lsl #2]
+  70:../libopencm3/lib/usb/usb.c **** 		usbd_dev->user_callback_set_config[i] = NULL;
+ 113              		.loc 1 70 49 discriminator 3
+ 114 0082 7B69     		ldr	r3, [r7, #20]
+ 115 0084 0133     		adds	r3, r3, #1
+ 116 0086 7B61     		str	r3, [r7, #20]
+ 117              	.L2:
+  70:../libopencm3/lib/usb/usb.c **** 		usbd_dev->user_callback_set_config[i] = NULL;
+ 118              		.loc 1 70 2 discriminator 1
+ 119 0088 7B69     		ldr	r3, [r7, #20]
+ 120 008a 032B     		cmp	r3, #3
+ 121 008c F3DD     		ble	.L3
+  72:../libopencm3/lib/usb/usb.c **** 	}
+  73:../libopencm3/lib/usb/usb.c **** 
+  74:../libopencm3/lib/usb/usb.c **** 	return usbd_dev;
+ 122              		.loc 1 74 9
+ 123 008e 3B69     		ldr	r3, [r7, #16]
+  75:../libopencm3/lib/usb/usb.c **** }
+ 124              		.loc 1 75 1
+ 125 0090 1846     		mov	r0, r3
+ 126 0092 1837     		adds	r7, r7, #24
+ 127              		.cfi_def_cfa_offset 8
+ 128 0094 BD46     		mov	sp, r7
+ 129              		.cfi_def_cfa_register 13
+ 130              		@ sp needed
+ 131 0096 80BD     		pop	{r7, pc}
+ 132              	.L6:
+ 133              		.align	2
+ 134              	.L5:
+ 135 0098 00000000 		.word	_usbd_control_setup(GOT)
+ 136 009c 00000000 		.word	_usbd_control_out(GOT)
+ 137 00a0 00000000 		.word	_usbd_control_in(GOT)
+ 138              		.cfi_endproc
+ 139              	.LFE0:
+ 141              		.section	.text.usbd_register_reset_callback,"ax",%progbits
+ 142              		.align	1
+ 143              		.global	usbd_register_reset_callback
+ 144              		.syntax unified
+ 145              		.thumb
+ 146              		.thumb_func
+ 147              		.fpu softvfp
+ 149              	usbd_register_reset_callback:
+ 150              	.LFB1:
+  76:../libopencm3/lib/usb/usb.c **** 
+  77:../libopencm3/lib/usb/usb.c **** void usbd_register_reset_callback(usbd_device *usbd_dev, void (*callback)(void))
+  78:../libopencm3/lib/usb/usb.c **** {
+ 151              		.loc 1 78 1
+ 152              		.cfi_startproc
+ 153              		@ args = 0, pretend = 0, frame = 8
+ 154              		@ frame_needed = 1, uses_anonymous_args = 0
+ 155              		@ link register save eliminated.
+ 156 0000 80B4     		push	{r7}
+ 157              		.cfi_def_cfa_offset 4
+ 158              		.cfi_offset 7, -4
+ 159 0002 83B0     		sub	sp, sp, #12
+ 160              		.cfi_def_cfa_offset 16
+ 161 0004 00AF     		add	r7, sp, #0
+ 162              		.cfi_def_cfa_register 7
+ 163 0006 7860     		str	r0, [r7, #4]
+ 164 0008 3960     		str	r1, [r7]
+  79:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_reset = callback;
+ 165              		.loc 1 79 32
+ 166 000a 7B68     		ldr	r3, [r7, #4]
+ 167 000c 3A68     		ldr	r2, [r7]
+ 168 000e DA61     		str	r2, [r3, #28]
+  80:../libopencm3/lib/usb/usb.c **** }
+ 169              		.loc 1 80 1
+ 170 0010 00BF     		nop
+ 171 0012 0C37     		adds	r7, r7, #12
+ 172              		.cfi_def_cfa_offset 4
+ 173 0014 BD46     		mov	sp, r7
+ 174              		.cfi_def_cfa_register 13
+ 175              		@ sp needed
+ 176 0016 80BC     		pop	{r7}
+ 177              		.cfi_restore 7
+ 178              		.cfi_def_cfa_offset 0
+ 179 0018 7047     		bx	lr
+ 180              		.cfi_endproc
+ 181              	.LFE1:
+ 183              		.section	.text.usbd_register_suspend_callback,"ax",%progbits
+ 184              		.align	1
+ 185              		.global	usbd_register_suspend_callback
+ 186              		.syntax unified
+ 187              		.thumb
+ 188              		.thumb_func
+ 189              		.fpu softvfp
+ 191              	usbd_register_suspend_callback:
+ 192              	.LFB2:
+  81:../libopencm3/lib/usb/usb.c **** 
+  82:../libopencm3/lib/usb/usb.c **** void usbd_register_suspend_callback(usbd_device *usbd_dev,
+  83:../libopencm3/lib/usb/usb.c **** 				    void (*callback)(void))
+  84:../libopencm3/lib/usb/usb.c **** {
+ 193              		.loc 1 84 1
+ 194              		.cfi_startproc
+ 195              		@ args = 0, pretend = 0, frame = 8
+ 196              		@ frame_needed = 1, uses_anonymous_args = 0
+ 197              		@ link register save eliminated.
+ 198 0000 80B4     		push	{r7}
+ 199              		.cfi_def_cfa_offset 4
+ 200              		.cfi_offset 7, -4
+ 201 0002 83B0     		sub	sp, sp, #12
+ 202              		.cfi_def_cfa_offset 16
+ 203 0004 00AF     		add	r7, sp, #0
+ 204              		.cfi_def_cfa_register 7
+ 205 0006 7860     		str	r0, [r7, #4]
+ 206 0008 3960     		str	r1, [r7]
+  85:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_suspend = callback;
+ 207              		.loc 1 85 34
+ 208 000a 7B68     		ldr	r3, [r7, #4]
+ 209 000c 3A68     		ldr	r2, [r7]
+ 210 000e 1A62     		str	r2, [r3, #32]
+  86:../libopencm3/lib/usb/usb.c **** }
+ 211              		.loc 1 86 1
+ 212 0010 00BF     		nop
+ 213 0012 0C37     		adds	r7, r7, #12
+ 214              		.cfi_def_cfa_offset 4
+ 215 0014 BD46     		mov	sp, r7
+ 216              		.cfi_def_cfa_register 13
+ 217              		@ sp needed
+ 218 0016 80BC     		pop	{r7}
+ 219              		.cfi_restore 7
+ 220              		.cfi_def_cfa_offset 0
+ 221 0018 7047     		bx	lr
+ 222              		.cfi_endproc
+ 223              	.LFE2:
+ 225              		.section	.text.usbd_register_resume_callback,"ax",%progbits
+ 226              		.align	1
+ 227              		.global	usbd_register_resume_callback
+ 228              		.syntax unified
+ 229              		.thumb
+ 230              		.thumb_func
+ 231              		.fpu softvfp
+ 233              	usbd_register_resume_callback:
+ 234              	.LFB3:
+  87:../libopencm3/lib/usb/usb.c **** 
+  88:../libopencm3/lib/usb/usb.c **** void usbd_register_resume_callback(usbd_device *usbd_dev,
+  89:../libopencm3/lib/usb/usb.c **** 				   void (*callback)(void))
+  90:../libopencm3/lib/usb/usb.c **** {
+ 235              		.loc 1 90 1
+ 236              		.cfi_startproc
+ 237              		@ args = 0, pretend = 0, frame = 8
+ 238              		@ frame_needed = 1, uses_anonymous_args = 0
+ 239              		@ link register save eliminated.
+ 240 0000 80B4     		push	{r7}
+ 241              		.cfi_def_cfa_offset 4
+ 242              		.cfi_offset 7, -4
+ 243 0002 83B0     		sub	sp, sp, #12
+ 244              		.cfi_def_cfa_offset 16
+ 245 0004 00AF     		add	r7, sp, #0
+ 246              		.cfi_def_cfa_register 7
+ 247 0006 7860     		str	r0, [r7, #4]
+ 248 0008 3960     		str	r1, [r7]
+  91:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_resume = callback;
+ 249              		.loc 1 91 33
+ 250 000a 7B68     		ldr	r3, [r7, #4]
+ 251 000c 3A68     		ldr	r2, [r7]
+ 252 000e 5A62     		str	r2, [r3, #36]
+  92:../libopencm3/lib/usb/usb.c **** }
+ 253              		.loc 1 92 1
+ 254 0010 00BF     		nop
+ 255 0012 0C37     		adds	r7, r7, #12
+ 256              		.cfi_def_cfa_offset 4
+ 257 0014 BD46     		mov	sp, r7
+ 258              		.cfi_def_cfa_register 13
+ 259              		@ sp needed
+ 260 0016 80BC     		pop	{r7}
+ 261              		.cfi_restore 7
+ 262              		.cfi_def_cfa_offset 0
+ 263 0018 7047     		bx	lr
+ 264              		.cfi_endproc
+ 265              	.LFE3:
+ 267              		.section	.text.usbd_register_sof_callback,"ax",%progbits
+ 268              		.align	1
+ 269              		.global	usbd_register_sof_callback
+ 270              		.syntax unified
+ 271              		.thumb
+ 272              		.thumb_func
+ 273              		.fpu softvfp
+ 275              	usbd_register_sof_callback:
+ 276              	.LFB4:
+  93:../libopencm3/lib/usb/usb.c **** 
+  94:../libopencm3/lib/usb/usb.c **** void usbd_register_sof_callback(usbd_device *usbd_dev, void (*callback)(void))
+  95:../libopencm3/lib/usb/usb.c **** {
+ 277              		.loc 1 95 1
+ 278              		.cfi_startproc
+ 279              		@ args = 0, pretend = 0, frame = 8
+ 280              		@ frame_needed = 1, uses_anonymous_args = 0
+ 281              		@ link register save eliminated.
+ 282 0000 80B4     		push	{r7}
+ 283              		.cfi_def_cfa_offset 4
+ 284              		.cfi_offset 7, -4
+ 285 0002 83B0     		sub	sp, sp, #12
+ 286              		.cfi_def_cfa_offset 16
+ 287 0004 00AF     		add	r7, sp, #0
+ 288              		.cfi_def_cfa_register 7
+ 289 0006 7860     		str	r0, [r7, #4]
+ 290 0008 3960     		str	r1, [r7]
+  96:../libopencm3/lib/usb/usb.c **** 	usbd_dev->user_callback_sof = callback;
+ 291              		.loc 1 96 30
+ 292 000a 7B68     		ldr	r3, [r7, #4]
+ 293 000c 3A68     		ldr	r2, [r7]
+ 294 000e 9A62     		str	r2, [r3, #40]
+  97:../libopencm3/lib/usb/usb.c **** }
+ 295              		.loc 1 97 1
+ 296 0010 00BF     		nop
+ 297 0012 0C37     		adds	r7, r7, #12
+ 298              		.cfi_def_cfa_offset 4
+ 299 0014 BD46     		mov	sp, r7
+ 300              		.cfi_def_cfa_register 13
+ 301              		@ sp needed
+ 302 0016 80BC     		pop	{r7}
+ 303              		.cfi_restore 7
+ 304              		.cfi_def_cfa_offset 0
+ 305 0018 7047     		bx	lr
+ 306              		.cfi_endproc
+ 307              	.LFE4:
+ 309              		.section	.text.usbd_register_extra_string,"ax",%progbits
+ 310              		.align	1
+ 311              		.global	usbd_register_extra_string
+ 312              		.syntax unified
+ 313              		.thumb
+ 314              		.thumb_func
+ 315              		.fpu softvfp
+ 317              	usbd_register_extra_string:
+ 318              	.LFB5:
+  98:../libopencm3/lib/usb/usb.c **** 
+  99:../libopencm3/lib/usb/usb.c **** void usbd_register_extra_string(usbd_device *usbd_dev, int index, const char* string)
+ 100:../libopencm3/lib/usb/usb.c **** {
+ 319              		.loc 1 100 1
+ 320              		.cfi_startproc
+ 321              		@ args = 0, pretend = 0, frame = 16
+ 322              		@ frame_needed = 1, uses_anonymous_args = 0
+ 323              		@ link register save eliminated.
+ 324 0000 80B4     		push	{r7}
+ 325              		.cfi_def_cfa_offset 4
+ 326              		.cfi_offset 7, -4
+ 327 0002 85B0     		sub	sp, sp, #20
+ 328              		.cfi_def_cfa_offset 24
+ 329 0004 00AF     		add	r7, sp, #0
+ 330              		.cfi_def_cfa_register 7
+ 331 0006 F860     		str	r0, [r7, #12]
+ 332 0008 B960     		str	r1, [r7, #8]
+ 333 000a 7A60     		str	r2, [r7, #4]
+ 101:../libopencm3/lib/usb/usb.c ****     /*
+ 102:../libopencm3/lib/usb/usb.c **** 	 * Note: string index 0 is reserved for LANGID requests and cannot
+ 103:../libopencm3/lib/usb/usb.c **** 	 *       be overwritten using this functionality.
+ 104:../libopencm3/lib/usb/usb.c **** 	 */
+ 105:../libopencm3/lib/usb/usb.c **** 	if (string != NULL && index > 0) {
+ 334              		.loc 1 105 5
+ 335 000c 7B68     		ldr	r3, [r7, #4]
+ 336 000e 002B     		cmp	r3, #0
+ 337 0010 0BD0     		beq	.L12
+ 338              		.loc 1 105 21 discriminator 1
+ 339 0012 BB68     		ldr	r3, [r7, #8]
+ 340 0014 002B     		cmp	r3, #0
+ 341 0016 08DD     		ble	.L12
+ 106:../libopencm3/lib/usb/usb.c **** 		usbd_dev->extra_string_idx = index;
+ 342              		.loc 1 106 30
+ 343 0018 FB68     		ldr	r3, [r7, #12]
+ 344 001a BA68     		ldr	r2, [r7, #8]
+ 345 001c C3F8E020 		str	r2, [r3, #224]
+ 107:../libopencm3/lib/usb/usb.c **** 		usbd_dev->extra_string = string;
+ 346              		.loc 1 107 26
+ 347 0020 FB68     		ldr	r3, [r7, #12]
+ 348 0022 7A68     		ldr	r2, [r7, #4]
+ 349 0024 C3F8E420 		str	r2, [r3, #228]
+ 350 0028 03E0     		b	.L13
+ 351              	.L12:
+ 108:../libopencm3/lib/usb/usb.c **** 	} else {
+ 109:../libopencm3/lib/usb/usb.c **** 		usbd_dev->extra_string_idx = 0;
+ 352              		.loc 1 109 30
+ 353 002a FB68     		ldr	r3, [r7, #12]
+ 354 002c 0022     		movs	r2, #0
+ 355 002e C3F8E020 		str	r2, [r3, #224]
+ 356              	.L13:
+ 110:../libopencm3/lib/usb/usb.c **** 	}
+ 111:../libopencm3/lib/usb/usb.c **** }
+ 357              		.loc 1 111 1
+ 358 0032 00BF     		nop
+ 359 0034 1437     		adds	r7, r7, #20
+ 360              		.cfi_def_cfa_offset 4
+ 361 0036 BD46     		mov	sp, r7
+ 362              		.cfi_def_cfa_register 13
+ 363              		@ sp needed
+ 364 0038 80BC     		pop	{r7}
+ 365              		.cfi_restore 7
+ 366              		.cfi_def_cfa_offset 0
+ 367 003a 7047     		bx	lr
+ 368              		.cfi_endproc
+ 369              	.LFE5:
+ 371              		.section	.text._usbd_reset,"ax",%progbits
+ 372              		.align	1
+ 373              		.global	_usbd_reset
+ 374              		.syntax unified
+ 375              		.thumb
+ 376              		.thumb_func
+ 377              		.fpu softvfp
+ 379              	_usbd_reset:
+ 380              	.LFB6:
+ 112:../libopencm3/lib/usb/usb.c **** 
+ 113:../libopencm3/lib/usb/usb.c **** void _usbd_reset(usbd_device *usbd_dev)
+ 114:../libopencm3/lib/usb/usb.c **** {
+ 381              		.loc 1 114 1
+ 382              		.cfi_startproc
+ 383              		@ args = 0, pretend = 0, frame = 8
+ 384              		@ frame_needed = 1, uses_anonymous_args = 0
+ 385 0000 80B5     		push	{r7, lr}
+ 386              		.cfi_def_cfa_offset 8
+ 387              		.cfi_offset 7, -8
+ 388              		.cfi_offset 14, -4
+ 389 0002 84B0     		sub	sp, sp, #16
+ 390              		.cfi_def_cfa_offset 24
+ 391 0004 02AF     		add	r7, sp, #8
+ 392              		.cfi_def_cfa 7, 16
+ 393 0006 7860     		str	r0, [r7, #4]
+ 115:../libopencm3/lib/usb/usb.c **** 	usbd_dev->current_address = 0;
+ 394              		.loc 1 115 28
+ 395 0008 7B68     		ldr	r3, [r7, #4]
+ 396 000a 0022     		movs	r2, #0
+ 397 000c 9A75     		strb	r2, [r3, #22]
+ 116:../libopencm3/lib/usb/usb.c **** 	usbd_dev->current_config = 0;
+ 398              		.loc 1 116 27
+ 399 000e 7B68     		ldr	r3, [r7, #4]
+ 400 0010 0022     		movs	r2, #0
+ 401 0012 DA75     		strb	r2, [r3, #23]
+ 117:../libopencm3/lib/usb/usb.c **** 	usbd_ep_setup(usbd_dev, 0, USB_ENDPOINT_ATTR_CONTROL, usbd_dev->desc->bMaxPacketSize0, NULL);
+ 402              		.loc 1 117 64
+ 403 0014 7B68     		ldr	r3, [r7, #4]
+ 404 0016 1B68     		ldr	r3, [r3]
+ 405              		.loc 1 117 70
+ 406 0018 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 407              		.loc 1 117 2
+ 408 001a 9AB2     		uxth	r2, r3
+ 409 001c 0023     		movs	r3, #0
+ 410 001e 0093     		str	r3, [sp]
+ 411 0020 1346     		mov	r3, r2
+ 412 0022 0022     		movs	r2, #0
+ 413 0024 0021     		movs	r1, #0
+ 414 0026 7868     		ldr	r0, [r7, #4]
+ 415 0028 FFF7FEFF 		bl	usbd_ep_setup(PLT)
+ 118:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver->set_address(usbd_dev, 0);
+ 416              		.loc 1 118 10
+ 417 002c 7B68     		ldr	r3, [r7, #4]
+ 418 002e D3F8DC30 		ldr	r3, [r3, #220]
+ 419              		.loc 1 118 18
+ 420 0032 5B68     		ldr	r3, [r3, #4]
+ 421              		.loc 1 118 2
+ 422 0034 0021     		movs	r1, #0
+ 423 0036 7868     		ldr	r0, [r7, #4]
+ 424 0038 9847     		blx	r3
+ 425              	.LVL1:
+ 119:../libopencm3/lib/usb/usb.c **** 
+ 120:../libopencm3/lib/usb/usb.c **** 	if (usbd_dev->user_callback_reset) {
+ 426              		.loc 1 120 14
+ 427 003a 7B68     		ldr	r3, [r7, #4]
+ 428 003c DB69     		ldr	r3, [r3, #28]
+ 429              		.loc 1 120 5
+ 430 003e 002B     		cmp	r3, #0
+ 431 0040 02D0     		beq	.L16
+ 121:../libopencm3/lib/usb/usb.c **** 		usbd_dev->user_callback_reset();
+ 432              		.loc 1 121 11
+ 433 0042 7B68     		ldr	r3, [r7, #4]
+ 434 0044 DB69     		ldr	r3, [r3, #28]
+ 435              		.loc 1 121 3
+ 436 0046 9847     		blx	r3
+ 437              	.LVL2:
+ 438              	.L16:
+ 122:../libopencm3/lib/usb/usb.c **** 	}
+ 123:../libopencm3/lib/usb/usb.c **** }
+ 439              		.loc 1 123 1
+ 440 0048 00BF     		nop
+ 441 004a 0837     		adds	r7, r7, #8
+ 442              		.cfi_def_cfa_offset 8
+ 443 004c BD46     		mov	sp, r7
+ 444              		.cfi_def_cfa_register 13
+ 445              		@ sp needed
+ 446 004e 80BD     		pop	{r7, pc}
+ 447              		.cfi_endproc
+ 448              	.LFE6:
+ 450              		.section	.text.usbd_poll,"ax",%progbits
+ 451              		.align	1
+ 452              		.global	usbd_poll
+ 453              		.syntax unified
+ 454              		.thumb
+ 455              		.thumb_func
+ 456              		.fpu softvfp
+ 458              	usbd_poll:
+ 459              	.LFB7:
+ 124:../libopencm3/lib/usb/usb.c **** 
+ 125:../libopencm3/lib/usb/usb.c **** /* Functions to wrap the low-level driver */
+ 126:../libopencm3/lib/usb/usb.c **** void usbd_poll(usbd_device *usbd_dev)
+ 127:../libopencm3/lib/usb/usb.c **** {
+ 460              		.loc 1 127 1
+ 461              		.cfi_startproc
+ 462              		@ args = 0, pretend = 0, frame = 8
+ 463              		@ frame_needed = 1, uses_anonymous_args = 0
+ 464 0000 80B5     		push	{r7, lr}
+ 465              		.cfi_def_cfa_offset 8
+ 466              		.cfi_offset 7, -8
+ 467              		.cfi_offset 14, -4
+ 468 0002 82B0     		sub	sp, sp, #8
+ 469              		.cfi_def_cfa_offset 16
+ 470 0004 00AF     		add	r7, sp, #0
+ 471              		.cfi_def_cfa_register 7
+ 472 0006 7860     		str	r0, [r7, #4]
+ 128:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver->poll(usbd_dev);
+ 473              		.loc 1 128 10
+ 474 0008 7B68     		ldr	r3, [r7, #4]
+ 475 000a D3F8DC30 		ldr	r3, [r3, #220]
+ 476              		.loc 1 128 18
+ 477 000e 5B6A     		ldr	r3, [r3, #36]
+ 478              		.loc 1 128 2
+ 479 0010 7868     		ldr	r0, [r7, #4]
+ 480 0012 9847     		blx	r3
+ 481              	.LVL3:
+ 129:../libopencm3/lib/usb/usb.c **** }
+ 482              		.loc 1 129 1
+ 483 0014 00BF     		nop
+ 484 0016 0837     		adds	r7, r7, #8
+ 485              		.cfi_def_cfa_offset 8
+ 486 0018 BD46     		mov	sp, r7
+ 487              		.cfi_def_cfa_register 13
+ 488              		@ sp needed
+ 489 001a 80BD     		pop	{r7, pc}
+ 490              		.cfi_endproc
+ 491              	.LFE7:
+ 493              		.section	.text.usbd_disconnect,"ax",%progbits
+ 494              		.align	1
+ 495              		.weak	usbd_disconnect
+ 496              		.syntax unified
+ 497              		.thumb
+ 498              		.thumb_func
+ 499              		.fpu softvfp
+ 501              	usbd_disconnect:
+ 502              	.LFB8:
+ 130:../libopencm3/lib/usb/usb.c **** 
+ 131:../libopencm3/lib/usb/usb.c **** __attribute__((weak)) void usbd_disconnect(usbd_device *usbd_dev,
+ 132:../libopencm3/lib/usb/usb.c **** 					   bool disconnected)
+ 133:../libopencm3/lib/usb/usb.c **** {
+ 503              		.loc 1 133 1
+ 504              		.cfi_startproc
+ 505              		@ args = 0, pretend = 0, frame = 8
+ 506              		@ frame_needed = 1, uses_anonymous_args = 0
+ 507 0000 80B5     		push	{r7, lr}
+ 508              		.cfi_def_cfa_offset 8
+ 509              		.cfi_offset 7, -8
+ 510              		.cfi_offset 14, -4
+ 511 0002 82B0     		sub	sp, sp, #8
+ 512              		.cfi_def_cfa_offset 16
+ 513 0004 00AF     		add	r7, sp, #0
+ 514              		.cfi_def_cfa_register 7
+ 515 0006 7860     		str	r0, [r7, #4]
+ 516 0008 0B46     		mov	r3, r1
+ 517 000a FB70     		strb	r3, [r7, #3]
+ 134:../libopencm3/lib/usb/usb.c **** 	/* not all drivers support disconnection */
+ 135:../libopencm3/lib/usb/usb.c **** 	if (usbd_dev->driver->disconnect) {
+ 518              		.loc 1 135 14
+ 519 000c 7B68     		ldr	r3, [r7, #4]
+ 520 000e D3F8DC30 		ldr	r3, [r3, #220]
+ 521              		.loc 1 135 22
+ 522 0012 9B6A     		ldr	r3, [r3, #40]
+ 523              		.loc 1 135 5
+ 524 0014 002B     		cmp	r3, #0
+ 525 0016 07D0     		beq	.L20
+ 136:../libopencm3/lib/usb/usb.c **** 		usbd_dev->driver->disconnect(usbd_dev, disconnected);
+ 526              		.loc 1 136 11
+ 527 0018 7B68     		ldr	r3, [r7, #4]
+ 528 001a D3F8DC30 		ldr	r3, [r3, #220]
+ 529              		.loc 1 136 19
+ 530 001e 9B6A     		ldr	r3, [r3, #40]
+ 531              		.loc 1 136 3
+ 532 0020 FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 533 0022 1146     		mov	r1, r2
+ 534 0024 7868     		ldr	r0, [r7, #4]
+ 535 0026 9847     		blx	r3
+ 536              	.LVL4:
+ 537              	.L20:
+ 137:../libopencm3/lib/usb/usb.c **** 	}
+ 138:../libopencm3/lib/usb/usb.c **** }
+ 538              		.loc 1 138 1
+ 539 0028 00BF     		nop
+ 540 002a 0837     		adds	r7, r7, #8
+ 541              		.cfi_def_cfa_offset 8
+ 542 002c BD46     		mov	sp, r7
+ 543              		.cfi_def_cfa_register 13
+ 544              		@ sp needed
+ 545 002e 80BD     		pop	{r7, pc}
+ 546              		.cfi_endproc
+ 547              	.LFE8:
+ 549              		.section	.text.usbd_ep_setup,"ax",%progbits
+ 550              		.align	1
+ 551              		.global	usbd_ep_setup
+ 552              		.syntax unified
+ 553              		.thumb
+ 554              		.thumb_func
+ 555              		.fpu softvfp
+ 557              	usbd_ep_setup:
+ 558              	.LFB9:
+ 139:../libopencm3/lib/usb/usb.c **** 
+ 140:../libopencm3/lib/usb/usb.c **** void usbd_ep_setup(usbd_device *usbd_dev, uint8_t addr, uint8_t type,
+ 141:../libopencm3/lib/usb/usb.c **** 		   uint16_t max_size, usbd_endpoint_callback callback)
+ 142:../libopencm3/lib/usb/usb.c **** {
+ 559              		.loc 1 142 1
+ 560              		.cfi_startproc
+ 561              		@ args = 4, pretend = 0, frame = 8
+ 562              		@ frame_needed = 1, uses_anonymous_args = 0
+ 563 0000 90B5     		push	{r4, r7, lr}
+ 564              		.cfi_def_cfa_offset 12
+ 565              		.cfi_offset 4, -12
+ 566              		.cfi_offset 7, -8
+ 567              		.cfi_offset 14, -4
+ 568 0002 85B0     		sub	sp, sp, #20
+ 569              		.cfi_def_cfa_offset 32
+ 570 0004 02AF     		add	r7, sp, #8
+ 571              		.cfi_def_cfa 7, 24
+ 572 0006 7860     		str	r0, [r7, #4]
+ 573 0008 0846     		mov	r0, r1
+ 574 000a 1146     		mov	r1, r2
+ 575 000c 1A46     		mov	r2, r3
+ 576 000e 0346     		mov	r3, r0
+ 577 0010 FB70     		strb	r3, [r7, #3]
+ 578 0012 0B46     		mov	r3, r1
+ 579 0014 BB70     		strb	r3, [r7, #2]
+ 580 0016 1346     		mov	r3, r2	@ movhi
+ 581 0018 3B80     		strh	r3, [r7]	@ movhi
+ 143:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver->ep_setup(usbd_dev, addr, type, max_size, callback);
+ 582              		.loc 1 143 10
+ 583 001a 7B68     		ldr	r3, [r7, #4]
+ 584 001c D3F8DC30 		ldr	r3, [r3, #220]
+ 585              		.loc 1 143 18
+ 586 0020 9C68     		ldr	r4, [r3, #8]
+ 587              		.loc 1 143 2
+ 588 0022 3888     		ldrh	r0, [r7]
+ 589 0024 BA78     		ldrb	r2, [r7, #2]	@ zero_extendqisi2
+ 590 0026 F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 591 0028 BB69     		ldr	r3, [r7, #24]
+ 592 002a 0093     		str	r3, [sp]
+ 593 002c 0346     		mov	r3, r0
+ 594 002e 7868     		ldr	r0, [r7, #4]
+ 595 0030 A047     		blx	r4
+ 596              	.LVL5:
+ 144:../libopencm3/lib/usb/usb.c **** }
+ 597              		.loc 1 144 1
+ 598 0032 00BF     		nop
+ 599 0034 0C37     		adds	r7, r7, #12
+ 600              		.cfi_def_cfa_offset 12
+ 601 0036 BD46     		mov	sp, r7
+ 602              		.cfi_def_cfa_register 13
+ 603              		@ sp needed
+ 604 0038 90BD     		pop	{r4, r7, pc}
+ 605              		.cfi_endproc
+ 606              	.LFE9:
+ 608              		.section	.text.usbd_ep_write_packet,"ax",%progbits
+ 609              		.align	1
+ 610              		.global	usbd_ep_write_packet
+ 611              		.syntax unified
+ 612              		.thumb
+ 613              		.thumb_func
+ 614              		.fpu softvfp
+ 616              	usbd_ep_write_packet:
+ 617              	.LFB10:
+ 145:../libopencm3/lib/usb/usb.c **** 
+ 146:../libopencm3/lib/usb/usb.c **** uint16_t usbd_ep_write_packet(usbd_device *usbd_dev, uint8_t addr,
+ 147:../libopencm3/lib/usb/usb.c **** 			 const void *buf, uint16_t len)
+ 148:../libopencm3/lib/usb/usb.c **** {
+ 618              		.loc 1 148 1
+ 619              		.cfi_startproc
+ 620              		@ args = 0, pretend = 0, frame = 16
+ 621              		@ frame_needed = 1, uses_anonymous_args = 0
+ 622 0000 90B5     		push	{r4, r7, lr}
+ 623              		.cfi_def_cfa_offset 12
+ 624              		.cfi_offset 4, -12
+ 625              		.cfi_offset 7, -8
+ 626              		.cfi_offset 14, -4
+ 627 0002 85B0     		sub	sp, sp, #20
+ 628              		.cfi_def_cfa_offset 32
+ 629 0004 00AF     		add	r7, sp, #0
+ 630              		.cfi_def_cfa_register 7
+ 631 0006 F860     		str	r0, [r7, #12]
+ 632 0008 7A60     		str	r2, [r7, #4]
+ 633 000a 1A46     		mov	r2, r3
+ 634 000c 0B46     		mov	r3, r1
+ 635 000e FB72     		strb	r3, [r7, #11]
+ 636 0010 1346     		mov	r3, r2	@ movhi
+ 637 0012 3B81     		strh	r3, [r7, #8]	@ movhi
+ 149:../libopencm3/lib/usb/usb.c **** 	return usbd_dev->driver->ep_write_packet(usbd_dev, addr, buf, len);
+ 638              		.loc 1 149 17
+ 639 0014 FB68     		ldr	r3, [r7, #12]
+ 640 0016 D3F8DC30 		ldr	r3, [r3, #220]
+ 641              		.loc 1 149 25
+ 642 001a DC69     		ldr	r4, [r3, #28]
+ 643              		.loc 1 149 9
+ 644 001c 3B89     		ldrh	r3, [r7, #8]
+ 645 001e F97A     		ldrb	r1, [r7, #11]	@ zero_extendqisi2
+ 646 0020 7A68     		ldr	r2, [r7, #4]
+ 647 0022 F868     		ldr	r0, [r7, #12]
+ 648 0024 A047     		blx	r4
+ 649              	.LVL6:
+ 650 0026 0346     		mov	r3, r0
+ 150:../libopencm3/lib/usb/usb.c **** }
+ 651              		.loc 1 150 1
+ 652 0028 1846     		mov	r0, r3
+ 653 002a 1437     		adds	r7, r7, #20
+ 654              		.cfi_def_cfa_offset 12
+ 655 002c BD46     		mov	sp, r7
+ 656              		.cfi_def_cfa_register 13
+ 657              		@ sp needed
+ 658 002e 90BD     		pop	{r4, r7, pc}
+ 659              		.cfi_endproc
+ 660              	.LFE10:
+ 662              		.section	.text.usbd_ep_read_packet,"ax",%progbits
+ 663              		.align	1
+ 664              		.global	usbd_ep_read_packet
+ 665              		.syntax unified
+ 666              		.thumb
+ 667              		.thumb_func
+ 668              		.fpu softvfp
+ 670              	usbd_ep_read_packet:
+ 671              	.LFB11:
+ 151:../libopencm3/lib/usb/usb.c **** 
+ 152:../libopencm3/lib/usb/usb.c **** uint16_t usbd_ep_read_packet(usbd_device *usbd_dev, uint8_t addr, void *buf,
+ 153:../libopencm3/lib/usb/usb.c **** 			     uint16_t len)
+ 154:../libopencm3/lib/usb/usb.c **** {
+ 672              		.loc 1 154 1
+ 673              		.cfi_startproc
+ 674              		@ args = 0, pretend = 0, frame = 16
+ 675              		@ frame_needed = 1, uses_anonymous_args = 0
+ 676 0000 90B5     		push	{r4, r7, lr}
+ 677              		.cfi_def_cfa_offset 12
+ 678              		.cfi_offset 4, -12
+ 679              		.cfi_offset 7, -8
+ 680              		.cfi_offset 14, -4
+ 681 0002 85B0     		sub	sp, sp, #20
+ 682              		.cfi_def_cfa_offset 32
+ 683 0004 00AF     		add	r7, sp, #0
+ 684              		.cfi_def_cfa_register 7
+ 685 0006 F860     		str	r0, [r7, #12]
+ 686 0008 7A60     		str	r2, [r7, #4]
+ 687 000a 1A46     		mov	r2, r3
+ 688 000c 0B46     		mov	r3, r1
+ 689 000e FB72     		strb	r3, [r7, #11]
+ 690 0010 1346     		mov	r3, r2	@ movhi
+ 691 0012 3B81     		strh	r3, [r7, #8]	@ movhi
+ 155:../libopencm3/lib/usb/usb.c **** 	return usbd_dev->driver->ep_read_packet(usbd_dev, addr, buf, len);
+ 692              		.loc 1 155 17
+ 693 0014 FB68     		ldr	r3, [r7, #12]
+ 694 0016 D3F8DC30 		ldr	r3, [r3, #220]
+ 695              		.loc 1 155 25
+ 696 001a 1C6A     		ldr	r4, [r3, #32]
+ 697              		.loc 1 155 9
+ 698 001c 3B89     		ldrh	r3, [r7, #8]
+ 699 001e F97A     		ldrb	r1, [r7, #11]	@ zero_extendqisi2
+ 700 0020 7A68     		ldr	r2, [r7, #4]
+ 701 0022 F868     		ldr	r0, [r7, #12]
+ 702 0024 A047     		blx	r4
+ 703              	.LVL7:
+ 704 0026 0346     		mov	r3, r0
+ 156:../libopencm3/lib/usb/usb.c **** }
+ 705              		.loc 1 156 1
+ 706 0028 1846     		mov	r0, r3
+ 707 002a 1437     		adds	r7, r7, #20
+ 708              		.cfi_def_cfa_offset 12
+ 709 002c BD46     		mov	sp, r7
+ 710              		.cfi_def_cfa_register 13
+ 711              		@ sp needed
+ 712 002e 90BD     		pop	{r4, r7, pc}
+ 713              		.cfi_endproc
+ 714              	.LFE11:
+ 716              		.section	.text.usbd_ep_stall_set,"ax",%progbits
+ 717              		.align	1
+ 718              		.global	usbd_ep_stall_set
+ 719              		.syntax unified
+ 720              		.thumb
+ 721              		.thumb_func
+ 722              		.fpu softvfp
+ 724              	usbd_ep_stall_set:
+ 725              	.LFB12:
+ 157:../libopencm3/lib/usb/usb.c **** 
+ 158:../libopencm3/lib/usb/usb.c **** void usbd_ep_stall_set(usbd_device *usbd_dev, uint8_t addr, uint8_t stall)
+ 159:../libopencm3/lib/usb/usb.c **** {
+ 726              		.loc 1 159 1
+ 727              		.cfi_startproc
+ 728              		@ args = 0, pretend = 0, frame = 8
+ 729              		@ frame_needed = 1, uses_anonymous_args = 0
+ 730 0000 80B5     		push	{r7, lr}
+ 731              		.cfi_def_cfa_offset 8
+ 732              		.cfi_offset 7, -8
+ 733              		.cfi_offset 14, -4
+ 734 0002 82B0     		sub	sp, sp, #8
+ 735              		.cfi_def_cfa_offset 16
+ 736 0004 00AF     		add	r7, sp, #0
+ 737              		.cfi_def_cfa_register 7
+ 738 0006 7860     		str	r0, [r7, #4]
+ 739 0008 0B46     		mov	r3, r1
+ 740 000a FB70     		strb	r3, [r7, #3]
+ 741 000c 1346     		mov	r3, r2
+ 742 000e BB70     		strb	r3, [r7, #2]
+ 160:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver->ep_stall_set(usbd_dev, addr, stall);
+ 743              		.loc 1 160 10
+ 744 0010 7B68     		ldr	r3, [r7, #4]
+ 745 0012 D3F8DC30 		ldr	r3, [r3, #220]
+ 746              		.loc 1 160 18
+ 747 0016 1B69     		ldr	r3, [r3, #16]
+ 748              		.loc 1 160 2
+ 749 0018 BA78     		ldrb	r2, [r7, #2]	@ zero_extendqisi2
+ 750 001a F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 751 001c 7868     		ldr	r0, [r7, #4]
+ 752 001e 9847     		blx	r3
+ 753              	.LVL8:
+ 161:../libopencm3/lib/usb/usb.c **** }
+ 754              		.loc 1 161 1
+ 755 0020 00BF     		nop
+ 756 0022 0837     		adds	r7, r7, #8
+ 757              		.cfi_def_cfa_offset 8
+ 758 0024 BD46     		mov	sp, r7
+ 759              		.cfi_def_cfa_register 13
+ 760              		@ sp needed
+ 761 0026 80BD     		pop	{r7, pc}
+ 762              		.cfi_endproc
+ 763              	.LFE12:
+ 765              		.section	.text.usbd_ep_stall_get,"ax",%progbits
+ 766              		.align	1
+ 767              		.global	usbd_ep_stall_get
+ 768              		.syntax unified
+ 769              		.thumb
+ 770              		.thumb_func
+ 771              		.fpu softvfp
+ 773              	usbd_ep_stall_get:
+ 774              	.LFB13:
+ 162:../libopencm3/lib/usb/usb.c **** 
+ 163:../libopencm3/lib/usb/usb.c **** uint8_t usbd_ep_stall_get(usbd_device *usbd_dev, uint8_t addr)
+ 164:../libopencm3/lib/usb/usb.c **** {
+ 775              		.loc 1 164 1
+ 776              		.cfi_startproc
+ 777              		@ args = 0, pretend = 0, frame = 8
+ 778              		@ frame_needed = 1, uses_anonymous_args = 0
+ 779 0000 80B5     		push	{r7, lr}
+ 780              		.cfi_def_cfa_offset 8
+ 781              		.cfi_offset 7, -8
+ 782              		.cfi_offset 14, -4
+ 783 0002 82B0     		sub	sp, sp, #8
+ 784              		.cfi_def_cfa_offset 16
+ 785 0004 00AF     		add	r7, sp, #0
+ 786              		.cfi_def_cfa_register 7
+ 787 0006 7860     		str	r0, [r7, #4]
+ 788 0008 0B46     		mov	r3, r1
+ 789 000a FB70     		strb	r3, [r7, #3]
+ 165:../libopencm3/lib/usb/usb.c **** 	return usbd_dev->driver->ep_stall_get(usbd_dev, addr);
+ 790              		.loc 1 165 17
+ 791 000c 7B68     		ldr	r3, [r7, #4]
+ 792 000e D3F8DC30 		ldr	r3, [r3, #220]
+ 793              		.loc 1 165 25
+ 794 0012 9B69     		ldr	r3, [r3, #24]
+ 795              		.loc 1 165 9
+ 796 0014 FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 797 0016 1146     		mov	r1, r2
+ 798 0018 7868     		ldr	r0, [r7, #4]
+ 799 001a 9847     		blx	r3
+ 800              	.LVL9:
+ 801 001c 0346     		mov	r3, r0
+ 166:../libopencm3/lib/usb/usb.c **** }
+ 802              		.loc 1 166 1
+ 803 001e 1846     		mov	r0, r3
+ 804 0020 0837     		adds	r7, r7, #8
+ 805              		.cfi_def_cfa_offset 8
+ 806 0022 BD46     		mov	sp, r7
+ 807              		.cfi_def_cfa_register 13
+ 808              		@ sp needed
+ 809 0024 80BD     		pop	{r7, pc}
+ 810              		.cfi_endproc
+ 811              	.LFE13:
+ 813              		.section	.text.usbd_ep_nak_set,"ax",%progbits
+ 814              		.align	1
+ 815              		.global	usbd_ep_nak_set
+ 816              		.syntax unified
+ 817              		.thumb
+ 818              		.thumb_func
+ 819              		.fpu softvfp
+ 821              	usbd_ep_nak_set:
+ 822              	.LFB14:
+ 167:../libopencm3/lib/usb/usb.c **** 
+ 168:../libopencm3/lib/usb/usb.c **** void usbd_ep_nak_set(usbd_device *usbd_dev, uint8_t addr, uint8_t nak)
+ 169:../libopencm3/lib/usb/usb.c **** {
+ 823              		.loc 1 169 1
+ 824              		.cfi_startproc
+ 825              		@ args = 0, pretend = 0, frame = 8
+ 826              		@ frame_needed = 1, uses_anonymous_args = 0
+ 827 0000 80B5     		push	{r7, lr}
+ 828              		.cfi_def_cfa_offset 8
+ 829              		.cfi_offset 7, -8
+ 830              		.cfi_offset 14, -4
+ 831 0002 82B0     		sub	sp, sp, #8
+ 832              		.cfi_def_cfa_offset 16
+ 833 0004 00AF     		add	r7, sp, #0
+ 834              		.cfi_def_cfa_register 7
+ 835 0006 7860     		str	r0, [r7, #4]
+ 836 0008 0B46     		mov	r3, r1
+ 837 000a FB70     		strb	r3, [r7, #3]
+ 838 000c 1346     		mov	r3, r2
+ 839 000e BB70     		strb	r3, [r7, #2]
+ 170:../libopencm3/lib/usb/usb.c **** 	usbd_dev->driver->ep_nak_set(usbd_dev, addr, nak);
+ 840              		.loc 1 170 10
+ 841 0010 7B68     		ldr	r3, [r7, #4]
+ 842 0012 D3F8DC30 		ldr	r3, [r3, #220]
+ 843              		.loc 1 170 18
+ 844 0016 5B69     		ldr	r3, [r3, #20]
+ 845              		.loc 1 170 2
+ 846 0018 BA78     		ldrb	r2, [r7, #2]	@ zero_extendqisi2
+ 847 001a F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 848 001c 7868     		ldr	r0, [r7, #4]
+ 849 001e 9847     		blx	r3
+ 850              	.LVL10:
+ 171:../libopencm3/lib/usb/usb.c **** }
+ 851              		.loc 1 171 1
+ 852 0020 00BF     		nop
+ 853 0022 0837     		adds	r7, r7, #8
+ 854              		.cfi_def_cfa_offset 8
+ 855 0024 BD46     		mov	sp, r7
+ 856              		.cfi_def_cfa_register 13
+ 857              		@ sp needed
+ 858 0026 80BD     		pop	{r7, pc}
+ 859              		.cfi_endproc
+ 860              	.LFE14:
+ 862              		.text
+ 863              	.Letext0:
+ 864              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 865              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 866              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 867              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 868              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 869              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 870              		.file 8 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbstd.h"
+ 871              		.file 9 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbd.h"
+ 872              		.file 10 "../libopencm3/lib/usb/usb_private.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usb.c
+     /tmp/cc5oZiXh.s:16     .text.usbd_init:0000000000000000 $t
+     /tmp/cc5oZiXh.s:24     .text.usbd_init:0000000000000000 usbd_init
+     /tmp/cc5oZiXh.s:135    .text.usbd_init:0000000000000098 $d
+     /tmp/cc5oZiXh.s:142    .text.usbd_register_reset_callback:0000000000000000 $t
+     /tmp/cc5oZiXh.s:149    .text.usbd_register_reset_callback:0000000000000000 usbd_register_reset_callback
+     /tmp/cc5oZiXh.s:184    .text.usbd_register_suspend_callback:0000000000000000 $t
+     /tmp/cc5oZiXh.s:191    .text.usbd_register_suspend_callback:0000000000000000 usbd_register_suspend_callback
+     /tmp/cc5oZiXh.s:226    .text.usbd_register_resume_callback:0000000000000000 $t
+     /tmp/cc5oZiXh.s:233    .text.usbd_register_resume_callback:0000000000000000 usbd_register_resume_callback
+     /tmp/cc5oZiXh.s:268    .text.usbd_register_sof_callback:0000000000000000 $t
+     /tmp/cc5oZiXh.s:275    .text.usbd_register_sof_callback:0000000000000000 usbd_register_sof_callback
+     /tmp/cc5oZiXh.s:310    .text.usbd_register_extra_string:0000000000000000 $t
+     /tmp/cc5oZiXh.s:317    .text.usbd_register_extra_string:0000000000000000 usbd_register_extra_string
+     /tmp/cc5oZiXh.s:372    .text._usbd_reset:0000000000000000 $t
+     /tmp/cc5oZiXh.s:379    .text._usbd_reset:0000000000000000 _usbd_reset
+     /tmp/cc5oZiXh.s:557    .text.usbd_ep_setup:0000000000000000 usbd_ep_setup
+     /tmp/cc5oZiXh.s:451    .text.usbd_poll:0000000000000000 $t
+     /tmp/cc5oZiXh.s:458    .text.usbd_poll:0000000000000000 usbd_poll
+     /tmp/cc5oZiXh.s:494    .text.usbd_disconnect:0000000000000000 $t
+     /tmp/cc5oZiXh.s:501    .text.usbd_disconnect:0000000000000000 usbd_disconnect
+     /tmp/cc5oZiXh.s:550    .text.usbd_ep_setup:0000000000000000 $t
+     /tmp/cc5oZiXh.s:609    .text.usbd_ep_write_packet:0000000000000000 $t
+     /tmp/cc5oZiXh.s:616    .text.usbd_ep_write_packet:0000000000000000 usbd_ep_write_packet
+     /tmp/cc5oZiXh.s:663    .text.usbd_ep_read_packet:0000000000000000 $t
+     /tmp/cc5oZiXh.s:670    .text.usbd_ep_read_packet:0000000000000000 usbd_ep_read_packet
+     /tmp/cc5oZiXh.s:717    .text.usbd_ep_stall_set:0000000000000000 $t
+     /tmp/cc5oZiXh.s:724    .text.usbd_ep_stall_set:0000000000000000 usbd_ep_stall_set
+     /tmp/cc5oZiXh.s:766    .text.usbd_ep_stall_get:0000000000000000 $t
+     /tmp/cc5oZiXh.s:773    .text.usbd_ep_stall_get:0000000000000000 usbd_ep_stall_get
+     /tmp/cc5oZiXh.s:814    .text.usbd_ep_nak_set:0000000000000000 $t
+     /tmp/cc5oZiXh.s:821    .text.usbd_ep_nak_set:0000000000000000 usbd_ep_nak_set
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4.features.h.22.fad1cec3bc7ff06488171438dbdcfd02
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stddef.h.39.a38874c8f8a57e66301090908ec2a69f
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.string.h.15.dab3980bf35408a4c507182805e2de3a
+                           .group:0000000000000000 wm4.stddef.h.161.19e15733342b50ead2919490b095303e
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.usbstd.h.65.0eee1aa946e3887d0ba3601794e78b73
+                           .group:0000000000000000 wm4.usbd.h.59.36297d267a452a295a2169d9133104f5
+                           .group:0000000000000000 wm4.usb_private.h.39.0319c55b21f25116dad040a5212d0c5d
+
+UNDEFINED SYMBOLS
+_usbd_control_setup
+_usbd_control_out
+_usbd_control_in

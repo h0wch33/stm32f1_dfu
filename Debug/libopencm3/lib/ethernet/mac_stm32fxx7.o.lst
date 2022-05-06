@@ -1,0 +1,2052 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"mac_stm32fxx7.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	TxBD,4,4
+  16              		.comm	RxBD,4,4
+  17              		.section	.text.eth_set_mac,"ax",%progbits
+  18              		.align	1
+  19              		.global	eth_set_mac
+  20              		.arch armv7-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu softvfp
+  26              	eth_set_mac:
+  27              	.LFB0:
+  28              		.file 1 "../libopencm3/lib/ethernet/mac_stm32fxx7.c"
+   1:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @defgroup ethernet_mac_stm32fxx7_file MAC STM32Fxx7
+   2:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+   3:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @ingroup ETH
+   4:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+   5:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @brief <b>Ethernet MAC STM32Fxx7 Drivers</b>
+   6:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+   7:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @version 1.0.0
+   8:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @author @htmlonly &copy; @endhtmlonly 2013 Frantisek Burian <BuFran@seznam.cz>
+   9:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  10:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @date 1 September 2013
+  11:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  12:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  13:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * LGPL License Terms @ref lgpl_license
+  14:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+  15:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*
+  16:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * This file is part of the libopencm3 project.
+  17:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  18:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * Copyright (C) 2013 Frantisek Burian <BuFran@seznam.cz>
+  19:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  20:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * This library is free software: you can redistribute it and/or modify
+  21:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  22:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * the Free Software Foundation, either version 3 of the License, or
+  23:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * (at your option) any later version.
+  24:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  25:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * This library is distributed in the hope that it will be useful,
+  26:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * GNU Lesser General Public License for more details.
+  29:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  30:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * You should have received a copy of the GNU Lesser General Public License
+  31:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  32:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+  33:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  34:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** #include <string.h>
+  35:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** #include <libopencm3/ethernet/mac.h>
+  36:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** #include <libopencm3/ethernet/phy.h>
+  37:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** #include <libopencm3/stm32/gpio.h>
+  38:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** #include <libopencm3/cm3/nvic.h>
+  39:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  40:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /**@{*/
+  41:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  42:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** uint32_t TxBD;
+  43:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** uint32_t RxBD;
+  44:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  45:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+  46:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Set MAC to the PHY
+  47:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  48:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] mac uint8_t* Desired MAC
+  49:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+  50:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_set_mac(const uint8_t *mac)
+  51:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+  29              		.loc 1 51 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              		.cfi_def_cfa_offset 4
+  36              		.cfi_offset 7, -4
+  37 0002 83B0     		sub	sp, sp, #12
+  38              		.cfi_def_cfa_offset 16
+  39 0004 00AF     		add	r7, sp, #0
+  40              		.cfi_def_cfa_register 7
+  41 0006 7860     		str	r0, [r7, #4]
+  52:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACAHR(0) = ((uint32_t)mac[5] << 8) | (uint32_t)mac[4] |
+  42              		.loc 1 52 32
+  43 0008 7B68     		ldr	r3, [r7, #4]
+  44 000a 0533     		adds	r3, r3, #5
+  45 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  46              		.loc 1 52 36
+  47 000e 1B02     		lsls	r3, r3, #8
+  48              		.loc 1 52 57
+  49 0010 7A68     		ldr	r2, [r7, #4]
+  50 0012 0432     		adds	r2, r2, #4
+  51 0014 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+  52              		.loc 1 52 42
+  53 0016 1343     		orrs	r3, r3, r2
+  54              		.loc 1 52 2
+  55 0018 0F4A     		ldr	r2, .L2
+  56              		.loc 1 52 61
+  57 001a 6FEA1343 		mvn	r3, r3, lsr #16
+  58 001e 6FEA0343 		mvn	r3, r3, lsl #16
+  59              		.loc 1 52 16
+  60 0022 1360     		str	r3, [r2]
+  53:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			ETH_MACA0HR_MACA0H;
+  54:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACALR(0) = ((uint32_t)mac[3] << 24) | ((uint32_t)mac[2] << 16) |
+  61              		.loc 1 54 32
+  62 0024 7B68     		ldr	r3, [r7, #4]
+  63 0026 0333     		adds	r3, r3, #3
+  64 0028 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  65              		.loc 1 54 36
+  66 002a 1A06     		lsls	r2, r3, #24
+  67              		.loc 1 54 59
+  68 002c 7B68     		ldr	r3, [r7, #4]
+  69 002e 0233     		adds	r3, r3, #2
+  70 0030 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  71              		.loc 1 54 63
+  72 0032 1B04     		lsls	r3, r3, #16
+  73              		.loc 1 54 43
+  74 0034 1A43     		orrs	r2, r2, r3
+  55:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			((uint32_t)mac[1] << 8) | mac[0];
+  75              		.loc 1 55 18
+  76 0036 7B68     		ldr	r3, [r7, #4]
+  77 0038 0133     		adds	r3, r3, #1
+  78 003a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  79              		.loc 1 55 22
+  80 003c 1B02     		lsls	r3, r3, #8
+  54:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			((uint32_t)mac[1] << 8) | mac[0];
+  81              		.loc 1 54 70
+  82 003e 1343     		orrs	r3, r3, r2
+  83              		.loc 1 55 33
+  84 0040 7A68     		ldr	r2, [r7, #4]
+  85 0042 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+  86 0044 1146     		mov	r1, r2
+  54:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			((uint32_t)mac[1] << 8) | mac[0];
+  87              		.loc 1 54 2
+  88 0046 054A     		ldr	r2, .L2+4
+  89              		.loc 1 55 28
+  90 0048 0B43     		orrs	r3, r3, r1
+  54:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			((uint32_t)mac[1] << 8) | mac[0];
+  91              		.loc 1 54 16
+  92 004a 1360     		str	r3, [r2]
+  56:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+  93              		.loc 1 56 1
+  94 004c 00BF     		nop
+  95 004e 0C37     		adds	r7, r7, #12
+  96              		.cfi_def_cfa_offset 4
+  97 0050 BD46     		mov	sp, r7
+  98              		.cfi_def_cfa_register 13
+  99              		@ sp needed
+ 100 0052 80BC     		pop	{r7}
+ 101              		.cfi_restore 7
+ 102              		.cfi_def_cfa_offset 0
+ 103 0054 7047     		bx	lr
+ 104              	.L3:
+ 105 0056 00BF     		.align	2
+ 106              	.L2:
+ 107 0058 40800240 		.word	1073905728
+ 108 005c 44800240 		.word	1073905732
+ 109              		.cfi_endproc
+ 110              	.LFE0:
+ 112              		.section	.text.eth_desc_init,"ax",%progbits
+ 113              		.align	1
+ 114              		.global	eth_desc_init
+ 115              		.syntax unified
+ 116              		.thumb
+ 117              		.thumb_func
+ 118              		.fpu softvfp
+ 120              	eth_desc_init:
+ 121              	.LFB1:
+  57:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  58:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+  59:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Initialize buffers and descriptors.
+  60:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  61:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] buf uint8_t* Memory area for the descriptors and data buffers
+  62:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] nTx uint32_t Count of transmit descriptors (equal to count of buffers)
+  63:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] nRx uint32_t Count of receive descriptors (equal to count of buffers)
+  64:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] cTx uint32_t Bytes in each transmit buffer, must be a
+  65:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *                         multiple of 4
+  66:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] cRx uint32_t Bytes in each receive buffer, must be a
+  67:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *                         multiple of 4
+  68:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] isext bool true if extended descriptors should be used
+  69:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+  70:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * Note, the space passed via buf pointer must be large enough to
+  71:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * hold all the buffers and one descriptor per buffer.
+  72:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+  73:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_desc_init(uint8_t *buf, uint32_t nTx, uint32_t nRx, uint32_t cTx,
+  74:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		    uint32_t cRx, bool isext)
+  75:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 122              		.loc 1 75 1
+ 123              		.cfi_startproc
+ 124              		@ args = 8, pretend = 0, frame = 24
+ 125              		@ frame_needed = 1, uses_anonymous_args = 0
+ 126 0000 80B5     		push	{r7, lr}
+ 127              		.cfi_def_cfa_offset 8
+ 128              		.cfi_offset 7, -8
+ 129              		.cfi_offset 14, -4
+ 130 0002 86B0     		sub	sp, sp, #24
+ 131              		.cfi_def_cfa_offset 32
+ 132 0004 00AF     		add	r7, sp, #0
+ 133              		.cfi_def_cfa_register 7
+ 134 0006 F860     		str	r0, [r7, #12]
+ 135 0008 B960     		str	r1, [r7, #8]
+ 136 000a 7A60     		str	r2, [r7, #4]
+ 137 000c 3B60     		str	r3, [r7]
+  76:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint32_t bd = (uint32_t)buf;
+ 138              		.loc 1 76 11
+ 139 000e FB68     		ldr	r3, [r7, #12]
+ 140 0010 7B61     		str	r3, [r7, #20]
+  77:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint32_t sz = isext ? ETH_DES_EXT_SIZE : ETH_DES_STD_SIZE;
+ 141              		.loc 1 77 41
+ 142 0012 97F82430 		ldrb	r3, [r7, #36]	@ zero_extendqisi2
+ 143 0016 002B     		cmp	r3, #0
+ 144 0018 01D0     		beq	.L5
+ 145              		.loc 1 77 41 is_stmt 0 discriminator 1
+ 146 001a 2023     		movs	r3, #32
+ 147 001c 00E0     		b	.L6
+ 148              	.L5:
+ 149              		.loc 1 77 41 discriminator 2
+ 150 001e 1023     		movs	r3, #16
+ 151              	.L6:
+ 152              		.loc 1 77 11 is_stmt 1 discriminator 4
+ 153 0020 3B61     		str	r3, [r7, #16]
+  78:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  79:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	memset(buf, 0, nTx * (cTx + sz) + nRx * (cRx + sz));
+ 154              		.loc 1 79 28 discriminator 4
+ 155 0022 3A68     		ldr	r2, [r7]
+ 156 0024 3B69     		ldr	r3, [r7, #16]
+ 157 0026 1344     		add	r3, r3, r2
+ 158              		.loc 1 79 21 discriminator 4
+ 159 0028 BA68     		ldr	r2, [r7, #8]
+ 160 002a 02FB03F2 		mul	r2, r2, r3
+ 161              		.loc 1 79 47 discriminator 4
+ 162 002e 396A     		ldr	r1, [r7, #32]
+ 163 0030 3B69     		ldr	r3, [r7, #16]
+ 164 0032 0B44     		add	r3, r3, r1
+ 165              		.loc 1 79 40 discriminator 4
+ 166 0034 7968     		ldr	r1, [r7, #4]
+ 167 0036 01FB03F3 		mul	r3, r1, r3
+ 168              		.loc 1 79 34 discriminator 4
+ 169 003a 1344     		add	r3, r3, r2
+ 170              		.loc 1 79 2 discriminator 4
+ 171 003c 1A46     		mov	r2, r3
+ 172 003e 0021     		movs	r1, #0
+ 173 0040 F868     		ldr	r0, [r7, #12]
+ 174 0042 FFF7FEFF 		bl	memset(PLT)
+  80:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  81:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	/* enable / disable extended frames */
+  82:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	if (isext) {
+ 175              		.loc 1 82 5 discriminator 4
+ 176 0046 97F82430 		ldrb	r3, [r7, #36]	@ zero_extendqisi2
+ 177 004a 002B     		cmp	r3, #0
+ 178 004c 06D0     		beq	.L7
+  83:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMABMR |= ETH_DMABMR_EDFE;
+ 179              		.loc 1 83 14
+ 180 004e 504B     		ldr	r3, .L13
+ 181 0050 1B68     		ldr	r3, [r3]
+ 182 0052 4F4A     		ldr	r2, .L13
+ 183 0054 43F08003 		orr	r3, r3, #128
+ 184 0058 1360     		str	r3, [r2]
+ 185 005a 05E0     		b	.L8
+ 186              	.L7:
+  84:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	} else {
+  85:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMABMR &= ~ETH_DMABMR_EDFE;
+ 187              		.loc 1 85 14
+ 188 005c 4C4B     		ldr	r3, .L13
+ 189 005e 1B68     		ldr	r3, [r3]
+ 190 0060 4B4A     		ldr	r2, .L13
+ 191 0062 23F08003 		bic	r3, r3, #128
+ 192 0066 1360     		str	r3, [r2]
+ 193              	.L8:
+  86:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+  87:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  88:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	TxBD = bd;
+ 194              		.loc 1 88 7
+ 195 0068 4C4B     		ldr	r3, .L13+12
+ 196 006a 59F80330 		ldr	r3, [r9, r3]
+ 197 006e 1A46     		mov	r2, r3
+ 198 0070 7B69     		ldr	r3, [r7, #20]
+ 199 0072 1360     		str	r3, [r2]
+  89:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	while (--nTx > 0) {
+ 200              		.loc 1 89 8
+ 201 0074 17E0     		b	.L9
+ 202              	.L10:
+  90:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(bd) = ETH_TDES0_TCH;
+ 203              		.loc 1 90 3
+ 204 0076 7B69     		ldr	r3, [r7, #20]
+ 205              		.loc 1 90 16
+ 206 0078 4FF48012 		mov	r2, #1048576
+ 207 007c 1A60     		str	r2, [r3]
+  91:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES2(bd) = bd + sz;
+ 208              		.loc 1 91 3
+ 209 007e 7B69     		ldr	r3, [r7, #20]
+ 210 0080 0833     		adds	r3, r3, #8
+ 211 0082 1946     		mov	r1, r3
+ 212              		.loc 1 91 21
+ 213 0084 7A69     		ldr	r2, [r7, #20]
+ 214 0086 3B69     		ldr	r3, [r7, #16]
+ 215 0088 1344     		add	r3, r3, r2
+ 216              		.loc 1 91 16
+ 217 008a 0B60     		str	r3, [r1]
+  92:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES3(bd) = bd + sz + cTx;
+ 218              		.loc 1 92 21
+ 219 008c 7A69     		ldr	r2, [r7, #20]
+ 220 008e 3B69     		ldr	r3, [r7, #16]
+ 221 0090 1A44     		add	r2, r2, r3
+ 222              		.loc 1 92 3
+ 223 0092 7B69     		ldr	r3, [r7, #20]
+ 224 0094 0C33     		adds	r3, r3, #12
+ 225 0096 1946     		mov	r1, r3
+ 226              		.loc 1 92 26
+ 227 0098 3B68     		ldr	r3, [r7]
+ 228 009a 1344     		add	r3, r3, r2
+ 229              		.loc 1 92 16
+ 230 009c 0B60     		str	r3, [r1]
+  93:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		bd = ETH_DES3(bd);
+ 231              		.loc 1 93 8
+ 232 009e 7B69     		ldr	r3, [r7, #20]
+ 233 00a0 0C33     		adds	r3, r3, #12
+ 234              		.loc 1 93 6
+ 235 00a2 1B68     		ldr	r3, [r3]
+ 236 00a4 7B61     		str	r3, [r7, #20]
+ 237              	.L9:
+  89:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(bd) = ETH_TDES0_TCH;
+ 238              		.loc 1 89 8
+ 239 00a6 BB68     		ldr	r3, [r7, #8]
+ 240 00a8 013B     		subs	r3, r3, #1
+ 241 00aa BB60     		str	r3, [r7, #8]
+ 242 00ac BB68     		ldr	r3, [r7, #8]
+ 243 00ae 002B     		cmp	r3, #0
+ 244 00b0 E1D1     		bne	.L10
+  94:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+  95:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+  96:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES0(bd) = ETH_TDES0_TCH;
+ 245              		.loc 1 96 2
+ 246 00b2 7B69     		ldr	r3, [r7, #20]
+ 247              		.loc 1 96 15
+ 248 00b4 4FF48012 		mov	r2, #1048576
+ 249 00b8 1A60     		str	r2, [r3]
+  97:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES2(bd) = bd + sz;
+ 250              		.loc 1 97 2
+ 251 00ba 7B69     		ldr	r3, [r7, #20]
+ 252 00bc 0833     		adds	r3, r3, #8
+ 253 00be 1946     		mov	r1, r3
+ 254              		.loc 1 97 20
+ 255 00c0 7A69     		ldr	r2, [r7, #20]
+ 256 00c2 3B69     		ldr	r3, [r7, #16]
+ 257 00c4 1344     		add	r3, r3, r2
+ 258              		.loc 1 97 15
+ 259 00c6 0B60     		str	r3, [r1]
+  98:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES3(bd) = TxBD;
+ 260              		.loc 1 98 2
+ 261 00c8 7B69     		ldr	r3, [r7, #20]
+ 262 00ca 0C33     		adds	r3, r3, #12
+ 263 00cc 1A46     		mov	r2, r3
+ 264              		.loc 1 98 15
+ 265 00ce 334B     		ldr	r3, .L13+12
+ 266 00d0 59F80330 		ldr	r3, [r9, r3]
+ 267 00d4 1B68     		ldr	r3, [r3]
+ 268 00d6 1360     		str	r3, [r2]
+  99:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	bd += sz + cTx;
+ 269              		.loc 1 99 11
+ 270 00d8 3A69     		ldr	r2, [r7, #16]
+ 271 00da 3B68     		ldr	r3, [r7]
+ 272 00dc 1344     		add	r3, r3, r2
+ 273              		.loc 1 99 5
+ 274 00de 7A69     		ldr	r2, [r7, #20]
+ 275 00e0 1344     		add	r3, r3, r2
+ 276 00e2 7B61     		str	r3, [r7, #20]
+ 100:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 101:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	RxBD = bd;
+ 277              		.loc 1 101 7
+ 278 00e4 2E4B     		ldr	r3, .L13+16
+ 279 00e6 59F80330 		ldr	r3, [r9, r3]
+ 280 00ea 1A46     		mov	r2, r3
+ 281 00ec 7B69     		ldr	r3, [r7, #20]
+ 282 00ee 1360     		str	r3, [r2]
+ 102:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	while (--nRx > 0) {
+ 283              		.loc 1 102 8
+ 284 00f0 1EE0     		b	.L11
+ 285              	.L12:
+ 103:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(bd) = ETH_RDES0_OWN;
+ 286              		.loc 1 103 3
+ 287 00f2 7B69     		ldr	r3, [r7, #20]
+ 288              		.loc 1 103 16
+ 289 00f4 4FF00042 		mov	r2, #-2147483648
+ 290 00f8 1A60     		str	r2, [r3]
+ 104:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES1(bd) = ETH_RDES1_RCH | cRx;
+ 291              		.loc 1 104 3
+ 292 00fa 7B69     		ldr	r3, [r7, #20]
+ 293 00fc 0433     		adds	r3, r3, #4
+ 294 00fe 1A46     		mov	r2, r3
+ 295              		.loc 1 104 32
+ 296 0100 3B6A     		ldr	r3, [r7, #32]
+ 297 0102 43F48043 		orr	r3, r3, #16384
+ 298              		.loc 1 104 16
+ 299 0106 1360     		str	r3, [r2]
+ 105:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES2(bd) = bd + sz;
+ 300              		.loc 1 105 3
+ 301 0108 7B69     		ldr	r3, [r7, #20]
+ 302 010a 0833     		adds	r3, r3, #8
+ 303 010c 1946     		mov	r1, r3
+ 304              		.loc 1 105 21
+ 305 010e 7A69     		ldr	r2, [r7, #20]
+ 306 0110 3B69     		ldr	r3, [r7, #16]
+ 307 0112 1344     		add	r3, r3, r2
+ 308              		.loc 1 105 16
+ 309 0114 0B60     		str	r3, [r1]
+ 106:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES3(bd) = bd + sz + cRx;
+ 310              		.loc 1 106 21
+ 311 0116 7A69     		ldr	r2, [r7, #20]
+ 312 0118 3B69     		ldr	r3, [r7, #16]
+ 313 011a 1A44     		add	r2, r2, r3
+ 314              		.loc 1 106 3
+ 315 011c 7B69     		ldr	r3, [r7, #20]
+ 316 011e 0C33     		adds	r3, r3, #12
+ 317 0120 1946     		mov	r1, r3
+ 318              		.loc 1 106 26
+ 319 0122 3B6A     		ldr	r3, [r7, #32]
+ 320 0124 1344     		add	r3, r3, r2
+ 321              		.loc 1 106 16
+ 322 0126 0B60     		str	r3, [r1]
+ 107:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		bd = ETH_DES3(bd);
+ 323              		.loc 1 107 8
+ 324 0128 7B69     		ldr	r3, [r7, #20]
+ 325 012a 0C33     		adds	r3, r3, #12
+ 326              		.loc 1 107 6
+ 327 012c 1B68     		ldr	r3, [r3]
+ 328 012e 7B61     		str	r3, [r7, #20]
+ 329              	.L11:
+ 102:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(bd) = ETH_RDES0_OWN;
+ 330              		.loc 1 102 8
+ 331 0130 7B68     		ldr	r3, [r7, #4]
+ 332 0132 013B     		subs	r3, r3, #1
+ 333 0134 7B60     		str	r3, [r7, #4]
+ 334 0136 7B68     		ldr	r3, [r7, #4]
+ 335 0138 002B     		cmp	r3, #0
+ 336 013a DAD1     		bne	.L12
+ 108:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 109:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 110:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES0(bd) = ETH_RDES0_OWN;
+ 337              		.loc 1 110 2
+ 338 013c 7B69     		ldr	r3, [r7, #20]
+ 339              		.loc 1 110 15
+ 340 013e 4FF00042 		mov	r2, #-2147483648
+ 341 0142 1A60     		str	r2, [r3]
+ 111:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES1(bd) = ETH_RDES1_RCH | cRx;
+ 342              		.loc 1 111 2
+ 343 0144 7B69     		ldr	r3, [r7, #20]
+ 344 0146 0433     		adds	r3, r3, #4
+ 345 0148 1A46     		mov	r2, r3
+ 346              		.loc 1 111 31
+ 347 014a 3B6A     		ldr	r3, [r7, #32]
+ 348 014c 43F48043 		orr	r3, r3, #16384
+ 349              		.loc 1 111 15
+ 350 0150 1360     		str	r3, [r2]
+ 112:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES2(bd) = bd + sz;
+ 351              		.loc 1 112 2
+ 352 0152 7B69     		ldr	r3, [r7, #20]
+ 353 0154 0833     		adds	r3, r3, #8
+ 354 0156 1946     		mov	r1, r3
+ 355              		.loc 1 112 20
+ 356 0158 7A69     		ldr	r2, [r7, #20]
+ 357 015a 3B69     		ldr	r3, [r7, #16]
+ 358 015c 1344     		add	r3, r3, r2
+ 359              		.loc 1 112 15
+ 360 015e 0B60     		str	r3, [r1]
+ 113:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES3(bd) = RxBD;
+ 361              		.loc 1 113 2
+ 362 0160 7B69     		ldr	r3, [r7, #20]
+ 363 0162 0C33     		adds	r3, r3, #12
+ 364 0164 1A46     		mov	r2, r3
+ 365              		.loc 1 113 15
+ 366 0166 0E4B     		ldr	r3, .L13+16
+ 367 0168 59F80330 		ldr	r3, [r9, r3]
+ 368 016c 1B68     		ldr	r3, [r3]
+ 369 016e 1360     		str	r3, [r2]
+ 114:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 115:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMARDLAR = (uint32_t) RxBD;
+ 370              		.loc 1 115 2
+ 371 0170 084A     		ldr	r2, .L13+4
+ 372              		.loc 1 115 15
+ 373 0172 0B4B     		ldr	r3, .L13+16
+ 374 0174 59F80330 		ldr	r3, [r9, r3]
+ 375 0178 1B68     		ldr	r3, [r3]
+ 376 017a 1360     		str	r3, [r2]
+ 116:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMATDLAR = (uint32_t) TxBD;
+ 377              		.loc 1 116 2
+ 378 017c 064A     		ldr	r2, .L13+8
+ 379              		.loc 1 116 15
+ 380 017e 074B     		ldr	r3, .L13+12
+ 381 0180 59F80330 		ldr	r3, [r9, r3]
+ 382 0184 1B68     		ldr	r3, [r3]
+ 383 0186 1360     		str	r3, [r2]
+ 117:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 384              		.loc 1 117 1
+ 385 0188 00BF     		nop
+ 386 018a 1837     		adds	r7, r7, #24
+ 387              		.cfi_def_cfa_offset 8
+ 388 018c BD46     		mov	sp, r7
+ 389              		.cfi_def_cfa_register 13
+ 390              		@ sp needed
+ 391 018e 80BD     		pop	{r7, pc}
+ 392              	.L14:
+ 393              		.align	2
+ 394              	.L13:
+ 395 0190 00900240 		.word	1073909760
+ 396 0194 0C900240 		.word	1073909772
+ 397 0198 10900240 		.word	1073909776
+ 398 019c 00000000 		.word	TxBD(GOT)
+ 399 01a0 00000000 		.word	RxBD(GOT)
+ 400              		.cfi_endproc
+ 401              	.LFE1:
+ 403              		.section	.text.eth_tx,"ax",%progbits
+ 404              		.align	1
+ 405              		.global	eth_tx
+ 406              		.syntax unified
+ 407              		.thumb
+ 408              		.thumb_func
+ 409              		.fpu softvfp
+ 411              	eth_tx:
+ 412              	.LFB2:
+ 118:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 119:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 120:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Transmit packet
+ 121:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 122:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] ppkt uint8_t* Pointer to the beginning of the packet
+ 123:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] n uint32_t Size of the packet
+ 124:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @returns bool true, if success
+ 125:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 126:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** bool eth_tx(uint8_t *ppkt, uint32_t n)
+ 127:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 413              		.loc 1 127 1
+ 414              		.cfi_startproc
+ 415              		@ args = 0, pretend = 0, frame = 8
+ 416              		@ frame_needed = 1, uses_anonymous_args = 0
+ 417 0000 80B5     		push	{r7, lr}
+ 418              		.cfi_def_cfa_offset 8
+ 419              		.cfi_offset 7, -8
+ 420              		.cfi_offset 14, -4
+ 421 0002 82B0     		sub	sp, sp, #8
+ 422              		.cfi_def_cfa_offset 16
+ 423 0004 00AF     		add	r7, sp, #0
+ 424              		.cfi_def_cfa_register 7
+ 425 0006 7860     		str	r0, [r7, #4]
+ 426 0008 3960     		str	r1, [r7]
+ 128:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	if (ETH_DES0(TxBD) & ETH_TDES0_OWN) {
+ 427              		.loc 1 128 6
+ 428 000a 244B     		ldr	r3, .L19+8
+ 429 000c 59F80330 		ldr	r3, [r9, r3]
+ 430 0010 1B68     		ldr	r3, [r3]
+ 431 0012 1B68     		ldr	r3, [r3]
+ 432              		.loc 1 128 5
+ 433 0014 002B     		cmp	r3, #0
+ 434 0016 01DA     		bge	.L16
+ 129:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		return false;
+ 435              		.loc 1 129 10
+ 436 0018 0023     		movs	r3, #0
+ 437 001a 37E0     		b	.L17
+ 438              	.L16:
+ 130:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 131:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 132:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	memcpy((void *)ETH_DES2(TxBD), ppkt, n);
+ 439              		.loc 1 132 17
+ 440 001c 1F4B     		ldr	r3, .L19+8
+ 441 001e 59F80330 		ldr	r3, [r9, r3]
+ 442 0022 1B68     		ldr	r3, [r3]
+ 443 0024 0833     		adds	r3, r3, #8
+ 444 0026 1B68     		ldr	r3, [r3]
+ 445              		.loc 1 132 2
+ 446 0028 3A68     		ldr	r2, [r7]
+ 447 002a 7968     		ldr	r1, [r7, #4]
+ 448 002c 1846     		mov	r0, r3
+ 449 002e FFF7FEFF 		bl	memcpy(PLT)
+ 133:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 134:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES1(TxBD) = n & ETH_TDES1_TBS1;
+ 450              		.loc 1 134 2
+ 451 0032 1A4B     		ldr	r3, .L19+8
+ 452 0034 59F80330 		ldr	r3, [r9, r3]
+ 453 0038 1B68     		ldr	r3, [r3]
+ 454 003a 0433     		adds	r3, r3, #4
+ 455 003c 1A46     		mov	r2, r3
+ 456              		.loc 1 134 21
+ 457 003e 3B68     		ldr	r3, [r7]
+ 458 0040 C3F30C03 		ubfx	r3, r3, #0, #13
+ 459              		.loc 1 134 17
+ 460 0044 1360     		str	r3, [r2]
+ 135:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DES0(TxBD) |= ETH_TDES0_LS | ETH_TDES0_FS | ETH_TDES0_OWN;
+ 461              		.loc 1 135 17
+ 462 0046 154B     		ldr	r3, .L19+8
+ 463 0048 59F80330 		ldr	r3, [r9, r3]
+ 464 004c 1B68     		ldr	r3, [r3]
+ 465 004e 1B68     		ldr	r3, [r3]
+ 466 0050 124A     		ldr	r2, .L19+8
+ 467 0052 59F80220 		ldr	r2, [r9, r2]
+ 468 0056 1268     		ldr	r2, [r2]
+ 469 0058 43F03043 		orr	r3, r3, #-1342177280
+ 470 005c 1360     		str	r3, [r2]
+ 136:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	TxBD = ETH_DES3(TxBD);
+ 471              		.loc 1 136 9
+ 472 005e 0F4B     		ldr	r3, .L19+8
+ 473 0060 59F80330 		ldr	r3, [r9, r3]
+ 474 0064 1B68     		ldr	r3, [r3]
+ 475 0066 0C33     		adds	r3, r3, #12
+ 476 0068 1B68     		ldr	r3, [r3]
+ 477              		.loc 1 136 7
+ 478 006a 0C4A     		ldr	r2, .L19+8
+ 479 006c 59F80220 		ldr	r2, [r9, r2]
+ 480 0070 1360     		str	r3, [r2]
+ 137:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 138:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	if (ETH_DMASR & ETH_DMASR_TBUS) {
+ 481              		.loc 1 138 6
+ 482 0072 084B     		ldr	r3, .L19
+ 483 0074 1B68     		ldr	r3, [r3]
+ 484              		.loc 1 138 16
+ 485 0076 03F00403 		and	r3, r3, #4
+ 486              		.loc 1 138 5
+ 487 007a 002B     		cmp	r3, #0
+ 488 007c 05D0     		beq	.L18
+ 139:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMASR = ETH_DMASR_TBUS;
+ 489              		.loc 1 139 3
+ 490 007e 054B     		ldr	r3, .L19
+ 491              		.loc 1 139 13
+ 492 0080 0422     		movs	r2, #4
+ 493 0082 1A60     		str	r2, [r3]
+ 140:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMATPDR = 0;
+ 494              		.loc 1 140 3
+ 495 0084 044B     		ldr	r3, .L19+4
+ 496              		.loc 1 140 15
+ 497 0086 0022     		movs	r2, #0
+ 498 0088 1A60     		str	r2, [r3]
+ 499              	.L18:
+ 141:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 142:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 143:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	return true;
+ 500              		.loc 1 143 9
+ 501 008a 0123     		movs	r3, #1
+ 502              	.L17:
+ 144:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 503              		.loc 1 144 1
+ 504 008c 1846     		mov	r0, r3
+ 505 008e 0837     		adds	r7, r7, #8
+ 506              		.cfi_def_cfa_offset 8
+ 507 0090 BD46     		mov	sp, r7
+ 508              		.cfi_def_cfa_register 13
+ 509              		@ sp needed
+ 510 0092 80BD     		pop	{r7, pc}
+ 511              	.L20:
+ 512              		.align	2
+ 513              	.L19:
+ 514 0094 14900240 		.word	1073909780
+ 515 0098 04900240 		.word	1073909764
+ 516 009c 00000000 		.word	TxBD(GOT)
+ 517              		.cfi_endproc
+ 518              	.LFE2:
+ 520              		.section	.text.eth_rx,"ax",%progbits
+ 521              		.align	1
+ 522              		.global	eth_rx
+ 523              		.syntax unified
+ 524              		.thumb
+ 525              		.thumb_func
+ 526              		.fpu softvfp
+ 528              	eth_rx:
+ 529              	.LFB3:
+ 145:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 146:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 147:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Receive packet
+ 148:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 149:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[inout] ppkt uint8_t* Pointer to the data buffer where to store data
+ 150:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[inout] len uint32_t* Pointer to the variable with the packet length
+ 151:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] maxlen uint32_t Maximum length of the packet
+ 152:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @returns bool true, if the buffer contains readed packet data
+ 153:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 154:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** bool eth_rx(uint8_t *ppkt, uint32_t *len, uint32_t maxlen)
+ 155:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 530              		.loc 1 155 1
+ 531              		.cfi_startproc
+ 532              		@ args = 0, pretend = 0, frame = 24
+ 533              		@ frame_needed = 1, uses_anonymous_args = 0
+ 534 0000 80B5     		push	{r7, lr}
+ 535              		.cfi_def_cfa_offset 8
+ 536              		.cfi_offset 7, -8
+ 537              		.cfi_offset 14, -4
+ 538 0002 86B0     		sub	sp, sp, #24
+ 539              		.cfi_def_cfa_offset 32
+ 540 0004 00AF     		add	r7, sp, #0
+ 541              		.cfi_def_cfa_register 7
+ 542 0006 F860     		str	r0, [r7, #12]
+ 543 0008 B960     		str	r1, [r7, #8]
+ 544 000a 7A60     		str	r2, [r7, #4]
+ 156:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	bool fs = false;
+ 545              		.loc 1 156 7
+ 546 000c 0023     		movs	r3, #0
+ 547 000e FB75     		strb	r3, [r7, #23]
+ 157:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	bool ls = false;
+ 548              		.loc 1 157 7
+ 549 0010 0023     		movs	r3, #0
+ 550 0012 BB75     		strb	r3, [r7, #22]
+ 158:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	bool overrun = false;
+ 551              		.loc 1 158 7
+ 552 0014 0023     		movs	r3, #0
+ 553 0016 7B75     		strb	r3, [r7, #21]
+ 159:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint32_t l = 0;
+ 554              		.loc 1 159 11
+ 555 0018 0023     		movs	r3, #0
+ 556 001a 3B61     		str	r3, [r7, #16]
+ 160:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 161:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	while (!(ETH_DES0(RxBD) & ETH_RDES0_OWN) && !ls) {
+ 557              		.loc 1 161 8
+ 558 001c 69E0     		b	.L22
+ 559              	.L27:
+ 162:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		l = (ETH_DES0(RxBD) & ETH_RDES0_FL) >> ETH_RDES0_FL_SHIFT;
+ 560              		.loc 1 162 8
+ 561 001e 4E4B     		ldr	r3, .L32+8
+ 562 0020 59F80330 		ldr	r3, [r9, r3]
+ 563 0024 1B68     		ldr	r3, [r3]
+ 564 0026 1B68     		ldr	r3, [r3]
+ 565              		.loc 1 162 39
+ 566 0028 1B0C     		lsrs	r3, r3, #16
+ 567              		.loc 1 162 5
+ 568 002a C3F30D03 		ubfx	r3, r3, #0, #14
+ 569 002e 3B61     		str	r3, [r7, #16]
+ 163:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 164:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		fs |= ETH_DES0(RxBD) & ETH_RDES0_FS;
+ 570              		.loc 1 164 9
+ 571 0030 494B     		ldr	r3, .L32+8
+ 572 0032 59F80330 		ldr	r3, [r9, r3]
+ 573 0036 1B68     		ldr	r3, [r3]
+ 574 0038 1B68     		ldr	r3, [r3]
+ 575              		.loc 1 164 24
+ 576 003a 03F40072 		and	r2, r3, #512
+ 577              		.loc 1 164 6
+ 578 003e FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 579 0040 1343     		orrs	r3, r3, r2
+ 580 0042 002B     		cmp	r3, #0
+ 581 0044 14BF     		ite	ne
+ 582 0046 0123     		movne	r3, #1
+ 583 0048 0023     		moveq	r3, #0
+ 584 004a FB75     		strb	r3, [r7, #23]
+ 165:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ls |= ETH_DES0(RxBD) & ETH_RDES0_LS;
+ 585              		.loc 1 165 9
+ 586 004c 424B     		ldr	r3, .L32+8
+ 587 004e 59F80330 		ldr	r3, [r9, r3]
+ 588 0052 1B68     		ldr	r3, [r3]
+ 589 0054 1B68     		ldr	r3, [r3]
+ 590              		.loc 1 165 24
+ 591 0056 03F48072 		and	r2, r3, #256
+ 592              		.loc 1 165 6
+ 593 005a BB7D     		ldrb	r3, [r7, #22]	@ zero_extendqisi2
+ 594 005c 1343     		orrs	r3, r3, r2
+ 595 005e 002B     		cmp	r3, #0
+ 596 0060 14BF     		ite	ne
+ 597 0062 0123     		movne	r3, #1
+ 598 0064 0023     		moveq	r3, #0
+ 599 0066 BB75     		strb	r3, [r7, #22]
+ 166:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		/* frame buffer overrun ?*/
+ 167:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		overrun |= fs && (maxlen < l);
+ 600              		.loc 1 167 11
+ 601 0068 7B7D     		ldrb	r3, [r7, #21]	@ zero_extendqisi2
+ 602              		.loc 1 167 17
+ 603 006a FA7D     		ldrb	r2, [r7, #23]	@ zero_extendqisi2
+ 604 006c 002A     		cmp	r2, #0
+ 605 006e 05D0     		beq	.L23
+ 606              		.loc 1 167 17 is_stmt 0 discriminator 1
+ 607 0070 7968     		ldr	r1, [r7, #4]
+ 608 0072 3A69     		ldr	r2, [r7, #16]
+ 609 0074 9142     		cmp	r1, r2
+ 610 0076 01D2     		bcs	.L23
+ 611              		.loc 1 167 17 discriminator 3
+ 612 0078 0122     		movs	r2, #1
+ 613 007a 00E0     		b	.L24
+ 614              	.L23:
+ 615              		.loc 1 167 17 discriminator 4
+ 616 007c 0022     		movs	r2, #0
+ 617              	.L24:
+ 618              		.loc 1 167 11 is_stmt 1 discriminator 6
+ 619 007e 1343     		orrs	r3, r3, r2
+ 620 0080 002B     		cmp	r3, #0
+ 621 0082 14BF     		ite	ne
+ 622 0084 0123     		movne	r3, #1
+ 623 0086 0023     		moveq	r3, #0
+ 624 0088 7B75     		strb	r3, [r7, #21]
+ 168:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 169:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		if (fs && !overrun) {
+ 625              		.loc 1 169 6 discriminator 6
+ 626 008a FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 627 008c 002B     		cmp	r3, #0
+ 628 008e 1ED0     		beq	.L25
+ 629              		.loc 1 169 13 discriminator 1
+ 630 0090 7B7D     		ldrb	r3, [r7, #21]
+ 631 0092 83F00103 		eor	r3, r3, #1
+ 632 0096 DBB2     		uxtb	r3, r3
+ 633              		.loc 1 169 10 discriminator 1
+ 634 0098 002B     		cmp	r3, #0
+ 635 009a 18D0     		beq	.L25
+ 170:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			memcpy(ppkt, (void *)ETH_DES2(RxBD), l);
+ 636              		.loc 1 170 25
+ 637 009c 2E4B     		ldr	r3, .L32+8
+ 638 009e 59F80330 		ldr	r3, [r9, r3]
+ 639 00a2 1B68     		ldr	r3, [r3]
+ 640 00a4 0833     		adds	r3, r3, #8
+ 641 00a6 1B68     		ldr	r3, [r3]
+ 642              		.loc 1 170 4
+ 643 00a8 3A69     		ldr	r2, [r7, #16]
+ 644 00aa 1946     		mov	r1, r3
+ 645 00ac F868     		ldr	r0, [r7, #12]
+ 646 00ae FFF7FEFF 		bl	memcpy(PLT)
+ 171:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			ppkt += l;
+ 647              		.loc 1 171 9
+ 648 00b2 FA68     		ldr	r2, [r7, #12]
+ 649 00b4 3B69     		ldr	r3, [r7, #16]
+ 650 00b6 1344     		add	r3, r3, r2
+ 651 00b8 FB60     		str	r3, [r7, #12]
+ 172:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			*len += l;
+ 652              		.loc 1 172 9
+ 653 00ba BB68     		ldr	r3, [r7, #8]
+ 654 00bc 1A68     		ldr	r2, [r3]
+ 655 00be 3B69     		ldr	r3, [r7, #16]
+ 656 00c0 1A44     		add	r2, r2, r3
+ 657 00c2 BB68     		ldr	r3, [r7, #8]
+ 658 00c4 1A60     		str	r2, [r3]
+ 173:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			maxlen -= l;
+ 659              		.loc 1 173 11
+ 660 00c6 7A68     		ldr	r2, [r7, #4]
+ 661 00c8 3B69     		ldr	r3, [r7, #16]
+ 662 00ca D31A     		subs	r3, r2, r3
+ 663 00cc 7B60     		str	r3, [r7, #4]
+ 664              	.L25:
+ 174:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		}
+ 175:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 176:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(RxBD) = ETH_RDES0_OWN;
+ 665              		.loc 1 176 3
+ 666 00ce 224B     		ldr	r3, .L32+8
+ 667 00d0 59F80330 		ldr	r3, [r9, r3]
+ 668 00d4 1B68     		ldr	r3, [r3]
+ 669 00d6 1A46     		mov	r2, r3
+ 670              		.loc 1 176 18
+ 671 00d8 4FF00043 		mov	r3, #-2147483648
+ 672 00dc 1360     		str	r3, [r2]
+ 177:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		RxBD = ETH_DES3(RxBD);
+ 673              		.loc 1 177 10
+ 674 00de 1E4B     		ldr	r3, .L32+8
+ 675 00e0 59F80330 		ldr	r3, [r9, r3]
+ 676 00e4 1B68     		ldr	r3, [r3]
+ 677 00e6 0C33     		adds	r3, r3, #12
+ 678 00e8 1B68     		ldr	r3, [r3]
+ 679              		.loc 1 177 8
+ 680 00ea 1B4A     		ldr	r2, .L32+8
+ 681 00ec 59F80220 		ldr	r2, [r9, r2]
+ 682 00f0 1360     		str	r3, [r2]
+ 683              	.L22:
+ 161:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		l = (ETH_DES0(RxBD) & ETH_RDES0_FL) >> ETH_RDES0_FL_SHIFT;
+ 684              		.loc 1 161 11
+ 685 00f2 194B     		ldr	r3, .L32+8
+ 686 00f4 59F80330 		ldr	r3, [r9, r3]
+ 687 00f8 1B68     		ldr	r3, [r3]
+ 688 00fa 1B68     		ldr	r3, [r3]
+ 161:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		l = (ETH_DES0(RxBD) & ETH_RDES0_FL) >> ETH_RDES0_FL_SHIFT;
+ 689              		.loc 1 161 8
+ 690 00fc 002B     		cmp	r3, #0
+ 691 00fe 05DB     		blt	.L26
+ 161:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		l = (ETH_DES0(RxBD) & ETH_RDES0_FL) >> ETH_RDES0_FL_SHIFT;
+ 692              		.loc 1 161 46 discriminator 1
+ 693 0100 BB7D     		ldrb	r3, [r7, #22]
+ 694 0102 83F00103 		eor	r3, r3, #1
+ 695 0106 DBB2     		uxtb	r3, r3
+ 161:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		l = (ETH_DES0(RxBD) & ETH_RDES0_FL) >> ETH_RDES0_FL_SHIFT;
+ 696              		.loc 1 161 43 discriminator 1
+ 697 0108 002B     		cmp	r3, #0
+ 698 010a 88D1     		bne	.L27
+ 699              	.L26:
+ 178:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 179:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 180:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	if (ETH_DMASR & ETH_DMASR_RBUS) {
+ 700              		.loc 1 180 6
+ 701 010c 104B     		ldr	r3, .L32
+ 702 010e 1B68     		ldr	r3, [r3]
+ 703              		.loc 1 180 16
+ 704 0110 03F08003 		and	r3, r3, #128
+ 705              		.loc 1 180 5
+ 706 0114 002B     		cmp	r3, #0
+ 707 0116 05D0     		beq	.L28
+ 181:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMASR = ETH_DMASR_RBUS;
+ 708              		.loc 1 181 3
+ 709 0118 0D4B     		ldr	r3, .L32
+ 710              		.loc 1 181 13
+ 711 011a 8022     		movs	r2, #128
+ 712 011c 1A60     		str	r2, [r3]
+ 182:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMARPDR = 0;
+ 713              		.loc 1 182 3
+ 714 011e 0D4B     		ldr	r3, .L32+4
+ 715              		.loc 1 182 15
+ 716 0120 0022     		movs	r2, #0
+ 717 0122 1A60     		str	r2, [r3]
+ 718              	.L28:
+ 183:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 184:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 185:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	return fs && ls && !overrun;
+ 719              		.loc 1 185 18
+ 720 0124 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 721 0126 002B     		cmp	r3, #0
+ 722 0128 0AD0     		beq	.L29
+ 723              		.loc 1 185 12 discriminator 1
+ 724 012a BB7D     		ldrb	r3, [r7, #22]	@ zero_extendqisi2
+ 725 012c 002B     		cmp	r3, #0
+ 726 012e 07D0     		beq	.L29
+ 727              		.loc 1 185 21 discriminator 3
+ 728 0130 7B7D     		ldrb	r3, [r7, #21]
+ 729 0132 83F00103 		eor	r3, r3, #1
+ 730 0136 DBB2     		uxtb	r3, r3
+ 731              		.loc 1 185 18 discriminator 3
+ 732 0138 002B     		cmp	r3, #0
+ 733 013a 01D0     		beq	.L29
+ 734              		.loc 1 185 18 is_stmt 0 discriminator 5
+ 735 013c 0123     		movs	r3, #1
+ 736 013e 00E0     		b	.L30
+ 737              	.L29:
+ 738              		.loc 1 185 18 discriminator 6
+ 739 0140 0023     		movs	r3, #0
+ 740              	.L30:
+ 741              		.loc 1 185 18 discriminator 8
+ 742 0142 03F00103 		and	r3, r3, #1
+ 743 0146 DBB2     		uxtb	r3, r3
+ 186:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 744              		.loc 1 186 1 is_stmt 1 discriminator 8
+ 745 0148 1846     		mov	r0, r3
+ 746 014a 1837     		adds	r7, r7, #24
+ 747              		.cfi_def_cfa_offset 8
+ 748 014c BD46     		mov	sp, r7
+ 749              		.cfi_def_cfa_register 13
+ 750              		@ sp needed
+ 751 014e 80BD     		pop	{r7, pc}
+ 752              	.L33:
+ 753              		.align	2
+ 754              	.L32:
+ 755 0150 14900240 		.word	1073909780
+ 756 0154 08900240 		.word	1073909768
+ 757 0158 00000000 		.word	RxBD(GOT)
+ 758              		.cfi_endproc
+ 759              	.LFE3:
+ 761              		.section	.text.eth_start,"ax",%progbits
+ 762              		.align	1
+ 763              		.global	eth_start
+ 764              		.syntax unified
+ 765              		.thumb
+ 766              		.thumb_func
+ 767              		.fpu softvfp
+ 769              	eth_start:
+ 770              	.LFB4:
+ 187:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 188:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 189:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Start the Ethernet DMA processing
+ 190:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 191:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_start(void)
+ 192:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 771              		.loc 1 192 1
+ 772              		.cfi_startproc
+ 773              		@ args = 0, pretend = 0, frame = 0
+ 774              		@ frame_needed = 1, uses_anonymous_args = 0
+ 775              		@ link register save eliminated.
+ 776 0000 80B4     		push	{r7}
+ 777              		.cfi_def_cfa_offset 4
+ 778              		.cfi_offset 7, -4
+ 779 0002 00AF     		add	r7, sp, #0
+ 780              		.cfi_def_cfa_register 7
+ 193:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACCR |= ETH_MACCR_TE;
+ 781              		.loc 1 193 12
+ 782 0004 104B     		ldr	r3, .L35
+ 783 0006 1B68     		ldr	r3, [r3]
+ 784 0008 0F4A     		ldr	r2, .L35
+ 785 000a 43F00803 		orr	r3, r3, #8
+ 786 000e 1360     		str	r3, [r2]
+ 194:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAOMR |= ETH_DMAOMR_FTF;
+ 787              		.loc 1 194 13
+ 788 0010 0E4B     		ldr	r3, .L35+4
+ 789 0012 1B68     		ldr	r3, [r3]
+ 790 0014 0D4A     		ldr	r2, .L35+4
+ 791 0016 43F48013 		orr	r3, r3, #1048576
+ 792 001a 1360     		str	r3, [r2]
+ 195:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACCR |= ETH_MACCR_RE;
+ 793              		.loc 1 195 12
+ 794 001c 0A4B     		ldr	r3, .L35
+ 795 001e 1B68     		ldr	r3, [r3]
+ 796 0020 094A     		ldr	r2, .L35
+ 797 0022 43F00403 		orr	r3, r3, #4
+ 798 0026 1360     		str	r3, [r2]
+ 196:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 197:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAOMR |= ETH_DMAOMR_ST;
+ 799              		.loc 1 197 13
+ 800 0028 084B     		ldr	r3, .L35+4
+ 801 002a 1B68     		ldr	r3, [r3]
+ 802 002c 074A     		ldr	r2, .L35+4
+ 803 002e 43F40053 		orr	r3, r3, #8192
+ 804 0032 1360     		str	r3, [r2]
+ 198:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAOMR |= ETH_DMAOMR_SR;
+ 805              		.loc 1 198 13
+ 806 0034 054B     		ldr	r3, .L35+4
+ 807 0036 1B68     		ldr	r3, [r3]
+ 808 0038 044A     		ldr	r2, .L35+4
+ 809 003a 43F00203 		orr	r3, r3, #2
+ 810 003e 1360     		str	r3, [r2]
+ 199:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 811              		.loc 1 199 1
+ 812 0040 00BF     		nop
+ 813 0042 BD46     		mov	sp, r7
+ 814              		.cfi_def_cfa_register 13
+ 815              		@ sp needed
+ 816 0044 80BC     		pop	{r7}
+ 817              		.cfi_restore 7
+ 818              		.cfi_def_cfa_offset 0
+ 819 0046 7047     		bx	lr
+ 820              	.L36:
+ 821              		.align	2
+ 822              	.L35:
+ 823 0048 00800240 		.word	1073905664
+ 824 004c 18900240 		.word	1073909784
+ 825              		.cfi_endproc
+ 826              	.LFE4:
+ 828              		.section	.text.eth_init,"ax",%progbits
+ 829              		.align	1
+ 830              		.global	eth_init
+ 831              		.syntax unified
+ 832              		.thumb
+ 833              		.thumb_func
+ 834              		.fpu softvfp
+ 836              	eth_init:
+ 837              	.LFB5:
+ 200:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 201:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 202:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Initialize ethernet
+ 203:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 204:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * This function will initialize ethernet, set up clocks, and initialize DMA.
+ 205:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 206:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy phy id
+ 207:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] clock enum eth_clk Core clock speed
+ 208:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 209:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_init(uint8_t phy, enum eth_clk clock)
+ 210:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 838              		.loc 1 210 1
+ 839              		.cfi_startproc
+ 840              		@ args = 0, pretend = 0, frame = 8
+ 841              		@ frame_needed = 1, uses_anonymous_args = 0
+ 842 0000 80B5     		push	{r7, lr}
+ 843              		.cfi_def_cfa_offset 8
+ 844              		.cfi_offset 7, -8
+ 845              		.cfi_offset 14, -4
+ 846 0002 82B0     		sub	sp, sp, #8
+ 847              		.cfi_def_cfa_offset 16
+ 848 0004 00AF     		add	r7, sp, #0
+ 849              		.cfi_def_cfa_register 7
+ 850 0006 0346     		mov	r3, r0
+ 851 0008 0A46     		mov	r2, r1
+ 852 000a FB71     		strb	r3, [r7, #7]
+ 853 000c 1346     		mov	r3, r2
+ 854 000e BB71     		strb	r3, [r7, #6]
+ 211:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACMIIAR = clock;
+ 855              		.loc 1 211 2
+ 856 0010 114A     		ldr	r2, .L38
+ 857              		.loc 1 211 15
+ 858 0012 BB79     		ldrb	r3, [r7, #6]	@ zero_extendqisi2
+ 859 0014 1360     		str	r3, [r2]
+ 212:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	phy_reset(phy);
+ 860              		.loc 1 212 2
+ 861 0016 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 862 0018 1846     		mov	r0, r3
+ 863 001a FFF7FEFF 		bl	phy_reset(PLT)
+ 213:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 214:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACCR = ETH_MACCR_CSTF | ETH_MACCR_FES | ETH_MACCR_DM |
+ 864              		.loc 1 214 2
+ 865 001e 0F4B     		ldr	r3, .L38+4
+ 866              		.loc 1 214 12
+ 867 0020 0F4A     		ldr	r2, .L38+8
+ 868 0022 1A60     		str	r2, [r3]
+ 215:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_MACCR_APCS | ETH_MACCR_RD;
+ 216:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACFFR = ETH_MACFFR_RA | ETH_MACFFR_PM;
+ 869              		.loc 1 216 2
+ 870 0024 0F4B     		ldr	r3, .L38+12
+ 871              		.loc 1 216 13
+ 872 0026 104A     		ldr	r2, .L38+16
+ 873 0028 1A60     		str	r2, [r3]
+ 217:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACHTHR = 0; /* pass all frames */
+ 874              		.loc 1 217 2
+ 875 002a 104B     		ldr	r3, .L38+20
+ 876              		.loc 1 217 14
+ 877 002c 0022     		movs	r2, #0
+ 878 002e 1A60     		str	r2, [r3]
+ 218:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACHTLR = 0;
+ 879              		.loc 1 218 2
+ 880 0030 0F4B     		ldr	r3, .L38+24
+ 881              		.loc 1 218 14
+ 882 0032 0022     		movs	r2, #0
+ 883 0034 1A60     		str	r2, [r3]
+ 219:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACFCR = (0x100 << ETH_MACFCR_PT_SHIFT);
+ 884              		.loc 1 219 2
+ 885 0036 0F4B     		ldr	r3, .L38+28
+ 886              		.loc 1 219 13
+ 887 0038 4FF08072 		mov	r2, #16777216
+ 888 003c 1A60     		str	r2, [r3]
+ 220:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACVLANTR = 0;
+ 889              		.loc 1 220 2
+ 890 003e 0E4B     		ldr	r3, .L38+32
+ 891              		.loc 1 220 16
+ 892 0040 0022     		movs	r2, #0
+ 893 0042 1A60     		str	r2, [r3]
+ 221:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAOMR = ETH_DMAOMR_DTCEFD | ETH_DMAOMR_RSF | ETH_DMAOMR_DFRF |
+ 894              		.loc 1 221 2
+ 895 0044 0D4B     		ldr	r3, .L38+36
+ 896              		.loc 1 221 13
+ 897 0046 0E4A     		ldr	r2, .L38+40
+ 898 0048 1A60     		str	r2, [r3]
+ 222:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMAOMR_TSF | ETH_DMAOMR_FEF | ETH_DMAOMR_OSF;
+ 223:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMABMR = ETH_DMABMR_AAB | ETH_DMABMR_FB |
+ 899              		.loc 1 223 2
+ 900 004a 0E4B     		ldr	r3, .L38+44
+ 901              		.loc 1 223 13
+ 902 004c 0E4A     		ldr	r2, .L38+48
+ 903 004e 1A60     		str	r2, [r3]
+ 224:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		(32 << ETH_DMABMR_RDP_SHIFT) | (32 << ETH_DMABMR_PBL_SHIFT) |
+ 225:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DMABMR_PM_2_1 | ETH_DMABMR_USP;
+ 226:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 904              		.loc 1 226 1
+ 905 0050 00BF     		nop
+ 906 0052 0837     		adds	r7, r7, #8
+ 907              		.cfi_def_cfa_offset 8
+ 908 0054 BD46     		mov	sp, r7
+ 909              		.cfi_def_cfa_register 13
+ 910              		@ sp needed
+ 911 0056 80BD     		pop	{r7, pc}
+ 912              	.L39:
+ 913              		.align	2
+ 914              	.L38:
+ 915 0058 10800240 		.word	1073905680
+ 916 005c 00800240 		.word	1073905664
+ 917 0060 804A0002 		.word	33573504
+ 918 0064 04800240 		.word	1073905668
+ 919 0068 01000080 		.word	-2147483647
+ 920 006c 08800240 		.word	1073905672
+ 921 0070 0C800240 		.word	1073905676
+ 922 0074 18800240 		.word	1073905688
+ 923 0078 1C800240 		.word	1073905692
+ 924 007c 18900240 		.word	1073909784
+ 925 0080 84002007 		.word	119537796
+ 926 0084 00900240 		.word	1073909760
+ 927 0088 0060C102 		.word	46227456
+ 928              		.cfi_endproc
+ 929              	.LFE5:
+ 931              		.section	.text.eth_irq_enable,"ax",%progbits
+ 932              		.align	1
+ 933              		.global	eth_irq_enable
+ 934              		.syntax unified
+ 935              		.thumb
+ 936              		.thumb_func
+ 937              		.fpu softvfp
+ 939              	eth_irq_enable:
+ 940              	.LFB6:
+ 227:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 228:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 229:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Enable the Ethernet IRQ
+ 230:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 231:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reason uint32_t Which irq will be enabled
+ 232:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 233:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_irq_enable(uint32_t reason)
+ 234:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 941              		.loc 1 234 1
+ 942              		.cfi_startproc
+ 943              		@ args = 0, pretend = 0, frame = 8
+ 944              		@ frame_needed = 1, uses_anonymous_args = 0
+ 945              		@ link register save eliminated.
+ 946 0000 80B4     		push	{r7}
+ 947              		.cfi_def_cfa_offset 4
+ 948              		.cfi_offset 7, -4
+ 949 0002 83B0     		sub	sp, sp, #12
+ 950              		.cfi_def_cfa_offset 16
+ 951 0004 00AF     		add	r7, sp, #0
+ 952              		.cfi_def_cfa_register 7
+ 953 0006 7860     		str	r0, [r7, #4]
+ 235:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAIER |= reason;
+ 954              		.loc 1 235 13
+ 955 0008 054B     		ldr	r3, .L41
+ 956 000a 1A68     		ldr	r2, [r3]
+ 957 000c 0449     		ldr	r1, .L41
+ 958 000e 7B68     		ldr	r3, [r7, #4]
+ 959 0010 1343     		orrs	r3, r3, r2
+ 960 0012 0B60     		str	r3, [r1]
+ 236:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 961              		.loc 1 236 1
+ 962 0014 00BF     		nop
+ 963 0016 0C37     		adds	r7, r7, #12
+ 964              		.cfi_def_cfa_offset 4
+ 965 0018 BD46     		mov	sp, r7
+ 966              		.cfi_def_cfa_register 13
+ 967              		@ sp needed
+ 968 001a 80BC     		pop	{r7}
+ 969              		.cfi_restore 7
+ 970              		.cfi_def_cfa_offset 0
+ 971 001c 7047     		bx	lr
+ 972              	.L42:
+ 973 001e 00BF     		.align	2
+ 974              	.L41:
+ 975 0020 1C900240 		.word	1073909788
+ 976              		.cfi_endproc
+ 977              	.LFE6:
+ 979              		.section	.text.eth_irq_disable,"ax",%progbits
+ 980              		.align	1
+ 981              		.global	eth_irq_disable
+ 982              		.syntax unified
+ 983              		.thumb
+ 984              		.thumb_func
+ 985              		.fpu softvfp
+ 987              	eth_irq_disable:
+ 988              	.LFB7:
+ 237:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 238:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 239:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Disable the Ethernet IRQ
+ 240:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 241:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reason uint32_t Which irq will be disabled
+ 242:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 243:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_irq_disable(uint32_t reason)
+ 244:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 989              		.loc 1 244 1
+ 990              		.cfi_startproc
+ 991              		@ args = 0, pretend = 0, frame = 8
+ 992              		@ frame_needed = 1, uses_anonymous_args = 0
+ 993              		@ link register save eliminated.
+ 994 0000 80B4     		push	{r7}
+ 995              		.cfi_def_cfa_offset 4
+ 996              		.cfi_offset 7, -4
+ 997 0002 83B0     		sub	sp, sp, #12
+ 998              		.cfi_def_cfa_offset 16
+ 999 0004 00AF     		add	r7, sp, #0
+ 1000              		.cfi_def_cfa_register 7
+ 1001 0006 7860     		str	r0, [r7, #4]
+ 245:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMAIER &= ~reason;
+ 1002              		.loc 1 245 13
+ 1003 0008 054B     		ldr	r3, .L44
+ 1004 000a 1A68     		ldr	r2, [r3]
+ 1005              		.loc 1 245 16
+ 1006 000c 7B68     		ldr	r3, [r7, #4]
+ 1007 000e DB43     		mvns	r3, r3
+ 1008              		.loc 1 245 13
+ 1009 0010 0349     		ldr	r1, .L44
+ 1010 0012 1340     		ands	r3, r3, r2
+ 1011 0014 0B60     		str	r3, [r1]
+ 246:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1012              		.loc 1 246 1
+ 1013 0016 00BF     		nop
+ 1014 0018 0C37     		adds	r7, r7, #12
+ 1015              		.cfi_def_cfa_offset 4
+ 1016 001a BD46     		mov	sp, r7
+ 1017              		.cfi_def_cfa_register 13
+ 1018              		@ sp needed
+ 1019 001c 80BC     		pop	{r7}
+ 1020              		.cfi_restore 7
+ 1021              		.cfi_def_cfa_offset 0
+ 1022 001e 7047     		bx	lr
+ 1023              	.L45:
+ 1024              		.align	2
+ 1025              	.L44:
+ 1026 0020 1C900240 		.word	1073909788
+ 1027              		.cfi_endproc
+ 1028              	.LFE7:
+ 1030              		.section	.text.eth_irq_is_pending,"ax",%progbits
+ 1031              		.align	1
+ 1032              		.global	eth_irq_is_pending
+ 1033              		.syntax unified
+ 1034              		.thumb
+ 1035              		.thumb_func
+ 1036              		.fpu softvfp
+ 1038              	eth_irq_is_pending:
+ 1039              	.LFB8:
+ 247:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 248:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 249:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Check if IRQ is pending
+ 250:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 251:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reason uint32_t Which irq type has to be tested
+ 252:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @returns bool true, if IRQ is pending
+ 253:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 254:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** bool eth_irq_is_pending(uint32_t reason)
+ 255:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1040              		.loc 1 255 1
+ 1041              		.cfi_startproc
+ 1042              		@ args = 0, pretend = 0, frame = 8
+ 1043              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1044              		@ link register save eliminated.
+ 1045 0000 80B4     		push	{r7}
+ 1046              		.cfi_def_cfa_offset 4
+ 1047              		.cfi_offset 7, -4
+ 1048 0002 83B0     		sub	sp, sp, #12
+ 1049              		.cfi_def_cfa_offset 16
+ 1050 0004 00AF     		add	r7, sp, #0
+ 1051              		.cfi_def_cfa_register 7
+ 1052 0006 7860     		str	r0, [r7, #4]
+ 256:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	return (ETH_DMASR & reason) != 0;
+ 1053              		.loc 1 256 10
+ 1054 0008 064B     		ldr	r3, .L48
+ 1055 000a 1A68     		ldr	r2, [r3]
+ 1056              		.loc 1 256 20
+ 1057 000c 7B68     		ldr	r3, [r7, #4]
+ 1058 000e 1340     		ands	r3, r3, r2
+ 1059              		.loc 1 256 30
+ 1060 0010 002B     		cmp	r3, #0
+ 1061 0012 14BF     		ite	ne
+ 1062 0014 0123     		movne	r3, #1
+ 1063 0016 0023     		moveq	r3, #0
+ 1064 0018 DBB2     		uxtb	r3, r3
+ 257:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1065              		.loc 1 257 1
+ 1066 001a 1846     		mov	r0, r3
+ 1067 001c 0C37     		adds	r7, r7, #12
+ 1068              		.cfi_def_cfa_offset 4
+ 1069 001e BD46     		mov	sp, r7
+ 1070              		.cfi_def_cfa_register 13
+ 1071              		@ sp needed
+ 1072 0020 80BC     		pop	{r7}
+ 1073              		.cfi_restore 7
+ 1074              		.cfi_def_cfa_offset 0
+ 1075 0022 7047     		bx	lr
+ 1076              	.L49:
+ 1077              		.align	2
+ 1078              	.L48:
+ 1079 0024 14900240 		.word	1073909780
+ 1080              		.cfi_endproc
+ 1081              	.LFE8:
+ 1083              		.section	.text.eth_irq_ack_pending,"ax",%progbits
+ 1084              		.align	1
+ 1085              		.global	eth_irq_ack_pending
+ 1086              		.syntax unified
+ 1087              		.thumb
+ 1088              		.thumb_func
+ 1089              		.fpu softvfp
+ 1091              	eth_irq_ack_pending:
+ 1092              	.LFB9:
+ 258:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 259:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 260:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Check if IRQ is pending, and acknowledge it
+ 261:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 262:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reason uint32_t Which irq type has to be tested
+ 263:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @returns bool true, if IRQ is pending
+ 264:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 265:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** bool eth_irq_ack_pending(uint32_t reason)
+ 266:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1093              		.loc 1 266 1
+ 1094              		.cfi_startproc
+ 1095              		@ args = 0, pretend = 0, frame = 8
+ 1096              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1097              		@ link register save eliminated.
+ 1098 0000 80B4     		push	{r7}
+ 1099              		.cfi_def_cfa_offset 4
+ 1100              		.cfi_offset 7, -4
+ 1101 0002 83B0     		sub	sp, sp, #12
+ 1102              		.cfi_def_cfa_offset 16
+ 1103 0004 00AF     		add	r7, sp, #0
+ 1104              		.cfi_def_cfa_register 7
+ 1105 0006 7860     		str	r0, [r7, #4]
+ 267:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	reason &= ETH_DMASR;
+ 1106              		.loc 1 267 12
+ 1107 0008 094B     		ldr	r3, .L52
+ 1108 000a 1B68     		ldr	r3, [r3]
+ 1109              		.loc 1 267 9
+ 1110 000c 7A68     		ldr	r2, [r7, #4]
+ 1111 000e 1340     		ands	r3, r3, r2
+ 1112 0010 7B60     		str	r3, [r7, #4]
+ 268:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_DMASR = reason;
+ 1113              		.loc 1 268 2
+ 1114 0012 074A     		ldr	r2, .L52
+ 1115              		.loc 1 268 12
+ 1116 0014 7B68     		ldr	r3, [r7, #4]
+ 1117 0016 1360     		str	r3, [r2]
+ 269:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	return reason != 0;
+ 1118              		.loc 1 269 16
+ 1119 0018 7B68     		ldr	r3, [r7, #4]
+ 1120 001a 002B     		cmp	r3, #0
+ 1121 001c 14BF     		ite	ne
+ 1122 001e 0123     		movne	r3, #1
+ 1123 0020 0023     		moveq	r3, #0
+ 1124 0022 DBB2     		uxtb	r3, r3
+ 270:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1125              		.loc 1 270 1
+ 1126 0024 1846     		mov	r0, r3
+ 1127 0026 0C37     		adds	r7, r7, #12
+ 1128              		.cfi_def_cfa_offset 4
+ 1129 0028 BD46     		mov	sp, r7
+ 1130              		.cfi_def_cfa_register 13
+ 1131              		@ sp needed
+ 1132 002a 80BC     		pop	{r7}
+ 1133              		.cfi_restore 7
+ 1134              		.cfi_def_cfa_offset 0
+ 1135 002c 7047     		bx	lr
+ 1136              	.L53:
+ 1137 002e 00BF     		.align	2
+ 1138              	.L52:
+ 1139 0030 14900240 		.word	1073909780
+ 1140              		.cfi_endproc
+ 1141              	.LFE9:
+ 1143              		.section	.text.eth_enable_checksum_offload,"ax",%progbits
+ 1144              		.align	1
+ 1145              		.global	eth_enable_checksum_offload
+ 1146              		.syntax unified
+ 1147              		.thumb
+ 1148              		.thumb_func
+ 1149              		.fpu softvfp
+ 1151              	eth_enable_checksum_offload:
+ 1152              	.LFB10:
+ 271:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 272:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 273:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Enable checksum offload feature
+ 274:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 275:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * This function will enable the Checksum offload feature for all of the
+ 276:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * transmit descriptors. Note to use this feature, descriptors must be in
+ 277:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * extended format.
+ 278:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 279:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_enable_checksum_offload(void)
+ 280:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1153              		.loc 1 280 1
+ 1154              		.cfi_startproc
+ 1155              		@ args = 0, pretend = 0, frame = 8
+ 1156              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1157              		@ link register save eliminated.
+ 1158 0000 80B4     		push	{r7}
+ 1159              		.cfi_def_cfa_offset 4
+ 1160              		.cfi_offset 7, -4
+ 1161 0002 83B0     		sub	sp, sp, #12
+ 1162              		.cfi_def_cfa_offset 16
+ 1163 0004 00AF     		add	r7, sp, #0
+ 1164              		.cfi_def_cfa_register 7
+ 281:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint32_t tab = TxBD;
+ 1165              		.loc 1 281 11
+ 1166 0006 114B     		ldr	r3, .L56+4
+ 1167 0008 59F80330 		ldr	r3, [r9, r3]
+ 1168 000c 1B68     		ldr	r3, [r3]
+ 1169 000e 7B60     		str	r3, [r7, #4]
+ 1170              	.L55:
+ 282:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	do {
+ 283:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		ETH_DES0(tab) |= ETH_TDES0_CIC_IPPLPH;
+ 1171              		.loc 1 283 17 discriminator 1
+ 1172 0010 7B68     		ldr	r3, [r7, #4]
+ 1173 0012 1A68     		ldr	r2, [r3]
+ 1174 0014 7B68     		ldr	r3, [r7, #4]
+ 1175 0016 42F44002 		orr	r2, r2, #12582912
+ 1176 001a 1A60     		str	r2, [r3]
+ 284:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 		tab = ETH_DES3(tab);
+ 1177              		.loc 1 284 9 discriminator 1
+ 1178 001c 7B68     		ldr	r3, [r7, #4]
+ 1179 001e 0C33     		adds	r3, r3, #12
+ 1180              		.loc 1 284 7 discriminator 1
+ 1181 0020 1B68     		ldr	r3, [r3]
+ 1182 0022 7B60     		str	r3, [r7, #4]
+ 285:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	}
+ 286:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	while (tab != TxBD);
+ 1183              		.loc 1 286 13 discriminator 1
+ 1184 0024 094B     		ldr	r3, .L56+4
+ 1185 0026 59F80330 		ldr	r3, [r9, r3]
+ 1186 002a 1B68     		ldr	r3, [r3]
+ 1187              		.loc 1 286 2 discriminator 1
+ 1188 002c 7A68     		ldr	r2, [r7, #4]
+ 1189 002e 9A42     		cmp	r2, r3
+ 1190 0030 EED1     		bne	.L55
+ 287:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 288:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACCR |= ETH_MACCR_IPCO;
+ 1191              		.loc 1 288 12
+ 1192 0032 054B     		ldr	r3, .L56
+ 1193 0034 1B68     		ldr	r3, [r3]
+ 1194 0036 044A     		ldr	r2, .L56
+ 1195 0038 43F48063 		orr	r3, r3, #1024
+ 1196 003c 1360     		str	r3, [r2]
+ 289:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1197              		.loc 1 289 1
+ 1198 003e 00BF     		nop
+ 1199 0040 0C37     		adds	r7, r7, #12
+ 1200              		.cfi_def_cfa_offset 4
+ 1201 0042 BD46     		mov	sp, r7
+ 1202              		.cfi_def_cfa_register 13
+ 1203              		@ sp needed
+ 1204 0044 80BC     		pop	{r7}
+ 1205              		.cfi_restore 7
+ 1206              		.cfi_def_cfa_offset 0
+ 1207 0046 7047     		bx	lr
+ 1208              	.L57:
+ 1209              		.align	2
+ 1210              	.L56:
+ 1211 0048 00800240 		.word	1073905664
+ 1212 004c 00000000 		.word	TxBD(GOT)
+ 1213              		.cfi_endproc
+ 1214              	.LFE10:
+ 1216              		.section	.text.eth_smi_transact,"ax",%progbits
+ 1217              		.align	1
+ 1218              		.syntax unified
+ 1219              		.thumb
+ 1220              		.thumb_func
+ 1221              		.fpu softvfp
+ 1223              	eth_smi_transact:
+ 1224              	.LFB11:
+ 290:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 291:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 292:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Process pending SMI transaction and wait to be done.
+ 293:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 294:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** static void eth_smi_transact(void)
+ 295:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1225              		.loc 1 295 1
+ 1226              		.cfi_startproc
+ 1227              		@ args = 0, pretend = 0, frame = 0
+ 1228              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1229              		@ link register save eliminated.
+ 1230 0000 80B4     		push	{r7}
+ 1231              		.cfi_def_cfa_offset 4
+ 1232              		.cfi_offset 7, -4
+ 1233 0002 00AF     		add	r7, sp, #0
+ 1234              		.cfi_def_cfa_register 7
+ 296:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	/* Begin transaction. */
+ 297:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACMIIAR |= ETH_MACMIIAR_MB;
+ 1235              		.loc 1 297 15
+ 1236 0004 084B     		ldr	r3, .L60
+ 1237 0006 1B68     		ldr	r3, [r3]
+ 1238 0008 074A     		ldr	r2, .L60
+ 1239 000a 43F00103 		orr	r3, r3, #1
+ 1240 000e 1360     		str	r3, [r2]
+ 298:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 299:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	/* Wait for not busy. */
+ 300:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	while (ETH_MACMIIAR & ETH_MACMIIAR_MB);
+ 1241              		.loc 1 300 8
+ 1242 0010 00BF     		nop
+ 1243              	.L59:
+ 1244              		.loc 1 300 9 discriminator 1
+ 1245 0012 054B     		ldr	r3, .L60
+ 1246 0014 1B68     		ldr	r3, [r3]
+ 1247              		.loc 1 300 22 discriminator 1
+ 1248 0016 03F00103 		and	r3, r3, #1
+ 1249              		.loc 1 300 8 discriminator 1
+ 1250 001a 002B     		cmp	r3, #0
+ 1251 001c F9D1     		bne	.L59
+ 301:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1252              		.loc 1 301 1
+ 1253 001e 00BF     		nop
+ 1254 0020 BD46     		mov	sp, r7
+ 1255              		.cfi_def_cfa_register 13
+ 1256              		@ sp needed
+ 1257 0022 80BC     		pop	{r7}
+ 1258              		.cfi_restore 7
+ 1259              		.cfi_def_cfa_offset 0
+ 1260 0024 7047     		bx	lr
+ 1261              	.L61:
+ 1262 0026 00BF     		.align	2
+ 1263              	.L60:
+ 1264 0028 10800240 		.word	1073905680
+ 1265              		.cfi_endproc
+ 1266              	.LFE11:
+ 1268              		.section	.text.eth_smi_write,"ax",%progbits
+ 1269              		.align	1
+ 1270              		.global	eth_smi_write
+ 1271              		.syntax unified
+ 1272              		.thumb
+ 1273              		.thumb_func
+ 1274              		.fpu softvfp
+ 1276              	eth_smi_write:
+ 1277              	.LFB12:
+ 302:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 303:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 304:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Write 16-bit register to the PHY
+ 305:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 306:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy uint8_t ID of the PHY (defaults to 1)
+ 307:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reg uint8_t Register address
+ 308:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] data uint16_t Data to write
+ 309:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 310:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_smi_write(uint8_t phy, uint8_t reg, uint16_t data)
+ 311:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1278              		.loc 1 311 1
+ 1279              		.cfi_startproc
+ 1280              		@ args = 0, pretend = 0, frame = 8
+ 1281              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1282 0000 80B5     		push	{r7, lr}
+ 1283              		.cfi_def_cfa_offset 8
+ 1284              		.cfi_offset 7, -8
+ 1285              		.cfi_offset 14, -4
+ 1286 0002 82B0     		sub	sp, sp, #8
+ 1287              		.cfi_def_cfa_offset 16
+ 1288 0004 00AF     		add	r7, sp, #0
+ 1289              		.cfi_def_cfa_register 7
+ 1290 0006 0346     		mov	r3, r0
+ 1291 0008 FB71     		strb	r3, [r7, #7]
+ 1292 000a 0B46     		mov	r3, r1
+ 1293 000c BB71     		strb	r3, [r7, #6]
+ 1294 000e 1346     		mov	r3, r2	@ movhi
+ 1295 0010 BB80     		strh	r3, [r7, #4]	@ movhi
+ 312:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	/* Write operation MW=1*/
+ 313:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACMIIAR = (ETH_MACMIIAR & ETH_MACMIIAR_CR) | /* save clocks */
+ 1296              		.loc 1 313 18
+ 1297 0012 0B4B     		ldr	r3, .L63
+ 1298 0014 1B68     		ldr	r3, [r3]
+ 1299              		.loc 1 313 31
+ 1300 0016 03F01C03 		and	r3, r3, #28
+ 314:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1301              		.loc 1 314 9
+ 1302 001a FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1303 001c D202     		lsls	r2, r2, #11
+ 313:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1304              		.loc 1 313 50
+ 1305 001e 1343     		orrs	r3, r3, r2
+ 315:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(reg << ETH_MACMIIAR_MR_SHIFT) |
+ 1306              		.loc 1 315 9
+ 1307 0020 BA79     		ldrb	r2, [r7, #6]	@ zero_extendqisi2
+ 1308 0022 9201     		lsls	r2, r2, #6
+ 314:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1309              		.loc 1 314 35
+ 1310 0024 1343     		orrs	r3, r3, r2
+ 313:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1311              		.loc 1 313 2
+ 1312 0026 064A     		ldr	r2, .L63
+ 1313              		.loc 1 315 35
+ 1314 0028 43F00203 		orr	r3, r3, #2
+ 313:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1315              		.loc 1 313 15
+ 1316 002c 1360     		str	r3, [r2]
+ 316:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			ETH_MACMIIAR_MW;
+ 317:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 318:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACMIIDR = data & ETH_MACMIIDR_MD;
+ 1317              		.loc 1 318 2
+ 1318 002e 054A     		ldr	r2, .L63+4
+ 1319              		.loc 1 318 22
+ 1320 0030 BB88     		ldrh	r3, [r7, #4]
+ 1321              		.loc 1 318 15
+ 1322 0032 1360     		str	r3, [r2]
+ 319:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 320:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	eth_smi_transact();
+ 1323              		.loc 1 320 2
+ 1324 0034 FFF7FEFF 		bl	eth_smi_transact(PLT)
+ 321:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1325              		.loc 1 321 1
+ 1326 0038 00BF     		nop
+ 1327 003a 0837     		adds	r7, r7, #8
+ 1328              		.cfi_def_cfa_offset 8
+ 1329 003c BD46     		mov	sp, r7
+ 1330              		.cfi_def_cfa_register 13
+ 1331              		@ sp needed
+ 1332 003e 80BD     		pop	{r7, pc}
+ 1333              	.L64:
+ 1334              		.align	2
+ 1335              	.L63:
+ 1336 0040 10800240 		.word	1073905680
+ 1337 0044 14800240 		.word	1073905684
+ 1338              		.cfi_endproc
+ 1339              	.LFE12:
+ 1341              		.section	.text.eth_smi_read,"ax",%progbits
+ 1342              		.align	1
+ 1343              		.global	eth_smi_read
+ 1344              		.syntax unified
+ 1345              		.thumb
+ 1346              		.thumb_func
+ 1347              		.fpu softvfp
+ 1349              	eth_smi_read:
+ 1350              	.LFB13:
+ 322:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 323:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 324:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Read the 16-bit register from the PHY
+ 325:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 326:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy uint8_t ID of the PHY (defaults to 1)
+ 327:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reg uint8_t Register address
+ 328:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @returns uint16_t Readed data
+ 329:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 330:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** uint16_t eth_smi_read(uint8_t phy, uint8_t reg)
+ 331:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1351              		.loc 1 331 1
+ 1352              		.cfi_startproc
+ 1353              		@ args = 0, pretend = 0, frame = 8
+ 1354              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1355 0000 80B5     		push	{r7, lr}
+ 1356              		.cfi_def_cfa_offset 8
+ 1357              		.cfi_offset 7, -8
+ 1358              		.cfi_offset 14, -4
+ 1359 0002 82B0     		sub	sp, sp, #8
+ 1360              		.cfi_def_cfa_offset 16
+ 1361 0004 00AF     		add	r7, sp, #0
+ 1362              		.cfi_def_cfa_register 7
+ 1363 0006 0346     		mov	r3, r0
+ 1364 0008 0A46     		mov	r2, r1
+ 1365 000a FB71     		strb	r3, [r7, #7]
+ 1366 000c 1346     		mov	r3, r2
+ 1367 000e BB71     		strb	r3, [r7, #6]
+ 332:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	/* Read operation MW=0*/
+ 333:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	ETH_MACMIIAR = (ETH_MACMIIAR & ETH_MACMIIAR_CR) | /* save clocks */
+ 1368              		.loc 1 333 18
+ 1369 0010 0A4B     		ldr	r3, .L67
+ 1370 0012 1B68     		ldr	r3, [r3]
+ 1371              		.loc 1 333 31
+ 1372 0014 03F01C03 		and	r3, r3, #28
+ 334:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1373              		.loc 1 334 9
+ 1374 0018 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
+ 1375 001a D202     		lsls	r2, r2, #11
+ 333:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1376              		.loc 1 333 50
+ 1377 001c 1343     		orrs	r3, r3, r2
+ 335:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(reg << ETH_MACMIIAR_MR_SHIFT);
+ 1378              		.loc 1 335 9
+ 1379 001e BA79     		ldrb	r2, [r7, #6]	@ zero_extendqisi2
+ 1380 0020 9201     		lsls	r2, r2, #6
+ 1381 0022 1146     		mov	r1, r2
+ 333:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1382              		.loc 1 333 2
+ 1383 0024 054A     		ldr	r2, .L67
+ 334:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1384              		.loc 1 334 35
+ 1385 0026 0B43     		orrs	r3, r3, r1
+ 333:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 			(phy << ETH_MACMIIAR_PA_SHIFT) |
+ 1386              		.loc 1 333 15
+ 1387 0028 1360     		str	r3, [r2]
+ 336:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 337:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	eth_smi_transact();
+ 1388              		.loc 1 337 2
+ 1389 002a FFF7FEFF 		bl	eth_smi_transact(PLT)
+ 338:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 339:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	return (uint16_t)(ETH_MACMIIDR & ETH_MACMIIDR_MD);
+ 1390              		.loc 1 339 20
+ 1391 002e 044B     		ldr	r3, .L67+4
+ 1392 0030 1B68     		ldr	r3, [r3]
+ 1393              		.loc 1 339 9
+ 1394 0032 9BB2     		uxth	r3, r3
+ 340:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1395              		.loc 1 340 1
+ 1396 0034 1846     		mov	r0, r3
+ 1397 0036 0837     		adds	r7, r7, #8
+ 1398              		.cfi_def_cfa_offset 8
+ 1399 0038 BD46     		mov	sp, r7
+ 1400              		.cfi_def_cfa_register 13
+ 1401              		@ sp needed
+ 1402 003a 80BD     		pop	{r7, pc}
+ 1403              	.L68:
+ 1404              		.align	2
+ 1405              	.L67:
+ 1406 003c 10800240 		.word	1073905680
+ 1407 0040 14800240 		.word	1073905684
+ 1408              		.cfi_endproc
+ 1409              	.LFE13:
+ 1411              		.section	.text.eth_smi_bit_op,"ax",%progbits
+ 1412              		.align	1
+ 1413              		.global	eth_smi_bit_op
+ 1414              		.syntax unified
+ 1415              		.thumb
+ 1416              		.thumb_func
+ 1417              		.fpu softvfp
+ 1419              	eth_smi_bit_op:
+ 1420              	.LFB14:
+ 341:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 342:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 343:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Process the bit-operation on PHY register
+ 344:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 345:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy uint8_t ID of the PHY (defaults to 1)
+ 346:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reg uint8_t Register address
+ 347:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] bits uint16_t Bits that have to be set (or'ed)
+ 348:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] mask uint16_t Bits that have to be clear (and'ed)
+ 349:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 350:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_smi_bit_op(uint8_t phy, uint8_t reg, uint16_t bits, uint16_t mask)
+ 351:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1421              		.loc 1 351 1
+ 1422              		.cfi_startproc
+ 1423              		@ args = 0, pretend = 0, frame = 16
+ 1424              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1425 0000 90B5     		push	{r4, r7, lr}
+ 1426              		.cfi_def_cfa_offset 12
+ 1427              		.cfi_offset 4, -12
+ 1428              		.cfi_offset 7, -8
+ 1429              		.cfi_offset 14, -4
+ 1430 0002 85B0     		sub	sp, sp, #20
+ 1431              		.cfi_def_cfa_offset 32
+ 1432 0004 00AF     		add	r7, sp, #0
+ 1433              		.cfi_def_cfa_register 7
+ 1434 0006 0446     		mov	r4, r0
+ 1435 0008 0846     		mov	r0, r1
+ 1436 000a 1146     		mov	r1, r2
+ 1437 000c 1A46     		mov	r2, r3
+ 1438 000e 2346     		mov	r3, r4
+ 1439 0010 FB71     		strb	r3, [r7, #7]
+ 1440 0012 0346     		mov	r3, r0
+ 1441 0014 BB71     		strb	r3, [r7, #6]
+ 1442 0016 0B46     		mov	r3, r1	@ movhi
+ 1443 0018 BB80     		strh	r3, [r7, #4]	@ movhi
+ 1444 001a 1346     		mov	r3, r2	@ movhi
+ 1445 001c 7B80     		strh	r3, [r7, #2]	@ movhi
+ 352:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint16_t val = eth_smi_read(phy, reg);
+ 1446              		.loc 1 352 17
+ 1447 001e BA79     		ldrb	r2, [r7, #6]	@ zero_extendqisi2
+ 1448 0020 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1449 0022 1146     		mov	r1, r2
+ 1450 0024 1846     		mov	r0, r3
+ 1451 0026 FFF7FEFF 		bl	eth_smi_read(PLT)
+ 1452 002a 0346     		mov	r3, r0
+ 1453 002c FB81     		strh	r3, [r7, #14]	@ movhi
+ 353:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	eth_smi_write(phy, reg, (val & mask) | bits);
+ 1454              		.loc 1 353 2
+ 1455 002e FA89     		ldrh	r2, [r7, #14]	@ movhi
+ 1456 0030 7B88     		ldrh	r3, [r7, #2]	@ movhi
+ 1457 0032 1340     		ands	r3, r3, r2
+ 1458 0034 9AB2     		uxth	r2, r3
+ 1459 0036 BB88     		ldrh	r3, [r7, #4]	@ movhi
+ 1460 0038 1343     		orrs	r3, r3, r2
+ 1461 003a 9AB2     		uxth	r2, r3
+ 1462 003c B979     		ldrb	r1, [r7, #6]	@ zero_extendqisi2
+ 1463 003e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1464 0040 1846     		mov	r0, r3
+ 1465 0042 FFF7FEFF 		bl	eth_smi_write(PLT)
+ 354:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1466              		.loc 1 354 1
+ 1467 0046 00BF     		nop
+ 1468 0048 1437     		adds	r7, r7, #20
+ 1469              		.cfi_def_cfa_offset 12
+ 1470 004a BD46     		mov	sp, r7
+ 1471              		.cfi_def_cfa_register 13
+ 1472              		@ sp needed
+ 1473 004c 90BD     		pop	{r4, r7, pc}
+ 1474              		.cfi_endproc
+ 1475              	.LFE14:
+ 1477              		.section	.text.eth_smi_bit_clear,"ax",%progbits
+ 1478              		.align	1
+ 1479              		.global	eth_smi_bit_clear
+ 1480              		.syntax unified
+ 1481              		.thumb
+ 1482              		.thumb_func
+ 1483              		.fpu softvfp
+ 1485              	eth_smi_bit_clear:
+ 1486              	.LFB15:
+ 355:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 356:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 357:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Clear bits in the register
+ 358:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 359:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy uint8_t ID of the PHY (defaults to 1)
+ 360:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reg uint8_t Register address
+ 361:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] clearbits uint16_t Bits that have to be cleared
+ 362:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 363:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_smi_bit_clear(uint8_t phy, uint8_t reg, uint16_t clearbits)
+ 364:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1487              		.loc 1 364 1
+ 1488              		.cfi_startproc
+ 1489              		@ args = 0, pretend = 0, frame = 16
+ 1490              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1491 0000 80B5     		push	{r7, lr}
+ 1492              		.cfi_def_cfa_offset 8
+ 1493              		.cfi_offset 7, -8
+ 1494              		.cfi_offset 14, -4
+ 1495 0002 84B0     		sub	sp, sp, #16
+ 1496              		.cfi_def_cfa_offset 24
+ 1497 0004 00AF     		add	r7, sp, #0
+ 1498              		.cfi_def_cfa_register 7
+ 1499 0006 0346     		mov	r3, r0
+ 1500 0008 FB71     		strb	r3, [r7, #7]
+ 1501 000a 0B46     		mov	r3, r1
+ 1502 000c BB71     		strb	r3, [r7, #6]
+ 1503 000e 1346     		mov	r3, r2	@ movhi
+ 1504 0010 BB80     		strh	r3, [r7, #4]	@ movhi
+ 365:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint16_t val = eth_smi_read(phy, reg);
+ 1505              		.loc 1 365 17
+ 1506 0012 BA79     		ldrb	r2, [r7, #6]	@ zero_extendqisi2
+ 1507 0014 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1508 0016 1146     		mov	r1, r2
+ 1509 0018 1846     		mov	r0, r3
+ 1510 001a FFF7FEFF 		bl	eth_smi_read(PLT)
+ 1511 001e 0346     		mov	r3, r0
+ 1512 0020 FB81     		strh	r3, [r7, #14]	@ movhi
+ 366:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	eth_smi_write(phy, reg, val & (uint16_t)~(clearbits));
+ 1513              		.loc 1 366 32
+ 1514 0022 BB88     		ldrh	r3, [r7, #4]	@ movhi
+ 1515 0024 DB43     		mvns	r3, r3
+ 1516 0026 9AB2     		uxth	r2, r3
+ 1517              		.loc 1 366 2
+ 1518 0028 FB89     		ldrh	r3, [r7, #14]	@ movhi
+ 1519 002a 1340     		ands	r3, r3, r2
+ 1520 002c 9AB2     		uxth	r2, r3
+ 1521 002e B979     		ldrb	r1, [r7, #6]	@ zero_extendqisi2
+ 1522 0030 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1523 0032 1846     		mov	r0, r3
+ 1524 0034 FFF7FEFF 		bl	eth_smi_write(PLT)
+ 367:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1525              		.loc 1 367 1
+ 1526 0038 00BF     		nop
+ 1527 003a 1037     		adds	r7, r7, #16
+ 1528              		.cfi_def_cfa_offset 8
+ 1529 003c BD46     		mov	sp, r7
+ 1530              		.cfi_def_cfa_register 13
+ 1531              		@ sp needed
+ 1532 003e 80BD     		pop	{r7, pc}
+ 1533              		.cfi_endproc
+ 1534              	.LFE15:
+ 1536              		.section	.text.eth_smi_bit_set,"ax",%progbits
+ 1537              		.align	1
+ 1538              		.global	eth_smi_bit_set
+ 1539              		.syntax unified
+ 1540              		.thumb
+ 1541              		.thumb_func
+ 1542              		.fpu softvfp
+ 1544              	eth_smi_bit_set:
+ 1545              	.LFB16:
+ 368:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 
+ 369:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /*---------------------------------------------------------------------------*/
+ 370:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** /** @brief Set bits in the register
+ 371:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  *
+ 372:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] phy uint8_t ID of the PHY (defaults to 1)
+ 373:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] reg uint8_t Register address
+ 374:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  * @param[in] setbits uint16_t Bits that have to be set (or'ed)
+ 375:../libopencm3/lib/ethernet/mac_stm32fxx7.c ****  */
+ 376:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** void eth_smi_bit_set(uint8_t phy, uint8_t reg, uint16_t setbits)
+ 377:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** {
+ 1546              		.loc 1 377 1
+ 1547              		.cfi_startproc
+ 1548              		@ args = 0, pretend = 0, frame = 16
+ 1549              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1550 0000 80B5     		push	{r7, lr}
+ 1551              		.cfi_def_cfa_offset 8
+ 1552              		.cfi_offset 7, -8
+ 1553              		.cfi_offset 14, -4
+ 1554 0002 84B0     		sub	sp, sp, #16
+ 1555              		.cfi_def_cfa_offset 24
+ 1556 0004 00AF     		add	r7, sp, #0
+ 1557              		.cfi_def_cfa_register 7
+ 1558 0006 0346     		mov	r3, r0
+ 1559 0008 FB71     		strb	r3, [r7, #7]
+ 1560 000a 0B46     		mov	r3, r1
+ 1561 000c BB71     		strb	r3, [r7, #6]
+ 1562 000e 1346     		mov	r3, r2	@ movhi
+ 1563 0010 BB80     		strh	r3, [r7, #4]	@ movhi
+ 378:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	uint16_t val = eth_smi_read(phy, reg);
+ 1564              		.loc 1 378 17
+ 1565 0012 BA79     		ldrb	r2, [r7, #6]	@ zero_extendqisi2
+ 1566 0014 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1567 0016 1146     		mov	r1, r2
+ 1568 0018 1846     		mov	r0, r3
+ 1569 001a FFF7FEFF 		bl	eth_smi_read(PLT)
+ 1570 001e 0346     		mov	r3, r0
+ 1571 0020 FB81     		strh	r3, [r7, #14]	@ movhi
+ 379:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** 	eth_smi_write(phy, reg, val | setbits);
+ 1572              		.loc 1 379 2
+ 1573 0022 FA89     		ldrh	r2, [r7, #14]	@ movhi
+ 1574 0024 BB88     		ldrh	r3, [r7, #4]	@ movhi
+ 1575 0026 1343     		orrs	r3, r3, r2
+ 1576 0028 9AB2     		uxth	r2, r3
+ 1577 002a B979     		ldrb	r1, [r7, #6]	@ zero_extendqisi2
+ 1578 002c FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1579 002e 1846     		mov	r0, r3
+ 1580 0030 FFF7FEFF 		bl	eth_smi_write(PLT)
+ 380:../libopencm3/lib/ethernet/mac_stm32fxx7.c **** }
+ 1581              		.loc 1 380 1
+ 1582 0034 00BF     		nop
+ 1583 0036 1037     		adds	r7, r7, #16
+ 1584              		.cfi_def_cfa_offset 8
+ 1585 0038 BD46     		mov	sp, r7
+ 1586              		.cfi_def_cfa_register 13
+ 1587              		@ sp needed
+ 1588 003a 80BD     		pop	{r7, pc}
+ 1589              		.cfi_endproc
+ 1590              	.LFE16:
+ 1592              		.text
+ 1593              	.Letext0:
+ 1594              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 1595              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1596              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 1597              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 1598              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 1599              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1600              		.file 8 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/ethernet/mac_stm32f
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 mac_stm32fxx7.c
+                            *COM*:0000000000000004 TxBD
+                            *COM*:0000000000000004 RxBD
+     /tmp/ccobiBFZ.s:18     .text.eth_set_mac:0000000000000000 $t
+     /tmp/ccobiBFZ.s:26     .text.eth_set_mac:0000000000000000 eth_set_mac
+     /tmp/ccobiBFZ.s:107    .text.eth_set_mac:0000000000000058 $d
+     /tmp/ccobiBFZ.s:113    .text.eth_desc_init:0000000000000000 $t
+     /tmp/ccobiBFZ.s:120    .text.eth_desc_init:0000000000000000 eth_desc_init
+     /tmp/ccobiBFZ.s:395    .text.eth_desc_init:0000000000000190 $d
+     /tmp/ccobiBFZ.s:404    .text.eth_tx:0000000000000000 $t
+     /tmp/ccobiBFZ.s:411    .text.eth_tx:0000000000000000 eth_tx
+     /tmp/ccobiBFZ.s:514    .text.eth_tx:0000000000000094 $d
+     /tmp/ccobiBFZ.s:521    .text.eth_rx:0000000000000000 $t
+     /tmp/ccobiBFZ.s:528    .text.eth_rx:0000000000000000 eth_rx
+     /tmp/ccobiBFZ.s:755    .text.eth_rx:0000000000000150 $d
+     /tmp/ccobiBFZ.s:762    .text.eth_start:0000000000000000 $t
+     /tmp/ccobiBFZ.s:769    .text.eth_start:0000000000000000 eth_start
+     /tmp/ccobiBFZ.s:823    .text.eth_start:0000000000000048 $d
+     /tmp/ccobiBFZ.s:829    .text.eth_init:0000000000000000 $t
+     /tmp/ccobiBFZ.s:836    .text.eth_init:0000000000000000 eth_init
+     /tmp/ccobiBFZ.s:915    .text.eth_init:0000000000000058 $d
+     /tmp/ccobiBFZ.s:932    .text.eth_irq_enable:0000000000000000 $t
+     /tmp/ccobiBFZ.s:939    .text.eth_irq_enable:0000000000000000 eth_irq_enable
+     /tmp/ccobiBFZ.s:975    .text.eth_irq_enable:0000000000000020 $d
+     /tmp/ccobiBFZ.s:980    .text.eth_irq_disable:0000000000000000 $t
+     /tmp/ccobiBFZ.s:987    .text.eth_irq_disable:0000000000000000 eth_irq_disable
+     /tmp/ccobiBFZ.s:1026   .text.eth_irq_disable:0000000000000020 $d
+     /tmp/ccobiBFZ.s:1031   .text.eth_irq_is_pending:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1038   .text.eth_irq_is_pending:0000000000000000 eth_irq_is_pending
+     /tmp/ccobiBFZ.s:1079   .text.eth_irq_is_pending:0000000000000024 $d
+     /tmp/ccobiBFZ.s:1084   .text.eth_irq_ack_pending:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1091   .text.eth_irq_ack_pending:0000000000000000 eth_irq_ack_pending
+     /tmp/ccobiBFZ.s:1139   .text.eth_irq_ack_pending:0000000000000030 $d
+     /tmp/ccobiBFZ.s:1144   .text.eth_enable_checksum_offload:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1151   .text.eth_enable_checksum_offload:0000000000000000 eth_enable_checksum_offload
+     /tmp/ccobiBFZ.s:1211   .text.eth_enable_checksum_offload:0000000000000048 $d
+     /tmp/ccobiBFZ.s:1217   .text.eth_smi_transact:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1223   .text.eth_smi_transact:0000000000000000 eth_smi_transact
+     /tmp/ccobiBFZ.s:1264   .text.eth_smi_transact:0000000000000028 $d
+     /tmp/ccobiBFZ.s:1269   .text.eth_smi_write:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1276   .text.eth_smi_write:0000000000000000 eth_smi_write
+     /tmp/ccobiBFZ.s:1336   .text.eth_smi_write:0000000000000040 $d
+     /tmp/ccobiBFZ.s:1342   .text.eth_smi_read:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1349   .text.eth_smi_read:0000000000000000 eth_smi_read
+     /tmp/ccobiBFZ.s:1406   .text.eth_smi_read:000000000000003c $d
+     /tmp/ccobiBFZ.s:1412   .text.eth_smi_bit_op:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1419   .text.eth_smi_bit_op:0000000000000000 eth_smi_bit_op
+     /tmp/ccobiBFZ.s:1478   .text.eth_smi_bit_clear:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1485   .text.eth_smi_bit_clear:0000000000000000 eth_smi_bit_clear
+     /tmp/ccobiBFZ.s:1537   .text.eth_smi_bit_set:0000000000000000 $t
+     /tmp/ccobiBFZ.s:1544   .text.eth_smi_bit_set:0000000000000000 eth_smi_bit_set
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4.features.h.22.fad1cec3bc7ff06488171438dbdcfd02
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stddef.h.39.a38874c8f8a57e66301090908ec2a69f
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.string.h.15.dab3980bf35408a4c507182805e2de3a
+                           .group:0000000000000000 wm4.stddef.h.161.19e15733342b50ead2919490b095303e
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.mac_stm32fxx7.h.51.744719e25fe42bc6859e0e370e4857da
+                           .group:0000000000000000 wm4.phy.h.34.adf7f3db071b9fe4f2c46e612a9f2775
+                           .group:0000000000000000 wm4.gpio_common_all.h.37.fedbbcb9179f773c905aa3c3e4b7dbdd
+                           .group:0000000000000000 wm4.gpio.h.49.d09d289f6b7cafdf34d45f4623a2b0fb
+                           .group:0000000000000000 wm4.nvic.h.38.3b30e3268bee285344f6b283a9023580
+                           .group:0000000000000000 wm4.nvic.h.16.2afd64cac85d5d54f32177e020bf398f
+
+UNDEFINED SYMBOLS
+memset
+memcpy
+phy_reset

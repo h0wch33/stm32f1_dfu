@@ -1,0 +1,1642 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"dac_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.dac_enable,"ax",%progbits
+  16              		.align	1
+  17              		.global	dac_enable
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	dac_enable:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/dac_common_all.c"
+   1:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @addtogroup dac_file DAC peripheral API
+   2:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @brief Digital to Analog Converter
+   4:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+   5:../libopencm3/lib/stm32/common/dac_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2012 Ken Sarkies <ksarkies@internode.on.net>
+   6:../libopencm3/lib/stm32/common/dac_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2020 Ben Brewer <ben.brewer@codethink.co.uk>
+   7:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+   8:../libopencm3/lib/stm32/common/dac_common_all.c **** This library supports the Digital to Analog Conversion System in the
+   9:../libopencm3/lib/stm32/common/dac_common_all.c **** STM32 series of ARM Cortex Microcontrollers by ST Microelectronics.
+  10:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  11:../libopencm3/lib/stm32/common/dac_common_all.c **** The DAC peripheral found on many of the devices in the STM32 lineup,
+  12:../libopencm3/lib/stm32/common/dac_common_all.c **** sometimes with only one channel, but normally with two channels.
+  13:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  14:../libopencm3/lib/stm32/common/dac_common_all.c **** Two DAC channels are available, however unlike the ADC channels these
+  15:../libopencm3/lib/stm32/common/dac_common_all.c **** are separate DAC devices controlled by the same register block.
+  16:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  17:../libopencm3/lib/stm32/common/dac_common_all.c **** The DAC is on APB1. Its clock must be enabled in RCC and depending on
+  18:../libopencm3/lib/stm32/common/dac_common_all.c **** specific family, the GPIO
+  19:../libopencm3/lib/stm32/common/dac_common_all.c **** ports set to alternate function output before it can be used.
+  20:../libopencm3/lib/stm32/common/dac_common_all.c **** On most families, the GPIO pins should be configured to Analog IN to
+  21:../libopencm3/lib/stm32/common/dac_common_all.c **** avoid parasitic consumption.
+  22:../libopencm3/lib/stm32/common/dac_common_all.c **** The digital output driver is disabled so the output driver mode
+  23:../libopencm3/lib/stm32/common/dac_common_all.c **** (push-pull/open drain) is arbitrary.
+  24:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  25:../libopencm3/lib/stm32/common/dac_common_all.c **** The DAC has a holding (buffer) register and an output register from
+  26:../libopencm3/lib/stm32/common/dac_common_all.c **** which the analog output is derived. The holding register must be
+  27:../libopencm3/lib/stm32/common/dac_common_all.c **** loaded first. If triggering is enabled the output register is loaded
+  28:../libopencm3/lib/stm32/common/dac_common_all.c **** from the holding register after a trigger occurs. If triggering is
+  29:../libopencm3/lib/stm32/common/dac_common_all.c **** not enabled the holding register contents are transferred directly
+  30:../libopencm3/lib/stm32/common/dac_common_all.c **** to the output register.
+  31:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  32:../libopencm3/lib/stm32/common/dac_common_all.c **** @note To avoid nonlinearities, do not allow outputs to range close
+  33:../libopencm3/lib/stm32/common/dac_common_all.c **** to zero or V_analog.
+  34:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  35:../libopencm3/lib/stm32/common/dac_common_all.c **** @section dac_api_dual Dual Channel Conversion
+  36:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  37:../libopencm3/lib/stm32/common/dac_common_all.c **** There are dual modes in which both DACs are used to output data
+  38:../libopencm3/lib/stm32/common/dac_common_all.c **** simultaneously or independently on both channels. The data must be
+  39:../libopencm3/lib/stm32/common/dac_common_all.c **** presented according to the formats described in the datasheets. A
+  40:../libopencm3/lib/stm32/common/dac_common_all.c **** convenience function @ref dac_load_data_buffer_dual is provided
+  41:../libopencm3/lib/stm32/common/dac_common_all.c **** for software controlled use.
+  42:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  43:../libopencm3/lib/stm32/common/dac_common_all.c **** A variety of modes are available depending on whether independent
+  44:../libopencm3/lib/stm32/common/dac_common_all.c **** or simultaneous output is desired, and whether waveforms are to be
+  45:../libopencm3/lib/stm32/common/dac_common_all.c **** superimposed. Refer to the datasheets.
+  46:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  47:../libopencm3/lib/stm32/common/dac_common_all.c **** If DMA is used, only enable it for one of the channels. The DMA
+  48:../libopencm3/lib/stm32/common/dac_common_all.c **** requests will then serve data in dual format to the data register
+  49:../libopencm3/lib/stm32/common/dac_common_all.c **** dedicated to dual mode. The data will then be split and loaded to the
+  50:../libopencm3/lib/stm32/common/dac_common_all.c **** appropriate DAC following the next trigger. There are three registers
+  51:../libopencm3/lib/stm32/common/dac_common_all.c **** available, one for each of the formats: 12 bit right-aligned, 12 bit
+  52:../libopencm3/lib/stm32/common/dac_common_all.c **** left-aligned and 8 bit right-aligned. The desired format is determined
+  53:../libopencm3/lib/stm32/common/dac_common_all.c **** by specifying the appropriate register to the DMA controller.
+  54:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  55:../libopencm3/lib/stm32/common/dac_common_all.c **** @section dac_api_basic_ex Basic DAC handling API.
+  56:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  57:../libopencm3/lib/stm32/common/dac_common_all.c **** Set the DAC's GPIO port to Analog IN. Enable the
+  58:../libopencm3/lib/stm32/common/dac_common_all.c **** DAC clock. Enable the DAC, set a trigger source and load the buffer
+  59:../libopencm3/lib/stm32/common/dac_common_all.c **** with the first value. After the DAC is triggered, load the buffer with
+  60:../libopencm3/lib/stm32/common/dac_common_all.c **** the next value. This example uses software triggering and added noise.
+  61:../libopencm3/lib/stm32/common/dac_common_all.c **** The trigger and further buffer load calls are made when data is to be
+  62:../libopencm3/lib/stm32/common/dac_common_all.c **** sent out.
+  63:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  64:../libopencm3/lib/stm32/common/dac_common_all.c **** @code
+  65:../libopencm3/lib/stm32/common/dac_common_all.c **** 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
+  66:../libopencm3/lib/stm32/common/dac_common_all.c **** 		      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO4);
+  67:../libopencm3/lib/stm32/common/dac_common_all.c **** 	rcc_periph_clock_enable(RCC_DAC);
+  68:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_disable(DAC1, DAC_CHANNEL1);
+  69:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_set_waveform_characteristics(DAC1, DAC_CHANNEL1, DAC_CR_MAMP1_8);
+  70:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_set_waveform_generation(DAC1, DAC_CHANNEL1, DAC_CR_WAVE1_NOISE);
+  71:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_enable(DAC1, DAC_CHANNEL1);
+  72:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_set_trigger_source(DAC1, DAC_CR_TSEL1_SW);
+  73:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_load_data_buffer_single(DAC1, 0, DAC_ALIGN_RIGHT12, DAC_CHANNEL1);
+  74:../libopencm3/lib/stm32/common/dac_common_all.c **** 	....
+  75:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_software_trigger(DAC1, DAC_CHANNEL1);
+  76:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_load_data_buffer_single(DAC1, value,
+  77:../libopencm3/lib/stm32/common/dac_common_all.c **** 	                            DAC_ALIGN_RIGHT12, DAC_CHANNEL1);
+  78:../libopencm3/lib/stm32/common/dac_common_all.c **** @endcode
+  79:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  80:../libopencm3/lib/stm32/common/dac_common_all.c **** @section dac_api_dma_ex Simultaneous Dual DAC with DMA.
+  81:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  82:../libopencm3/lib/stm32/common/dac_common_all.c **** This example in part sets up the DAC channel 1 DMA (DMA2 channel 3) to read
+  83:../libopencm3/lib/stm32/common/dac_common_all.c **** 16 bit data from memory into the right-aligned 8 bit dual register DAC_DHR8RD.
+  84:../libopencm3/lib/stm32/common/dac_common_all.c **** Both DAC channels are enabled, and both triggers are set to the same timer
+  85:../libopencm3/lib/stm32/common/dac_common_all.c **** 2 input as required for simultaneous operation. DMA is enabled for DAC channel
+  86:../libopencm3/lib/stm32/common/dac_common_all.c **** 1 only to ensure that only one DMA request is generated.
+  87:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+  88:../libopencm3/lib/stm32/common/dac_common_all.c **** @code
+  89:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dma_set_memory_size(DMA2, DMA_CHANNEL3, DMA_CCR_MSIZE_16BIT);
+  90:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dma_set_peripheral_size(DMA2, DMA_CHANNEL3, DMA_CCR_PSIZE_16BIT);
+  91:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dma_set_read_from_memory(DMA2, DMA_CHANNEL3);
+  92:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dma_set_peripheral_address(DMA2, DMA_CHANNEL3,(uint32_t) &DAC_DHR8RD);
+  93:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dma_enable_channel(DMA2, DMA_CHANNEL3);
+  94:../libopencm3/lib/stm32/common/dac_common_all.c **** 	...
+  95:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_trigger_enable(DAC1, DAC_CHANNEL_BOTH);
+  96:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_set_trigger_source(DAC1, DAC_CR_TSEL1_T2 | DAC_CR_TSEL2_T2);
+  97:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_dma_enable(DAC1, DAC_CHANNEL1);
+  98:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_enable(DAC1, DAC_CHANNEL_BOTH);
+  99:../libopencm3/lib/stm32/common/dac_common_all.c **** @endcode
+ 100:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 101:../libopencm3/lib/stm32/common/dac_common_all.c **** LGPL License Terms @ref lgpl_license
+ 102:../libopencm3/lib/stm32/common/dac_common_all.c ****  */
+ 103:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 104:../libopencm3/lib/stm32/common/dac_common_all.c **** /*
+ 105:../libopencm3/lib/stm32/common/dac_common_all.c ****  * This file is part of the libopencm3 project.
+ 106:../libopencm3/lib/stm32/common/dac_common_all.c ****  *
+ 107:../libopencm3/lib/stm32/common/dac_common_all.c ****  * Copyright (C) 2012 Ken Sarkies
+ 108:../libopencm3/lib/stm32/common/dac_common_all.c ****  * Copyright (C) 2020 Ben Brewer
+ 109:../libopencm3/lib/stm32/common/dac_common_all.c ****  *
+ 110:../libopencm3/lib/stm32/common/dac_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+ 111:../libopencm3/lib/stm32/common/dac_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+ 112:../libopencm3/lib/stm32/common/dac_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+ 113:../libopencm3/lib/stm32/common/dac_common_all.c ****  * (at your option) any later version.
+ 114:../libopencm3/lib/stm32/common/dac_common_all.c ****  *
+ 115:../libopencm3/lib/stm32/common/dac_common_all.c ****  * This library is distributed in the hope that it will be useful,
+ 116:../libopencm3/lib/stm32/common/dac_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 117:../libopencm3/lib/stm32/common/dac_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 118:../libopencm3/lib/stm32/common/dac_common_all.c ****  * GNU Lesser General Public License for more details.
+ 119:../libopencm3/lib/stm32/common/dac_common_all.c ****  *
+ 120:../libopencm3/lib/stm32/common/dac_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+ 121:../libopencm3/lib/stm32/common/dac_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ 122:../libopencm3/lib/stm32/common/dac_common_all.c ****  */
+ 123:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 124:../libopencm3/lib/stm32/common/dac_common_all.c **** /**@{*/
+ 125:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 126:../libopencm3/lib/stm32/common/dac_common_all.c **** #include <libopencm3/stm32/dac.h>
+ 127:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 128:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel Enable.
+ 129:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 130:../libopencm3/lib/stm32/common/dac_common_all.c **** Enable a digital to analog converter channel. After setting this enable, the
+ 131:../libopencm3/lib/stm32/common/dac_common_all.c **** DAC requires a t<sub>wakeup</sub> time typically around 10 microseconds before
+ 132:../libopencm3/lib/stm32/common/dac_common_all.c **** it actually wakes up.
+ 133:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 134:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC @ref dac_reg_base
+ 135:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 136:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 137:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_enable(uint32_t dac, int channel)
+ 138:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+  27              		.loc 1 138 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 3960     		str	r1, [r7]
+ 139:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+  41              		.loc 1 139 2
+  42 000a 3B68     		ldr	r3, [r7]
+  43 000c 022B     		cmp	r3, #2
+  44 000e 0CD0     		beq	.L2
+  45 0010 3B68     		ldr	r3, [r7]
+  46 0012 032B     		cmp	r3, #3
+  47 0014 10D0     		beq	.L3
+  48 0016 3B68     		ldr	r3, [r7]
+  49 0018 012B     		cmp	r3, #1
+  50 001a 14D1     		bne	.L5
+ 140:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 141:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_EN1;
+  51              		.loc 1 141 15
+  52 001c 7B68     		ldr	r3, [r7, #4]
+  53 001e 1A68     		ldr	r2, [r3]
+  54 0020 7B68     		ldr	r3, [r7, #4]
+  55 0022 42F00102 		orr	r2, r2, #1
+  56 0026 1A60     		str	r2, [r3]
+ 142:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+  57              		.loc 1 142 3
+  58 0028 0DE0     		b	.L4
+  59              	.L2:
+ 143:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 144:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_EN2;
+  60              		.loc 1 144 15
+  61 002a 7B68     		ldr	r3, [r7, #4]
+  62 002c 1A68     		ldr	r2, [r3]
+  63 002e 7B68     		ldr	r3, [r7, #4]
+  64 0030 42F48032 		orr	r2, r2, #65536
+  65 0034 1A60     		str	r2, [r3]
+ 145:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+  66              		.loc 1 145 3
+  67 0036 06E0     		b	.L4
+  68              	.L3:
+ 146:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 147:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= (DAC_CR_EN1 | DAC_CR_EN2);
+  69              		.loc 1 147 15
+  70 0038 7B68     		ldr	r3, [r7, #4]
+  71 003a 1A68     		ldr	r2, [r3]
+  72 003c 7B68     		ldr	r3, [r7, #4]
+  73 003e 42F00112 		orr	r2, r2, #65537
+  74 0042 1A60     		str	r2, [r3]
+ 148:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+  75              		.loc 1 148 3
+  76 0044 00BF     		nop
+  77              	.L4:
+  78              	.L5:
+ 149:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 150:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+  79              		.loc 1 150 1
+  80 0046 00BF     		nop
+  81 0048 0C37     		adds	r7, r7, #12
+  82              		.cfi_def_cfa_offset 4
+  83 004a BD46     		mov	sp, r7
+  84              		.cfi_def_cfa_register 13
+  85              		@ sp needed
+  86 004c 80BC     		pop	{r7}
+  87              		.cfi_restore 7
+  88              		.cfi_def_cfa_offset 0
+  89 004e 7047     		bx	lr
+  90              		.cfi_endproc
+  91              	.LFE0:
+  93              		.section	.text.dac_disable,"ax",%progbits
+  94              		.align	1
+  95              		.global	dac_disable
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+  99              		.fpu softvfp
+ 101              	dac_disable:
+ 102              	.LFB1:
+ 151:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 152:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel Disable.
+ 153:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 154:../libopencm3/lib/stm32/common/dac_common_all.c **** Disable a digital to analog converter channel.
+ 155:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 156:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC @ref dac_reg_base
+ 157:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask @ref dac_channel_id
+ 158:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 159:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_disable(uint32_t dac, int channel)
+ 160:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 103              		.loc 1 160 1
+ 104              		.cfi_startproc
+ 105              		@ args = 0, pretend = 0, frame = 8
+ 106              		@ frame_needed = 1, uses_anonymous_args = 0
+ 107              		@ link register save eliminated.
+ 108 0000 80B4     		push	{r7}
+ 109              		.cfi_def_cfa_offset 4
+ 110              		.cfi_offset 7, -4
+ 111 0002 83B0     		sub	sp, sp, #12
+ 112              		.cfi_def_cfa_offset 16
+ 113 0004 00AF     		add	r7, sp, #0
+ 114              		.cfi_def_cfa_register 7
+ 115 0006 7860     		str	r0, [r7, #4]
+ 116 0008 3960     		str	r1, [r7]
+ 161:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 117              		.loc 1 161 2
+ 118 000a 3B68     		ldr	r3, [r7]
+ 119 000c 022B     		cmp	r3, #2
+ 120 000e 0CD0     		beq	.L7
+ 121 0010 3B68     		ldr	r3, [r7]
+ 122 0012 032B     		cmp	r3, #3
+ 123 0014 10D0     		beq	.L8
+ 124 0016 3B68     		ldr	r3, [r7]
+ 125 0018 012B     		cmp	r3, #1
+ 126 001a 14D1     		bne	.L11
+ 162:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 163:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_EN1;
+ 127              		.loc 1 163 15
+ 128 001c 7B68     		ldr	r3, [r7, #4]
+ 129 001e 1A68     		ldr	r2, [r3]
+ 130 0020 7B68     		ldr	r3, [r7, #4]
+ 131 0022 22F00102 		bic	r2, r2, #1
+ 132 0026 1A60     		str	r2, [r3]
+ 164:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 133              		.loc 1 164 3
+ 134 0028 0EE0     		b	.L10
+ 135              	.L7:
+ 165:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 166:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_EN2;
+ 136              		.loc 1 166 15
+ 137 002a 7B68     		ldr	r3, [r7, #4]
+ 138 002c 1A68     		ldr	r2, [r3]
+ 139 002e 7B68     		ldr	r3, [r7, #4]
+ 140 0030 22F48032 		bic	r2, r2, #65536
+ 141 0034 1A60     		str	r2, [r3]
+ 167:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 142              		.loc 1 167 3
+ 143 0036 07E0     		b	.L10
+ 144              	.L8:
+ 168:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 169:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~(DAC_CR_EN1 | DAC_CR_EN2);
+ 145              		.loc 1 169 15
+ 146 0038 7B68     		ldr	r3, [r7, #4]
+ 147 003a 1A68     		ldr	r2, [r3]
+ 148 003c 7B68     		ldr	r3, [r7, #4]
+ 149 003e 22F00112 		bic	r2, r2, #65537
+ 150 0042 1A60     		str	r2, [r3]
+ 170:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 151              		.loc 1 170 3
+ 152 0044 00E0     		b	.L10
+ 153              	.L11:
+ 171:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 172:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 154              		.loc 1 172 3
+ 155 0046 00BF     		nop
+ 156              	.L10:
+ 173:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 174:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 157              		.loc 1 174 1
+ 158 0048 00BF     		nop
+ 159 004a 0C37     		adds	r7, r7, #12
+ 160              		.cfi_def_cfa_offset 4
+ 161 004c BD46     		mov	sp, r7
+ 162              		.cfi_def_cfa_register 13
+ 163              		@ sp needed
+ 164 004e 80BC     		pop	{r7}
+ 165              		.cfi_restore 7
+ 166              		.cfi_def_cfa_offset 0
+ 167 0050 7047     		bx	lr
+ 168              		.cfi_endproc
+ 169              	.LFE1:
+ 171              		.section	.text.dac_dma_enable,"ax",%progbits
+ 172              		.align	1
+ 173              		.global	dac_dma_enable
+ 174              		.syntax unified
+ 175              		.thumb
+ 176              		.thumb_func
+ 177              		.fpu softvfp
+ 179              	dac_dma_enable:
+ 180              	.LFB2:
+ 175:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 176:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel DMA Enable.
+ 177:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 178:../libopencm3/lib/stm32/common/dac_common_all.c **** Enable a digital to analog converter channel DMA mode (connected to DMA2 channel
+ 179:../libopencm3/lib/stm32/common/dac_common_all.c **** 3 for DAC channel 1 and DMA2 channel 4 for DAC channel 2). A DMA request is
+ 180:../libopencm3/lib/stm32/common/dac_common_all.c **** generated following an external trigger.
+ 181:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 182:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 183:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 184:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 185:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_dma_enable(uint32_t dac, int channel)
+ 186:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 181              		.loc 1 186 1
+ 182              		.cfi_startproc
+ 183              		@ args = 0, pretend = 0, frame = 8
+ 184              		@ frame_needed = 1, uses_anonymous_args = 0
+ 185              		@ link register save eliminated.
+ 186 0000 80B4     		push	{r7}
+ 187              		.cfi_def_cfa_offset 4
+ 188              		.cfi_offset 7, -4
+ 189 0002 83B0     		sub	sp, sp, #12
+ 190              		.cfi_def_cfa_offset 16
+ 191 0004 00AF     		add	r7, sp, #0
+ 192              		.cfi_def_cfa_register 7
+ 193 0006 7860     		str	r0, [r7, #4]
+ 194 0008 3960     		str	r1, [r7]
+ 187:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 195              		.loc 1 187 2
+ 196 000a 3B68     		ldr	r3, [r7]
+ 197 000c 022B     		cmp	r3, #2
+ 198 000e 0CD0     		beq	.L13
+ 199 0010 3B68     		ldr	r3, [r7]
+ 200 0012 032B     		cmp	r3, #3
+ 201 0014 10D0     		beq	.L14
+ 202 0016 3B68     		ldr	r3, [r7]
+ 203 0018 012B     		cmp	r3, #1
+ 204 001a 14D1     		bne	.L17
+ 188:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 189:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_DMAEN1;
+ 205              		.loc 1 189 15
+ 206 001c 7B68     		ldr	r3, [r7, #4]
+ 207 001e 1A68     		ldr	r2, [r3]
+ 208 0020 7B68     		ldr	r3, [r7, #4]
+ 209 0022 42F48052 		orr	r2, r2, #4096
+ 210 0026 1A60     		str	r2, [r3]
+ 190:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 211              		.loc 1 190 3
+ 212 0028 0EE0     		b	.L16
+ 213              	.L13:
+ 191:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 192:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_DMAEN2;
+ 214              		.loc 1 192 15
+ 215 002a 7B68     		ldr	r3, [r7, #4]
+ 216 002c 1A68     		ldr	r2, [r3]
+ 217 002e 7B68     		ldr	r3, [r7, #4]
+ 218 0030 42F08052 		orr	r2, r2, #268435456
+ 219 0034 1A60     		str	r2, [r3]
+ 193:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 220              		.loc 1 193 3
+ 221 0036 07E0     		b	.L16
+ 222              	.L14:
+ 194:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 195:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= (DAC_CR_DMAEN1 | DAC_CR_DMAEN2);
+ 223              		.loc 1 195 15
+ 224 0038 7B68     		ldr	r3, [r7, #4]
+ 225 003a 1A68     		ldr	r2, [r3]
+ 226 003c 7B68     		ldr	r3, [r7, #4]
+ 227 003e 42F01022 		orr	r2, r2, #268439552
+ 228 0042 1A60     		str	r2, [r3]
+ 196:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 229              		.loc 1 196 3
+ 230 0044 00E0     		b	.L16
+ 231              	.L17:
+ 197:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 198:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 232              		.loc 1 198 3
+ 233 0046 00BF     		nop
+ 234              	.L16:
+ 199:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 200:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 235              		.loc 1 200 1
+ 236 0048 00BF     		nop
+ 237 004a 0C37     		adds	r7, r7, #12
+ 238              		.cfi_def_cfa_offset 4
+ 239 004c BD46     		mov	sp, r7
+ 240              		.cfi_def_cfa_register 13
+ 241              		@ sp needed
+ 242 004e 80BC     		pop	{r7}
+ 243              		.cfi_restore 7
+ 244              		.cfi_def_cfa_offset 0
+ 245 0050 7047     		bx	lr
+ 246              		.cfi_endproc
+ 247              	.LFE2:
+ 249              		.section	.text.dac_dma_disable,"ax",%progbits
+ 250              		.align	1
+ 251              		.global	dac_dma_disable
+ 252              		.syntax unified
+ 253              		.thumb
+ 254              		.thumb_func
+ 255              		.fpu softvfp
+ 257              	dac_dma_disable:
+ 258              	.LFB3:
+ 201:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 202:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel DMA Disable.
+ 203:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 204:../libopencm3/lib/stm32/common/dac_common_all.c **** Disable a digital to analog converter channel DMA mode.
+ 205:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 206:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 207:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 208:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 209:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_dma_disable(uint32_t dac, int channel)
+ 210:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 259              		.loc 1 210 1
+ 260              		.cfi_startproc
+ 261              		@ args = 0, pretend = 0, frame = 8
+ 262              		@ frame_needed = 1, uses_anonymous_args = 0
+ 263              		@ link register save eliminated.
+ 264 0000 80B4     		push	{r7}
+ 265              		.cfi_def_cfa_offset 4
+ 266              		.cfi_offset 7, -4
+ 267 0002 83B0     		sub	sp, sp, #12
+ 268              		.cfi_def_cfa_offset 16
+ 269 0004 00AF     		add	r7, sp, #0
+ 270              		.cfi_def_cfa_register 7
+ 271 0006 7860     		str	r0, [r7, #4]
+ 272 0008 3960     		str	r1, [r7]
+ 211:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 273              		.loc 1 211 2
+ 274 000a 3B68     		ldr	r3, [r7]
+ 275 000c 022B     		cmp	r3, #2
+ 276 000e 0CD0     		beq	.L19
+ 277 0010 3B68     		ldr	r3, [r7]
+ 278 0012 032B     		cmp	r3, #3
+ 279 0014 10D0     		beq	.L20
+ 280 0016 3B68     		ldr	r3, [r7]
+ 281 0018 012B     		cmp	r3, #1
+ 282 001a 14D1     		bne	.L23
+ 212:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 213:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_DMAEN1;
+ 283              		.loc 1 213 15
+ 284 001c 7B68     		ldr	r3, [r7, #4]
+ 285 001e 1A68     		ldr	r2, [r3]
+ 286 0020 7B68     		ldr	r3, [r7, #4]
+ 287 0022 22F48052 		bic	r2, r2, #4096
+ 288 0026 1A60     		str	r2, [r3]
+ 214:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 289              		.loc 1 214 3
+ 290 0028 0EE0     		b	.L22
+ 291              	.L19:
+ 215:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 216:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_DMAEN2;
+ 292              		.loc 1 216 15
+ 293 002a 7B68     		ldr	r3, [r7, #4]
+ 294 002c 1A68     		ldr	r2, [r3]
+ 295 002e 7B68     		ldr	r3, [r7, #4]
+ 296 0030 22F08052 		bic	r2, r2, #268435456
+ 297 0034 1A60     		str	r2, [r3]
+ 217:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 298              		.loc 1 217 3
+ 299 0036 07E0     		b	.L22
+ 300              	.L20:
+ 218:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 219:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~(DAC_CR_DMAEN1 | DAC_CR_DMAEN2);
+ 301              		.loc 1 219 15
+ 302 0038 7B68     		ldr	r3, [r7, #4]
+ 303 003a 1A68     		ldr	r2, [r3]
+ 304 003c 7B68     		ldr	r3, [r7, #4]
+ 305 003e 22F01022 		bic	r2, r2, #268439552
+ 306 0042 1A60     		str	r2, [r3]
+ 220:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 307              		.loc 1 220 3
+ 308 0044 00E0     		b	.L22
+ 309              	.L23:
+ 221:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 222:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 310              		.loc 1 222 3
+ 311 0046 00BF     		nop
+ 312              	.L22:
+ 223:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 224:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 313              		.loc 1 224 1
+ 314 0048 00BF     		nop
+ 315 004a 0C37     		adds	r7, r7, #12
+ 316              		.cfi_def_cfa_offset 4
+ 317 004c BD46     		mov	sp, r7
+ 318              		.cfi_def_cfa_register 13
+ 319              		@ sp needed
+ 320 004e 80BC     		pop	{r7}
+ 321              		.cfi_restore 7
+ 322              		.cfi_def_cfa_offset 0
+ 323 0050 7047     		bx	lr
+ 324              		.cfi_endproc
+ 325              	.LFE3:
+ 327              		.section	.text.dac_trigger_enable,"ax",%progbits
+ 328              		.align	1
+ 329              		.global	dac_trigger_enable
+ 330              		.syntax unified
+ 331              		.thumb
+ 332              		.thumb_func
+ 333              		.fpu softvfp
+ 335              	dac_trigger_enable:
+ 336              	.LFB4:
+ 225:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 226:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel Trigger Enable.
+ 227:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 228:../libopencm3/lib/stm32/common/dac_common_all.c **** Enable a digital to analog converter channel external trigger mode. This allows
+ 229:../libopencm3/lib/stm32/common/dac_common_all.c **** an external trigger to initiate register transfers from the buffer register to
+ 230:../libopencm3/lib/stm32/common/dac_common_all.c **** the DAC output register, followed by a DMA transfer to the buffer register if
+ 231:../libopencm3/lib/stm32/common/dac_common_all.c **** DMA is enabled.  The trigger source must also be selected.
+ 232:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 233:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 234:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 235:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 236:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_trigger_enable(uint32_t dac, int channel)
+ 237:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 337              		.loc 1 237 1
+ 338              		.cfi_startproc
+ 339              		@ args = 0, pretend = 0, frame = 8
+ 340              		@ frame_needed = 1, uses_anonymous_args = 0
+ 341              		@ link register save eliminated.
+ 342 0000 80B4     		push	{r7}
+ 343              		.cfi_def_cfa_offset 4
+ 344              		.cfi_offset 7, -4
+ 345 0002 83B0     		sub	sp, sp, #12
+ 346              		.cfi_def_cfa_offset 16
+ 347 0004 00AF     		add	r7, sp, #0
+ 348              		.cfi_def_cfa_register 7
+ 349 0006 7860     		str	r0, [r7, #4]
+ 350 0008 3960     		str	r1, [r7]
+ 238:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 351              		.loc 1 238 2
+ 352 000a 3B68     		ldr	r3, [r7]
+ 353 000c 022B     		cmp	r3, #2
+ 354 000e 0CD0     		beq	.L25
+ 355 0010 3B68     		ldr	r3, [r7]
+ 356 0012 032B     		cmp	r3, #3
+ 357 0014 10D0     		beq	.L26
+ 358 0016 3B68     		ldr	r3, [r7]
+ 359 0018 012B     		cmp	r3, #1
+ 360 001a 14D1     		bne	.L29
+ 239:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 240:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_TEN1;
+ 361              		.loc 1 240 15
+ 362 001c 7B68     		ldr	r3, [r7, #4]
+ 363 001e 1A68     		ldr	r2, [r3]
+ 364 0020 7B68     		ldr	r3, [r7, #4]
+ 365 0022 42F00402 		orr	r2, r2, #4
+ 366 0026 1A60     		str	r2, [r3]
+ 241:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 367              		.loc 1 241 3
+ 368 0028 0EE0     		b	.L28
+ 369              	.L25:
+ 242:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 243:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= DAC_CR_TEN2;
+ 370              		.loc 1 243 15
+ 371 002a 7B68     		ldr	r3, [r7, #4]
+ 372 002c 1A68     		ldr	r2, [r3]
+ 373 002e 7B68     		ldr	r3, [r7, #4]
+ 374 0030 42F48022 		orr	r2, r2, #262144
+ 375 0034 1A60     		str	r2, [r3]
+ 244:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 376              		.loc 1 244 3
+ 377 0036 07E0     		b	.L28
+ 378              	.L26:
+ 245:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 246:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) |= (DAC_CR_TEN1 | DAC_CR_TEN2);
+ 379              		.loc 1 246 15
+ 380 0038 7B68     		ldr	r3, [r7, #4]
+ 381 003a 1A68     		ldr	r2, [r3]
+ 382 003c 7B68     		ldr	r3, [r7, #4]
+ 383 003e 42F00412 		orr	r2, r2, #262148
+ 384 0042 1A60     		str	r2, [r3]
+ 247:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 385              		.loc 1 247 3
+ 386 0044 00E0     		b	.L28
+ 387              	.L29:
+ 248:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 249:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 388              		.loc 1 249 3
+ 389 0046 00BF     		nop
+ 390              	.L28:
+ 250:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 251:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 391              		.loc 1 251 1
+ 392 0048 00BF     		nop
+ 393 004a 0C37     		adds	r7, r7, #12
+ 394              		.cfi_def_cfa_offset 4
+ 395 004c BD46     		mov	sp, r7
+ 396              		.cfi_def_cfa_register 13
+ 397              		@ sp needed
+ 398 004e 80BC     		pop	{r7}
+ 399              		.cfi_restore 7
+ 400              		.cfi_def_cfa_offset 0
+ 401 0050 7047     		bx	lr
+ 402              		.cfi_endproc
+ 403              	.LFE4:
+ 405              		.section	.text.dac_trigger_disable,"ax",%progbits
+ 406              		.align	1
+ 407              		.global	dac_trigger_disable
+ 408              		.syntax unified
+ 409              		.thumb
+ 410              		.thumb_func
+ 411              		.fpu softvfp
+ 413              	dac_trigger_disable:
+ 414              	.LFB5:
+ 252:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 253:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief DAC Channel Trigger Disable.
+ 254:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 255:../libopencm3/lib/stm32/common/dac_common_all.c **** Disable a digital to analog converter channel external trigger.
+ 256:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 257:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 258:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 259:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 260:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_trigger_disable(uint32_t dac, int channel)
+ 261:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 415              		.loc 1 261 1
+ 416              		.cfi_startproc
+ 417              		@ args = 0, pretend = 0, frame = 8
+ 418              		@ frame_needed = 1, uses_anonymous_args = 0
+ 419              		@ link register save eliminated.
+ 420 0000 80B4     		push	{r7}
+ 421              		.cfi_def_cfa_offset 4
+ 422              		.cfi_offset 7, -4
+ 423 0002 83B0     		sub	sp, sp, #12
+ 424              		.cfi_def_cfa_offset 16
+ 425 0004 00AF     		add	r7, sp, #0
+ 426              		.cfi_def_cfa_register 7
+ 427 0006 7860     		str	r0, [r7, #4]
+ 428 0008 3960     		str	r1, [r7]
+ 262:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 429              		.loc 1 262 2
+ 430 000a 3B68     		ldr	r3, [r7]
+ 431 000c 022B     		cmp	r3, #2
+ 432 000e 0CD0     		beq	.L31
+ 433 0010 3B68     		ldr	r3, [r7]
+ 434 0012 032B     		cmp	r3, #3
+ 435 0014 10D0     		beq	.L32
+ 436 0016 3B68     		ldr	r3, [r7]
+ 437 0018 012B     		cmp	r3, #1
+ 438 001a 14D1     		bne	.L35
+ 263:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 264:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_TEN1;
+ 439              		.loc 1 264 15
+ 440 001c 7B68     		ldr	r3, [r7, #4]
+ 441 001e 1A68     		ldr	r2, [r3]
+ 442 0020 7B68     		ldr	r3, [r7, #4]
+ 443 0022 22F00402 		bic	r2, r2, #4
+ 444 0026 1A60     		str	r2, [r3]
+ 265:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 445              		.loc 1 265 3
+ 446 0028 0EE0     		b	.L34
+ 447              	.L31:
+ 266:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 267:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~DAC_CR_TEN2;
+ 448              		.loc 1 267 15
+ 449 002a 7B68     		ldr	r3, [r7, #4]
+ 450 002c 1A68     		ldr	r2, [r3]
+ 451 002e 7B68     		ldr	r3, [r7, #4]
+ 452 0030 22F48022 		bic	r2, r2, #262144
+ 453 0034 1A60     		str	r2, [r3]
+ 268:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 454              		.loc 1 268 3
+ 455 0036 07E0     		b	.L34
+ 456              	.L32:
+ 269:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 270:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_CR(dac) &= ~(DAC_CR_TEN1 | DAC_CR_TEN2);
+ 457              		.loc 1 270 15
+ 458 0038 7B68     		ldr	r3, [r7, #4]
+ 459 003a 1A68     		ldr	r2, [r3]
+ 460 003c 7B68     		ldr	r3, [r7, #4]
+ 461 003e 22F00412 		bic	r2, r2, #262148
+ 462 0042 1A60     		str	r2, [r3]
+ 271:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 463              		.loc 1 271 3
+ 464 0044 00E0     		b	.L34
+ 465              	.L35:
+ 272:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 273:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 466              		.loc 1 273 3
+ 467 0046 00BF     		nop
+ 468              	.L34:
+ 274:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 275:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 469              		.loc 1 275 1
+ 470 0048 00BF     		nop
+ 471 004a 0C37     		adds	r7, r7, #12
+ 472              		.cfi_def_cfa_offset 4
+ 473 004c BD46     		mov	sp, r7
+ 474              		.cfi_def_cfa_register 13
+ 475              		@ sp needed
+ 476 004e 80BC     		pop	{r7}
+ 477              		.cfi_restore 7
+ 478              		.cfi_def_cfa_offset 0
+ 479 0050 7047     		bx	lr
+ 480              		.cfi_endproc
+ 481              	.LFE5:
+ 483              		.section	.text.dac_set_trigger_source,"ax",%progbits
+ 484              		.align	1
+ 485              		.global	dac_set_trigger_source
+ 486              		.syntax unified
+ 487              		.thumb
+ 488              		.thumb_func
+ 489              		.fpu softvfp
+ 491              	dac_set_trigger_source:
+ 492              	.LFB6:
+ 276:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 277:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief Set DAC Channel Trigger Source.
+ 278:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 279:../libopencm3/lib/stm32/common/dac_common_all.c **** Sets the digital to analog converter trigger source, which can be taken from
+ 280:../libopencm3/lib/stm32/common/dac_common_all.c **** various timers, an external trigger or a software trigger.
+ 281:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 282:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 283:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] source Taken from @ref dac_trig2_sel or @ref
+ 284:../libopencm3/lib/stm32/common/dac_common_all.c **** dac_trig1_sel or a logical OR of one of each of these to set both channels
+ 285:../libopencm3/lib/stm32/common/dac_common_all.c **** simultaneously.
+ 286:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 287:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_set_trigger_source(uint32_t dac, uint32_t source)
+ 288:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 493              		.loc 1 288 1
+ 494              		.cfi_startproc
+ 495              		@ args = 0, pretend = 0, frame = 8
+ 496              		@ frame_needed = 1, uses_anonymous_args = 0
+ 497              		@ link register save eliminated.
+ 498 0000 80B4     		push	{r7}
+ 499              		.cfi_def_cfa_offset 4
+ 500              		.cfi_offset 7, -4
+ 501 0002 83B0     		sub	sp, sp, #12
+ 502              		.cfi_def_cfa_offset 16
+ 503 0004 00AF     		add	r7, sp, #0
+ 504              		.cfi_def_cfa_register 7
+ 505 0006 7860     		str	r0, [r7, #4]
+ 506 0008 3960     		str	r1, [r7]
+ 289:../libopencm3/lib/stm32/common/dac_common_all.c **** 	DAC_CR(dac) |= source;
+ 507              		.loc 1 289 14
+ 508 000a 7B68     		ldr	r3, [r7, #4]
+ 509 000c 1968     		ldr	r1, [r3]
+ 510 000e 7B68     		ldr	r3, [r7, #4]
+ 511 0010 3A68     		ldr	r2, [r7]
+ 512 0012 0A43     		orrs	r2, r2, r1
+ 513 0014 1A60     		str	r2, [r3]
+ 290:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 514              		.loc 1 290 1
+ 515 0016 00BF     		nop
+ 516 0018 0C37     		adds	r7, r7, #12
+ 517              		.cfi_def_cfa_offset 4
+ 518 001a BD46     		mov	sp, r7
+ 519              		.cfi_def_cfa_register 13
+ 520              		@ sp needed
+ 521 001c 80BC     		pop	{r7}
+ 522              		.cfi_restore 7
+ 523              		.cfi_def_cfa_offset 0
+ 524 001e 7047     		bx	lr
+ 525              		.cfi_endproc
+ 526              	.LFE6:
+ 528              		.section	.text.dac_set_waveform_generation,"ax",%progbits
+ 529              		.align	1
+ 530              		.global	dac_set_waveform_generation
+ 531              		.syntax unified
+ 532              		.thumb
+ 533              		.thumb_func
+ 534              		.fpu softvfp
+ 536              	dac_set_waveform_generation:
+ 537              	.LFB7:
+ 291:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 292:../libopencm3/lib/stm32/common/dac_common_all.c **** /**
+ 293:../libopencm3/lib/stm32/common/dac_common_all.c ****  * Set DAC Channel Waveform Generation mode for one or both channels.
+ 294:../libopencm3/lib/stm32/common/dac_common_all.c ****  * These signals are superimposed on existing output values in the
+ 295:../libopencm3/lib/stm32/common/dac_common_all.c ****  * DAC output registers. Waveform can be disabled, noise, triangular,
+ 296:../libopencm3/lib/stm32/common/dac_common_all.c ****  * or sawtooth, depending on family.
+ 297:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @note The DAC trigger must be enabled for this to work.
+ 298:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 299:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @param[in] channel one or both, @ref dac_channel_id
+ 300:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @param[in] wave enum ::dac_wave. mode for channel
+ 301:../libopencm3/lib/stm32/common/dac_common_all.c ****  */
+ 302:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_set_waveform_generation(uint32_t dac, int channel, enum dac_wave wave)
+ 303:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 538              		.loc 1 303 1
+ 539              		.cfi_startproc
+ 540              		@ args = 0, pretend = 0, frame = 24
+ 541              		@ frame_needed = 1, uses_anonymous_args = 0
+ 542              		@ link register save eliminated.
+ 543 0000 80B4     		push	{r7}
+ 544              		.cfi_def_cfa_offset 4
+ 545              		.cfi_offset 7, -4
+ 546 0002 87B0     		sub	sp, sp, #28
+ 547              		.cfi_def_cfa_offset 32
+ 548 0004 00AF     		add	r7, sp, #0
+ 549              		.cfi_def_cfa_register 7
+ 550 0006 F860     		str	r0, [r7, #12]
+ 551 0008 B960     		str	r1, [r7, #8]
+ 552 000a 1346     		mov	r3, r2
+ 553 000c FB71     		strb	r3, [r7, #7]
+ 304:../libopencm3/lib/stm32/common/dac_common_all.c **** 	uint32_t reg = DAC_CR(dac);
+ 554              		.loc 1 304 17
+ 555 000e FB68     		ldr	r3, [r7, #12]
+ 556              		.loc 1 304 11
+ 557 0010 1B68     		ldr	r3, [r3]
+ 558 0012 7B61     		str	r3, [r7, #20]
+ 305:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch(channel) {
+ 559              		.loc 1 305 2
+ 560 0014 BB68     		ldr	r3, [r7, #8]
+ 561 0016 022B     		cmp	r3, #2
+ 562 0018 10D0     		beq	.L38
+ 563 001a BB68     		ldr	r3, [r7, #8]
+ 564 001c 032B     		cmp	r3, #3
+ 565 001e 18D0     		beq	.L39
+ 566 0020 BB68     		ldr	r3, [r7, #8]
+ 567 0022 012B     		cmp	r3, #1
+ 568 0024 22D1     		bne	.L42
+ 306:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 307:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_WAVEx_MASK << DAC_CR_WAVE1_SHIFT);
+ 569              		.loc 1 307 7
+ 570 0026 7B69     		ldr	r3, [r7, #20]
+ 571 0028 23F0C003 		bic	r3, r3, #192
+ 572 002c 7B61     		str	r3, [r7, #20]
+ 308:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= wave << DAC_CR_WAVE1_SHIFT;
+ 573              		.loc 1 308 15
+ 574 002e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 575 0030 9B01     		lsls	r3, r3, #6
+ 576 0032 1A46     		mov	r2, r3
+ 577              		.loc 1 308 7
+ 578 0034 7B69     		ldr	r3, [r7, #20]
+ 579 0036 1343     		orrs	r3, r3, r2
+ 580 0038 7B61     		str	r3, [r7, #20]
+ 309:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 581              		.loc 1 309 3
+ 582 003a 18E0     		b	.L41
+ 583              	.L38:
+ 310:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 311:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_WAVEx_MASK << DAC_CR_WAVE2_SHIFT);
+ 584              		.loc 1 311 7
+ 585 003c 7B69     		ldr	r3, [r7, #20]
+ 586 003e 23F44003 		bic	r3, r3, #12582912
+ 587 0042 7B61     		str	r3, [r7, #20]
+ 312:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= wave << DAC_CR_WAVE2_SHIFT;
+ 588              		.loc 1 312 15
+ 589 0044 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 590 0046 9B05     		lsls	r3, r3, #22
+ 591 0048 1A46     		mov	r2, r3
+ 592              		.loc 1 312 7
+ 593 004a 7B69     		ldr	r3, [r7, #20]
+ 594 004c 1343     		orrs	r3, r3, r2
+ 595 004e 7B61     		str	r3, [r7, #20]
+ 313:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 596              		.loc 1 313 3
+ 597 0050 0DE0     		b	.L41
+ 598              	.L39:
+ 314:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 315:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_WAVEx_MASK << DAC_CR_WAVE1_SHIFT)
+ 316:../libopencm3/lib/stm32/common/dac_common_all.c **** 			| ~(DAC_CR_WAVEx_MASK << DAC_CR_WAVE2_SHIFT);
+ 317:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= wave << DAC_CR_WAVE1_SHIFT;
+ 599              		.loc 1 317 15
+ 600 0052 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 601 0054 9B01     		lsls	r3, r3, #6
+ 602 0056 1A46     		mov	r2, r3
+ 603              		.loc 1 317 7
+ 604 0058 7B69     		ldr	r3, [r7, #20]
+ 605 005a 1343     		orrs	r3, r3, r2
+ 606 005c 7B61     		str	r3, [r7, #20]
+ 318:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= wave << DAC_CR_WAVE2_SHIFT;
+ 607              		.loc 1 318 15
+ 608 005e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 609 0060 9B05     		lsls	r3, r3, #22
+ 610 0062 1A46     		mov	r2, r3
+ 611              		.loc 1 318 7
+ 612 0064 7B69     		ldr	r3, [r7, #20]
+ 613 0066 1343     		orrs	r3, r3, r2
+ 614 0068 7B61     		str	r3, [r7, #20]
+ 319:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 615              		.loc 1 319 3
+ 616 006a 00E0     		b	.L41
+ 617              	.L42:
+ 320:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 321:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 618              		.loc 1 321 3
+ 619 006c 00BF     		nop
+ 620              	.L41:
+ 322:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 323:../libopencm3/lib/stm32/common/dac_common_all.c **** 	DAC_CR(dac) = reg;
+ 621              		.loc 1 323 2
+ 622 006e FB68     		ldr	r3, [r7, #12]
+ 623              		.loc 1 323 14
+ 624 0070 7A69     		ldr	r2, [r7, #20]
+ 625 0072 1A60     		str	r2, [r3]
+ 324:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 626              		.loc 1 324 1
+ 627 0074 00BF     		nop
+ 628 0076 1C37     		adds	r7, r7, #28
+ 629              		.cfi_def_cfa_offset 4
+ 630 0078 BD46     		mov	sp, r7
+ 631              		.cfi_def_cfa_register 13
+ 632              		@ sp needed
+ 633 007a 80BC     		pop	{r7}
+ 634              		.cfi_restore 7
+ 635              		.cfi_def_cfa_offset 0
+ 636 007c 7047     		bx	lr
+ 637              		.cfi_endproc
+ 638              	.LFE7:
+ 640              		.section	.text.dac_disable_waveform_generation,"ax",%progbits
+ 641              		.align	1
+ 642              		.global	dac_disable_waveform_generation
+ 643              		.syntax unified
+ 644              		.thumb
+ 645              		.thumb_func
+ 646              		.fpu softvfp
+ 648              	dac_disable_waveform_generation:
+ 649              	.LFB8:
+ 325:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 326:../libopencm3/lib/stm32/common/dac_common_all.c **** /**
+ 327:../libopencm3/lib/stm32/common/dac_common_all.c ****  * Disable DAC Channel Waveform Generation.
+ 328:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @note this is equivalent to @ref dac_set_waveform_generation (dac, channel, DAC_WAVE_DISABLE)
+ 329:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 330:../libopencm3/lib/stm32/common/dac_common_all.c ****  * @param[in] channel with DAC mask. @ref dac_channel_id
+ 331:../libopencm3/lib/stm32/common/dac_common_all.c ****  */
+ 332:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_disable_waveform_generation(uint32_t dac, int channel)
+ 333:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 650              		.loc 1 333 1
+ 651              		.cfi_startproc
+ 652              		@ args = 0, pretend = 0, frame = 8
+ 653              		@ frame_needed = 1, uses_anonymous_args = 0
+ 654 0000 80B5     		push	{r7, lr}
+ 655              		.cfi_def_cfa_offset 8
+ 656              		.cfi_offset 7, -8
+ 657              		.cfi_offset 14, -4
+ 658 0002 82B0     		sub	sp, sp, #8
+ 659              		.cfi_def_cfa_offset 16
+ 660 0004 00AF     		add	r7, sp, #0
+ 661              		.cfi_def_cfa_register 7
+ 662 0006 7860     		str	r0, [r7, #4]
+ 663 0008 3960     		str	r1, [r7]
+ 334:../libopencm3/lib/stm32/common/dac_common_all.c **** 	dac_set_waveform_generation(dac, channel, DAC_WAVE_DISABLE);
+ 664              		.loc 1 334 2
+ 665 000a 0022     		movs	r2, #0
+ 666 000c 3968     		ldr	r1, [r7]
+ 667 000e 7868     		ldr	r0, [r7, #4]
+ 668 0010 FFF7FEFF 		bl	dac_set_waveform_generation(PLT)
+ 335:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 669              		.loc 1 335 1
+ 670 0014 00BF     		nop
+ 671 0016 0837     		adds	r7, r7, #8
+ 672              		.cfi_def_cfa_offset 8
+ 673 0018 BD46     		mov	sp, r7
+ 674              		.cfi_def_cfa_register 13
+ 675              		@ sp needed
+ 676 001a 80BD     		pop	{r7, pc}
+ 677              		.cfi_endproc
+ 678              	.LFE8:
+ 680              		.section	.text.dac_set_waveform_characteristics,"ax",%progbits
+ 681              		.align	1
+ 682              		.global	dac_set_waveform_characteristics
+ 683              		.syntax unified
+ 684              		.thumb
+ 685              		.thumb_func
+ 686              		.fpu softvfp
+ 688              	dac_set_waveform_characteristics:
+ 689              	.LFB9:
+ 336:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 337:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief Set DAC Channel LFSR Mask or Triangle Wave Amplitude.
+ 338:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 339:../libopencm3/lib/stm32/common/dac_common_all.c **** Sets the digital to analog converter superimposed waveform generation
+ 340:../libopencm3/lib/stm32/common/dac_common_all.c **** characteristics.  @li If the noise generation mode is set, this sets the length
+ 341:../libopencm3/lib/stm32/common/dac_common_all.c **** of the PRBS sequence and hence the amplitude of the output noise signal.
+ 342:../libopencm3/lib/stm32/common/dac_common_all.c **** Default setting is length 1.  @li If the triangle wave generation mode is set,
+ 343:../libopencm3/lib/stm32/common/dac_common_all.c **** this sets the amplitude of the output signal as 2^(n)-1 where n is the
+ 344:../libopencm3/lib/stm32/common/dac_common_all.c **** parameter value. Default setting is 1.
+ 345:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 346:../libopencm3/lib/stm32/common/dac_common_all.c **** @note High amplitude levels of these waveforms can overload the DAC and distort
+ 347:../libopencm3/lib/stm32/common/dac_common_all.c **** the signal output.
+ 348:../libopencm3/lib/stm32/common/dac_common_all.c **** @note This must be called before enabling the DAC as the settings will then
+ 349:../libopencm3/lib/stm32/common/dac_common_all.c **** become read-only.
+ 350:../libopencm3/lib/stm32/common/dac_common_all.c **** @note The DAC trigger must be enabled for this to work.
+ 351:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 352:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 353:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel one or both, select from @ref dac_channel_id
+ 354:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] mamp amplitude of mixed waveform, bit width @ref DAC_CR_MAMPx_MASK
+ 355:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 356:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_set_waveform_characteristics(uint32_t dac, int channel, int mamp)
+ 357:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 690              		.loc 1 357 1
+ 691              		.cfi_startproc
+ 692              		@ args = 0, pretend = 0, frame = 24
+ 693              		@ frame_needed = 1, uses_anonymous_args = 0
+ 694              		@ link register save eliminated.
+ 695 0000 80B4     		push	{r7}
+ 696              		.cfi_def_cfa_offset 4
+ 697              		.cfi_offset 7, -4
+ 698 0002 87B0     		sub	sp, sp, #28
+ 699              		.cfi_def_cfa_offset 32
+ 700 0004 00AF     		add	r7, sp, #0
+ 701              		.cfi_def_cfa_register 7
+ 702 0006 F860     		str	r0, [r7, #12]
+ 703 0008 B960     		str	r1, [r7, #8]
+ 704 000a 7A60     		str	r2, [r7, #4]
+ 358:../libopencm3/lib/stm32/common/dac_common_all.c **** 	uint32_t reg = DAC_CR(dac);
+ 705              		.loc 1 358 17
+ 706 000c FB68     		ldr	r3, [r7, #12]
+ 707              		.loc 1 358 11
+ 708 000e 1B68     		ldr	r3, [r3]
+ 709 0010 7B61     		str	r3, [r7, #20]
+ 359:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch(channel) {
+ 710              		.loc 1 359 2
+ 711 0012 BB68     		ldr	r3, [r7, #8]
+ 712 0014 022B     		cmp	r3, #2
+ 713 0016 10D0     		beq	.L45
+ 714 0018 BB68     		ldr	r3, [r7, #8]
+ 715 001a 032B     		cmp	r3, #3
+ 716 001c 18D0     		beq	.L46
+ 717 001e BB68     		ldr	r3, [r7, #8]
+ 718 0020 012B     		cmp	r3, #1
+ 719 0022 22D1     		bne	.L49
+ 360:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 361:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_MAMPx_MASK << DAC_CR_MAMP1_SHIFT);
+ 720              		.loc 1 361 7
+ 721 0024 7B69     		ldr	r3, [r7, #20]
+ 722 0026 23F47063 		bic	r3, r3, #3840
+ 723 002a 7B61     		str	r3, [r7, #20]
+ 362:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= mamp << DAC_CR_MAMP1_SHIFT;
+ 724              		.loc 1 362 15
+ 725 002c 7B68     		ldr	r3, [r7, #4]
+ 726 002e 1B02     		lsls	r3, r3, #8
+ 727 0030 1A46     		mov	r2, r3
+ 728              		.loc 1 362 7
+ 729 0032 7B69     		ldr	r3, [r7, #20]
+ 730 0034 1343     		orrs	r3, r3, r2
+ 731 0036 7B61     		str	r3, [r7, #20]
+ 363:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 732              		.loc 1 363 3
+ 733 0038 18E0     		b	.L48
+ 734              	.L45:
+ 364:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 365:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_MAMPx_MASK << DAC_CR_MAMP2_SHIFT);
+ 735              		.loc 1 365 7
+ 736 003a 7B69     		ldr	r3, [r7, #20]
+ 737 003c 23F07063 		bic	r3, r3, #251658240
+ 738 0040 7B61     		str	r3, [r7, #20]
+ 366:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= mamp << DAC_CR_MAMP2_SHIFT;
+ 739              		.loc 1 366 15
+ 740 0042 7B68     		ldr	r3, [r7, #4]
+ 741 0044 1B06     		lsls	r3, r3, #24
+ 742 0046 1A46     		mov	r2, r3
+ 743              		.loc 1 366 7
+ 744 0048 7B69     		ldr	r3, [r7, #20]
+ 745 004a 1343     		orrs	r3, r3, r2
+ 746 004c 7B61     		str	r3, [r7, #20]
+ 367:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 747              		.loc 1 367 3
+ 748 004e 0DE0     		b	.L48
+ 749              	.L46:
+ 368:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 369:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg &= ~(DAC_CR_MAMPx_MASK << DAC_CR_MAMP1_SHIFT)
+ 370:../libopencm3/lib/stm32/common/dac_common_all.c **** 			| ~(DAC_CR_MAMPx_MASK << DAC_CR_MAMP2_SHIFT);
+ 371:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= mamp << DAC_CR_MAMP1_SHIFT;
+ 750              		.loc 1 371 15
+ 751 0050 7B68     		ldr	r3, [r7, #4]
+ 752 0052 1B02     		lsls	r3, r3, #8
+ 753 0054 1A46     		mov	r2, r3
+ 754              		.loc 1 371 7
+ 755 0056 7B69     		ldr	r3, [r7, #20]
+ 756 0058 1343     		orrs	r3, r3, r2
+ 757 005a 7B61     		str	r3, [r7, #20]
+ 372:../libopencm3/lib/stm32/common/dac_common_all.c **** 		reg |= mamp << DAC_CR_MAMP2_SHIFT;
+ 758              		.loc 1 372 15
+ 759 005c 7B68     		ldr	r3, [r7, #4]
+ 760 005e 1B06     		lsls	r3, r3, #24
+ 761 0060 1A46     		mov	r2, r3
+ 762              		.loc 1 372 7
+ 763 0062 7B69     		ldr	r3, [r7, #20]
+ 764 0064 1343     		orrs	r3, r3, r2
+ 765 0066 7B61     		str	r3, [r7, #20]
+ 373:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 766              		.loc 1 373 3
+ 767 0068 00E0     		b	.L48
+ 768              	.L49:
+ 374:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 375:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 769              		.loc 1 375 3
+ 770 006a 00BF     		nop
+ 771              	.L48:
+ 376:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 377:../libopencm3/lib/stm32/common/dac_common_all.c **** 	DAC_CR(dac) = reg;
+ 772              		.loc 1 377 2
+ 773 006c FB68     		ldr	r3, [r7, #12]
+ 774              		.loc 1 377 14
+ 775 006e 7A69     		ldr	r2, [r7, #20]
+ 776 0070 1A60     		str	r2, [r3]
+ 378:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 777              		.loc 1 378 1
+ 778 0072 00BF     		nop
+ 779 0074 1C37     		adds	r7, r7, #28
+ 780              		.cfi_def_cfa_offset 4
+ 781 0076 BD46     		mov	sp, r7
+ 782              		.cfi_def_cfa_register 13
+ 783              		@ sp needed
+ 784 0078 80BC     		pop	{r7}
+ 785              		.cfi_restore 7
+ 786              		.cfi_def_cfa_offset 0
+ 787 007a 7047     		bx	lr
+ 788              		.cfi_endproc
+ 789              	.LFE9:
+ 791              		.section	.text.dac_load_data_buffer_single,"ax",%progbits
+ 792              		.align	1
+ 793              		.global	dac_load_data_buffer_single
+ 794              		.syntax unified
+ 795              		.thumb
+ 796              		.thumb_func
+ 797              		.fpu softvfp
+ 799              	dac_load_data_buffer_single:
+ 800              	.LFB10:
+ 379:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 380:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief Load DAC Data Register.
+ 381:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 382:../libopencm3/lib/stm32/common/dac_common_all.c **** Loads the appropriate digital to analog converter data register with 12 or 8 bit
+ 383:../libopencm3/lib/stm32/common/dac_common_all.c **** data to be converted on a channel. The data can be aligned as follows:
+ 384:../libopencm3/lib/stm32/common/dac_common_all.c **** @li right-aligned 8 bit data in bits 0-7
+ 385:../libopencm3/lib/stm32/common/dac_common_all.c **** @li right-aligned 12 bit data in bits 0-11
+ 386:../libopencm3/lib/stm32/common/dac_common_all.c **** @li left aligned 12 bit data in bits 4-15
+ 387:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 388:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 389:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] data uint16_t with appropriate alignment.
+ 390:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] align enum ::dac_align. Alignment and size.
+ 391:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel uint8_t with DAC mask.
+ 392:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 393:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_load_data_buffer_single(uint32_t dac, uint16_t data,
+ 394:../libopencm3/lib/stm32/common/dac_common_all.c **** 		enum dac_align align,
+ 395:../libopencm3/lib/stm32/common/dac_common_all.c **** 		int channel)
+ 396:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 801              		.loc 1 396 1
+ 802              		.cfi_startproc
+ 803              		@ args = 0, pretend = 0, frame = 16
+ 804              		@ frame_needed = 1, uses_anonymous_args = 0
+ 805              		@ link register save eliminated.
+ 806 0000 80B4     		push	{r7}
+ 807              		.cfi_def_cfa_offset 4
+ 808              		.cfi_offset 7, -4
+ 809 0002 85B0     		sub	sp, sp, #20
+ 810              		.cfi_def_cfa_offset 24
+ 811 0004 00AF     		add	r7, sp, #0
+ 812              		.cfi_def_cfa_register 7
+ 813 0006 F860     		str	r0, [r7, #12]
+ 814 0008 7B60     		str	r3, [r7, #4]
+ 815 000a 0B46     		mov	r3, r1	@ movhi
+ 816 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 817 000e 1346     		mov	r3, r2
+ 818 0010 7B72     		strb	r3, [r7, #9]
+ 397:../libopencm3/lib/stm32/common/dac_common_all.c **** 	if (channel == DAC_CHANNEL1) {
+ 819              		.loc 1 397 5
+ 820 0012 7B68     		ldr	r3, [r7, #4]
+ 821 0014 012B     		cmp	r3, #1
+ 822 0016 18D1     		bne	.L51
+ 398:../libopencm3/lib/stm32/common/dac_common_all.c **** 		switch (align) {
+ 823              		.loc 1 398 3
+ 824 0018 7B7A     		ldrb	r3, [r7, #9]	@ zero_extendqisi2
+ 825 001a 012B     		cmp	r3, #1
+ 826 001c 09D0     		beq	.L52
+ 827 001e 022B     		cmp	r3, #2
+ 828 0020 0DD0     		beq	.L53
+ 829 0022 002B     		cmp	r3, #0
+ 830 0024 2DD1     		bne	.L60
+ 399:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_RIGHT8:
+ 400:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR8R1(dac) = data;
+ 831              		.loc 1 400 4
+ 832 0026 FB68     		ldr	r3, [r7, #12]
+ 833 0028 1033     		adds	r3, r3, #16
+ 834 002a 1A46     		mov	r2, r3
+ 835              		.loc 1 400 20
+ 836 002c 7B89     		ldrh	r3, [r7, #10]
+ 837 002e 1360     		str	r3, [r2]
+ 401:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 838              		.loc 1 401 4
+ 839 0030 2CE0     		b	.L56
+ 840              	.L52:
+ 402:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_RIGHT12:
+ 403:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR12R1(dac) = data;
+ 841              		.loc 1 403 4
+ 842 0032 FB68     		ldr	r3, [r7, #12]
+ 843 0034 0833     		adds	r3, r3, #8
+ 844 0036 1A46     		mov	r2, r3
+ 845              		.loc 1 403 21
+ 846 0038 7B89     		ldrh	r3, [r7, #10]
+ 847 003a 1360     		str	r3, [r2]
+ 404:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 848              		.loc 1 404 4
+ 849 003c 26E0     		b	.L56
+ 850              	.L53:
+ 405:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_LEFT12:
+ 406:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR12L1(dac) = data;
+ 851              		.loc 1 406 4
+ 852 003e FB68     		ldr	r3, [r7, #12]
+ 853 0040 0C33     		adds	r3, r3, #12
+ 854 0042 1A46     		mov	r2, r3
+ 855              		.loc 1 406 21
+ 856 0044 7B89     		ldrh	r3, [r7, #10]
+ 857 0046 1360     		str	r3, [r2]
+ 407:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 858              		.loc 1 407 4
+ 859 0048 20E0     		b	.L56
+ 860              	.L51:
+ 408:../libopencm3/lib/stm32/common/dac_common_all.c **** 		default:
+ 409:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 410:../libopencm3/lib/stm32/common/dac_common_all.c **** 		}
+ 411:../libopencm3/lib/stm32/common/dac_common_all.c **** 	} else if (channel == DAC_CHANNEL2) {
+ 861              		.loc 1 411 12
+ 862 004a 7B68     		ldr	r3, [r7, #4]
+ 863 004c 022B     		cmp	r3, #2
+ 864 004e 1AD1     		bne	.L61
+ 412:../libopencm3/lib/stm32/common/dac_common_all.c **** 		switch (align) {
+ 865              		.loc 1 412 3
+ 866 0050 7B7A     		ldrb	r3, [r7, #9]	@ zero_extendqisi2
+ 867 0052 012B     		cmp	r3, #1
+ 868 0054 09D0     		beq	.L57
+ 869 0056 022B     		cmp	r3, #2
+ 870 0058 0DD0     		beq	.L58
+ 871 005a 002B     		cmp	r3, #0
+ 872 005c 15D1     		bne	.L62
+ 413:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_RIGHT8:
+ 414:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR8R2(dac) = data;
+ 873              		.loc 1 414 4
+ 874 005e FB68     		ldr	r3, [r7, #12]
+ 875 0060 1C33     		adds	r3, r3, #28
+ 876 0062 1A46     		mov	r2, r3
+ 877              		.loc 1 414 20
+ 878 0064 7B89     		ldrh	r3, [r7, #10]
+ 879 0066 1360     		str	r3, [r2]
+ 415:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 880              		.loc 1 415 4
+ 881 0068 10E0     		b	.L56
+ 882              	.L57:
+ 416:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_RIGHT12:
+ 417:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR12R2(dac) = data;
+ 883              		.loc 1 417 4
+ 884 006a FB68     		ldr	r3, [r7, #12]
+ 885 006c 1433     		adds	r3, r3, #20
+ 886 006e 1A46     		mov	r2, r3
+ 887              		.loc 1 417 21
+ 888 0070 7B89     		ldrh	r3, [r7, #10]
+ 889 0072 1360     		str	r3, [r2]
+ 418:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 890              		.loc 1 418 4
+ 891 0074 0AE0     		b	.L56
+ 892              	.L58:
+ 419:../libopencm3/lib/stm32/common/dac_common_all.c **** 		case DAC_ALIGN_LEFT12:
+ 420:../libopencm3/lib/stm32/common/dac_common_all.c **** 			DAC_DHR12L2(dac) = data;
+ 893              		.loc 1 420 4
+ 894 0076 FB68     		ldr	r3, [r7, #12]
+ 895 0078 1833     		adds	r3, r3, #24
+ 896 007a 1A46     		mov	r2, r3
+ 897              		.loc 1 420 21
+ 898 007c 7B89     		ldrh	r3, [r7, #10]
+ 899 007e 1360     		str	r3, [r2]
+ 421:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 900              		.loc 1 421 4
+ 901 0080 04E0     		b	.L56
+ 902              	.L60:
+ 409:../libopencm3/lib/stm32/common/dac_common_all.c **** 		}
+ 903              		.loc 1 409 4
+ 904 0082 00BF     		nop
+ 905 0084 02E0     		b	.L56
+ 906              	.L61:
+ 422:../libopencm3/lib/stm32/common/dac_common_all.c **** 		default:
+ 423:../libopencm3/lib/stm32/common/dac_common_all.c **** 			break;
+ 424:../libopencm3/lib/stm32/common/dac_common_all.c **** 		}
+ 425:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 907              		.loc 1 425 2
+ 908 0086 00BF     		nop
+ 909 0088 00E0     		b	.L56
+ 910              	.L62:
+ 423:../libopencm3/lib/stm32/common/dac_common_all.c **** 		}
+ 911              		.loc 1 423 4
+ 912 008a 00BF     		nop
+ 913              	.L56:
+ 426:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 914              		.loc 1 426 1
+ 915 008c 00BF     		nop
+ 916 008e 1437     		adds	r7, r7, #20
+ 917              		.cfi_def_cfa_offset 4
+ 918 0090 BD46     		mov	sp, r7
+ 919              		.cfi_def_cfa_register 13
+ 920              		@ sp needed
+ 921 0092 80BC     		pop	{r7}
+ 922              		.cfi_restore 7
+ 923              		.cfi_def_cfa_offset 0
+ 924 0094 7047     		bx	lr
+ 925              		.cfi_endproc
+ 926              	.LFE10:
+ 928              		.section	.text.dac_load_data_buffer_dual,"ax",%progbits
+ 929              		.align	1
+ 930              		.global	dac_load_data_buffer_dual
+ 931              		.syntax unified
+ 932              		.thumb
+ 933              		.thumb_func
+ 934              		.fpu softvfp
+ 936              	dac_load_data_buffer_dual:
+ 937              	.LFB11:
+ 427:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 428:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief Load DAC Dual Data Register.
+ 429:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 430:../libopencm3/lib/stm32/common/dac_common_all.c **** Loads the appropriate digital to analog converter dual data register with 12 or
+ 431:../libopencm3/lib/stm32/common/dac_common_all.c **** 8 bit data to be converted for both channels. This allows high bandwidth
+ 432:../libopencm3/lib/stm32/common/dac_common_all.c **** simultaneous or independent analog output. The data in both channels are aligned
+ 433:../libopencm3/lib/stm32/common/dac_common_all.c **** identically.
+ 434:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 435:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 436:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] data1 uint16_t for channel 1 with appropriate alignment.
+ 437:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] data2 uint16_t for channel 2 with appropriate alignment.
+ 438:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] align enum ::dac_align. Right or left aligned, and 8 or
+ 439:../libopencm3/lib/stm32/common/dac_common_all.c **** 12 bit.
+ 440:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 441:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_load_data_buffer_dual(uint32_t dac,
+ 442:../libopencm3/lib/stm32/common/dac_common_all.c **** 		uint16_t data1, uint16_t data2,
+ 443:../libopencm3/lib/stm32/common/dac_common_all.c **** 		enum dac_align align)
+ 444:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 938              		.loc 1 444 1
+ 939              		.cfi_startproc
+ 940              		@ args = 0, pretend = 0, frame = 16
+ 941              		@ frame_needed = 1, uses_anonymous_args = 0
+ 942              		@ link register save eliminated.
+ 943 0000 80B4     		push	{r7}
+ 944              		.cfi_def_cfa_offset 4
+ 945              		.cfi_offset 7, -4
+ 946 0002 85B0     		sub	sp, sp, #20
+ 947              		.cfi_def_cfa_offset 24
+ 948 0004 00AF     		add	r7, sp, #0
+ 949              		.cfi_def_cfa_register 7
+ 950 0006 F860     		str	r0, [r7, #12]
+ 951 0008 0846     		mov	r0, r1
+ 952 000a 1146     		mov	r1, r2
+ 953 000c 1A46     		mov	r2, r3
+ 954 000e 0346     		mov	r3, r0	@ movhi
+ 955 0010 7B81     		strh	r3, [r7, #10]	@ movhi
+ 956 0012 0B46     		mov	r3, r1	@ movhi
+ 957 0014 3B81     		strh	r3, [r7, #8]	@ movhi
+ 958 0016 1346     		mov	r3, r2
+ 959 0018 FB71     		strb	r3, [r7, #7]
+ 445:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (align) {
+ 960              		.loc 1 445 2
+ 961 001a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 962 001c 012B     		cmp	r3, #1
+ 963 001e 0DD0     		beq	.L64
+ 964 0020 022B     		cmp	r3, #2
+ 965 0022 17D0     		beq	.L65
+ 966 0024 002B     		cmp	r3, #0
+ 967 0026 21D1     		bne	.L68
+ 446:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_ALIGN_RIGHT8:
+ 447:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_DHR8RD(dac) = ((data1 & 0xFF) | ((data2 & 0xFF) << 8));
+ 968              		.loc 1 447 29
+ 969 0028 7B89     		ldrh	r3, [r7, #10]
+ 970 002a DAB2     		uxtb	r2, r3
+ 971              		.loc 1 447 55
+ 972 002c 3B89     		ldrh	r3, [r7, #8]
+ 973 002e 1B02     		lsls	r3, r3, #8
+ 974 0030 9BB2     		uxth	r3, r3
+ 975              		.loc 1 447 37
+ 976 0032 1A43     		orrs	r2, r2, r3
+ 977              		.loc 1 447 3
+ 978 0034 FB68     		ldr	r3, [r7, #12]
+ 979 0036 2833     		adds	r3, r3, #40
+ 980              		.loc 1 447 19
+ 981 0038 1A60     		str	r2, [r3]
+ 448:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 982              		.loc 1 448 3
+ 983 003a 18E0     		b	.L67
+ 984              	.L64:
+ 449:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_ALIGN_RIGHT12:
+ 450:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_DHR12RD(dac) = ((data1 & 0xFFF) |
+ 985              		.loc 1 450 30
+ 986 003c 7B89     		ldrh	r3, [r7, #10]
+ 987 003e C3F30B02 		ubfx	r2, r3, #0, #12
+ 451:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 988              		.loc 1 451 22
+ 989 0042 3B89     		ldrh	r3, [r7, #8]
+ 990 0044 1904     		lsls	r1, r3, #16
+ 991 0046 0C4B     		ldr	r3, .L69
+ 992 0048 0B40     		ands	r3, r3, r1
+ 450:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 993              		.loc 1 450 39
+ 994 004a 1A43     		orrs	r2, r2, r3
+ 450:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 995              		.loc 1 450 3
+ 996 004c FB68     		ldr	r3, [r7, #12]
+ 997 004e 2033     		adds	r3, r3, #32
+ 450:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 998              		.loc 1 450 20
+ 999 0050 1A60     		str	r2, [r3]
+ 452:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1000              		.loc 1 452 3
+ 1001 0052 0CE0     		b	.L67
+ 1002              	.L65:
+ 453:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_ALIGN_LEFT12:
+ 454:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_DHR12LD(dac) = ((data1 & 0xFFF) |
+ 1003              		.loc 1 454 30
+ 1004 0054 7B89     		ldrh	r3, [r7, #10]
+ 1005 0056 C3F30B02 		ubfx	r2, r3, #0, #12
+ 455:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 1006              		.loc 1 455 22
+ 1007 005a 3B89     		ldrh	r3, [r7, #8]
+ 1008 005c 1904     		lsls	r1, r3, #16
+ 1009 005e 064B     		ldr	r3, .L69
+ 1010 0060 0B40     		ands	r3, r3, r1
+ 454:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 1011              		.loc 1 454 39
+ 1012 0062 1A43     		orrs	r2, r2, r3
+ 454:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 1013              		.loc 1 454 3
+ 1014 0064 FB68     		ldr	r3, [r7, #12]
+ 1015 0066 2433     		adds	r3, r3, #36
+ 454:../libopencm3/lib/stm32/common/dac_common_all.c **** 				((data2 & 0xFFF) << 16));
+ 1016              		.loc 1 454 20
+ 1017 0068 1A60     		str	r2, [r3]
+ 456:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1018              		.loc 1 456 3
+ 1019 006a 00E0     		b	.L67
+ 1020              	.L68:
+ 457:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 458:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1021              		.loc 1 458 3
+ 1022 006c 00BF     		nop
+ 1023              	.L67:
+ 459:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 460:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 1024              		.loc 1 460 1
+ 1025 006e 00BF     		nop
+ 1026 0070 1437     		adds	r7, r7, #20
+ 1027              		.cfi_def_cfa_offset 4
+ 1028 0072 BD46     		mov	sp, r7
+ 1029              		.cfi_def_cfa_register 13
+ 1030              		@ sp needed
+ 1031 0074 80BC     		pop	{r7}
+ 1032              		.cfi_restore 7
+ 1033              		.cfi_def_cfa_offset 0
+ 1034 0076 7047     		bx	lr
+ 1035              	.L70:
+ 1036              		.align	2
+ 1037              	.L69:
+ 1038 0078 0000FF0F 		.word	268369920
+ 1039              		.cfi_endproc
+ 1040              	.LFE11:
+ 1042              		.section	.text.dac_software_trigger,"ax",%progbits
+ 1043              		.align	1
+ 1044              		.global	dac_software_trigger
+ 1045              		.syntax unified
+ 1046              		.thumb
+ 1047              		.thumb_func
+ 1048              		.fpu softvfp
+ 1050              	dac_software_trigger:
+ 1051              	.LFB12:
+ 461:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 462:../libopencm3/lib/stm32/common/dac_common_all.c **** /** @brief Trigger the DAC by a Software Trigger.
+ 463:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 464:../libopencm3/lib/stm32/common/dac_common_all.c **** If the trigger source is set to be a software trigger, cause a trigger to occur.
+ 465:../libopencm3/lib/stm32/common/dac_common_all.c **** The trigger is cleared by hardware after conversion.
+ 466:../libopencm3/lib/stm32/common/dac_common_all.c **** 
+ 467:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+ 468:../libopencm3/lib/stm32/common/dac_common_all.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+ 469:../libopencm3/lib/stm32/common/dac_common_all.c **** */
+ 470:../libopencm3/lib/stm32/common/dac_common_all.c **** void dac_software_trigger(uint32_t dac, int channel)
+ 471:../libopencm3/lib/stm32/common/dac_common_all.c **** {
+ 1052              		.loc 1 471 1
+ 1053              		.cfi_startproc
+ 1054              		@ args = 0, pretend = 0, frame = 8
+ 1055              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1056              		@ link register save eliminated.
+ 1057 0000 80B4     		push	{r7}
+ 1058              		.cfi_def_cfa_offset 4
+ 1059              		.cfi_offset 7, -4
+ 1060 0002 83B0     		sub	sp, sp, #12
+ 1061              		.cfi_def_cfa_offset 16
+ 1062 0004 00AF     		add	r7, sp, #0
+ 1063              		.cfi_def_cfa_register 7
+ 1064 0006 7860     		str	r0, [r7, #4]
+ 1065 0008 3960     		str	r1, [r7]
+ 472:../libopencm3/lib/stm32/common/dac_common_all.c **** 	switch (channel) {
+ 1066              		.loc 1 472 2
+ 1067 000a 3B68     		ldr	r3, [r7]
+ 1068 000c 022B     		cmp	r3, #2
+ 1069 000e 0ED0     		beq	.L72
+ 1070 0010 3B68     		ldr	r3, [r7]
+ 1071 0012 032B     		cmp	r3, #3
+ 1072 0014 14D0     		beq	.L73
+ 1073 0016 3B68     		ldr	r3, [r7]
+ 1074 0018 012B     		cmp	r3, #1
+ 1075 001a 1AD1     		bne	.L76
+ 473:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL1:
+ 474:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_SWTRIGR(dac) |= DAC_SWTRIGR_SWTRIG1;
+ 1076              		.loc 1 474 20
+ 1077 001c 7B68     		ldr	r3, [r7, #4]
+ 1078 001e 0433     		adds	r3, r3, #4
+ 1079 0020 1B68     		ldr	r3, [r3]
+ 1080 0022 7A68     		ldr	r2, [r7, #4]
+ 1081 0024 0432     		adds	r2, r2, #4
+ 1082 0026 43F00103 		orr	r3, r3, #1
+ 1083 002a 1360     		str	r3, [r2]
+ 475:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1084              		.loc 1 475 3
+ 1085 002c 12E0     		b	.L75
+ 1086              	.L72:
+ 476:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL2:
+ 477:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_SWTRIGR(dac) |= DAC_SWTRIGR_SWTRIG2;
+ 1087              		.loc 1 477 20
+ 1088 002e 7B68     		ldr	r3, [r7, #4]
+ 1089 0030 0433     		adds	r3, r3, #4
+ 1090 0032 1B68     		ldr	r3, [r3]
+ 1091 0034 7A68     		ldr	r2, [r7, #4]
+ 1092 0036 0432     		adds	r2, r2, #4
+ 1093 0038 43F00203 		orr	r3, r3, #2
+ 1094 003c 1360     		str	r3, [r2]
+ 478:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1095              		.loc 1 478 3
+ 1096 003e 09E0     		b	.L75
+ 1097              	.L73:
+ 479:../libopencm3/lib/stm32/common/dac_common_all.c **** 	case DAC_CHANNEL_BOTH:
+ 480:../libopencm3/lib/stm32/common/dac_common_all.c **** 		DAC_SWTRIGR(dac) |= (DAC_SWTRIGR_SWTRIG1 | DAC_SWTRIGR_SWTRIG2);
+ 1098              		.loc 1 480 20
+ 1099 0040 7B68     		ldr	r3, [r7, #4]
+ 1100 0042 0433     		adds	r3, r3, #4
+ 1101 0044 1B68     		ldr	r3, [r3]
+ 1102 0046 7A68     		ldr	r2, [r7, #4]
+ 1103 0048 0432     		adds	r2, r2, #4
+ 1104 004a 43F00303 		orr	r3, r3, #3
+ 1105 004e 1360     		str	r3, [r2]
+ 481:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1106              		.loc 1 481 3
+ 1107 0050 00E0     		b	.L75
+ 1108              	.L76:
+ 482:../libopencm3/lib/stm32/common/dac_common_all.c **** 	default:
+ 483:../libopencm3/lib/stm32/common/dac_common_all.c **** 		break;
+ 1109              		.loc 1 483 3
+ 1110 0052 00BF     		nop
+ 1111              	.L75:
+ 484:../libopencm3/lib/stm32/common/dac_common_all.c **** 	}
+ 485:../libopencm3/lib/stm32/common/dac_common_all.c **** }
+ 1112              		.loc 1 485 1
+ 1113 0054 00BF     		nop
+ 1114 0056 0C37     		adds	r7, r7, #12
+ 1115              		.cfi_def_cfa_offset 4
+ 1116 0058 BD46     		mov	sp, r7
+ 1117              		.cfi_def_cfa_register 13
+ 1118              		@ sp needed
+ 1119 005a 80BC     		pop	{r7}
+ 1120              		.cfi_restore 7
+ 1121              		.cfi_def_cfa_offset 0
+ 1122 005c 7047     		bx	lr
+ 1123              		.cfi_endproc
+ 1124              	.LFE12:
+ 1126              		.text
+ 1127              	.Letext0:
+ 1128              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1129              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1130              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/common/dac_co
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 dac_common_all.c
+     /tmp/cci35gmv.s:16     .text.dac_enable:0000000000000000 $t
+     /tmp/cci35gmv.s:24     .text.dac_enable:0000000000000000 dac_enable
+     /tmp/cci35gmv.s:94     .text.dac_disable:0000000000000000 $t
+     /tmp/cci35gmv.s:101    .text.dac_disable:0000000000000000 dac_disable
+     /tmp/cci35gmv.s:172    .text.dac_dma_enable:0000000000000000 $t
+     /tmp/cci35gmv.s:179    .text.dac_dma_enable:0000000000000000 dac_dma_enable
+     /tmp/cci35gmv.s:250    .text.dac_dma_disable:0000000000000000 $t
+     /tmp/cci35gmv.s:257    .text.dac_dma_disable:0000000000000000 dac_dma_disable
+     /tmp/cci35gmv.s:328    .text.dac_trigger_enable:0000000000000000 $t
+     /tmp/cci35gmv.s:335    .text.dac_trigger_enable:0000000000000000 dac_trigger_enable
+     /tmp/cci35gmv.s:406    .text.dac_trigger_disable:0000000000000000 $t
+     /tmp/cci35gmv.s:413    .text.dac_trigger_disable:0000000000000000 dac_trigger_disable
+     /tmp/cci35gmv.s:484    .text.dac_set_trigger_source:0000000000000000 $t
+     /tmp/cci35gmv.s:491    .text.dac_set_trigger_source:0000000000000000 dac_set_trigger_source
+     /tmp/cci35gmv.s:529    .text.dac_set_waveform_generation:0000000000000000 $t
+     /tmp/cci35gmv.s:536    .text.dac_set_waveform_generation:0000000000000000 dac_set_waveform_generation
+     /tmp/cci35gmv.s:641    .text.dac_disable_waveform_generation:0000000000000000 $t
+     /tmp/cci35gmv.s:648    .text.dac_disable_waveform_generation:0000000000000000 dac_disable_waveform_generation
+     /tmp/cci35gmv.s:681    .text.dac_set_waveform_characteristics:0000000000000000 $t
+     /tmp/cci35gmv.s:688    .text.dac_set_waveform_characteristics:0000000000000000 dac_set_waveform_characteristics
+     /tmp/cci35gmv.s:792    .text.dac_load_data_buffer_single:0000000000000000 $t
+     /tmp/cci35gmv.s:799    .text.dac_load_data_buffer_single:0000000000000000 dac_load_data_buffer_single
+     /tmp/cci35gmv.s:929    .text.dac_load_data_buffer_dual:0000000000000000 $t
+     /tmp/cci35gmv.s:936    .text.dac_load_data_buffer_dual:0000000000000000 dac_load_data_buffer_dual
+     /tmp/cci35gmv.s:1038   .text.dac_load_data_buffer_dual:0000000000000078 $d
+     /tmp/cci35gmv.s:1043   .text.dac_software_trigger:0000000000000000 $t
+     /tmp/cci35gmv.s:1050   .text.dac_software_trigger:0000000000000000 dac_software_trigger
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.dac_common_all.h.40.700c8b20d54ea552640b2834de3cd787
+                           .group:0000000000000000 wm4.dac_common_v1.h.46.7b2f1036f2f111d4bd23e0365d7c284b
+
+NO UNDEFINED SYMBOLS

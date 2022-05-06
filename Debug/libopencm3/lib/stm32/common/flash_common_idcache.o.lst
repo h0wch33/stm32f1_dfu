@@ -1,0 +1,353 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"flash_common_idcache.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.flash_dcache_enable,"ax",%progbits
+  16              		.align	1
+  17              		.global	flash_dcache_enable
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	flash_dcache_enable:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/flash_common_idcache.c"
+   1:../libopencm3/lib/stm32/common/flash_common_idcache.c **** /** @addtogroup flash_file
+   2:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  *
+   3:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  */
+   4:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+   5:../libopencm3/lib/stm32/common/flash_common_idcache.c **** /*
+   6:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * This file is part of the libopencm3 project.
+   7:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  *
+   8:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * This library is free software: you can redistribute it and/or modify
+   9:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  10:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * the Free Software Foundation, either version 3 of the License, or
+  11:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * (at your option) any later version.
+  12:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  *
+  13:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * This library is distributed in the hope that it will be useful,
+  14:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  15:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  16:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * GNU Lesser General Public License for more details.
+  17:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  *
+  18:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * You should have received a copy of the GNU Lesser General Public License
+  19:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  20:../libopencm3/lib/stm32/common/flash_common_idcache.c ****  */
+  21:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  22:../libopencm3/lib/stm32/common/flash_common_idcache.c **** /**@{*/
+  23:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  24:../libopencm3/lib/stm32/common/flash_common_idcache.c **** #include <libopencm3/stm32/flash.h>
+  25:../libopencm3/lib/stm32/common/flash_common_idcache.c **** #include <libopencm3/stm32/common/flash_common_idcache.h>
+  26:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  27:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_dcache_enable(void)
+  28:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+  27              		.loc 1 28 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  29:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR |= FLASH_ACR_DCEN;
+  37              		.loc 1 29 12
+  38 0004 044B     		ldr	r3, .L2
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 034A     		ldr	r2, .L2
+  41 000a 43F48063 		orr	r3, r3, #1024
+  42 000e 1360     		str	r3, [r2]
+  30:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+  43              		.loc 1 30 1
+  44 0010 00BF     		nop
+  45 0012 BD46     		mov	sp, r7
+  46              		.cfi_def_cfa_register 13
+  47              		@ sp needed
+  48 0014 80BC     		pop	{r7}
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 0016 7047     		bx	lr
+  52              	.L3:
+  53              		.align	2
+  54              	.L2:
+  55 0018 00200240 		.word	1073881088
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.section	.text.flash_dcache_disable,"ax",%progbits
+  60              		.align	1
+  61              		.global	flash_dcache_disable
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu softvfp
+  67              	flash_dcache_disable:
+  68              	.LFB1:
+  31:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  32:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_dcache_disable(void)
+  33:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+  69              		.loc 1 33 1
+  70              		.cfi_startproc
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 1, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 80B4     		push	{r7}
+  75              		.cfi_def_cfa_offset 4
+  76              		.cfi_offset 7, -4
+  77 0002 00AF     		add	r7, sp, #0
+  78              		.cfi_def_cfa_register 7
+  34:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR &= ~FLASH_ACR_DCEN;
+  79              		.loc 1 34 12
+  80 0004 044B     		ldr	r3, .L5
+  81 0006 1B68     		ldr	r3, [r3]
+  82 0008 034A     		ldr	r2, .L5
+  83 000a 23F48063 		bic	r3, r3, #1024
+  84 000e 1360     		str	r3, [r2]
+  35:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+  85              		.loc 1 35 1
+  86 0010 00BF     		nop
+  87 0012 BD46     		mov	sp, r7
+  88              		.cfi_def_cfa_register 13
+  89              		@ sp needed
+  90 0014 80BC     		pop	{r7}
+  91              		.cfi_restore 7
+  92              		.cfi_def_cfa_offset 0
+  93 0016 7047     		bx	lr
+  94              	.L6:
+  95              		.align	2
+  96              	.L5:
+  97 0018 00200240 		.word	1073881088
+  98              		.cfi_endproc
+  99              	.LFE1:
+ 101              		.section	.text.flash_icache_enable,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	flash_icache_enable
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu softvfp
+ 109              	flash_icache_enable:
+ 110              	.LFB2:
+  36:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  37:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_icache_enable(void)
+  38:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+ 111              		.loc 1 38 1
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 1, uses_anonymous_args = 0
+ 115              		@ link register save eliminated.
+ 116 0000 80B4     		push	{r7}
+ 117              		.cfi_def_cfa_offset 4
+ 118              		.cfi_offset 7, -4
+ 119 0002 00AF     		add	r7, sp, #0
+ 120              		.cfi_def_cfa_register 7
+  39:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR |= FLASH_ACR_ICEN;
+ 121              		.loc 1 39 12
+ 122 0004 044B     		ldr	r3, .L8
+ 123 0006 1B68     		ldr	r3, [r3]
+ 124 0008 034A     		ldr	r2, .L8
+ 125 000a 43F40073 		orr	r3, r3, #512
+ 126 000e 1360     		str	r3, [r2]
+  40:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+ 127              		.loc 1 40 1
+ 128 0010 00BF     		nop
+ 129 0012 BD46     		mov	sp, r7
+ 130              		.cfi_def_cfa_register 13
+ 131              		@ sp needed
+ 132 0014 80BC     		pop	{r7}
+ 133              		.cfi_restore 7
+ 134              		.cfi_def_cfa_offset 0
+ 135 0016 7047     		bx	lr
+ 136              	.L9:
+ 137              		.align	2
+ 138              	.L8:
+ 139 0018 00200240 		.word	1073881088
+ 140              		.cfi_endproc
+ 141              	.LFE2:
+ 143              		.section	.text.flash_icache_disable,"ax",%progbits
+ 144              		.align	1
+ 145              		.global	flash_icache_disable
+ 146              		.syntax unified
+ 147              		.thumb
+ 148              		.thumb_func
+ 149              		.fpu softvfp
+ 151              	flash_icache_disable:
+ 152              	.LFB3:
+  41:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  42:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_icache_disable(void)
+  43:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+ 153              		.loc 1 43 1
+ 154              		.cfi_startproc
+ 155              		@ args = 0, pretend = 0, frame = 0
+ 156              		@ frame_needed = 1, uses_anonymous_args = 0
+ 157              		@ link register save eliminated.
+ 158 0000 80B4     		push	{r7}
+ 159              		.cfi_def_cfa_offset 4
+ 160              		.cfi_offset 7, -4
+ 161 0002 00AF     		add	r7, sp, #0
+ 162              		.cfi_def_cfa_register 7
+  44:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR &= ~FLASH_ACR_ICEN;
+ 163              		.loc 1 44 12
+ 164 0004 044B     		ldr	r3, .L11
+ 165 0006 1B68     		ldr	r3, [r3]
+ 166 0008 034A     		ldr	r2, .L11
+ 167 000a 23F40073 		bic	r3, r3, #512
+ 168 000e 1360     		str	r3, [r2]
+  45:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+ 169              		.loc 1 45 1
+ 170 0010 00BF     		nop
+ 171 0012 BD46     		mov	sp, r7
+ 172              		.cfi_def_cfa_register 13
+ 173              		@ sp needed
+ 174 0014 80BC     		pop	{r7}
+ 175              		.cfi_restore 7
+ 176              		.cfi_def_cfa_offset 0
+ 177 0016 7047     		bx	lr
+ 178              	.L12:
+ 179              		.align	2
+ 180              	.L11:
+ 181 0018 00200240 		.word	1073881088
+ 182              		.cfi_endproc
+ 183              	.LFE3:
+ 185              		.section	.text.flash_dcache_reset,"ax",%progbits
+ 186              		.align	1
+ 187              		.global	flash_dcache_reset
+ 188              		.syntax unified
+ 189              		.thumb
+ 190              		.thumb_func
+ 191              		.fpu softvfp
+ 193              	flash_dcache_reset:
+ 194              	.LFB4:
+  46:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  47:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  48:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_dcache_reset(void)
+  49:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+ 195              		.loc 1 49 1
+ 196              		.cfi_startproc
+ 197              		@ args = 0, pretend = 0, frame = 0
+ 198              		@ frame_needed = 1, uses_anonymous_args = 0
+ 199              		@ link register save eliminated.
+ 200 0000 80B4     		push	{r7}
+ 201              		.cfi_def_cfa_offset 4
+ 202              		.cfi_offset 7, -4
+ 203 0002 00AF     		add	r7, sp, #0
+ 204              		.cfi_def_cfa_register 7
+  50:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR |= FLASH_ACR_DCRST;
+ 205              		.loc 1 50 12
+ 206 0004 044B     		ldr	r3, .L14
+ 207 0006 1B68     		ldr	r3, [r3]
+ 208 0008 034A     		ldr	r2, .L14
+ 209 000a 43F48053 		orr	r3, r3, #4096
+ 210 000e 1360     		str	r3, [r2]
+  51:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+ 211              		.loc 1 51 1
+ 212 0010 00BF     		nop
+ 213 0012 BD46     		mov	sp, r7
+ 214              		.cfi_def_cfa_register 13
+ 215              		@ sp needed
+ 216 0014 80BC     		pop	{r7}
+ 217              		.cfi_restore 7
+ 218              		.cfi_def_cfa_offset 0
+ 219 0016 7047     		bx	lr
+ 220              	.L15:
+ 221              		.align	2
+ 222              	.L14:
+ 223 0018 00200240 		.word	1073881088
+ 224              		.cfi_endproc
+ 225              	.LFE4:
+ 227              		.section	.text.flash_icache_reset,"ax",%progbits
+ 228              		.align	1
+ 229              		.global	flash_icache_reset
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ 233              		.fpu softvfp
+ 235              	flash_icache_reset:
+ 236              	.LFB5:
+  52:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 
+  53:../libopencm3/lib/stm32/common/flash_common_idcache.c **** void flash_icache_reset(void)
+  54:../libopencm3/lib/stm32/common/flash_common_idcache.c **** {
+ 237              		.loc 1 54 1
+ 238              		.cfi_startproc
+ 239              		@ args = 0, pretend = 0, frame = 0
+ 240              		@ frame_needed = 1, uses_anonymous_args = 0
+ 241              		@ link register save eliminated.
+ 242 0000 80B4     		push	{r7}
+ 243              		.cfi_def_cfa_offset 4
+ 244              		.cfi_offset 7, -4
+ 245 0002 00AF     		add	r7, sp, #0
+ 246              		.cfi_def_cfa_register 7
+  55:../libopencm3/lib/stm32/common/flash_common_idcache.c **** 	FLASH_ACR |= FLASH_ACR_ICRST;
+ 247              		.loc 1 55 12
+ 248 0004 044B     		ldr	r3, .L17
+ 249 0006 1B68     		ldr	r3, [r3]
+ 250 0008 034A     		ldr	r2, .L17
+ 251 000a 43F40063 		orr	r3, r3, #2048
+ 252 000e 1360     		str	r3, [r2]
+  56:../libopencm3/lib/stm32/common/flash_common_idcache.c **** }
+ 253              		.loc 1 56 1
+ 254 0010 00BF     		nop
+ 255 0012 BD46     		mov	sp, r7
+ 256              		.cfi_def_cfa_register 13
+ 257              		@ sp needed
+ 258 0014 80BC     		pop	{r7}
+ 259              		.cfi_restore 7
+ 260              		.cfi_def_cfa_offset 0
+ 261 0016 7047     		bx	lr
+ 262              	.L18:
+ 263              		.align	2
+ 264              	.L17:
+ 265 0018 00200240 		.word	1073881088
+ 266              		.cfi_endproc
+ 267              	.LFE5:
+ 269              		.text
+ 270              	.Letext0:
+ 271              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 272              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 flash_common_idcache.c
+     /tmp/cc1vOi4g.s:16     .text.flash_dcache_enable:0000000000000000 $t
+     /tmp/cc1vOi4g.s:24     .text.flash_dcache_enable:0000000000000000 flash_dcache_enable
+     /tmp/cc1vOi4g.s:55     .text.flash_dcache_enable:0000000000000018 $d
+     /tmp/cc1vOi4g.s:60     .text.flash_dcache_disable:0000000000000000 $t
+     /tmp/cc1vOi4g.s:67     .text.flash_dcache_disable:0000000000000000 flash_dcache_disable
+     /tmp/cc1vOi4g.s:97     .text.flash_dcache_disable:0000000000000018 $d
+     /tmp/cc1vOi4g.s:102    .text.flash_icache_enable:0000000000000000 $t
+     /tmp/cc1vOi4g.s:109    .text.flash_icache_enable:0000000000000000 flash_icache_enable
+     /tmp/cc1vOi4g.s:139    .text.flash_icache_enable:0000000000000018 $d
+     /tmp/cc1vOi4g.s:144    .text.flash_icache_disable:0000000000000000 $t
+     /tmp/cc1vOi4g.s:151    .text.flash_icache_disable:0000000000000000 flash_icache_disable
+     /tmp/cc1vOi4g.s:181    .text.flash_icache_disable:0000000000000018 $d
+     /tmp/cc1vOi4g.s:186    .text.flash_dcache_reset:0000000000000000 $t
+     /tmp/cc1vOi4g.s:193    .text.flash_dcache_reset:0000000000000000 flash_dcache_reset
+     /tmp/cc1vOi4g.s:223    .text.flash_dcache_reset:0000000000000018 $d
+     /tmp/cc1vOi4g.s:228    .text.flash_icache_reset:0000000000000000 $t
+     /tmp/cc1vOi4g.s:235    .text.flash_icache_reset:0000000000000000 flash_icache_reset
+     /tmp/cc1vOi4g.s:265    .text.flash_icache_reset:0000000000000018 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.flash_common_f01.h.35.08a510204460b203acd9a4d6dd59edc6
+                           .group:0000000000000000 wm4.flash.h.55.42f95aa46a0865597bcfe2be66f7631d
+                           .group:0000000000000000 wm4.flash_common_idcache.h.29.c4c8bedb8492fa8fe35d5d69bd7daa91
+
+NO UNDEFINED SYMBOLS

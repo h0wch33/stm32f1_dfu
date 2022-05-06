@@ -1,0 +1,1573 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"rtc.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.rtc_awake_from_off,"ax",%progbits
+  16              		.align	1
+  17              		.global	rtc_awake_from_off
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	rtc_awake_from_off:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/f1/rtc.c"
+   1:../libopencm3/lib/stm32/f1/rtc.c **** /** @defgroup rtc_file RTC peripheral API
+   2:../libopencm3/lib/stm32/f1/rtc.c ****  *
+   3:../libopencm3/lib/stm32/f1/rtc.c ****  * @ingroup peripheral_apis
+   4:../libopencm3/lib/stm32/f1/rtc.c ****  *
+   5:../libopencm3/lib/stm32/f1/rtc.c ****  * @brief <b>libopencm3 STM32F1xx RTC</b>
+   6:../libopencm3/lib/stm32/f1/rtc.c ****  *
+   7:../libopencm3/lib/stm32/f1/rtc.c ****  * @author @htmlonly &copy; @endhtmlonly 2010 Uwe Hermann <uwe@hermann-uwe.de>
+   8:../libopencm3/lib/stm32/f1/rtc.c ****  * @author @htmlonly &copy; @endhtmlonly 2010 Lord James <lordjames@y7mail.com>
+   9:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  10:../libopencm3/lib/stm32/f1/rtc.c ****  * @version 1.0.0
+  11:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  12:../libopencm3/lib/stm32/f1/rtc.c ****  * @date 4 March 2013
+  13:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  14:../libopencm3/lib/stm32/f1/rtc.c ****  * The Real Time Clock peripheral consists of a set of 16 bit control, status,
+  15:../libopencm3/lib/stm32/f1/rtc.c ****  * prescaler, counter and alarm registers. Before the latter three can be
+  16:../libopencm3/lib/stm32/f1/rtc.c ****  * written the RTC must be placed in configuration mode by a call to
+  17:../libopencm3/lib/stm32/f1/rtc.c ****  * @ref rtc_enter_config_mode(). The functions below handle this implictly.
+  18:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  19:../libopencm3/lib/stm32/f1/rtc.c ****  * The RTC is completely reset by performing a Backup Domain reset. Note
+  20:../libopencm3/lib/stm32/f1/rtc.c ****  * that this can affect unrelated user data contained in the Backup Domain
+  21:../libopencm3/lib/stm32/f1/rtc.c ****  * registers. Other forms of reset will not affect the RTC registers as they
+  22:../libopencm3/lib/stm32/f1/rtc.c ****  * are contained within the backup domain.
+  23:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  24:../libopencm3/lib/stm32/f1/rtc.c ****  * The RTC clock source to be used is selected by calling
+  25:../libopencm3/lib/stm32/f1/rtc.c ****  * @ref rcc_set_rtc_clock_source().
+  26:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  27:../libopencm3/lib/stm32/f1/rtc.c ****  * The LSE clock source normally comes from a 32.768kHz external crystal
+  28:../libopencm3/lib/stm32/f1/rtc.c ****  * This clock is in the backup domain and so continues to run when only the
+  29:../libopencm3/lib/stm32/f1/rtc.c ****  * V_BAT supply is present. A prescaler value of 7FFF will give a 1 second
+  30:../libopencm3/lib/stm32/f1/rtc.c ****  * count quantum.
+  31:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  32:../libopencm3/lib/stm32/f1/rtc.c ****  * The LSI clock source is a low accuracy internal clock of about 40kHz
+  33:../libopencm3/lib/stm32/f1/rtc.c ****  * frequency, and the HSE clock source is the external high speed clock
+  34:../libopencm3/lib/stm32/f1/rtc.c ****  * divided by 128.
+  35:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  36:../libopencm3/lib/stm32/f1/rtc.c ****  * Initial configuration of the RTC consists of:
+  37:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  38:../libopencm3/lib/stm32/f1/rtc.c ****  * @li perform a Backup Domain reset if appropriate;
+  39:../libopencm3/lib/stm32/f1/rtc.c ****  * @li select the clock to be used;
+  40:../libopencm3/lib/stm32/f1/rtc.c ****  * @li set the prescaler, counter and configuration values;
+  41:../libopencm3/lib/stm32/f1/rtc.c ****  * @li enable the RTC.
+  42:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  43:../libopencm3/lib/stm32/f1/rtc.c ****  * @note reading the RTC registers may result in a corrupted value being
+  44:../libopencm3/lib/stm32/f1/rtc.c ****  * returned in certain cases. Refer to the STM32F1xx Reference Manual.
+  45:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  46:../libopencm3/lib/stm32/f1/rtc.c ****  * LGPL License Terms @ref lgpl_license
+  47:../libopencm3/lib/stm32/f1/rtc.c ****  */
+  48:../libopencm3/lib/stm32/f1/rtc.c **** 
+  49:../libopencm3/lib/stm32/f1/rtc.c **** /*
+  50:../libopencm3/lib/stm32/f1/rtc.c ****  * This file is part of the libopencm3 project.
+  51:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  52:../libopencm3/lib/stm32/f1/rtc.c ****  * Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+  53:../libopencm3/lib/stm32/f1/rtc.c ****  * Copyright (C) 2010 Lord James <lordjames@y7mail.com>
+  54:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  55:../libopencm3/lib/stm32/f1/rtc.c ****  * This library is free software: you can redistribute it and/or modify
+  56:../libopencm3/lib/stm32/f1/rtc.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  57:../libopencm3/lib/stm32/f1/rtc.c ****  * the Free Software Foundation, either version 3 of the License, or
+  58:../libopencm3/lib/stm32/f1/rtc.c ****  * (at your option) any later version.
+  59:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  60:../libopencm3/lib/stm32/f1/rtc.c ****  * This library is distributed in the hope that it will be useful,
+  61:../libopencm3/lib/stm32/f1/rtc.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  62:../libopencm3/lib/stm32/f1/rtc.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  63:../libopencm3/lib/stm32/f1/rtc.c ****  * GNU Lesser General Public License for more details.
+  64:../libopencm3/lib/stm32/f1/rtc.c ****  *
+  65:../libopencm3/lib/stm32/f1/rtc.c ****  * You should have received a copy of the GNU Lesser General Public License
+  66:../libopencm3/lib/stm32/f1/rtc.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  67:../libopencm3/lib/stm32/f1/rtc.c ****  */
+  68:../libopencm3/lib/stm32/f1/rtc.c **** /**@{*/
+  69:../libopencm3/lib/stm32/f1/rtc.c **** 
+  70:../libopencm3/lib/stm32/f1/rtc.c **** 
+  71:../libopencm3/lib/stm32/f1/rtc.c **** #include <libopencm3/stm32/rcc.h>
+  72:../libopencm3/lib/stm32/f1/rtc.c **** #include <libopencm3/stm32/rtc.h>
+  73:../libopencm3/lib/stm32/f1/rtc.c **** #include <libopencm3/stm32/pwr.h>
+  74:../libopencm3/lib/stm32/f1/rtc.c **** 
+  75:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+  76:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Set Operational from the Off state.
+  77:../libopencm3/lib/stm32/f1/rtc.c **** 
+  78:../libopencm3/lib/stm32/f1/rtc.c **** Power up the backup domain clocks, enable write access to the backup domain,
+  79:../libopencm3/lib/stm32/f1/rtc.c **** select the clock source, clear the RTC registers and enable the RTC.
+  80:../libopencm3/lib/stm32/f1/rtc.c **** 
+  81:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] clock_source ::rcc_osc. RTC clock source. Only the values HSE, LSE
+  82:../libopencm3/lib/stm32/f1/rtc.c ****     and LSI are permitted.
+  83:../libopencm3/lib/stm32/f1/rtc.c **** */
+  84:../libopencm3/lib/stm32/f1/rtc.c **** 
+  85:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_awake_from_off(enum rcc_osc clock_source)
+  86:../libopencm3/lib/stm32/f1/rtc.c **** {
+  27              		.loc 1 86 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 16
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 84B0     		sub	sp, sp, #16
+  36              		.cfi_def_cfa_offset 24
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 0346     		mov	r3, r0
+  40 0008 FB71     		strb	r3, [r7, #7]
+  87:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+  88:../libopencm3/lib/stm32/f1/rtc.c **** 
+  89:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable power and backup interface clocks. */
+  90:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_PWR);
+  41              		.loc 1 90 2
+  42 000a 4FF46770 		mov	r0, #924
+  43 000e FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+  91:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_BKP);
+  44              		.loc 1 91 2
+  45 0012 40F29B30 		movw	r0, #923
+  46 0016 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+  92:../libopencm3/lib/stm32/f1/rtc.c **** 
+  93:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable access to the backup registers and the RTC. */
+  94:../libopencm3/lib/stm32/f1/rtc.c **** 	pwr_disable_backup_domain_write_protect();
+  47              		.loc 1 94 2
+  48 001a FFF7FEFF 		bl	pwr_disable_backup_domain_write_protect(PLT)
+  95:../libopencm3/lib/stm32/f1/rtc.c **** 
+  96:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Set the clock source */
+  97:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_set_rtc_clock_source(clock_source);
+  49              		.loc 1 97 2
+  50 001e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  51 0020 1846     		mov	r0, r3
+  52 0022 FFF7FEFF 		bl	rcc_set_rtc_clock_source(PLT)
+  98:../libopencm3/lib/stm32/f1/rtc.c **** 
+  99:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Clear the RTC Control Register */
+ 100:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRH = 0;
+  53              		.loc 1 100 2
+  54 0026 194B     		ldr	r3, .L3
+  55              		.loc 1 100 10
+  56 0028 0022     		movs	r2, #0
+  57 002a 1A60     		str	r2, [r3]
+ 101:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRL = 0;
+  58              		.loc 1 101 2
+  59 002c 184B     		ldr	r3, .L3+4
+  60              		.loc 1 101 10
+  61 002e 0022     		movs	r2, #0
+  62 0030 1A60     		str	r2, [r3]
+ 102:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 103:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable the RTC. */
+ 104:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_enable_rtc_clock();
+  63              		.loc 1 104 2
+  64 0032 FFF7FEFF 		bl	rcc_enable_rtc_clock(PLT)
+ 105:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 106:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Clear the Registers */
+ 107:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+  65              		.loc 1 107 2
+  66 0036 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 108:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_PRLH = 0;
+  67              		.loc 1 108 2
+  68 003a 164B     		ldr	r3, .L3+8
+  69              		.loc 1 108 11
+  70 003c 0022     		movs	r2, #0
+  71 003e 1A60     		str	r2, [r3]
+ 109:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_PRLL = 0;
+  72              		.loc 1 109 2
+  73 0040 154B     		ldr	r3, .L3+12
+  74              		.loc 1 109 11
+  75 0042 0022     		movs	r2, #0
+  76 0044 1A60     		str	r2, [r3]
+ 110:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CNTH = 0;
+  77              		.loc 1 110 2
+  78 0046 154B     		ldr	r3, .L3+16
+  79              		.loc 1 110 11
+  80 0048 0022     		movs	r2, #0
+  81 004a 1A60     		str	r2, [r3]
+ 111:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CNTL = 0;
+  82              		.loc 1 111 2
+  83 004c 144B     		ldr	r3, .L3+20
+  84              		.loc 1 111 11
+  85 004e 0022     		movs	r2, #0
+  86 0050 1A60     		str	r2, [r3]
+ 112:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_ALRH = 0xFFFF;
+  87              		.loc 1 112 2
+  88 0052 144B     		ldr	r3, .L3+24
+  89              		.loc 1 112 11
+  90 0054 4FF6FF72 		movw	r2, #65535
+  91 0058 1A60     		str	r2, [r3]
+ 113:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_ALRL = 0xFFFF;
+  92              		.loc 1 113 2
+  93 005a 134B     		ldr	r3, .L3+28
+  94              		.loc 1 113 11
+  95 005c 4FF6FF72 		movw	r2, #65535
+  96 0060 1A60     		str	r2, [r3]
+ 114:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+  97              		.loc 1 114 2
+  98 0062 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 115:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 116:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Wait for the RSF bit in RTC_CRL to be set by hardware. */
+ 117:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRL &= ~RTC_CRL_RSF;
+  99              		.loc 1 117 10
+ 100 0066 0A4B     		ldr	r3, .L3+4
+ 101 0068 1B68     		ldr	r3, [r3]
+ 102 006a 094A     		ldr	r2, .L3+4
+ 103 006c 23F00803 		bic	r3, r3, #8
+ 104 0070 1360     		str	r3, [r2]
+ 118:../libopencm3/lib/stm32/f1/rtc.c **** 	while ((reg32 = (RTC_CRL & RTC_CRL_RSF)) == 0);
+ 105              		.loc 1 118 8
+ 106 0072 00BF     		nop
+ 107              	.L2:
+ 108              		.loc 1 118 19 discriminator 1
+ 109 0074 064B     		ldr	r3, .L3+4
+ 110 0076 1B68     		ldr	r3, [r3]
+ 111              		.loc 1 118 16 discriminator 1
+ 112 0078 03F00803 		and	r3, r3, #8
+ 113 007c FB60     		str	r3, [r7, #12]
+ 114              		.loc 1 118 8 discriminator 1
+ 115 007e FB68     		ldr	r3, [r7, #12]
+ 116 0080 002B     		cmp	r3, #0
+ 117 0082 F7D0     		beq	.L2
+ 119:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 118              		.loc 1 119 1
+ 119 0084 00BF     		nop
+ 120 0086 1037     		adds	r7, r7, #16
+ 121              		.cfi_def_cfa_offset 8
+ 122 0088 BD46     		mov	sp, r7
+ 123              		.cfi_def_cfa_register 13
+ 124              		@ sp needed
+ 125 008a 80BD     		pop	{r7, pc}
+ 126              	.L4:
+ 127              		.align	2
+ 128              	.L3:
+ 129 008c 00280040 		.word	1073752064
+ 130 0090 04280040 		.word	1073752068
+ 131 0094 08280040 		.word	1073752072
+ 132 0098 0C280040 		.word	1073752076
+ 133 009c 18280040 		.word	1073752088
+ 134 00a0 1C280040 		.word	1073752092
+ 135 00a4 20280040 		.word	1073752096
+ 136 00a8 24280040 		.word	1073752100
+ 137              		.cfi_endproc
+ 138              	.LFE0:
+ 140              		.section	.text.rtc_enter_config_mode,"ax",%progbits
+ 141              		.align	1
+ 142              		.global	rtc_enter_config_mode
+ 143              		.syntax unified
+ 144              		.thumb
+ 145              		.thumb_func
+ 146              		.fpu softvfp
+ 148              	rtc_enter_config_mode:
+ 149              	.LFB1:
+ 120:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 121:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 122:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Enter Configuration Mode.
+ 123:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 124:../libopencm3/lib/stm32/f1/rtc.c **** Prime the RTC for configuration changes by giving access to the prescaler,
+ 125:../libopencm3/lib/stm32/f1/rtc.c **** and counter and alarm registers.
+ 126:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 127:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 128:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_enter_config_mode(void)
+ 129:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 150              		.loc 1 129 1
+ 151              		.cfi_startproc
+ 152              		@ args = 0, pretend = 0, frame = 8
+ 153              		@ frame_needed = 1, uses_anonymous_args = 0
+ 154              		@ link register save eliminated.
+ 155 0000 80B4     		push	{r7}
+ 156              		.cfi_def_cfa_offset 4
+ 157              		.cfi_offset 7, -4
+ 158 0002 83B0     		sub	sp, sp, #12
+ 159              		.cfi_def_cfa_offset 16
+ 160 0004 00AF     		add	r7, sp, #0
+ 161              		.cfi_def_cfa_register 7
+ 130:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+ 131:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 132:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Wait until the RTOFF bit is 1 (no RTC register writes ongoing). */
+ 133:../libopencm3/lib/stm32/f1/rtc.c **** 	while ((reg32 = (RTC_CRL & RTC_CRL_RTOFF)) == 0);
+ 162              		.loc 1 133 8
+ 163 0006 00BF     		nop
+ 164              	.L6:
+ 165              		.loc 1 133 19 discriminator 1
+ 166 0008 094B     		ldr	r3, .L7
+ 167 000a 1B68     		ldr	r3, [r3]
+ 168              		.loc 1 133 16 discriminator 1
+ 169 000c 03F02003 		and	r3, r3, #32
+ 170 0010 7B60     		str	r3, [r7, #4]
+ 171              		.loc 1 133 8 discriminator 1
+ 172 0012 7B68     		ldr	r3, [r7, #4]
+ 173 0014 002B     		cmp	r3, #0
+ 174 0016 F7D0     		beq	.L6
+ 134:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 135:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enter configuration mode. */
+ 136:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRL |= RTC_CRL_CNF;
+ 175              		.loc 1 136 10
+ 176 0018 054B     		ldr	r3, .L7
+ 177 001a 1B68     		ldr	r3, [r3]
+ 178 001c 044A     		ldr	r2, .L7
+ 179 001e 43F01003 		orr	r3, r3, #16
+ 180 0022 1360     		str	r3, [r2]
+ 137:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 181              		.loc 1 137 1
+ 182 0024 00BF     		nop
+ 183 0026 0C37     		adds	r7, r7, #12
+ 184              		.cfi_def_cfa_offset 4
+ 185 0028 BD46     		mov	sp, r7
+ 186              		.cfi_def_cfa_register 13
+ 187              		@ sp needed
+ 188 002a 80BC     		pop	{r7}
+ 189              		.cfi_restore 7
+ 190              		.cfi_def_cfa_offset 0
+ 191 002c 7047     		bx	lr
+ 192              	.L8:
+ 193 002e 00BF     		.align	2
+ 194              	.L7:
+ 195 0030 04280040 		.word	1073752068
+ 196              		.cfi_endproc
+ 197              	.LFE1:
+ 199              		.section	.text.rtc_exit_config_mode,"ax",%progbits
+ 200              		.align	1
+ 201              		.global	rtc_exit_config_mode
+ 202              		.syntax unified
+ 203              		.thumb
+ 204              		.thumb_func
+ 205              		.fpu softvfp
+ 207              	rtc_exit_config_mode:
+ 208              	.LFB2:
+ 138:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 139:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 140:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Leave Configuration Mode.
+ 141:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 142:../libopencm3/lib/stm32/f1/rtc.c **** Revert the RTC to operational state.
+ 143:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 144:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 145:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_exit_config_mode(void)
+ 146:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 209              		.loc 1 146 1
+ 210              		.cfi_startproc
+ 211              		@ args = 0, pretend = 0, frame = 8
+ 212              		@ frame_needed = 1, uses_anonymous_args = 0
+ 213              		@ link register save eliminated.
+ 214 0000 80B4     		push	{r7}
+ 215              		.cfi_def_cfa_offset 4
+ 216              		.cfi_offset 7, -4
+ 217 0002 83B0     		sub	sp, sp, #12
+ 218              		.cfi_def_cfa_offset 16
+ 219 0004 00AF     		add	r7, sp, #0
+ 220              		.cfi_def_cfa_register 7
+ 147:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+ 148:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 149:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Exit configuration mode. */
+ 150:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRL &= ~RTC_CRL_CNF;
+ 221              		.loc 1 150 10
+ 222 0006 0A4B     		ldr	r3, .L11
+ 223 0008 1B68     		ldr	r3, [r3]
+ 224 000a 094A     		ldr	r2, .L11
+ 225 000c 23F01003 		bic	r3, r3, #16
+ 226 0010 1360     		str	r3, [r2]
+ 151:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 152:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Wait until the RTOFF bit is 1 (our RTC register write finished). */
+ 153:../libopencm3/lib/stm32/f1/rtc.c **** 	while ((reg32 = (RTC_CRL & RTC_CRL_RTOFF)) == 0);
+ 227              		.loc 1 153 8
+ 228 0012 00BF     		nop
+ 229              	.L10:
+ 230              		.loc 1 153 19 discriminator 1
+ 231 0014 064B     		ldr	r3, .L11
+ 232 0016 1B68     		ldr	r3, [r3]
+ 233              		.loc 1 153 16 discriminator 1
+ 234 0018 03F02003 		and	r3, r3, #32
+ 235 001c 7B60     		str	r3, [r7, #4]
+ 236              		.loc 1 153 8 discriminator 1
+ 237 001e 7B68     		ldr	r3, [r7, #4]
+ 238 0020 002B     		cmp	r3, #0
+ 239 0022 F7D0     		beq	.L10
+ 154:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 240              		.loc 1 154 1
+ 241 0024 00BF     		nop
+ 242 0026 0C37     		adds	r7, r7, #12
+ 243              		.cfi_def_cfa_offset 4
+ 244 0028 BD46     		mov	sp, r7
+ 245              		.cfi_def_cfa_register 13
+ 246              		@ sp needed
+ 247 002a 80BC     		pop	{r7}
+ 248              		.cfi_restore 7
+ 249              		.cfi_def_cfa_offset 0
+ 250 002c 7047     		bx	lr
+ 251              	.L12:
+ 252 002e 00BF     		.align	2
+ 253              	.L11:
+ 254 0030 04280040 		.word	1073752068
+ 255              		.cfi_endproc
+ 256              	.LFE2:
+ 258              		.section	.text.rtc_set_alarm_time,"ax",%progbits
+ 259              		.align	1
+ 260              		.global	rtc_set_alarm_time
+ 261              		.syntax unified
+ 262              		.thumb
+ 263              		.thumb_func
+ 264              		.fpu softvfp
+ 266              	rtc_set_alarm_time:
+ 267              	.LFB3:
+ 155:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 156:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 157:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Set the Alarm Time.
+ 158:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 159:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] alarm_time uint32_t. time at which the alarm event is triggered.
+ 160:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 161:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 162:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_set_alarm_time(uint32_t alarm_time)
+ 163:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 268              		.loc 1 163 1
+ 269              		.cfi_startproc
+ 270              		@ args = 0, pretend = 0, frame = 8
+ 271              		@ frame_needed = 1, uses_anonymous_args = 0
+ 272 0000 80B5     		push	{r7, lr}
+ 273              		.cfi_def_cfa_offset 8
+ 274              		.cfi_offset 7, -8
+ 275              		.cfi_offset 14, -4
+ 276 0002 82B0     		sub	sp, sp, #8
+ 277              		.cfi_def_cfa_offset 16
+ 278 0004 00AF     		add	r7, sp, #0
+ 279              		.cfi_def_cfa_register 7
+ 280 0006 7860     		str	r0, [r7, #4]
+ 164:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 281              		.loc 1 164 2
+ 282 0008 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 165:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_ALRL = (alarm_time & 0x0000ffff);
+ 283              		.loc 1 165 2
+ 284 000c 064A     		ldr	r2, .L14
+ 285              		.loc 1 165 25
+ 286 000e 7B68     		ldr	r3, [r7, #4]
+ 287 0010 9BB2     		uxth	r3, r3
+ 288              		.loc 1 165 11
+ 289 0012 1360     		str	r3, [r2]
+ 166:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_ALRH = (alarm_time & 0xffff0000) >> 16;
+ 290              		.loc 1 166 2
+ 291 0014 054A     		ldr	r2, .L14+4
+ 292              		.loc 1 166 39
+ 293 0016 7B68     		ldr	r3, [r7, #4]
+ 294 0018 1B0C     		lsrs	r3, r3, #16
+ 295              		.loc 1 166 11
+ 296 001a 1360     		str	r3, [r2]
+ 167:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 297              		.loc 1 167 2
+ 298 001c FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 168:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 299              		.loc 1 168 1
+ 300 0020 00BF     		nop
+ 301 0022 0837     		adds	r7, r7, #8
+ 302              		.cfi_def_cfa_offset 8
+ 303 0024 BD46     		mov	sp, r7
+ 304              		.cfi_def_cfa_register 13
+ 305              		@ sp needed
+ 306 0026 80BD     		pop	{r7, pc}
+ 307              	.L15:
+ 308              		.align	2
+ 309              	.L14:
+ 310 0028 24280040 		.word	1073752100
+ 311 002c 20280040 		.word	1073752096
+ 312              		.cfi_endproc
+ 313              	.LFE3:
+ 315              		.section	.text.rtc_enable_alarm,"ax",%progbits
+ 316              		.align	1
+ 317              		.global	rtc_enable_alarm
+ 318              		.syntax unified
+ 319              		.thumb
+ 320              		.thumb_func
+ 321              		.fpu softvfp
+ 323              	rtc_enable_alarm:
+ 324              	.LFB4:
+ 169:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 170:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 171:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Enable the Alarm.
+ 172:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 173:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 174:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 175:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_enable_alarm(void)
+ 176:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 325              		.loc 1 176 1
+ 326              		.cfi_startproc
+ 327              		@ args = 0, pretend = 0, frame = 0
+ 328              		@ frame_needed = 1, uses_anonymous_args = 0
+ 329 0000 80B5     		push	{r7, lr}
+ 330              		.cfi_def_cfa_offset 8
+ 331              		.cfi_offset 7, -8
+ 332              		.cfi_offset 14, -4
+ 333 0002 00AF     		add	r7, sp, #0
+ 334              		.cfi_def_cfa_register 7
+ 177:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 335              		.loc 1 177 2
+ 336 0004 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 178:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRH |= RTC_CRH_ALRIE;
+ 337              		.loc 1 178 10
+ 338 0008 044B     		ldr	r3, .L17
+ 339 000a 1B68     		ldr	r3, [r3]
+ 340 000c 034A     		ldr	r2, .L17
+ 341 000e 43F00203 		orr	r3, r3, #2
+ 342 0012 1360     		str	r3, [r2]
+ 179:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 343              		.loc 1 179 2
+ 344 0014 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 180:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 345              		.loc 1 180 1
+ 346 0018 00BF     		nop
+ 347 001a 80BD     		pop	{r7, pc}
+ 348              	.L18:
+ 349              		.align	2
+ 350              	.L17:
+ 351 001c 00280040 		.word	1073752064
+ 352              		.cfi_endproc
+ 353              	.LFE4:
+ 355              		.section	.text.rtc_disable_alarm,"ax",%progbits
+ 356              		.align	1
+ 357              		.global	rtc_disable_alarm
+ 358              		.syntax unified
+ 359              		.thumb
+ 360              		.thumb_func
+ 361              		.fpu softvfp
+ 363              	rtc_disable_alarm:
+ 364              	.LFB5:
+ 181:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 182:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 183:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Disable the Alarm.
+ 184:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 185:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 186:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 187:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_disable_alarm(void)
+ 188:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 365              		.loc 1 188 1
+ 366              		.cfi_startproc
+ 367              		@ args = 0, pretend = 0, frame = 0
+ 368              		@ frame_needed = 1, uses_anonymous_args = 0
+ 369 0000 80B5     		push	{r7, lr}
+ 370              		.cfi_def_cfa_offset 8
+ 371              		.cfi_offset 7, -8
+ 372              		.cfi_offset 14, -4
+ 373 0002 00AF     		add	r7, sp, #0
+ 374              		.cfi_def_cfa_register 7
+ 189:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 375              		.loc 1 189 2
+ 376 0004 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 190:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRH &= ~RTC_CRH_ALRIE;
+ 377              		.loc 1 190 10
+ 378 0008 044B     		ldr	r3, .L20
+ 379 000a 1B68     		ldr	r3, [r3]
+ 380 000c 034A     		ldr	r2, .L20
+ 381 000e 23F00203 		bic	r3, r3, #2
+ 382 0012 1360     		str	r3, [r2]
+ 191:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 383              		.loc 1 191 2
+ 384 0014 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 192:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 385              		.loc 1 192 1
+ 386 0018 00BF     		nop
+ 387 001a 80BD     		pop	{r7, pc}
+ 388              	.L21:
+ 389              		.align	2
+ 390              	.L20:
+ 391 001c 00280040 		.word	1073752064
+ 392              		.cfi_endproc
+ 393              	.LFE5:
+ 395              		.section	.text.rtc_set_prescale_val,"ax",%progbits
+ 396              		.align	1
+ 397              		.global	rtc_set_prescale_val
+ 398              		.syntax unified
+ 399              		.thumb
+ 400              		.thumb_func
+ 401              		.fpu softvfp
+ 403              	rtc_set_prescale_val:
+ 404              	.LFB6:
+ 193:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 194:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 195:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Set the prescaler Value
+ 196:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 197:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] prescale_val uint32_t. 20 bit prescale divider.
+ 198:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 199:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 200:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_set_prescale_val(uint32_t prescale_val)
+ 201:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 405              		.loc 1 201 1
+ 406              		.cfi_startproc
+ 407              		@ args = 0, pretend = 0, frame = 8
+ 408              		@ frame_needed = 1, uses_anonymous_args = 0
+ 409 0000 80B5     		push	{r7, lr}
+ 410              		.cfi_def_cfa_offset 8
+ 411              		.cfi_offset 7, -8
+ 412              		.cfi_offset 14, -4
+ 413 0002 82B0     		sub	sp, sp, #8
+ 414              		.cfi_def_cfa_offset 16
+ 415 0004 00AF     		add	r7, sp, #0
+ 416              		.cfi_def_cfa_register 7
+ 417 0006 7860     		str	r0, [r7, #4]
+ 202:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 418              		.loc 1 202 2
+ 419 0008 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 203:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_PRLL = prescale_val & 0x0000ffff;         /* PRL[15:0] */
+ 420              		.loc 1 203 2
+ 421 000c 074A     		ldr	r2, .L23
+ 422              		.loc 1 203 26
+ 423 000e 7B68     		ldr	r3, [r7, #4]
+ 424 0010 9BB2     		uxth	r3, r3
+ 425              		.loc 1 203 11
+ 426 0012 1360     		str	r3, [r2]
+ 204:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_PRLH = (prescale_val & 0x000f0000) >> 16; /* PRL[19:16] */
+ 427              		.loc 1 204 41
+ 428 0014 7B68     		ldr	r3, [r7, #4]
+ 429 0016 1B0C     		lsrs	r3, r3, #16
+ 430              		.loc 1 204 2
+ 431 0018 054A     		ldr	r2, .L23+4
+ 432              		.loc 1 204 41
+ 433 001a 03F00F03 		and	r3, r3, #15
+ 434              		.loc 1 204 11
+ 435 001e 1360     		str	r3, [r2]
+ 205:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 436              		.loc 1 205 2
+ 437 0020 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 206:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 438              		.loc 1 206 1
+ 439 0024 00BF     		nop
+ 440 0026 0837     		adds	r7, r7, #8
+ 441              		.cfi_def_cfa_offset 8
+ 442 0028 BD46     		mov	sp, r7
+ 443              		.cfi_def_cfa_register 13
+ 444              		@ sp needed
+ 445 002a 80BD     		pop	{r7, pc}
+ 446              	.L24:
+ 447              		.align	2
+ 448              	.L23:
+ 449 002c 0C280040 		.word	1073752076
+ 450 0030 08280040 		.word	1073752072
+ 451              		.cfi_endproc
+ 452              	.LFE6:
+ 454              		.section	.text.rtc_get_counter_val,"ax",%progbits
+ 455              		.align	1
+ 456              		.global	rtc_get_counter_val
+ 457              		.syntax unified
+ 458              		.thumb
+ 459              		.thumb_func
+ 460              		.fpu softvfp
+ 462              	rtc_get_counter_val:
+ 463              	.LFB7:
+ 207:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 208:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 209:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC return the Counter Value
+ 210:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 211:../libopencm3/lib/stm32/f1/rtc.c **** @returns uint32_t: the 32 bit counter value.
+ 212:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 213:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 214:../libopencm3/lib/stm32/f1/rtc.c **** uint32_t rtc_get_counter_val(void)
+ 215:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 464              		.loc 1 215 1
+ 465              		.cfi_startproc
+ 466              		@ args = 0, pretend = 0, frame = 0
+ 467              		@ frame_needed = 1, uses_anonymous_args = 0
+ 468              		@ link register save eliminated.
+ 469 0000 80B4     		push	{r7}
+ 470              		.cfi_def_cfa_offset 4
+ 471              		.cfi_offset 7, -4
+ 472 0002 00AF     		add	r7, sp, #0
+ 473              		.cfi_def_cfa_register 7
+ 216:../libopencm3/lib/stm32/f1/rtc.c **** 	return (RTC_CNTH << 16) | RTC_CNTL;
+ 474              		.loc 1 216 10
+ 475 0004 044B     		ldr	r3, .L27
+ 476 0006 1B68     		ldr	r3, [r3]
+ 477              		.loc 1 216 19
+ 478 0008 1A04     		lsls	r2, r3, #16
+ 479              		.loc 1 216 28
+ 480 000a 044B     		ldr	r3, .L27+4
+ 481 000c 1B68     		ldr	r3, [r3]
+ 482              		.loc 1 216 26
+ 483 000e 1343     		orrs	r3, r3, r2
+ 217:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 484              		.loc 1 217 1
+ 485 0010 1846     		mov	r0, r3
+ 486 0012 BD46     		mov	sp, r7
+ 487              		.cfi_def_cfa_register 13
+ 488              		@ sp needed
+ 489 0014 80BC     		pop	{r7}
+ 490              		.cfi_restore 7
+ 491              		.cfi_def_cfa_offset 0
+ 492 0016 7047     		bx	lr
+ 493              	.L28:
+ 494              		.align	2
+ 495              	.L27:
+ 496 0018 18280040 		.word	1073752088
+ 497 001c 1C280040 		.word	1073752092
+ 498              		.cfi_endproc
+ 499              	.LFE7:
+ 501              		.section	.text.rtc_get_prescale_div_val,"ax",%progbits
+ 502              		.align	1
+ 503              		.global	rtc_get_prescale_div_val
+ 504              		.syntax unified
+ 505              		.thumb
+ 506              		.thumb_func
+ 507              		.fpu softvfp
+ 509              	rtc_get_prescale_div_val:
+ 510              	.LFB8:
+ 218:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 219:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 220:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC return the prescaler Value
+ 221:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 222:../libopencm3/lib/stm32/f1/rtc.c **** @returns uint32_t: the 20 bit prescale divider.
+ 223:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 224:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 225:../libopencm3/lib/stm32/f1/rtc.c **** uint32_t rtc_get_prescale_div_val(void)
+ 226:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 511              		.loc 1 226 1
+ 512              		.cfi_startproc
+ 513              		@ args = 0, pretend = 0, frame = 0
+ 514              		@ frame_needed = 1, uses_anonymous_args = 0
+ 515              		@ link register save eliminated.
+ 516 0000 80B4     		push	{r7}
+ 517              		.cfi_def_cfa_offset 4
+ 518              		.cfi_offset 7, -4
+ 519 0002 00AF     		add	r7, sp, #0
+ 520              		.cfi_def_cfa_register 7
+ 227:../libopencm3/lib/stm32/f1/rtc.c **** 	return (RTC_DIVH << 16) | RTC_DIVL;
+ 521              		.loc 1 227 10
+ 522 0004 044B     		ldr	r3, .L31
+ 523 0006 1B68     		ldr	r3, [r3]
+ 524              		.loc 1 227 19
+ 525 0008 1A04     		lsls	r2, r3, #16
+ 526              		.loc 1 227 28
+ 527 000a 044B     		ldr	r3, .L31+4
+ 528 000c 1B68     		ldr	r3, [r3]
+ 529              		.loc 1 227 26
+ 530 000e 1343     		orrs	r3, r3, r2
+ 228:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 531              		.loc 1 228 1
+ 532 0010 1846     		mov	r0, r3
+ 533 0012 BD46     		mov	sp, r7
+ 534              		.cfi_def_cfa_register 13
+ 535              		@ sp needed
+ 536 0014 80BC     		pop	{r7}
+ 537              		.cfi_restore 7
+ 538              		.cfi_def_cfa_offset 0
+ 539 0016 7047     		bx	lr
+ 540              	.L32:
+ 541              		.align	2
+ 542              	.L31:
+ 543 0018 10280040 		.word	1073752080
+ 544 001c 14280040 		.word	1073752084
+ 545              		.cfi_endproc
+ 546              	.LFE8:
+ 548              		.section	.text.rtc_get_alarm_val,"ax",%progbits
+ 549              		.align	1
+ 550              		.global	rtc_get_alarm_val
+ 551              		.syntax unified
+ 552              		.thumb
+ 553              		.thumb_func
+ 554              		.fpu softvfp
+ 556              	rtc_get_alarm_val:
+ 557              	.LFB9:
+ 229:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 230:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 231:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC return the Alarm Value
+ 232:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 233:../libopencm3/lib/stm32/f1/rtc.c **** @returns uint32_t: the 32 bit alarm value.
+ 234:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 235:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 236:../libopencm3/lib/stm32/f1/rtc.c **** uint32_t rtc_get_alarm_val(void)
+ 237:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 558              		.loc 1 237 1
+ 559              		.cfi_startproc
+ 560              		@ args = 0, pretend = 0, frame = 0
+ 561              		@ frame_needed = 1, uses_anonymous_args = 0
+ 562              		@ link register save eliminated.
+ 563 0000 80B4     		push	{r7}
+ 564              		.cfi_def_cfa_offset 4
+ 565              		.cfi_offset 7, -4
+ 566 0002 00AF     		add	r7, sp, #0
+ 567              		.cfi_def_cfa_register 7
+ 238:../libopencm3/lib/stm32/f1/rtc.c **** 	return (RTC_ALRH << 16) | RTC_ALRL;
+ 568              		.loc 1 238 10
+ 569 0004 044B     		ldr	r3, .L35
+ 570 0006 1B68     		ldr	r3, [r3]
+ 571              		.loc 1 238 19
+ 572 0008 1A04     		lsls	r2, r3, #16
+ 573              		.loc 1 238 28
+ 574 000a 044B     		ldr	r3, .L35+4
+ 575 000c 1B68     		ldr	r3, [r3]
+ 576              		.loc 1 238 26
+ 577 000e 1343     		orrs	r3, r3, r2
+ 239:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 578              		.loc 1 239 1
+ 579 0010 1846     		mov	r0, r3
+ 580 0012 BD46     		mov	sp, r7
+ 581              		.cfi_def_cfa_register 13
+ 582              		@ sp needed
+ 583 0014 80BC     		pop	{r7}
+ 584              		.cfi_restore 7
+ 585              		.cfi_def_cfa_offset 0
+ 586 0016 7047     		bx	lr
+ 587              	.L36:
+ 588              		.align	2
+ 589              	.L35:
+ 590 0018 20280040 		.word	1073752096
+ 591 001c 24280040 		.word	1073752100
+ 592              		.cfi_endproc
+ 593              	.LFE9:
+ 595              		.section	.text.rtc_set_counter_val,"ax",%progbits
+ 596              		.align	1
+ 597              		.global	rtc_set_counter_val
+ 598              		.syntax unified
+ 599              		.thumb
+ 600              		.thumb_func
+ 601              		.fpu softvfp
+ 603              	rtc_set_counter_val:
+ 604              	.LFB10:
+ 240:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 241:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 242:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC set the Counter
+ 243:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 244:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] counter_val 32 bit time setting for the counter.
+ 245:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 246:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 247:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_set_counter_val(uint32_t counter_val)
+ 248:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 605              		.loc 1 248 1
+ 606              		.cfi_startproc
+ 607              		@ args = 0, pretend = 0, frame = 8
+ 608              		@ frame_needed = 1, uses_anonymous_args = 0
+ 609 0000 80B5     		push	{r7, lr}
+ 610              		.cfi_def_cfa_offset 8
+ 611              		.cfi_offset 7, -8
+ 612              		.cfi_offset 14, -4
+ 613 0002 82B0     		sub	sp, sp, #8
+ 614              		.cfi_def_cfa_offset 16
+ 615 0004 00AF     		add	r7, sp, #0
+ 616              		.cfi_def_cfa_register 7
+ 617 0006 7860     		str	r0, [r7, #4]
+ 249:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 618              		.loc 1 249 2
+ 619 0008 FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 250:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CNTH = (counter_val & 0xffff0000) >> 16; /* CNT[31:16] */
+ 620              		.loc 1 250 2
+ 621 000c 064A     		ldr	r2, .L38
+ 622              		.loc 1 250 40
+ 623 000e 7B68     		ldr	r3, [r7, #4]
+ 624 0010 1B0C     		lsrs	r3, r3, #16
+ 625              		.loc 1 250 11
+ 626 0012 1360     		str	r3, [r2]
+ 251:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CNTL = counter_val & 0x0000ffff;         /* CNT[15:0] */
+ 627              		.loc 1 251 2
+ 628 0014 054A     		ldr	r2, .L38+4
+ 629              		.loc 1 251 25
+ 630 0016 7B68     		ldr	r3, [r7, #4]
+ 631 0018 9BB2     		uxth	r3, r3
+ 632              		.loc 1 251 11
+ 633 001a 1360     		str	r3, [r2]
+ 252:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 634              		.loc 1 252 2
+ 635 001c FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 253:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 636              		.loc 1 253 1
+ 637 0020 00BF     		nop
+ 638 0022 0837     		adds	r7, r7, #8
+ 639              		.cfi_def_cfa_offset 8
+ 640 0024 BD46     		mov	sp, r7
+ 641              		.cfi_def_cfa_register 13
+ 642              		@ sp needed
+ 643 0026 80BD     		pop	{r7, pc}
+ 644              	.L39:
+ 645              		.align	2
+ 646              	.L38:
+ 647 0028 18280040 		.word	1073752088
+ 648 002c 1C280040 		.word	1073752092
+ 649              		.cfi_endproc
+ 650              	.LFE10:
+ 652              		.section	.text.rtc_interrupt_enable,"ax",%progbits
+ 653              		.align	1
+ 654              		.global	rtc_interrupt_enable
+ 655              		.syntax unified
+ 656              		.thumb
+ 657              		.thumb_func
+ 658              		.fpu softvfp
+ 660              	rtc_interrupt_enable:
+ 661              	.LFB11:
+ 254:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 255:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 256:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Enable Interrupt
+ 257:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 258:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] flag_val ::rtcflag_t: The flag to enable.
+ 259:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 260:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 261:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_interrupt_enable(rtcflag_t flag_val)
+ 262:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 662              		.loc 1 262 1
+ 663              		.cfi_startproc
+ 664              		@ args = 0, pretend = 0, frame = 8
+ 665              		@ frame_needed = 1, uses_anonymous_args = 0
+ 666 0000 80B5     		push	{r7, lr}
+ 667              		.cfi_def_cfa_offset 8
+ 668              		.cfi_offset 7, -8
+ 669              		.cfi_offset 14, -4
+ 670 0002 82B0     		sub	sp, sp, #8
+ 671              		.cfi_def_cfa_offset 16
+ 672 0004 00AF     		add	r7, sp, #0
+ 673              		.cfi_def_cfa_register 7
+ 674 0006 0346     		mov	r3, r0
+ 675 0008 FB71     		strb	r3, [r7, #7]
+ 263:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 676              		.loc 1 263 2
+ 677 000a FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 264:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 265:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Set the correct interrupt enable. */
+ 266:../libopencm3/lib/stm32/f1/rtc.c **** 	switch (flag_val) {
+ 678              		.loc 1 266 2
+ 679 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 680 0010 012B     		cmp	r3, #1
+ 681 0012 0AD0     		beq	.L41
+ 682 0014 022B     		cmp	r3, #2
+ 683 0016 0FD0     		beq	.L42
+ 684 0018 002B     		cmp	r3, #0
+ 685 001a 14D1     		bne	.L43
+ 267:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_SEC:
+ 268:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH |= RTC_CRH_SECIE;
+ 686              		.loc 1 268 11
+ 687 001c 0D4B     		ldr	r3, .L44
+ 688 001e 1B68     		ldr	r3, [r3]
+ 689 0020 0C4A     		ldr	r2, .L44
+ 690 0022 43F00103 		orr	r3, r3, #1
+ 691 0026 1360     		str	r3, [r2]
+ 269:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 692              		.loc 1 269 3
+ 693 0028 0DE0     		b	.L43
+ 694              	.L41:
+ 270:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_ALR:
+ 271:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH |= RTC_CRH_ALRIE;
+ 695              		.loc 1 271 11
+ 696 002a 0A4B     		ldr	r3, .L44
+ 697 002c 1B68     		ldr	r3, [r3]
+ 698 002e 094A     		ldr	r2, .L44
+ 699 0030 43F00203 		orr	r3, r3, #2
+ 700 0034 1360     		str	r3, [r2]
+ 272:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 701              		.loc 1 272 3
+ 702 0036 06E0     		b	.L43
+ 703              	.L42:
+ 273:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_OW:
+ 274:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH |= RTC_CRH_OWIE;
+ 704              		.loc 1 274 11
+ 705 0038 064B     		ldr	r3, .L44
+ 706 003a 1B68     		ldr	r3, [r3]
+ 707 003c 054A     		ldr	r2, .L44
+ 708 003e 43F00403 		orr	r3, r3, #4
+ 709 0042 1360     		str	r3, [r2]
+ 275:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 710              		.loc 1 275 3
+ 711 0044 00BF     		nop
+ 712              	.L43:
+ 276:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 277:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 278:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 713              		.loc 1 278 2
+ 714 0046 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 279:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 715              		.loc 1 279 1
+ 716 004a 00BF     		nop
+ 717 004c 0837     		adds	r7, r7, #8
+ 718              		.cfi_def_cfa_offset 8
+ 719 004e BD46     		mov	sp, r7
+ 720              		.cfi_def_cfa_register 13
+ 721              		@ sp needed
+ 722 0050 80BD     		pop	{r7, pc}
+ 723              	.L45:
+ 724 0052 00BF     		.align	2
+ 725              	.L44:
+ 726 0054 00280040 		.word	1073752064
+ 727              		.cfi_endproc
+ 728              	.LFE11:
+ 730              		.section	.text.rtc_interrupt_disable,"ax",%progbits
+ 731              		.align	1
+ 732              		.global	rtc_interrupt_disable
+ 733              		.syntax unified
+ 734              		.thumb
+ 735              		.thumb_func
+ 736              		.fpu softvfp
+ 738              	rtc_interrupt_disable:
+ 739              	.LFB12:
+ 280:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 281:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 282:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Disable Interrupt
+ 283:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 284:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] flag_val ::rtcflag_t: The flag to disable.
+ 285:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 286:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 287:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_interrupt_disable(rtcflag_t flag_val)
+ 288:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 740              		.loc 1 288 1
+ 741              		.cfi_startproc
+ 742              		@ args = 0, pretend = 0, frame = 8
+ 743              		@ frame_needed = 1, uses_anonymous_args = 0
+ 744 0000 80B5     		push	{r7, lr}
+ 745              		.cfi_def_cfa_offset 8
+ 746              		.cfi_offset 7, -8
+ 747              		.cfi_offset 14, -4
+ 748 0002 82B0     		sub	sp, sp, #8
+ 749              		.cfi_def_cfa_offset 16
+ 750 0004 00AF     		add	r7, sp, #0
+ 751              		.cfi_def_cfa_register 7
+ 752 0006 0346     		mov	r3, r0
+ 753 0008 FB71     		strb	r3, [r7, #7]
+ 289:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_enter_config_mode();
+ 754              		.loc 1 289 2
+ 755 000a FFF7FEFF 		bl	rtc_enter_config_mode(PLT)
+ 290:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 291:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Disable the correct interrupt enable. */
+ 292:../libopencm3/lib/stm32/f1/rtc.c **** 	switch (flag_val) {
+ 756              		.loc 1 292 2
+ 757 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 758 0010 012B     		cmp	r3, #1
+ 759 0012 0AD0     		beq	.L47
+ 760 0014 022B     		cmp	r3, #2
+ 761 0016 0FD0     		beq	.L48
+ 762 0018 002B     		cmp	r3, #0
+ 763 001a 14D1     		bne	.L49
+ 293:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_SEC:
+ 294:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH &= ~RTC_CRH_SECIE;
+ 764              		.loc 1 294 11
+ 765 001c 0D4B     		ldr	r3, .L50
+ 766 001e 1B68     		ldr	r3, [r3]
+ 767 0020 0C4A     		ldr	r2, .L50
+ 768 0022 23F00103 		bic	r3, r3, #1
+ 769 0026 1360     		str	r3, [r2]
+ 295:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 770              		.loc 1 295 3
+ 771 0028 0DE0     		b	.L49
+ 772              	.L47:
+ 296:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_ALR:
+ 297:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH &= ~RTC_CRH_ALRIE;
+ 773              		.loc 1 297 11
+ 774 002a 0A4B     		ldr	r3, .L50
+ 775 002c 1B68     		ldr	r3, [r3]
+ 776 002e 094A     		ldr	r2, .L50
+ 777 0030 23F00203 		bic	r3, r3, #2
+ 778 0034 1360     		str	r3, [r2]
+ 298:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 779              		.loc 1 298 3
+ 780 0036 06E0     		b	.L49
+ 781              	.L48:
+ 299:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_OW:
+ 300:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRH &= ~RTC_CRH_OWIE;
+ 782              		.loc 1 300 11
+ 783 0038 064B     		ldr	r3, .L50
+ 784 003a 1B68     		ldr	r3, [r3]
+ 785 003c 054A     		ldr	r2, .L50
+ 786 003e 23F00403 		bic	r3, r3, #4
+ 787 0042 1360     		str	r3, [r2]
+ 301:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 788              		.loc 1 301 3
+ 789 0044 00BF     		nop
+ 790              	.L49:
+ 302:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 303:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 304:../libopencm3/lib/stm32/f1/rtc.c **** 	rtc_exit_config_mode();
+ 791              		.loc 1 304 2
+ 792 0046 FFF7FEFF 		bl	rtc_exit_config_mode(PLT)
+ 305:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 793              		.loc 1 305 1
+ 794 004a 00BF     		nop
+ 795 004c 0837     		adds	r7, r7, #8
+ 796              		.cfi_def_cfa_offset 8
+ 797 004e BD46     		mov	sp, r7
+ 798              		.cfi_def_cfa_register 13
+ 799              		@ sp needed
+ 800 0050 80BD     		pop	{r7, pc}
+ 801              	.L51:
+ 802 0052 00BF     		.align	2
+ 803              	.L50:
+ 804 0054 00280040 		.word	1073752064
+ 805              		.cfi_endproc
+ 806              	.LFE12:
+ 808              		.section	.text.rtc_clear_flag,"ax",%progbits
+ 809              		.align	1
+ 810              		.global	rtc_clear_flag
+ 811              		.syntax unified
+ 812              		.thumb
+ 813              		.thumb_func
+ 814              		.fpu softvfp
+ 816              	rtc_clear_flag:
+ 817              	.LFB13:
+ 306:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 307:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 308:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Clear an Interrupt Flag
+ 309:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 310:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] flag_val ::rtcflag_t: The flag to clear.
+ 311:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 312:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 313:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_clear_flag(rtcflag_t flag_val)
+ 314:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 818              		.loc 1 314 1
+ 819              		.cfi_startproc
+ 820              		@ args = 0, pretend = 0, frame = 8
+ 821              		@ frame_needed = 1, uses_anonymous_args = 0
+ 822              		@ link register save eliminated.
+ 823 0000 80B4     		push	{r7}
+ 824              		.cfi_def_cfa_offset 4
+ 825              		.cfi_offset 7, -4
+ 826 0002 83B0     		sub	sp, sp, #12
+ 827              		.cfi_def_cfa_offset 16
+ 828 0004 00AF     		add	r7, sp, #0
+ 829              		.cfi_def_cfa_register 7
+ 830 0006 0346     		mov	r3, r0
+ 831 0008 FB71     		strb	r3, [r7, #7]
+ 315:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Configuration mode not needed. */
+ 316:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 317:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Clear the correct flag. */
+ 318:../libopencm3/lib/stm32/f1/rtc.c **** 	switch (flag_val) {
+ 832              		.loc 1 318 2
+ 833 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 834 000c 012B     		cmp	r3, #1
+ 835 000e 0AD0     		beq	.L53
+ 836 0010 022B     		cmp	r3, #2
+ 837 0012 0FD0     		beq	.L54
+ 838 0014 002B     		cmp	r3, #0
+ 839 0016 14D1     		bne	.L56
+ 319:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_SEC:
+ 320:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRL &= ~RTC_CRL_SECF;
+ 840              		.loc 1 320 11
+ 841 0018 0C4B     		ldr	r3, .L57
+ 842 001a 1B68     		ldr	r3, [r3]
+ 843 001c 0B4A     		ldr	r2, .L57
+ 844 001e 23F00103 		bic	r3, r3, #1
+ 845 0022 1360     		str	r3, [r2]
+ 321:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 846              		.loc 1 321 3
+ 847 0024 0DE0     		b	.L55
+ 848              	.L53:
+ 322:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_ALR:
+ 323:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRL &= ~RTC_CRL_ALRF;
+ 849              		.loc 1 323 11
+ 850 0026 094B     		ldr	r3, .L57
+ 851 0028 1B68     		ldr	r3, [r3]
+ 852 002a 084A     		ldr	r2, .L57
+ 853 002c 23F00203 		bic	r3, r3, #2
+ 854 0030 1360     		str	r3, [r2]
+ 324:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 855              		.loc 1 324 3
+ 856 0032 06E0     		b	.L55
+ 857              	.L54:
+ 325:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_OW:
+ 326:../libopencm3/lib/stm32/f1/rtc.c **** 		RTC_CRL &= ~RTC_CRL_OWF;
+ 858              		.loc 1 326 11
+ 859 0034 054B     		ldr	r3, .L57
+ 860 0036 1B68     		ldr	r3, [r3]
+ 861 0038 044A     		ldr	r2, .L57
+ 862 003a 23F00403 		bic	r3, r3, #4
+ 863 003e 1360     		str	r3, [r2]
+ 327:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 864              		.loc 1 327 3
+ 865 0040 00BF     		nop
+ 866              	.L55:
+ 867              	.L56:
+ 328:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 329:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 868              		.loc 1 329 1
+ 869 0042 00BF     		nop
+ 870 0044 0C37     		adds	r7, r7, #12
+ 871              		.cfi_def_cfa_offset 4
+ 872 0046 BD46     		mov	sp, r7
+ 873              		.cfi_def_cfa_register 13
+ 874              		@ sp needed
+ 875 0048 80BC     		pop	{r7}
+ 876              		.cfi_restore 7
+ 877              		.cfi_def_cfa_offset 0
+ 878 004a 7047     		bx	lr
+ 879              	.L58:
+ 880              		.align	2
+ 881              	.L57:
+ 882 004c 04280040 		.word	1073752068
+ 883              		.cfi_endproc
+ 884              	.LFE13:
+ 886              		.section	.text.rtc_check_flag,"ax",%progbits
+ 887              		.align	1
+ 888              		.global	rtc_check_flag
+ 889              		.syntax unified
+ 890              		.thumb
+ 891              		.thumb_func
+ 892              		.fpu softvfp
+ 894              	rtc_check_flag:
+ 895              	.LFB14:
+ 330:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 331:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 332:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Return a Flag Setting
+ 333:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 334:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] flag_val ::rtcflag_t: The flag to check.
+ 335:../libopencm3/lib/stm32/f1/rtc.c **** @returns uint32_t: a nonzero value if the flag is set, zero otherwise.
+ 336:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 337:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 338:../libopencm3/lib/stm32/f1/rtc.c **** uint32_t rtc_check_flag(rtcflag_t flag_val)
+ 339:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 896              		.loc 1 339 1
+ 897              		.cfi_startproc
+ 898              		@ args = 0, pretend = 0, frame = 16
+ 899              		@ frame_needed = 1, uses_anonymous_args = 0
+ 900              		@ link register save eliminated.
+ 901 0000 80B4     		push	{r7}
+ 902              		.cfi_def_cfa_offset 4
+ 903              		.cfi_offset 7, -4
+ 904 0002 85B0     		sub	sp, sp, #20
+ 905              		.cfi_def_cfa_offset 24
+ 906 0004 00AF     		add	r7, sp, #0
+ 907              		.cfi_def_cfa_register 7
+ 908 0006 0346     		mov	r3, r0
+ 909 0008 FB71     		strb	r3, [r7, #7]
+ 340:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+ 341:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 342:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Read correct flag. */
+ 343:../libopencm3/lib/stm32/f1/rtc.c **** 	switch (flag_val) {
+ 910              		.loc 1 343 2
+ 911 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 912 000c 012B     		cmp	r3, #1
+ 913 000e 09D0     		beq	.L60
+ 914 0010 022B     		cmp	r3, #2
+ 915 0012 0DD0     		beq	.L61
+ 916 0014 002B     		cmp	r3, #0
+ 917 0016 11D1     		bne	.L62
+ 344:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_SEC:
+ 345:../libopencm3/lib/stm32/f1/rtc.c **** 		reg32 = RTC_CRL & RTC_CRL_SECF;
+ 918              		.loc 1 345 11
+ 919 0018 0D4B     		ldr	r3, .L65
+ 920 001a 1B68     		ldr	r3, [r3]
+ 921              		.loc 1 345 9
+ 922 001c 03F00103 		and	r3, r3, #1
+ 923 0020 FB60     		str	r3, [r7, #12]
+ 346:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 924              		.loc 1 346 3
+ 925 0022 0EE0     		b	.L63
+ 926              	.L60:
+ 347:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_ALR:
+ 348:../libopencm3/lib/stm32/f1/rtc.c **** 		reg32 = RTC_CRL & RTC_CRL_ALRF;
+ 927              		.loc 1 348 11
+ 928 0024 0A4B     		ldr	r3, .L65
+ 929 0026 1B68     		ldr	r3, [r3]
+ 930              		.loc 1 348 9
+ 931 0028 03F00203 		and	r3, r3, #2
+ 932 002c FB60     		str	r3, [r7, #12]
+ 349:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 933              		.loc 1 349 3
+ 934 002e 08E0     		b	.L63
+ 935              	.L61:
+ 350:../libopencm3/lib/stm32/f1/rtc.c **** 	case RTC_OW:
+ 351:../libopencm3/lib/stm32/f1/rtc.c **** 		reg32 = RTC_CRL & RTC_CRL_OWF;
+ 936              		.loc 1 351 11
+ 937 0030 074B     		ldr	r3, .L65
+ 938 0032 1B68     		ldr	r3, [r3]
+ 939              		.loc 1 351 9
+ 940 0034 03F00403 		and	r3, r3, #4
+ 941 0038 FB60     		str	r3, [r7, #12]
+ 352:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 942              		.loc 1 352 3
+ 943 003a 02E0     		b	.L63
+ 944              	.L62:
+ 353:../libopencm3/lib/stm32/f1/rtc.c **** 	default:
+ 354:../libopencm3/lib/stm32/f1/rtc.c **** 		reg32 = 0;
+ 945              		.loc 1 354 9
+ 946 003c 0023     		movs	r3, #0
+ 947 003e FB60     		str	r3, [r7, #12]
+ 355:../libopencm3/lib/stm32/f1/rtc.c **** 		break;
+ 948              		.loc 1 355 3
+ 949 0040 00BF     		nop
+ 950              	.L63:
+ 356:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 357:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 358:../libopencm3/lib/stm32/f1/rtc.c **** 	return reg32;
+ 951              		.loc 1 358 9
+ 952 0042 FB68     		ldr	r3, [r7, #12]
+ 359:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 953              		.loc 1 359 1
+ 954 0044 1846     		mov	r0, r3
+ 955 0046 1437     		adds	r7, r7, #20
+ 956              		.cfi_def_cfa_offset 4
+ 957 0048 BD46     		mov	sp, r7
+ 958              		.cfi_def_cfa_register 13
+ 959              		@ sp needed
+ 960 004a 80BC     		pop	{r7}
+ 961              		.cfi_restore 7
+ 962              		.cfi_def_cfa_offset 0
+ 963 004c 7047     		bx	lr
+ 964              	.L66:
+ 965 004e 00BF     		.align	2
+ 966              	.L65:
+ 967 0050 04280040 		.word	1073752068
+ 968              		.cfi_endproc
+ 969              	.LFE14:
+ 971              		.section	.text.rtc_awake_from_standby,"ax",%progbits
+ 972              		.align	1
+ 973              		.global	rtc_awake_from_standby
+ 974              		.syntax unified
+ 975              		.thumb
+ 976              		.thumb_func
+ 977              		.fpu softvfp
+ 979              	rtc_awake_from_standby:
+ 980              	.LFB15:
+ 360:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 361:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 362:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Start RTC after Standby Mode.
+ 363:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 364:../libopencm3/lib/stm32/f1/rtc.c **** Enable the backup domain clocks, enable write access to the backup
+ 365:../libopencm3/lib/stm32/f1/rtc.c **** domain and the RTC, and synchronise the RTC register access.
+ 366:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 367:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 368:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_awake_from_standby(void)
+ 369:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 981              		.loc 1 369 1
+ 982              		.cfi_startproc
+ 983              		@ args = 0, pretend = 0, frame = 8
+ 984              		@ frame_needed = 1, uses_anonymous_args = 0
+ 985 0000 80B5     		push	{r7, lr}
+ 986              		.cfi_def_cfa_offset 8
+ 987              		.cfi_offset 7, -8
+ 988              		.cfi_offset 14, -4
+ 989 0002 82B0     		sub	sp, sp, #8
+ 990              		.cfi_def_cfa_offset 16
+ 991 0004 00AF     		add	r7, sp, #0
+ 992              		.cfi_def_cfa_register 7
+ 370:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+ 371:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 372:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable power and backup interface clocks. */
+ 373:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_PWR);
+ 993              		.loc 1 373 2
+ 994 0006 4FF46770 		mov	r0, #924
+ 995 000a FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 374:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_BKP);
+ 996              		.loc 1 374 2
+ 997 000e 40F29B30 		movw	r0, #923
+ 998 0012 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 375:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 376:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable access to the backup registers and the RTC. */
+ 377:../libopencm3/lib/stm32/f1/rtc.c **** 	pwr_disable_backup_domain_write_protect();
+ 999              		.loc 1 377 2
+ 1000 0016 FFF7FEFF 		bl	pwr_disable_backup_domain_write_protect(PLT)
+ 378:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 379:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Wait for the RSF bit in RTC_CRL to be set by hardware. */
+ 380:../libopencm3/lib/stm32/f1/rtc.c **** 	RTC_CRL &= ~RTC_CRL_RSF;
+ 1001              		.loc 1 380 10
+ 1002 001a 0E4B     		ldr	r3, .L70
+ 1003 001c 1B68     		ldr	r3, [r3]
+ 1004 001e 0D4A     		ldr	r2, .L70
+ 1005 0020 23F00803 		bic	r3, r3, #8
+ 1006 0024 1360     		str	r3, [r2]
+ 381:../libopencm3/lib/stm32/f1/rtc.c **** 	while ((reg32 = (RTC_CRL & RTC_CRL_RSF)) == 0);
+ 1007              		.loc 1 381 8
+ 1008 0026 00BF     		nop
+ 1009              	.L68:
+ 1010              		.loc 1 381 19 discriminator 1
+ 1011 0028 0A4B     		ldr	r3, .L70
+ 1012 002a 1B68     		ldr	r3, [r3]
+ 1013              		.loc 1 381 16 discriminator 1
+ 1014 002c 03F00803 		and	r3, r3, #8
+ 1015 0030 7B60     		str	r3, [r7, #4]
+ 1016              		.loc 1 381 8 discriminator 1
+ 1017 0032 7B68     		ldr	r3, [r7, #4]
+ 1018 0034 002B     		cmp	r3, #0
+ 1019 0036 F7D0     		beq	.L68
+ 382:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 383:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Wait for the last write operation to finish. */
+ 384:../libopencm3/lib/stm32/f1/rtc.c **** 	/* TODO: Necessary? */
+ 385:../libopencm3/lib/stm32/f1/rtc.c **** 	while ((reg32 = (RTC_CRL & RTC_CRL_RTOFF)) == 0);
+ 1020              		.loc 1 385 8
+ 1021 0038 00BF     		nop
+ 1022              	.L69:
+ 1023              		.loc 1 385 19 discriminator 1
+ 1024 003a 064B     		ldr	r3, .L70
+ 1025 003c 1B68     		ldr	r3, [r3]
+ 1026              		.loc 1 385 16 discriminator 1
+ 1027 003e 03F02003 		and	r3, r3, #32
+ 1028 0042 7B60     		str	r3, [r7, #4]
+ 1029              		.loc 1 385 8 discriminator 1
+ 1030 0044 7B68     		ldr	r3, [r7, #4]
+ 1031 0046 002B     		cmp	r3, #0
+ 1032 0048 F7D0     		beq	.L69
+ 386:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 1033              		.loc 1 386 1
+ 1034 004a 00BF     		nop
+ 1035 004c 0837     		adds	r7, r7, #8
+ 1036              		.cfi_def_cfa_offset 8
+ 1037 004e BD46     		mov	sp, r7
+ 1038              		.cfi_def_cfa_register 13
+ 1039              		@ sp needed
+ 1040 0050 80BD     		pop	{r7, pc}
+ 1041              	.L71:
+ 1042 0052 00BF     		.align	2
+ 1043              	.L70:
+ 1044 0054 04280040 		.word	1073752068
+ 1045              		.cfi_endproc
+ 1046              	.LFE15:
+ 1048              		.section	.text.rtc_auto_awake,"ax",%progbits
+ 1049              		.align	1
+ 1050              		.global	rtc_auto_awake
+ 1051              		.syntax unified
+ 1052              		.thumb
+ 1053              		.thumb_func
+ 1054              		.fpu softvfp
+ 1056              	rtc_auto_awake:
+ 1057              	.LFB16:
+ 387:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 388:../libopencm3/lib/stm32/f1/rtc.c **** /*---------------------------------------------------------------------------*/
+ 389:../libopencm3/lib/stm32/f1/rtc.c **** /** @brief RTC Configuration on Wakeup
+ 390:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 391:../libopencm3/lib/stm32/f1/rtc.c **** Enable the backup domain clocks and write access to the backup domain.
+ 392:../libopencm3/lib/stm32/f1/rtc.c **** If the RTC has not been enabled, set the clock source and prescaler value.
+ 393:../libopencm3/lib/stm32/f1/rtc.c **** The parameters are not used if the RTC has already been enabled.
+ 394:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 395:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] clock_source ::rcc_osc. RTC clock source. Only HSE, LSE
+ 396:../libopencm3/lib/stm32/f1/rtc.c ****     and LSI are permitted.
+ 397:../libopencm3/lib/stm32/f1/rtc.c **** @param[in] prescale_val uint32_t. 20 bit prescale divider.
+ 398:../libopencm3/lib/stm32/f1/rtc.c **** */
+ 399:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 400:../libopencm3/lib/stm32/f1/rtc.c **** void rtc_auto_awake(enum rcc_osc clock_source, uint32_t prescale_val)
+ 401:../libopencm3/lib/stm32/f1/rtc.c **** {
+ 1058              		.loc 1 401 1
+ 1059              		.cfi_startproc
+ 1060              		@ args = 0, pretend = 0, frame = 16
+ 1061              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1062 0000 80B5     		push	{r7, lr}
+ 1063              		.cfi_def_cfa_offset 8
+ 1064              		.cfi_offset 7, -8
+ 1065              		.cfi_offset 14, -4
+ 1066 0002 84B0     		sub	sp, sp, #16
+ 1067              		.cfi_def_cfa_offset 24
+ 1068 0004 00AF     		add	r7, sp, #0
+ 1069              		.cfi_def_cfa_register 7
+ 1070 0006 0346     		mov	r3, r0
+ 1071 0008 3960     		str	r1, [r7]
+ 1072 000a FB71     		strb	r3, [r7, #7]
+ 402:../libopencm3/lib/stm32/f1/rtc.c **** 	uint32_t reg32;
+ 403:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 404:../libopencm3/lib/stm32/f1/rtc.c **** 	/* Enable power and backup interface clocks. */
+ 405:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_PWR);
+ 1073              		.loc 1 405 2
+ 1074 000c 4FF46770 		mov	r0, #924
+ 1075 0010 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 406:../libopencm3/lib/stm32/f1/rtc.c **** 	rcc_periph_clock_enable(RCC_BKP);
+ 1076              		.loc 1 406 2
+ 1077 0014 40F29B30 		movw	r0, #923
+ 1078 0018 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+ 407:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 408:../libopencm3/lib/stm32/f1/rtc.c **** 	reg32 = rcc_rtc_clock_enabled_flag();
+ 1079              		.loc 1 408 10
+ 1080 001c FFF7FEFF 		bl	rcc_rtc_clock_enabled_flag(PLT)
+ 1081 0020 F860     		str	r0, [r7, #12]
+ 409:../libopencm3/lib/stm32/f1/rtc.c **** 
+ 410:../libopencm3/lib/stm32/f1/rtc.c **** 	if (reg32 != 0) {
+ 1082              		.loc 1 410 5
+ 1083 0022 FB68     		ldr	r3, [r7, #12]
+ 1084 0024 002B     		cmp	r3, #0
+ 1085 0026 02D0     		beq	.L73
+ 411:../libopencm3/lib/stm32/f1/rtc.c **** 		rtc_awake_from_standby();
+ 1086              		.loc 1 411 3
+ 1087 0028 FFF7FEFF 		bl	rtc_awake_from_standby(PLT)
+ 412:../libopencm3/lib/stm32/f1/rtc.c **** 	} else {
+ 413:../libopencm3/lib/stm32/f1/rtc.c **** 		rtc_awake_from_off(clock_source);
+ 414:../libopencm3/lib/stm32/f1/rtc.c **** 		rtc_set_prescale_val(prescale_val);
+ 415:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 416:../libopencm3/lib/stm32/f1/rtc.c **** }
+ 1088              		.loc 1 416 1
+ 1089 002c 06E0     		b	.L75
+ 1090              	.L73:
+ 413:../libopencm3/lib/stm32/f1/rtc.c **** 		rtc_set_prescale_val(prescale_val);
+ 1091              		.loc 1 413 3
+ 1092 002e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1093 0030 1846     		mov	r0, r3
+ 1094 0032 FFF7FEFF 		bl	rtc_awake_from_off(PLT)
+ 414:../libopencm3/lib/stm32/f1/rtc.c **** 	}
+ 1095              		.loc 1 414 3
+ 1096 0036 3868     		ldr	r0, [r7]
+ 1097 0038 FFF7FEFF 		bl	rtc_set_prescale_val(PLT)
+ 1098              	.L75:
+ 1099              		.loc 1 416 1
+ 1100 003c 00BF     		nop
+ 1101 003e 1037     		adds	r7, r7, #16
+ 1102              		.cfi_def_cfa_offset 8
+ 1103 0040 BD46     		mov	sp, r7
+ 1104              		.cfi_def_cfa_register 13
+ 1105              		@ sp needed
+ 1106 0042 80BD     		pop	{r7, pc}
+ 1107              		.cfi_endproc
+ 1108              	.LFE16:
+ 1110              		.text
+ 1111              	.Letext0:
+ 1112              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1113              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1114              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+ 1115              		.file 5 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rtc.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 rtc.c
+     /tmp/ccHpMyR0.s:16     .text.rtc_awake_from_off:0000000000000000 $t
+     /tmp/ccHpMyR0.s:24     .text.rtc_awake_from_off:0000000000000000 rtc_awake_from_off
+     /tmp/ccHpMyR0.s:148    .text.rtc_enter_config_mode:0000000000000000 rtc_enter_config_mode
+     /tmp/ccHpMyR0.s:207    .text.rtc_exit_config_mode:0000000000000000 rtc_exit_config_mode
+     /tmp/ccHpMyR0.s:129    .text.rtc_awake_from_off:000000000000008c $d
+     /tmp/ccHpMyR0.s:141    .text.rtc_enter_config_mode:0000000000000000 $t
+     /tmp/ccHpMyR0.s:195    .text.rtc_enter_config_mode:0000000000000030 $d
+     /tmp/ccHpMyR0.s:200    .text.rtc_exit_config_mode:0000000000000000 $t
+     /tmp/ccHpMyR0.s:254    .text.rtc_exit_config_mode:0000000000000030 $d
+     /tmp/ccHpMyR0.s:259    .text.rtc_set_alarm_time:0000000000000000 $t
+     /tmp/ccHpMyR0.s:266    .text.rtc_set_alarm_time:0000000000000000 rtc_set_alarm_time
+     /tmp/ccHpMyR0.s:310    .text.rtc_set_alarm_time:0000000000000028 $d
+     /tmp/ccHpMyR0.s:316    .text.rtc_enable_alarm:0000000000000000 $t
+     /tmp/ccHpMyR0.s:323    .text.rtc_enable_alarm:0000000000000000 rtc_enable_alarm
+     /tmp/ccHpMyR0.s:351    .text.rtc_enable_alarm:000000000000001c $d
+     /tmp/ccHpMyR0.s:356    .text.rtc_disable_alarm:0000000000000000 $t
+     /tmp/ccHpMyR0.s:363    .text.rtc_disable_alarm:0000000000000000 rtc_disable_alarm
+     /tmp/ccHpMyR0.s:391    .text.rtc_disable_alarm:000000000000001c $d
+     /tmp/ccHpMyR0.s:396    .text.rtc_set_prescale_val:0000000000000000 $t
+     /tmp/ccHpMyR0.s:403    .text.rtc_set_prescale_val:0000000000000000 rtc_set_prescale_val
+     /tmp/ccHpMyR0.s:449    .text.rtc_set_prescale_val:000000000000002c $d
+     /tmp/ccHpMyR0.s:455    .text.rtc_get_counter_val:0000000000000000 $t
+     /tmp/ccHpMyR0.s:462    .text.rtc_get_counter_val:0000000000000000 rtc_get_counter_val
+     /tmp/ccHpMyR0.s:496    .text.rtc_get_counter_val:0000000000000018 $d
+     /tmp/ccHpMyR0.s:502    .text.rtc_get_prescale_div_val:0000000000000000 $t
+     /tmp/ccHpMyR0.s:509    .text.rtc_get_prescale_div_val:0000000000000000 rtc_get_prescale_div_val
+     /tmp/ccHpMyR0.s:543    .text.rtc_get_prescale_div_val:0000000000000018 $d
+     /tmp/ccHpMyR0.s:549    .text.rtc_get_alarm_val:0000000000000000 $t
+     /tmp/ccHpMyR0.s:556    .text.rtc_get_alarm_val:0000000000000000 rtc_get_alarm_val
+     /tmp/ccHpMyR0.s:590    .text.rtc_get_alarm_val:0000000000000018 $d
+     /tmp/ccHpMyR0.s:596    .text.rtc_set_counter_val:0000000000000000 $t
+     /tmp/ccHpMyR0.s:603    .text.rtc_set_counter_val:0000000000000000 rtc_set_counter_val
+     /tmp/ccHpMyR0.s:647    .text.rtc_set_counter_val:0000000000000028 $d
+     /tmp/ccHpMyR0.s:653    .text.rtc_interrupt_enable:0000000000000000 $t
+     /tmp/ccHpMyR0.s:660    .text.rtc_interrupt_enable:0000000000000000 rtc_interrupt_enable
+     /tmp/ccHpMyR0.s:726    .text.rtc_interrupt_enable:0000000000000054 $d
+     /tmp/ccHpMyR0.s:731    .text.rtc_interrupt_disable:0000000000000000 $t
+     /tmp/ccHpMyR0.s:738    .text.rtc_interrupt_disable:0000000000000000 rtc_interrupt_disable
+     /tmp/ccHpMyR0.s:804    .text.rtc_interrupt_disable:0000000000000054 $d
+     /tmp/ccHpMyR0.s:809    .text.rtc_clear_flag:0000000000000000 $t
+     /tmp/ccHpMyR0.s:816    .text.rtc_clear_flag:0000000000000000 rtc_clear_flag
+     /tmp/ccHpMyR0.s:882    .text.rtc_clear_flag:000000000000004c $d
+     /tmp/ccHpMyR0.s:887    .text.rtc_check_flag:0000000000000000 $t
+     /tmp/ccHpMyR0.s:894    .text.rtc_check_flag:0000000000000000 rtc_check_flag
+     /tmp/ccHpMyR0.s:967    .text.rtc_check_flag:0000000000000050 $d
+     /tmp/ccHpMyR0.s:972    .text.rtc_awake_from_standby:0000000000000000 $t
+     /tmp/ccHpMyR0.s:979    .text.rtc_awake_from_standby:0000000000000000 rtc_awake_from_standby
+     /tmp/ccHpMyR0.s:1044   .text.rtc_awake_from_standby:0000000000000054 $d
+     /tmp/ccHpMyR0.s:1049   .text.rtc_auto_awake:0000000000000000 $t
+     /tmp/ccHpMyR0.s:1056   .text.rtc_auto_awake:0000000000000000 rtc_auto_awake
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+                           .group:0000000000000000 wm4.pwr_common_v1.h.34.5ba50cacb26c1962a4ec30bab2f0c81c
+                           .group:0000000000000000 wm4.rtc.h.49.30c7cd925964cd13cad1a19799ac5208
+
+UNDEFINED SYMBOLS
+rcc_periph_clock_enable
+pwr_disable_backup_domain_write_protect
+rcc_set_rtc_clock_source
+rcc_enable_rtc_clock
+rcc_rtc_clock_enabled_flag

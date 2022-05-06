@@ -1,0 +1,553 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"gpio_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.gpio_set,"ax",%progbits
+  16              		.align	1
+  17              		.global	gpio_set
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	gpio_set:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/gpio_common_all.c"
+   1:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @addtogroup gpio_file GPIO peripheral API
+   2:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+   4:../libopencm3/lib/stm32/common/gpio_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2009 Uwe Hermann <uwe@hermann-uwe.de>
+   5:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+   6:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+   7:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+   8:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*
+   9:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * This file is part of the libopencm3 project.
+  10:../libopencm3/lib/stm32/common/gpio_common_all.c ****  *
+  11:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+  12:../libopencm3/lib/stm32/common/gpio_common_all.c ****  *
+  13:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  14:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  15:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  16:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * (at your option) any later version.
+  17:../libopencm3/lib/stm32/common/gpio_common_all.c ****  *
+  18:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  19:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  20:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  21:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * GNU Lesser General Public License for more details.
+  22:../libopencm3/lib/stm32/common/gpio_common_all.c ****  *
+  23:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  24:../libopencm3/lib/stm32/common/gpio_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  25:../libopencm3/lib/stm32/common/gpio_common_all.c ****  */
+  26:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  27:../libopencm3/lib/stm32/common/gpio_common_all.c **** #include <libopencm3/stm32/gpio.h>
+  28:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  29:../libopencm3/lib/stm32/common/gpio_common_all.c **** /**@{*/
+  30:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  31:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+  32:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Set a Group of Pins Atomic
+  33:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  34:../libopencm3/lib/stm32/common/gpio_common_all.c **** Set one or more pins of the given GPIO port to 1 in an atomic operation.
+  35:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  36:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+  37:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpios Unsigned int16. Pin identifiers @ref gpio_pin_id
+  38:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     If multiple pins are to be changed, use bitwise OR '|' to separate
+  39:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     them.
+  40:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+  41:../libopencm3/lib/stm32/common/gpio_common_all.c **** void gpio_set(uint32_t gpioport, uint16_t gpios)
+  42:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+  27              		.loc 1 42 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 0B46     		mov	r3, r1
+  41 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+  43:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_BSRR(gpioport) = gpios;
+  42              		.loc 1 43 2
+  43 000c 7B68     		ldr	r3, [r7, #4]
+  44 000e 1033     		adds	r3, r3, #16
+  45 0010 1A46     		mov	r2, r3
+  46              		.loc 1 43 22
+  47 0012 7B88     		ldrh	r3, [r7, #2]
+  48 0014 1360     		str	r3, [r2]
+  44:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+  49              		.loc 1 44 1
+  50 0016 00BF     		nop
+  51 0018 0C37     		adds	r7, r7, #12
+  52              		.cfi_def_cfa_offset 4
+  53 001a BD46     		mov	sp, r7
+  54              		.cfi_def_cfa_register 13
+  55              		@ sp needed
+  56 001c 80BC     		pop	{r7}
+  57              		.cfi_restore 7
+  58              		.cfi_def_cfa_offset 0
+  59 001e 7047     		bx	lr
+  60              		.cfi_endproc
+  61              	.LFE0:
+  63              		.section	.text.gpio_clear,"ax",%progbits
+  64              		.align	1
+  65              		.global	gpio_clear
+  66              		.syntax unified
+  67              		.thumb
+  68              		.thumb_func
+  69              		.fpu softvfp
+  71              	gpio_clear:
+  72              	.LFB1:
+  45:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  46:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+  47:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Clear a Group of Pins Atomic
+  48:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  49:../libopencm3/lib/stm32/common/gpio_common_all.c **** Clear one or more pins of the given GPIO port to 0 in an atomic operation.
+  50:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  51:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+  52:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpios Unsigned int16. Pin identifiers @ref gpio_pin_id
+  53:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     If multiple pins are to be changed, use bitwise OR '|' to separate
+  54:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     them.
+  55:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+  56:../libopencm3/lib/stm32/common/gpio_common_all.c **** void  gpio_clear(uint32_t gpioport, uint16_t gpios)
+  57:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+  73              		.loc 1 57 1
+  74              		.cfi_startproc
+  75              		@ args = 0, pretend = 0, frame = 8
+  76              		@ frame_needed = 1, uses_anonymous_args = 0
+  77              		@ link register save eliminated.
+  78 0000 80B4     		push	{r7}
+  79              		.cfi_def_cfa_offset 4
+  80              		.cfi_offset 7, -4
+  81 0002 83B0     		sub	sp, sp, #12
+  82              		.cfi_def_cfa_offset 16
+  83 0004 00AF     		add	r7, sp, #0
+  84              		.cfi_def_cfa_register 7
+  85 0006 7860     		str	r0, [r7, #4]
+  86 0008 0B46     		mov	r3, r1
+  87 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+  58:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_BSRR(gpioport) = (gpios << 16);
+  88              		.loc 1 58 31
+  89 000c 7B88     		ldrh	r3, [r7, #2]
+  90 000e 1A04     		lsls	r2, r3, #16
+  91              		.loc 1 58 2
+  92 0010 7B68     		ldr	r3, [r7, #4]
+  93 0012 1033     		adds	r3, r3, #16
+  94              		.loc 1 58 22
+  95 0014 1A60     		str	r2, [r3]
+  59:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+  96              		.loc 1 59 1
+  97 0016 00BF     		nop
+  98 0018 0C37     		adds	r7, r7, #12
+  99              		.cfi_def_cfa_offset 4
+ 100 001a BD46     		mov	sp, r7
+ 101              		.cfi_def_cfa_register 13
+ 102              		@ sp needed
+ 103 001c 80BC     		pop	{r7}
+ 104              		.cfi_restore 7
+ 105              		.cfi_def_cfa_offset 0
+ 106 001e 7047     		bx	lr
+ 107              		.cfi_endproc
+ 108              	.LFE1:
+ 110              		.section	.text.gpio_get,"ax",%progbits
+ 111              		.align	1
+ 112              		.global	gpio_get
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 116              		.fpu softvfp
+ 118              	gpio_get:
+ 119              	.LFB2:
+  60:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  61:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+  62:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Read a Group of Pins.
+  63:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  64:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+  65:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpios Unsigned int16. Pin identifiers @ref gpio_pin_id
+  66:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	    If multiple pins are to be read, use bitwise OR '|' to separate
+  67:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	    them.
+  68:../libopencm3/lib/stm32/common/gpio_common_all.c **** @return Unsigned int16 value of the pin values. The bit position of the pin
+  69:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	value returned corresponds to the pin number.
+  70:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+  71:../libopencm3/lib/stm32/common/gpio_common_all.c **** uint16_t gpio_get(uint32_t gpioport, uint16_t gpios)
+  72:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+ 120              		.loc 1 72 1
+ 121              		.cfi_startproc
+ 122              		@ args = 0, pretend = 0, frame = 8
+ 123              		@ frame_needed = 1, uses_anonymous_args = 0
+ 124 0000 80B5     		push	{r7, lr}
+ 125              		.cfi_def_cfa_offset 8
+ 126              		.cfi_offset 7, -8
+ 127              		.cfi_offset 14, -4
+ 128 0002 82B0     		sub	sp, sp, #8
+ 129              		.cfi_def_cfa_offset 16
+ 130 0004 00AF     		add	r7, sp, #0
+ 131              		.cfi_def_cfa_register 7
+ 132 0006 7860     		str	r0, [r7, #4]
+ 133 0008 0B46     		mov	r3, r1
+ 134 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+  73:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	return gpio_port_read(gpioport) & gpios;
+ 135              		.loc 1 73 9
+ 136 000c 7868     		ldr	r0, [r7, #4]
+ 137 000e FFF7FEFF 		bl	gpio_port_read(PLT)
+ 138 0012 0346     		mov	r3, r0
+ 139 0014 1A46     		mov	r2, r3
+ 140              		.loc 1 73 34
+ 141 0016 7B88     		ldrh	r3, [r7, #2]	@ movhi
+ 142 0018 1340     		ands	r3, r3, r2
+ 143 001a 9BB2     		uxth	r3, r3
+  74:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+ 144              		.loc 1 74 1
+ 145 001c 1846     		mov	r0, r3
+ 146 001e 0837     		adds	r7, r7, #8
+ 147              		.cfi_def_cfa_offset 8
+ 148 0020 BD46     		mov	sp, r7
+ 149              		.cfi_def_cfa_register 13
+ 150              		@ sp needed
+ 151 0022 80BD     		pop	{r7, pc}
+ 152              		.cfi_endproc
+ 153              	.LFE2:
+ 155              		.section	.text.gpio_toggle,"ax",%progbits
+ 156              		.align	1
+ 157              		.global	gpio_toggle
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 161              		.fpu softvfp
+ 163              	gpio_toggle:
+ 164              	.LFB3:
+  75:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  76:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+  77:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Toggle a Group of Pins
+  78:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  79:../libopencm3/lib/stm32/common/gpio_common_all.c **** Toggle one or more pins of the given GPIO port. The toggling is not atomic, but
+  80:../libopencm3/lib/stm32/common/gpio_common_all.c **** the non-toggled pins are not affected.
+  81:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  82:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+  83:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpios Unsigned int16. Pin identifiers @ref gpio_pin_id
+  84:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     If multiple pins are to be changed, use bitwise OR '|' to separate
+  85:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     them.
+  86:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+  87:../libopencm3/lib/stm32/common/gpio_common_all.c **** void gpio_toggle(uint32_t gpioport, uint16_t gpios)
+  88:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+ 165              		.loc 1 88 1
+ 166              		.cfi_startproc
+ 167              		@ args = 0, pretend = 0, frame = 16
+ 168              		@ frame_needed = 1, uses_anonymous_args = 0
+ 169              		@ link register save eliminated.
+ 170 0000 80B4     		push	{r7}
+ 171              		.cfi_def_cfa_offset 4
+ 172              		.cfi_offset 7, -4
+ 173 0002 85B0     		sub	sp, sp, #20
+ 174              		.cfi_def_cfa_offset 24
+ 175 0004 00AF     		add	r7, sp, #0
+ 176              		.cfi_def_cfa_register 7
+ 177 0006 7860     		str	r0, [r7, #4]
+ 178 0008 0B46     		mov	r3, r1
+ 179 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+  89:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	uint32_t port = GPIO_ODR(gpioport);
+ 180              		.loc 1 89 18
+ 181 000c 7B68     		ldr	r3, [r7, #4]
+ 182 000e 0C33     		adds	r3, r3, #12
+ 183              		.loc 1 89 11
+ 184 0010 1B68     		ldr	r3, [r3]
+ 185 0012 FB60     		str	r3, [r7, #12]
+  90:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_BSRR(gpioport) = ((port & gpios) << 16) | (~port & gpios);
+ 186              		.loc 1 90 31
+ 187 0014 7A88     		ldrh	r2, [r7, #2]
+ 188 0016 FB68     		ldr	r3, [r7, #12]
+ 189 0018 1340     		ands	r3, r3, r2
+ 190              		.loc 1 90 40
+ 191 001a 1A04     		lsls	r2, r3, #16
+ 192              		.loc 1 90 50
+ 193 001c FB68     		ldr	r3, [r7, #12]
+ 194 001e D943     		mvns	r1, r3
+ 195              		.loc 1 90 56
+ 196 0020 7B88     		ldrh	r3, [r7, #2]
+ 197 0022 0B40     		ands	r3, r3, r1
+ 198              		.loc 1 90 2
+ 199 0024 7968     		ldr	r1, [r7, #4]
+ 200 0026 1031     		adds	r1, r1, #16
+ 201              		.loc 1 90 47
+ 202 0028 1343     		orrs	r3, r3, r2
+ 203              		.loc 1 90 22
+ 204 002a 0B60     		str	r3, [r1]
+  91:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+ 205              		.loc 1 91 1
+ 206 002c 00BF     		nop
+ 207 002e 1437     		adds	r7, r7, #20
+ 208              		.cfi_def_cfa_offset 4
+ 209 0030 BD46     		mov	sp, r7
+ 210              		.cfi_def_cfa_register 13
+ 211              		@ sp needed
+ 212 0032 80BC     		pop	{r7}
+ 213              		.cfi_restore 7
+ 214              		.cfi_def_cfa_offset 0
+ 215 0034 7047     		bx	lr
+ 216              		.cfi_endproc
+ 217              	.LFE3:
+ 219              		.section	.text.gpio_port_read,"ax",%progbits
+ 220              		.align	1
+ 221              		.global	gpio_port_read
+ 222              		.syntax unified
+ 223              		.thumb
+ 224              		.thumb_func
+ 225              		.fpu softvfp
+ 227              	gpio_port_read:
+ 228              	.LFB4:
+  92:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  93:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+  94:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Read from a Port
+  95:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  96:../libopencm3/lib/stm32/common/gpio_common_all.c **** Read the current value of the given GPIO port. Only the lower 16 bits contain
+  97:../libopencm3/lib/stm32/common/gpio_common_all.c **** valid pin data.
+  98:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+  99:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+ 100:../libopencm3/lib/stm32/common/gpio_common_all.c **** @return Unsigned int16. The value held in the specified GPIO port.
+ 101:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+ 102:../libopencm3/lib/stm32/common/gpio_common_all.c **** uint16_t gpio_port_read(uint32_t gpioport)
+ 103:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+ 229              		.loc 1 103 1
+ 230              		.cfi_startproc
+ 231              		@ args = 0, pretend = 0, frame = 8
+ 232              		@ frame_needed = 1, uses_anonymous_args = 0
+ 233              		@ link register save eliminated.
+ 234 0000 80B4     		push	{r7}
+ 235              		.cfi_def_cfa_offset 4
+ 236              		.cfi_offset 7, -4
+ 237 0002 83B0     		sub	sp, sp, #12
+ 238              		.cfi_def_cfa_offset 16
+ 239 0004 00AF     		add	r7, sp, #0
+ 240              		.cfi_def_cfa_register 7
+ 241 0006 7860     		str	r0, [r7, #4]
+ 104:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	return (uint16_t)GPIO_IDR(gpioport);
+ 242              		.loc 1 104 19
+ 243 0008 7B68     		ldr	r3, [r7, #4]
+ 244 000a 0833     		adds	r3, r3, #8
+ 245 000c 1B68     		ldr	r3, [r3]
+ 246              		.loc 1 104 9
+ 247 000e 9BB2     		uxth	r3, r3
+ 105:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+ 248              		.loc 1 105 1
+ 249 0010 1846     		mov	r0, r3
+ 250 0012 0C37     		adds	r7, r7, #12
+ 251              		.cfi_def_cfa_offset 4
+ 252 0014 BD46     		mov	sp, r7
+ 253              		.cfi_def_cfa_register 13
+ 254              		@ sp needed
+ 255 0016 80BC     		pop	{r7}
+ 256              		.cfi_restore 7
+ 257              		.cfi_def_cfa_offset 0
+ 258 0018 7047     		bx	lr
+ 259              		.cfi_endproc
+ 260              	.LFE4:
+ 262              		.section	.text.gpio_port_write,"ax",%progbits
+ 263              		.align	1
+ 264              		.global	gpio_port_write
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 268              		.fpu softvfp
+ 270              	gpio_port_write:
+ 271              	.LFB5:
+ 106:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 107:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+ 108:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Write to a Port
+ 109:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 110:../libopencm3/lib/stm32/common/gpio_common_all.c **** Write a value to the given GPIO port.
+ 111:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 112:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+ 113:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] data Unsigned int16. The value to be written to the GPIO port.
+ 114:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+ 115:../libopencm3/lib/stm32/common/gpio_common_all.c **** void gpio_port_write(uint32_t gpioport, uint16_t data)
+ 116:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+ 272              		.loc 1 116 1
+ 273              		.cfi_startproc
+ 274              		@ args = 0, pretend = 0, frame = 8
+ 275              		@ frame_needed = 1, uses_anonymous_args = 0
+ 276              		@ link register save eliminated.
+ 277 0000 80B4     		push	{r7}
+ 278              		.cfi_def_cfa_offset 4
+ 279              		.cfi_offset 7, -4
+ 280 0002 83B0     		sub	sp, sp, #12
+ 281              		.cfi_def_cfa_offset 16
+ 282 0004 00AF     		add	r7, sp, #0
+ 283              		.cfi_def_cfa_register 7
+ 284 0006 7860     		str	r0, [r7, #4]
+ 285 0008 0B46     		mov	r3, r1
+ 286 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 117:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_ODR(gpioport) = data;
+ 287              		.loc 1 117 2
+ 288 000c 7B68     		ldr	r3, [r7, #4]
+ 289 000e 0C33     		adds	r3, r3, #12
+ 290 0010 1A46     		mov	r2, r3
+ 291              		.loc 1 117 21
+ 292 0012 7B88     		ldrh	r3, [r7, #2]
+ 293 0014 1360     		str	r3, [r2]
+ 118:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+ 294              		.loc 1 118 1
+ 295 0016 00BF     		nop
+ 296 0018 0C37     		adds	r7, r7, #12
+ 297              		.cfi_def_cfa_offset 4
+ 298 001a BD46     		mov	sp, r7
+ 299              		.cfi_def_cfa_register 13
+ 300              		@ sp needed
+ 301 001c 80BC     		pop	{r7}
+ 302              		.cfi_restore 7
+ 303              		.cfi_def_cfa_offset 0
+ 304 001e 7047     		bx	lr
+ 305              		.cfi_endproc
+ 306              	.LFE5:
+ 308              		.section	.text.gpio_port_config_lock,"ax",%progbits
+ 309              		.align	1
+ 310              		.global	gpio_port_config_lock
+ 311              		.syntax unified
+ 312              		.thumb
+ 313              		.thumb_func
+ 314              		.fpu softvfp
+ 316              	gpio_port_config_lock:
+ 317              	.LFB6:
+ 119:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 120:../libopencm3/lib/stm32/common/gpio_common_all.c **** /*---------------------------------------------------------------------------*/
+ 121:../libopencm3/lib/stm32/common/gpio_common_all.c **** /** @brief Lock the Configuration of a Group of Pins
+ 122:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 123:../libopencm3/lib/stm32/common/gpio_common_all.c **** The configuration of one or more pins of the given GPIO port is locked. There
+ 124:../libopencm3/lib/stm32/common/gpio_common_all.c **** is no mechanism to unlock these via software. Unlocking occurs at the next
+ 125:../libopencm3/lib/stm32/common/gpio_common_all.c **** reset.
+ 126:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 127:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpioport Unsigned int32. Port identifier @ref gpio_port_id
+ 128:../libopencm3/lib/stm32/common/gpio_common_all.c **** @param[in] gpios Unsigned int16. Pin identifiers @ref gpio_pin_id
+ 129:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     If multiple pins are to be locked, use bitwise OR '|' to separate
+ 130:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	     them.
+ 131:../libopencm3/lib/stm32/common/gpio_common_all.c **** */
+ 132:../libopencm3/lib/stm32/common/gpio_common_all.c **** void gpio_port_config_lock(uint32_t gpioport, uint16_t gpios)
+ 133:../libopencm3/lib/stm32/common/gpio_common_all.c **** {
+ 318              		.loc 1 133 1
+ 319              		.cfi_startproc
+ 320              		@ args = 0, pretend = 0, frame = 16
+ 321              		@ frame_needed = 1, uses_anonymous_args = 0
+ 322              		@ link register save eliminated.
+ 323 0000 80B4     		push	{r7}
+ 324              		.cfi_def_cfa_offset 4
+ 325              		.cfi_offset 7, -4
+ 326 0002 85B0     		sub	sp, sp, #20
+ 327              		.cfi_def_cfa_offset 24
+ 328 0004 00AF     		add	r7, sp, #0
+ 329              		.cfi_def_cfa_register 7
+ 330 0006 7860     		str	r0, [r7, #4]
+ 331 0008 0B46     		mov	r3, r1
+ 332 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 134:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	uint32_t reg32;
+ 135:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 136:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	/* Special "Lock Key Writing Sequence", see datasheet. */
+ 137:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_LCKR(gpioport) = GPIO_LCKK | gpios;	/* Set LCKK. */
+ 333              		.loc 1 137 34
+ 334 000c 7B88     		ldrh	r3, [r7, #2]
+ 335 000e 43F48032 		orr	r2, r3, #65536
+ 336              		.loc 1 137 2
+ 337 0012 7B68     		ldr	r3, [r7, #4]
+ 338 0014 1833     		adds	r3, r3, #24
+ 339              		.loc 1 137 22
+ 340 0016 1A60     		str	r2, [r3]
+ 138:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_LCKR(gpioport) = ~GPIO_LCKK & gpios;	/* Clear LCKK. */
+ 341              		.loc 1 138 2
+ 342 0018 7B68     		ldr	r3, [r7, #4]
+ 343 001a 1833     		adds	r3, r3, #24
+ 344 001c 1A46     		mov	r2, r3
+ 345              		.loc 1 138 35
+ 346 001e 7B88     		ldrh	r3, [r7, #2]
+ 347              		.loc 1 138 22
+ 348 0020 1360     		str	r3, [r2]
+ 139:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	GPIO_LCKR(gpioport) = GPIO_LCKK | gpios;	/* Set LCKK. */
+ 349              		.loc 1 139 34
+ 350 0022 7B88     		ldrh	r3, [r7, #2]
+ 351 0024 43F48032 		orr	r2, r3, #65536
+ 352              		.loc 1 139 2
+ 353 0028 7B68     		ldr	r3, [r7, #4]
+ 354 002a 1833     		adds	r3, r3, #24
+ 355              		.loc 1 139 22
+ 356 002c 1A60     		str	r2, [r3]
+ 140:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	reg32 = GPIO_LCKR(gpioport);			/* Read LCKK. */
+ 357              		.loc 1 140 10
+ 358 002e 7B68     		ldr	r3, [r7, #4]
+ 359 0030 1833     		adds	r3, r3, #24
+ 360              		.loc 1 140 8
+ 361 0032 1B68     		ldr	r3, [r3]
+ 362 0034 FB60     		str	r3, [r7, #12]
+ 141:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	reg32 = GPIO_LCKR(gpioport);			/* Read LCKK again. */
+ 363              		.loc 1 141 10
+ 364 0036 7B68     		ldr	r3, [r7, #4]
+ 365 0038 1833     		adds	r3, r3, #24
+ 366              		.loc 1 141 8
+ 367 003a 1B68     		ldr	r3, [r3]
+ 368 003c FB60     		str	r3, [r7, #12]
+ 142:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 143:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	/* Tell the compiler the variable is actually used. It will get
+ 144:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	 * optimized out anyways.
+ 145:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	 */
+ 146:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	reg32 = reg32;
+ 147:../libopencm3/lib/stm32/common/gpio_common_all.c **** 
+ 148:../libopencm3/lib/stm32/common/gpio_common_all.c **** 	/* If (reg32 & GPIO_LCKK) is true, the lock is now active. */
+ 149:../libopencm3/lib/stm32/common/gpio_common_all.c **** }
+ 369              		.loc 1 149 1
+ 370 003e 00BF     		nop
+ 371 0040 1437     		adds	r7, r7, #20
+ 372              		.cfi_def_cfa_offset 4
+ 373 0042 BD46     		mov	sp, r7
+ 374              		.cfi_def_cfa_register 13
+ 375              		@ sp needed
+ 376 0044 80BC     		pop	{r7}
+ 377              		.cfi_restore 7
+ 378              		.cfi_def_cfa_offset 0
+ 379 0046 7047     		bx	lr
+ 380              		.cfi_endproc
+ 381              	.LFE6:
+ 383              		.text
+ 384              	.Letext0:
+ 385              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 386              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 gpio_common_all.c
+     /tmp/cc0dGFnm.s:16     .text.gpio_set:0000000000000000 $t
+     /tmp/cc0dGFnm.s:24     .text.gpio_set:0000000000000000 gpio_set
+     /tmp/cc0dGFnm.s:64     .text.gpio_clear:0000000000000000 $t
+     /tmp/cc0dGFnm.s:71     .text.gpio_clear:0000000000000000 gpio_clear
+     /tmp/cc0dGFnm.s:111    .text.gpio_get:0000000000000000 $t
+     /tmp/cc0dGFnm.s:118    .text.gpio_get:0000000000000000 gpio_get
+     /tmp/cc0dGFnm.s:227    .text.gpio_port_read:0000000000000000 gpio_port_read
+     /tmp/cc0dGFnm.s:156    .text.gpio_toggle:0000000000000000 $t
+     /tmp/cc0dGFnm.s:163    .text.gpio_toggle:0000000000000000 gpio_toggle
+     /tmp/cc0dGFnm.s:220    .text.gpio_port_read:0000000000000000 $t
+     /tmp/cc0dGFnm.s:263    .text.gpio_port_write:0000000000000000 $t
+     /tmp/cc0dGFnm.s:270    .text.gpio_port_write:0000000000000000 gpio_port_write
+     /tmp/cc0dGFnm.s:309    .text.gpio_port_config_lock:0000000000000000 $t
+     /tmp/cc0dGFnm.s:316    .text.gpio_port_config_lock:0000000000000000 gpio_port_config_lock
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.gpio_common_all.h.37.fedbbcb9179f773c905aa3c3e4b7dbdd
+                           .group:0000000000000000 wm4.gpio.h.49.d09d289f6b7cafdf34d45f4623a2b0fb
+
+NO UNDEFINED SYMBOLS

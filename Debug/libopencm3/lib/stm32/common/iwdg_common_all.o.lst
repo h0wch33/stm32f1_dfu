@@ -1,0 +1,505 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"iwdg_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.iwdg_start,"ax",%progbits
+  16              		.align	1
+  17              		.global	iwdg_start
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	iwdg_start:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/iwdg_common_all.c"
+   1:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @addtogroup iwdg_file IWDG peripheral API
+   2:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+   4:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2012 Ken Sarkies ksarkies@internode.on.net
+   5:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+   6:../libopencm3/lib/stm32/common/iwdg_common_all.c **** This library supports the Independent Watchdog Timer System in the STM32F1xx
+   7:../libopencm3/lib/stm32/common/iwdg_common_all.c **** series of ARM Cortex Microcontrollers by ST Microelectronics.
+   8:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+   9:../libopencm3/lib/stm32/common/iwdg_common_all.c **** The watchdog timer uses the LSI (low speed internal) clock which is low power
+  10:../libopencm3/lib/stm32/common/iwdg_common_all.c **** and continues to operate during stop and standby modes. Its frequency is
+  11:../libopencm3/lib/stm32/common/iwdg_common_all.c **** nominally 32kHz (40kHz for the STM32F1xx series) but can vary from as low
+  12:../libopencm3/lib/stm32/common/iwdg_common_all.c **** as 17kHz up to 60kHz (refer to datasheet electrical characteristics).
+  13:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  14:../libopencm3/lib/stm32/common/iwdg_common_all.c **** Note that the User Configuration option byte provides a means of automatically
+  15:../libopencm3/lib/stm32/common/iwdg_common_all.c **** enabling the IWDG timer at power on (with counter value 0xFFF). If the
+  16:../libopencm3/lib/stm32/common/iwdg_common_all.c **** relevant bit is not set, the IWDG timer must be enabled by software.
+  17:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  18:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @note: Tested: CPU STM32F103RET6, Board ET-ARM Stamp STM32
+  19:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  20:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+  21:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*
+  22:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * This file is part of the libopencm3 project.
+  23:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  *
+  24:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  25:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  26:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  27:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * (at your option) any later version.
+  28:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  *
+  29:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  30:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  31:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  32:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * GNU Lesser General Public License for more details.
+  33:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  *
+  34:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  35:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  36:../libopencm3/lib/stm32/common/iwdg_common_all.c ****  */
+  37:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  38:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /**@{*/
+  39:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  40:../libopencm3/lib/stm32/common/iwdg_common_all.c **** #include <libopencm3/stm32/iwdg.h>
+  41:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  42:../libopencm3/lib/stm32/common/iwdg_common_all.c **** #define LSI_FREQUENCY 32000
+  43:../libopencm3/lib/stm32/common/iwdg_common_all.c **** #define COUNT_LENGTH 12
+  44:../libopencm3/lib/stm32/common/iwdg_common_all.c **** #define COUNT_MASK ((1 << COUNT_LENGTH)-1)
+  45:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  46:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*---------------------------------------------------------------------------*/
+  47:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @brief IWDG Enable Watchdog Timer
+  48:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  49:../libopencm3/lib/stm32/common/iwdg_common_all.c **** The watchdog timer is started. The timeout period defaults to 512 milliseconds
+  50:../libopencm3/lib/stm32/common/iwdg_common_all.c **** unless it has been previously defined.
+  51:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  52:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+  53:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  54:../libopencm3/lib/stm32/common/iwdg_common_all.c **** void iwdg_start(void)
+  55:../libopencm3/lib/stm32/common/iwdg_common_all.c **** {
+  27              		.loc 1 55 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  56:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_KR = IWDG_KR_START;
+  37              		.loc 1 56 2
+  38 0004 034B     		ldr	r3, .L2
+  39              		.loc 1 56 10
+  40 0006 4CF6CC42 		movw	r2, #52428
+  41 000a 1A60     		str	r2, [r3]
+  57:../libopencm3/lib/stm32/common/iwdg_common_all.c **** }
+  42              		.loc 1 57 1
+  43 000c 00BF     		nop
+  44 000e BD46     		mov	sp, r7
+  45              		.cfi_def_cfa_register 13
+  46              		@ sp needed
+  47 0010 80BC     		pop	{r7}
+  48              		.cfi_restore 7
+  49              		.cfi_def_cfa_offset 0
+  50 0012 7047     		bx	lr
+  51              	.L3:
+  52              		.align	2
+  53              	.L2:
+  54 0014 00300040 		.word	1073754112
+  55              		.cfi_endproc
+  56              	.LFE0:
+  58              		.section	.text.iwdg_set_period_ms,"ax",%progbits
+  59              		.align	1
+  60              		.global	iwdg_set_period_ms
+  61              		.syntax unified
+  62              		.thumb
+  63              		.thumb_func
+  64              		.fpu softvfp
+  66              	iwdg_set_period_ms:
+  67              	.LFB1:
+  58:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  59:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*---------------------------------------------------------------------------*/
+  60:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @brief IWDG Set Period in Milliseconds
+  61:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  62:../libopencm3/lib/stm32/common/iwdg_common_all.c **** The countdown period is converted into count and prescale values. The maximum
+  63:../libopencm3/lib/stm32/common/iwdg_common_all.c **** period is 32.76 seconds; values above this are truncated. Periods less than 1ms
+  64:../libopencm3/lib/stm32/common/iwdg_common_all.c **** are not supported by this library.
+  65:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  66:../libopencm3/lib/stm32/common/iwdg_common_all.c **** A delay of up to 5 clock cycles of the LSI clock (about 156 microseconds)
+  67:../libopencm3/lib/stm32/common/iwdg_common_all.c **** can occasionally occur if the prescale or preload registers are currently busy
+  68:../libopencm3/lib/stm32/common/iwdg_common_all.c **** loading a previous value.
+  69:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  70:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @param[in] period uint32_t Period in milliseconds (< 32760) from a watchdog
+  71:../libopencm3/lib/stm32/common/iwdg_common_all.c **** reset until a system reset is issued.
+  72:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+  73:../libopencm3/lib/stm32/common/iwdg_common_all.c **** void iwdg_set_period_ms(uint32_t period)
+  74:../libopencm3/lib/stm32/common/iwdg_common_all.c **** {
+  68              		.loc 1 74 1
+  69              		.cfi_startproc
+  70              		@ args = 0, pretend = 0, frame = 24
+  71              		@ frame_needed = 1, uses_anonymous_args = 0
+  72 0000 80B5     		push	{r7, lr}
+  73              		.cfi_def_cfa_offset 8
+  74              		.cfi_offset 7, -8
+  75              		.cfi_offset 14, -4
+  76 0002 86B0     		sub	sp, sp, #24
+  77              		.cfi_def_cfa_offset 32
+  78 0004 00AF     		add	r7, sp, #0
+  79              		.cfi_def_cfa_register 7
+  80 0006 7860     		str	r0, [r7, #4]
+  75:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	const int PRESCALER_MAX = 6;
+  81              		.loc 1 75 12
+  82 0008 0623     		movs	r3, #6
+  83 000a FB60     		str	r3, [r7, #12]
+  76:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	uint8_t prescale = 0;
+  84              		.loc 1 76 10
+  85 000c 0023     		movs	r3, #0
+  86 000e FB75     		strb	r3, [r7, #23]
+  77:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  78:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* Set the count to represent ticks of 8kHz clock (the 32kHz LSI clock
+  79:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	 * divided by 4 = lowest prescaler setting)
+  80:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	 */
+  81:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	uint32_t count = period << 3;
+  87              		.loc 1 81 11
+  88 0010 7B68     		ldr	r3, [r7, #4]
+  89 0012 DB00     		lsls	r3, r3, #3
+  90 0014 3B61     		str	r3, [r7, #16]
+  82:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  83:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* Prevent underflow */
+  84:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	if (count == 0) {
+  91              		.loc 1 84 5
+  92 0016 3B69     		ldr	r3, [r7, #16]
+  93 0018 002B     		cmp	r3, #0
+  94 001a 08D1     		bne	.L6
+  85:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count = 1;
+  95              		.loc 1 85 9
+  96 001c 0123     		movs	r3, #1
+  97 001e 3B61     		str	r3, [r7, #16]
+  86:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	}
+  87:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  88:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* Shift count while increasing prescaler as many times as needed to
+  89:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	 * fit into IWDG_RLR
+  90:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	 */
+  91:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	while ((count - 1) >> COUNT_LENGTH) {
+  98              		.loc 1 91 8
+  99 0020 05E0     		b	.L6
+ 100              	.L7:
+  92:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count >>= 1;
+ 101              		.loc 1 92 9
+ 102 0022 3B69     		ldr	r3, [r7, #16]
+ 103 0024 5B08     		lsrs	r3, r3, #1
+ 104 0026 3B61     		str	r3, [r7, #16]
+  93:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		prescale++;
+ 105              		.loc 1 93 11
+ 106 0028 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 107 002a 0133     		adds	r3, r3, #1
+ 108 002c FB75     		strb	r3, [r7, #23]
+ 109              	.L6:
+  91:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count >>= 1;
+ 110              		.loc 1 91 16
+ 111 002e 3B69     		ldr	r3, [r7, #16]
+ 112 0030 013B     		subs	r3, r3, #1
+  91:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count >>= 1;
+ 113              		.loc 1 91 21
+ 114 0032 1B0B     		lsrs	r3, r3, #12
+  91:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count >>= 1;
+ 115              		.loc 1 91 8
+ 116 0034 002B     		cmp	r3, #0
+ 117 0036 F4D1     		bne	.L7
+  94:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	}
+  95:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  96:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* IWDG_RLR actually holds count - 1 */
+  97:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	count--;
+ 118              		.loc 1 97 7
+ 119 0038 3B69     		ldr	r3, [r7, #16]
+ 120 003a 013B     		subs	r3, r3, #1
+ 121 003c 3B61     		str	r3, [r7, #16]
+  98:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+  99:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* Clamp to max possible period */
+ 100:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	if (prescale > PRESCALER_MAX) {
+ 122              		.loc 1 100 15
+ 123 003e FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 124              		.loc 1 100 5
+ 125 0040 FA68     		ldr	r2, [r7, #12]
+ 126 0042 9A42     		cmp	r2, r3
+ 127 0044 04DA     		bge	.L11
+ 101:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		count = COUNT_MASK;
+ 128              		.loc 1 101 9
+ 129 0046 40F6FF73 		movw	r3, #4095
+ 130 004a 3B61     		str	r3, [r7, #16]
+ 102:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 		prescale = PRESCALER_MAX;
+ 131              		.loc 1 102 12
+ 132 004c FB68     		ldr	r3, [r7, #12]
+ 133 004e FB75     		strb	r3, [r7, #23]
+ 134              	.L11:
+ 103:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	}
+ 104:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 105:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	while (iwdg_prescaler_busy());
+ 135              		.loc 1 105 8
+ 136 0050 00BF     		nop
+ 137              	.L9:
+ 138              		.loc 1 105 9 discriminator 1
+ 139 0052 FFF7FEFF 		bl	iwdg_prescaler_busy(PLT)
+ 140 0056 0346     		mov	r3, r0
+ 141              		.loc 1 105 8 discriminator 1
+ 142 0058 002B     		cmp	r3, #0
+ 143 005a FAD1     		bne	.L9
+ 106:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_KR = IWDG_KR_UNLOCK;
+ 144              		.loc 1 106 2
+ 145 005c 0D4B     		ldr	r3, .L12
+ 146              		.loc 1 106 10
+ 147 005e 45F25552 		movw	r2, #21845
+ 148 0062 1A60     		str	r2, [r3]
+ 107:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_PR = prescale;
+ 149              		.loc 1 107 2
+ 150 0064 0C4A     		ldr	r2, .L12+4
+ 151              		.loc 1 107 10
+ 152 0066 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 153 0068 1360     		str	r3, [r2]
+ 108:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	while (iwdg_reload_busy());
+ 154              		.loc 1 108 8
+ 155 006a 00BF     		nop
+ 156              	.L10:
+ 157              		.loc 1 108 9 discriminator 1
+ 158 006c FFF7FEFF 		bl	iwdg_reload_busy(PLT)
+ 159 0070 0346     		mov	r3, r0
+ 160              		.loc 1 108 8 discriminator 1
+ 161 0072 002B     		cmp	r3, #0
+ 162 0074 FAD1     		bne	.L10
+ 109:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_KR = IWDG_KR_UNLOCK;
+ 163              		.loc 1 109 2
+ 164 0076 074B     		ldr	r3, .L12
+ 165              		.loc 1 109 10
+ 166 0078 45F25552 		movw	r2, #21845
+ 167 007c 1A60     		str	r2, [r3]
+ 110:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_RLR = count & COUNT_MASK;
+ 168              		.loc 1 110 2
+ 169 007e 074A     		ldr	r2, .L12+8
+ 170              		.loc 1 110 19
+ 171 0080 3B69     		ldr	r3, [r7, #16]
+ 172 0082 C3F30B03 		ubfx	r3, r3, #0, #12
+ 173              		.loc 1 110 11
+ 174 0086 1360     		str	r3, [r2]
+ 111:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	
+ 112:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	/* Refresh counter after configuration is complete */
+ 113:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	iwdg_reset();
+ 175              		.loc 1 113 2
+ 176 0088 FFF7FEFF 		bl	iwdg_reset(PLT)
+ 114:../libopencm3/lib/stm32/common/iwdg_common_all.c **** }
+ 177              		.loc 1 114 1
+ 178 008c 00BF     		nop
+ 179 008e 1837     		adds	r7, r7, #24
+ 180              		.cfi_def_cfa_offset 8
+ 181 0090 BD46     		mov	sp, r7
+ 182              		.cfi_def_cfa_register 13
+ 183              		@ sp needed
+ 184 0092 80BD     		pop	{r7, pc}
+ 185              	.L13:
+ 186              		.align	2
+ 187              	.L12:
+ 188 0094 00300040 		.word	1073754112
+ 189 0098 04300040 		.word	1073754116
+ 190 009c 08300040 		.word	1073754120
+ 191              		.cfi_endproc
+ 192              	.LFE1:
+ 194              		.section	.text.iwdg_reload_busy,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	iwdg_reload_busy
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 200              		.fpu softvfp
+ 202              	iwdg_reload_busy:
+ 203              	.LFB2:
+ 115:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 116:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*---------------------------------------------------------------------------*/
+ 117:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @brief IWDG Get Reload Register Status
+ 118:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 119:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @returns boolean: TRUE if the reload register is busy and unavailable for
+ 120:../libopencm3/lib/stm32/common/iwdg_common_all.c **** loading a new count value.
+ 121:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+ 122:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 123:../libopencm3/lib/stm32/common/iwdg_common_all.c **** bool iwdg_reload_busy(void)
+ 124:../libopencm3/lib/stm32/common/iwdg_common_all.c **** {
+ 204              		.loc 1 124 1
+ 205              		.cfi_startproc
+ 206              		@ args = 0, pretend = 0, frame = 0
+ 207              		@ frame_needed = 1, uses_anonymous_args = 0
+ 208              		@ link register save eliminated.
+ 209 0000 80B4     		push	{r7}
+ 210              		.cfi_def_cfa_offset 4
+ 211              		.cfi_offset 7, -4
+ 212 0002 00AF     		add	r7, sp, #0
+ 213              		.cfi_def_cfa_register 7
+ 125:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	return IWDG_SR & IWDG_SR_RVU;
+ 214              		.loc 1 125 9
+ 215 0004 064B     		ldr	r3, .L16
+ 216 0006 1B68     		ldr	r3, [r3]
+ 217              		.loc 1 125 17
+ 218 0008 03F00203 		and	r3, r3, #2
+ 219 000c 002B     		cmp	r3, #0
+ 220 000e 14BF     		ite	ne
+ 221 0010 0123     		movne	r3, #1
+ 222 0012 0023     		moveq	r3, #0
+ 223 0014 DBB2     		uxtb	r3, r3
+ 126:../libopencm3/lib/stm32/common/iwdg_common_all.c **** }
+ 224              		.loc 1 126 1
+ 225 0016 1846     		mov	r0, r3
+ 226 0018 BD46     		mov	sp, r7
+ 227              		.cfi_def_cfa_register 13
+ 228              		@ sp needed
+ 229 001a 80BC     		pop	{r7}
+ 230              		.cfi_restore 7
+ 231              		.cfi_def_cfa_offset 0
+ 232 001c 7047     		bx	lr
+ 233              	.L17:
+ 234 001e 00BF     		.align	2
+ 235              	.L16:
+ 236 0020 0C300040 		.word	1073754124
+ 237              		.cfi_endproc
+ 238              	.LFE2:
+ 240              		.section	.text.iwdg_prescaler_busy,"ax",%progbits
+ 241              		.align	1
+ 242              		.global	iwdg_prescaler_busy
+ 243              		.syntax unified
+ 244              		.thumb
+ 245              		.thumb_func
+ 246              		.fpu softvfp
+ 248              	iwdg_prescaler_busy:
+ 249              	.LFB3:
+ 127:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 128:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*---------------------------------------------------------------------------*/
+ 129:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @brief IWDG Get Prescaler Register Status
+ 130:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 131:../libopencm3/lib/stm32/common/iwdg_common_all.c **** @returns boolean: TRUE if the prescaler register is busy and unavailable for
+ 132:../libopencm3/lib/stm32/common/iwdg_common_all.c **** loading a new period value.
+ 133:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+ 134:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 135:../libopencm3/lib/stm32/common/iwdg_common_all.c **** bool iwdg_prescaler_busy(void)
+ 136:../libopencm3/lib/stm32/common/iwdg_common_all.c **** {
+ 250              		.loc 1 136 1
+ 251              		.cfi_startproc
+ 252              		@ args = 0, pretend = 0, frame = 0
+ 253              		@ frame_needed = 1, uses_anonymous_args = 0
+ 254              		@ link register save eliminated.
+ 255 0000 80B4     		push	{r7}
+ 256              		.cfi_def_cfa_offset 4
+ 257              		.cfi_offset 7, -4
+ 258 0002 00AF     		add	r7, sp, #0
+ 259              		.cfi_def_cfa_register 7
+ 137:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	return IWDG_SR & IWDG_SR_PVU;
+ 260              		.loc 1 137 9
+ 261 0004 064B     		ldr	r3, .L20
+ 262 0006 1B68     		ldr	r3, [r3]
+ 263              		.loc 1 137 17
+ 264 0008 03F00103 		and	r3, r3, #1
+ 265 000c 002B     		cmp	r3, #0
+ 266 000e 14BF     		ite	ne
+ 267 0010 0123     		movne	r3, #1
+ 268 0012 0023     		moveq	r3, #0
+ 269 0014 DBB2     		uxtb	r3, r3
+ 138:../libopencm3/lib/stm32/common/iwdg_common_all.c **** }
+ 270              		.loc 1 138 1
+ 271 0016 1846     		mov	r0, r3
+ 272 0018 BD46     		mov	sp, r7
+ 273              		.cfi_def_cfa_register 13
+ 274              		@ sp needed
+ 275 001a 80BC     		pop	{r7}
+ 276              		.cfi_restore 7
+ 277              		.cfi_def_cfa_offset 0
+ 278 001c 7047     		bx	lr
+ 279              	.L21:
+ 280 001e 00BF     		.align	2
+ 281              	.L20:
+ 282 0020 0C300040 		.word	1073754124
+ 283              		.cfi_endproc
+ 284              	.LFE3:
+ 286              		.section	.text.iwdg_reset,"ax",%progbits
+ 287              		.align	1
+ 288              		.global	iwdg_reset
+ 289              		.syntax unified
+ 290              		.thumb
+ 291              		.thumb_func
+ 292              		.fpu softvfp
+ 294              	iwdg_reset:
+ 295              	.LFB4:
+ 139:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 140:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /*---------------------------------------------------------------------------*/
+ 141:../libopencm3/lib/stm32/common/iwdg_common_all.c **** /** @brief IWDG reset Watchdog Timer
+ 142:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 143:../libopencm3/lib/stm32/common/iwdg_common_all.c **** The watchdog timer is reset. The counter restarts from the value in the reload
+ 144:../libopencm3/lib/stm32/common/iwdg_common_all.c **** register.
+ 145:../libopencm3/lib/stm32/common/iwdg_common_all.c **** */
+ 146:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 
+ 147:../libopencm3/lib/stm32/common/iwdg_common_all.c **** void iwdg_reset(void)
+ 148:../libopencm3/lib/stm32/common/iwdg_common_all.c **** {
+ 296              		.loc 1 148 1
+ 297              		.cfi_startproc
+ 298              		@ args = 0, pretend = 0, frame = 0
+ 299              		@ frame_needed = 1, uses_anonymous_args = 0
+ 300              		@ link register save eliminated.
+ 301 0000 80B4     		push	{r7}
+ 302              		.cfi_def_cfa_offset 4
+ 303              		.cfi_offset 7, -4
+ 304 0002 00AF     		add	r7, sp, #0
+ 305              		.cfi_def_cfa_register 7
+ 149:../libopencm3/lib/stm32/common/iwdg_common_all.c **** 	IWDG_KR = IWDG_KR_RESET;
+ 306              		.loc 1 149 2
+ 307 0004 034B     		ldr	r3, .L23
+ 308              		.loc 1 149 10
+ 309 0006 4AF6AA22 		movw	r2, #43690
+ 310 000a 1A60     		str	r2, [r3]
+ 150:../libopencm3/lib/stm32/common/iwdg_common_all.c **** }
+ 311              		.loc 1 150 1
+ 312 000c 00BF     		nop
+ 313 000e BD46     		mov	sp, r7
+ 314              		.cfi_def_cfa_register 13
+ 315              		@ sp needed
+ 316 0010 80BC     		pop	{r7}
+ 317              		.cfi_restore 7
+ 318              		.cfi_def_cfa_offset 0
+ 319 0012 7047     		bx	lr
+ 320              	.L24:
+ 321              		.align	2
+ 322              	.L23:
+ 323 0014 00300040 		.word	1073754112
+ 324              		.cfi_endproc
+ 325              	.LFE4:
+ 327              		.text
+ 328              	.Letext0:
+ 329              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 330              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 iwdg_common_all.c
+     /tmp/ccWXWKSA.s:16     .text.iwdg_start:0000000000000000 $t
+     /tmp/ccWXWKSA.s:24     .text.iwdg_start:0000000000000000 iwdg_start
+     /tmp/ccWXWKSA.s:54     .text.iwdg_start:0000000000000014 $d
+     /tmp/ccWXWKSA.s:59     .text.iwdg_set_period_ms:0000000000000000 $t
+     /tmp/ccWXWKSA.s:66     .text.iwdg_set_period_ms:0000000000000000 iwdg_set_period_ms
+     /tmp/ccWXWKSA.s:248    .text.iwdg_prescaler_busy:0000000000000000 iwdg_prescaler_busy
+     /tmp/ccWXWKSA.s:202    .text.iwdg_reload_busy:0000000000000000 iwdg_reload_busy
+     /tmp/ccWXWKSA.s:294    .text.iwdg_reset:0000000000000000 iwdg_reset
+     /tmp/ccWXWKSA.s:188    .text.iwdg_set_period_ms:0000000000000094 $d
+     /tmp/ccWXWKSA.s:195    .text.iwdg_reload_busy:0000000000000000 $t
+     /tmp/ccWXWKSA.s:236    .text.iwdg_reload_busy:0000000000000020 $d
+     /tmp/ccWXWKSA.s:241    .text.iwdg_prescaler_busy:0000000000000000 $t
+     /tmp/ccWXWKSA.s:282    .text.iwdg_prescaler_busy:0000000000000020 $d
+     /tmp/ccWXWKSA.s:287    .text.iwdg_reset:0000000000000000 $t
+     /tmp/ccWXWKSA.s:323    .text.iwdg_reset:0000000000000014 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.iwdg_common_all.h.33.4f7e1c81f06e9b5dddec5f00ec7f8323
+
+NO UNDEFINED SYMBOLS

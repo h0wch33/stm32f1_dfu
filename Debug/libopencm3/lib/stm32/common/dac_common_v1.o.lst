@@ -1,0 +1,269 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"dac_common_v1.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.dac_buffer_enable,"ax",%progbits
+  16              		.align	1
+  17              		.global	dac_buffer_enable
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	dac_buffer_enable:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/dac_common_v1.c"
+   1:../libopencm3/lib/stm32/common/dac_common_v1.c **** /** @addtogroup dac_file DAC peripheral API
+   2:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+   4:../libopencm3/lib/stm32/common/dac_common_v1.c **** @author @htmlonly &copy; @endhtmlonly 2020 Ben Brewer <ben.brewer@codethink.co.uk>
+   5:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+   6:../libopencm3/lib/stm32/common/dac_common_v1.c **** LGPL License Terms @ref lgpl_license
+   7:../libopencm3/lib/stm32/common/dac_common_v1.c ****  */
+   8:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+   9:../libopencm3/lib/stm32/common/dac_common_v1.c **** /*
+  10:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * This file is part of the libopencm3 project.
+  11:../libopencm3/lib/stm32/common/dac_common_v1.c ****  *
+  12:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * Copyright (C) 2020 Ben Brewer
+  13:../libopencm3/lib/stm32/common/dac_common_v1.c ****  *
+  14:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * This library is free software: you can redistribute it and/or modify
+  15:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  16:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * the Free Software Foundation, either version 3 of the License, or
+  17:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * (at your option) any later version.
+  18:../libopencm3/lib/stm32/common/dac_common_v1.c ****  *
+  19:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * This library is distributed in the hope that it will be useful,
+  20:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  21:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  22:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * GNU Lesser General Public License for more details.
+  23:../libopencm3/lib/stm32/common/dac_common_v1.c ****  *
+  24:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * You should have received a copy of the GNU Lesser General Public License
+  25:../libopencm3/lib/stm32/common/dac_common_v1.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  26:../libopencm3/lib/stm32/common/dac_common_v1.c ****  */
+  27:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  28:../libopencm3/lib/stm32/common/dac_common_v1.c **** /**@{*/
+  29:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  30:../libopencm3/lib/stm32/common/dac_common_v1.c **** #include <libopencm3/stm32/dac.h>
+  31:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  32:../libopencm3/lib/stm32/common/dac_common_v1.c **** /** @brief DAC Channel Output Buffer Enable.
+  33:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  34:../libopencm3/lib/stm32/common/dac_common_v1.c **** Enable a digital to analog converter channel output drive buffer. This is an
+  35:../libopencm3/lib/stm32/common/dac_common_v1.c **** optional amplifying buffer that provides additional drive for the output
+  36:../libopencm3/lib/stm32/common/dac_common_v1.c **** signal. The buffer is enabled by default after a reset and needs to be
+  37:../libopencm3/lib/stm32/common/dac_common_v1.c **** explicitly disabled if required.
+  38:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  39:../libopencm3/lib/stm32/common/dac_common_v1.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+  40:../libopencm3/lib/stm32/common/dac_common_v1.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+  41:../libopencm3/lib/stm32/common/dac_common_v1.c **** */
+  42:../libopencm3/lib/stm32/common/dac_common_v1.c **** void dac_buffer_enable(uint32_t dac, int channel)
+  43:../libopencm3/lib/stm32/common/dac_common_v1.c **** {
+  27              		.loc 1 43 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 3960     		str	r1, [r7]
+  44:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	switch (channel) {
+  41              		.loc 1 44 2
+  42 000a 3B68     		ldr	r3, [r7]
+  43 000c 022B     		cmp	r3, #2
+  44 000e 0CD0     		beq	.L2
+  45 0010 3B68     		ldr	r3, [r7]
+  46 0012 032B     		cmp	r3, #3
+  47 0014 10D0     		beq	.L3
+  48 0016 3B68     		ldr	r3, [r7]
+  49 0018 012B     		cmp	r3, #1
+  50 001a 14D1     		bne	.L5
+  45:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL1:
+  46:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) &= ~DAC_CR_BOFF1;
+  51              		.loc 1 46 15
+  52 001c 7B68     		ldr	r3, [r7, #4]
+  53 001e 1A68     		ldr	r2, [r3]
+  54 0020 7B68     		ldr	r3, [r7, #4]
+  55 0022 22F00202 		bic	r2, r2, #2
+  56 0026 1A60     		str	r2, [r3]
+  47:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+  57              		.loc 1 47 3
+  58 0028 0DE0     		b	.L4
+  59              	.L2:
+  48:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL2:
+  49:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) &= ~DAC_CR_BOFF2;
+  60              		.loc 1 49 15
+  61 002a 7B68     		ldr	r3, [r7, #4]
+  62 002c 1A68     		ldr	r2, [r3]
+  63 002e 7B68     		ldr	r3, [r7, #4]
+  64 0030 22F40032 		bic	r2, r2, #131072
+  65 0034 1A60     		str	r2, [r3]
+  50:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+  66              		.loc 1 50 3
+  67 0036 06E0     		b	.L4
+  68              	.L3:
+  51:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL_BOTH:
+  52:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) &= ~(DAC_CR_BOFF1 | DAC_CR_BOFF2);
+  69              		.loc 1 52 15
+  70 0038 7B68     		ldr	r3, [r7, #4]
+  71 003a 1A68     		ldr	r2, [r3]
+  72 003c 7B68     		ldr	r3, [r7, #4]
+  73 003e 22F00212 		bic	r2, r2, #131074
+  74 0042 1A60     		str	r2, [r3]
+  53:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+  75              		.loc 1 53 3
+  76 0044 00BF     		nop
+  77              	.L4:
+  78              	.L5:
+  54:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	}
+  55:../libopencm3/lib/stm32/common/dac_common_v1.c **** }
+  79              		.loc 1 55 1
+  80 0046 00BF     		nop
+  81 0048 0C37     		adds	r7, r7, #12
+  82              		.cfi_def_cfa_offset 4
+  83 004a BD46     		mov	sp, r7
+  84              		.cfi_def_cfa_register 13
+  85              		@ sp needed
+  86 004c 80BC     		pop	{r7}
+  87              		.cfi_restore 7
+  88              		.cfi_def_cfa_offset 0
+  89 004e 7047     		bx	lr
+  90              		.cfi_endproc
+  91              	.LFE0:
+  93              		.section	.text.dac_buffer_disable,"ax",%progbits
+  94              		.align	1
+  95              		.global	dac_buffer_disable
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+  99              		.fpu softvfp
+ 101              	dac_buffer_disable:
+ 102              	.LFB1:
+  56:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  57:../libopencm3/lib/stm32/common/dac_common_v1.c **** /** @brief DAC Channel Output Buffer Disable.
+  58:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  59:../libopencm3/lib/stm32/common/dac_common_v1.c **** Disable a digital to analog converter channel output drive buffer. Disabling
+  60:../libopencm3/lib/stm32/common/dac_common_v1.c **** this will reduce power consumption slightly and will increase the output
+  61:../libopencm3/lib/stm32/common/dac_common_v1.c **** impedance of the DAC.  The buffers are enabled by default after a reset.
+  62:../libopencm3/lib/stm32/common/dac_common_v1.c **** 
+  63:../libopencm3/lib/stm32/common/dac_common_v1.c **** @param[in] dac the base address of the DAC. @ref dac_reg_base
+  64:../libopencm3/lib/stm32/common/dac_common_v1.c **** @param[in] channel with DAC mask. @ref dac_channel_id
+  65:../libopencm3/lib/stm32/common/dac_common_v1.c **** */
+  66:../libopencm3/lib/stm32/common/dac_common_v1.c **** void dac_buffer_disable(uint32_t dac, int channel)
+  67:../libopencm3/lib/stm32/common/dac_common_v1.c **** {
+ 103              		.loc 1 67 1
+ 104              		.cfi_startproc
+ 105              		@ args = 0, pretend = 0, frame = 8
+ 106              		@ frame_needed = 1, uses_anonymous_args = 0
+ 107              		@ link register save eliminated.
+ 108 0000 80B4     		push	{r7}
+ 109              		.cfi_def_cfa_offset 4
+ 110              		.cfi_offset 7, -4
+ 111 0002 83B0     		sub	sp, sp, #12
+ 112              		.cfi_def_cfa_offset 16
+ 113 0004 00AF     		add	r7, sp, #0
+ 114              		.cfi_def_cfa_register 7
+ 115 0006 7860     		str	r0, [r7, #4]
+ 116 0008 3960     		str	r1, [r7]
+  68:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	switch (channel) {
+ 117              		.loc 1 68 2
+ 118 000a 3B68     		ldr	r3, [r7]
+ 119 000c 022B     		cmp	r3, #2
+ 120 000e 0CD0     		beq	.L7
+ 121 0010 3B68     		ldr	r3, [r7]
+ 122 0012 032B     		cmp	r3, #3
+ 123 0014 10D0     		beq	.L8
+ 124 0016 3B68     		ldr	r3, [r7]
+ 125 0018 012B     		cmp	r3, #1
+ 126 001a 14D1     		bne	.L10
+  69:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL1:
+  70:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) |= DAC_CR_BOFF1;
+ 127              		.loc 1 70 15
+ 128 001c 7B68     		ldr	r3, [r7, #4]
+ 129 001e 1A68     		ldr	r2, [r3]
+ 130 0020 7B68     		ldr	r3, [r7, #4]
+ 131 0022 42F00202 		orr	r2, r2, #2
+ 132 0026 1A60     		str	r2, [r3]
+  71:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+ 133              		.loc 1 71 3
+ 134 0028 0DE0     		b	.L9
+ 135              	.L7:
+  72:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL2:
+  73:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) |= DAC_CR_BOFF2;
+ 136              		.loc 1 73 15
+ 137 002a 7B68     		ldr	r3, [r7, #4]
+ 138 002c 1A68     		ldr	r2, [r3]
+ 139 002e 7B68     		ldr	r3, [r7, #4]
+ 140 0030 42F40032 		orr	r2, r2, #131072
+ 141 0034 1A60     		str	r2, [r3]
+  74:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+ 142              		.loc 1 74 3
+ 143 0036 06E0     		b	.L9
+ 144              	.L8:
+  75:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	case DAC_CHANNEL_BOTH:
+  76:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		DAC_CR(dac) |= (DAC_CR_BOFF1 | DAC_CR_BOFF2);
+ 145              		.loc 1 76 15
+ 146 0038 7B68     		ldr	r3, [r7, #4]
+ 147 003a 1A68     		ldr	r2, [r3]
+ 148 003c 7B68     		ldr	r3, [r7, #4]
+ 149 003e 42F00212 		orr	r2, r2, #131074
+ 150 0042 1A60     		str	r2, [r3]
+  77:../libopencm3/lib/stm32/common/dac_common_v1.c **** 		break;
+ 151              		.loc 1 77 3
+ 152 0044 00BF     		nop
+ 153              	.L9:
+ 154              	.L10:
+  78:../libopencm3/lib/stm32/common/dac_common_v1.c **** 	}
+  79:../libopencm3/lib/stm32/common/dac_common_v1.c **** }
+ 155              		.loc 1 79 1
+ 156 0046 00BF     		nop
+ 157 0048 0C37     		adds	r7, r7, #12
+ 158              		.cfi_def_cfa_offset 4
+ 159 004a BD46     		mov	sp, r7
+ 160              		.cfi_def_cfa_register 13
+ 161              		@ sp needed
+ 162 004c 80BC     		pop	{r7}
+ 163              		.cfi_restore 7
+ 164              		.cfi_def_cfa_offset 0
+ 165 004e 7047     		bx	lr
+ 166              		.cfi_endproc
+ 167              	.LFE1:
+ 169              		.text
+ 170              	.Letext0:
+ 171              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 172              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 dac_common_v1.c
+     /tmp/ccdEynLz.s:16     .text.dac_buffer_enable:0000000000000000 $t
+     /tmp/ccdEynLz.s:24     .text.dac_buffer_enable:0000000000000000 dac_buffer_enable
+     /tmp/ccdEynLz.s:94     .text.dac_buffer_disable:0000000000000000 $t
+     /tmp/ccdEynLz.s:101    .text.dac_buffer_disable:0000000000000000 dac_buffer_disable
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.dac_common_all.h.40.700c8b20d54ea552640b2834de3cd787
+                           .group:0000000000000000 wm4.dac_common_v1.h.46.7b2f1036f2f111d4bd23e0365d7c284b
+
+NO UNDEFINED SYMBOLS

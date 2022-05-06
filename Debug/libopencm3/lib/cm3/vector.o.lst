@@ -1,0 +1,785 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"vector.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.pre_main,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv7-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	pre_main:
+  24              	.LFB0:
+  25              		.file 1 "../libopencm3/lib/cm3/../dispatch/vector_chipset.c"
+   1:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #if defined(STM32F3)
+   2:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/f3/vector_chipset.c"
+   3:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(STM32F4)
+   4:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/f4/vector_chipset.c"
+   5:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(STM32F7)
+   6:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/f7/vector_chipset.c"
+   7:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(STM32G4)
+   8:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/g4/vector_chipset.c"
+   9:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(STM32H7)
+  10:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/h7/vector_chipset.c"
+  11:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(STM32L4)
+  12:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../stm32/l4/vector_chipset.c"
+  13:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(LM4F)
+  14:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../lm4f/vector_chipset.c"
+  15:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(LPC43XX_M4)
+  16:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../lpc43xx/m4/vector_chipset.c"
+  17:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(VF6XX)
+  18:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../vf6xx/vector_chipset.c"
+  19:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(EFM32WG)
+  20:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../efm32/wg/vector_chipset.c"
+  21:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(EZR32WG)
+  22:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../efm32/ezr32wg/vector_chipset.c"
+  23:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #elif defined(PAC55XX)
+  24:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #	include "../pac55xx/vector_chipset.c"
+  25:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** #else
+  26:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** 
+  27:../libopencm3/lib/cm3/../dispatch/vector_chipset.c **** static void pre_main(void) {}
+  26              		.loc 1 27 28
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 0
+  29              		@ frame_needed = 1, uses_anonymous_args = 0
+  30              		@ link register save eliminated.
+  31 0000 80B4     		push	{r7}
+  32              		.cfi_def_cfa_offset 4
+  33              		.cfi_offset 7, -4
+  34 0002 00AF     		add	r7, sp, #0
+  35              		.cfi_def_cfa_register 7
+  36              		.loc 1 27 1
+  37 0004 00BF     		nop
+  38 0006 BD46     		mov	sp, r7
+  39              		.cfi_def_cfa_register 13
+  40              		@ sp needed
+  41 0008 80BC     		pop	{r7}
+  42              		.cfi_restore 7
+  43              		.cfi_def_cfa_offset 0
+  44 000a 7047     		bx	lr
+  45              		.cfi_endproc
+  46              	.LFE0:
+  48              		.global	vector_table
+  49              		.section	.vectors,"aw"
+  50              		.align	2
+  53              	vector_table:
+  54 0000 00000000 		.word	_stack
+  55 0004 00000000 		.word	reset_handler
+  56 0008 00000000 		.word	nmi_handler
+  57 000c 00000000 		.word	hard_fault_handler
+  58 0010 00000000 		.word	mem_manage_handler
+  59 0014 00000000 		.word	bus_fault_handler
+  60 0018 00000000 		.word	usage_fault_handler
+  61 001c 00000000 		.space	16
+  61      00000000 
+  61      00000000 
+  61      00000000 
+  62 002c 00000000 		.word	sv_call_handler
+  63 0030 00000000 		.word	debug_monitor_handler
+  64 0034 00000000 		.space	4
+  65 0038 00000000 		.word	pend_sv_handler
+  66 003c 00000000 		.word	sys_tick_handler
+  67 0040 00000000 		.word	wwdg_isr
+  68 0044 00000000 		.word	pvd_isr
+  69 0048 00000000 		.word	tamper_isr
+  70 004c 00000000 		.word	rtc_isr
+  71 0050 00000000 		.word	flash_isr
+  72 0054 00000000 		.word	rcc_isr
+  73 0058 00000000 		.word	exti0_isr
+  74 005c 00000000 		.word	exti1_isr
+  75 0060 00000000 		.word	exti2_isr
+  76 0064 00000000 		.word	exti3_isr
+  77 0068 00000000 		.word	exti4_isr
+  78 006c 00000000 		.word	dma1_channel1_isr
+  79 0070 00000000 		.word	dma1_channel2_isr
+  80 0074 00000000 		.word	dma1_channel3_isr
+  81 0078 00000000 		.word	dma1_channel4_isr
+  82 007c 00000000 		.word	dma1_channel5_isr
+  83 0080 00000000 		.word	dma1_channel6_isr
+  84 0084 00000000 		.word	dma1_channel7_isr
+  85 0088 00000000 		.word	adc1_2_isr
+  86 008c 00000000 		.word	usb_hp_can_tx_isr
+  87 0090 00000000 		.word	usb_lp_can_rx0_isr
+  88 0094 00000000 		.word	can_rx1_isr
+  89 0098 00000000 		.word	can_sce_isr
+  90 009c 00000000 		.word	exti9_5_isr
+  91 00a0 00000000 		.word	tim1_brk_isr
+  92 00a4 00000000 		.word	tim1_up_isr
+  93 00a8 00000000 		.word	tim1_trg_com_isr
+  94 00ac 00000000 		.word	tim1_cc_isr
+  95 00b0 00000000 		.word	tim2_isr
+  96 00b4 00000000 		.word	tim3_isr
+  97 00b8 00000000 		.word	tim4_isr
+  98 00bc 00000000 		.word	i2c1_ev_isr
+  99 00c0 00000000 		.word	i2c1_er_isr
+ 100 00c4 00000000 		.word	i2c2_ev_isr
+ 101 00c8 00000000 		.word	i2c2_er_isr
+ 102 00cc 00000000 		.word	spi1_isr
+ 103 00d0 00000000 		.word	spi2_isr
+ 104 00d4 00000000 		.word	usart1_isr
+ 105 00d8 00000000 		.word	usart2_isr
+ 106 00dc 00000000 		.word	usart3_isr
+ 107 00e0 00000000 		.word	exti15_10_isr
+ 108 00e4 00000000 		.word	rtc_alarm_isr
+ 109 00e8 00000000 		.word	usb_wakeup_isr
+ 110 00ec 00000000 		.word	tim8_brk_isr
+ 111 00f0 00000000 		.word	tim8_up_isr
+ 112 00f4 00000000 		.word	tim8_trg_com_isr
+ 113 00f8 00000000 		.word	tim8_cc_isr
+ 114 00fc 00000000 		.word	adc3_isr
+ 115 0100 00000000 		.word	fsmc_isr
+ 116 0104 00000000 		.word	sdio_isr
+ 117 0108 00000000 		.word	tim5_isr
+ 118 010c 00000000 		.word	spi3_isr
+ 119 0110 00000000 		.word	uart4_isr
+ 120 0114 00000000 		.word	uart5_isr
+ 121 0118 00000000 		.word	tim6_isr
+ 122 011c 00000000 		.word	tim7_isr
+ 123 0120 00000000 		.word	dma2_channel1_isr
+ 124 0124 00000000 		.word	dma2_channel2_isr
+ 125 0128 00000000 		.word	dma2_channel3_isr
+ 126 012c 00000000 		.word	dma2_channel4_5_isr
+ 127 0130 00000000 		.word	dma2_channel5_isr
+ 128 0134 00000000 		.word	eth_isr
+ 129 0138 00000000 		.word	eth_wkup_isr
+ 130 013c 00000000 		.word	can2_tx_isr
+ 131 0140 00000000 		.word	can2_rx0_isr
+ 132 0144 00000000 		.word	can2_rx1_isr
+ 133 0148 00000000 		.word	can2_sce_isr
+ 134 014c 00000000 		.word	otg_fs_isr
+ 135              		.section	.text.reset_handler,"ax",%progbits
+ 136              		.align	1
+ 137              		.weak	reset_handler
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 141              		.fpu softvfp
+ 143              	reset_handler:
+ 144              	.LFB1:
+ 145              		.file 2 "../libopencm3/lib/cm3/vector.c"
+   1:../libopencm3/lib/cm3/vector.c **** /*
+   2:../libopencm3/lib/cm3/vector.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/cm3/vector.c ****  *
+   4:../libopencm3/lib/cm3/vector.c ****  * Copyright (C) 2010 Piotr Esden-Tempski <piotr@esden.net>,
+   5:../libopencm3/lib/cm3/vector.c ****  * Copyright (C) 2012 chrysn <chrysn@fsfe.org>
+   6:../libopencm3/lib/cm3/vector.c ****  *
+   7:../libopencm3/lib/cm3/vector.c ****  * This library is free software: you can redistribute it and/or modify
+   8:../libopencm3/lib/cm3/vector.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   9:../libopencm3/lib/cm3/vector.c ****  * the Free Software Foundation, either version 3 of the License, or
+  10:../libopencm3/lib/cm3/vector.c ****  * (at your option) any later version.
+  11:../libopencm3/lib/cm3/vector.c ****  *
+  12:../libopencm3/lib/cm3/vector.c ****  * This library is distributed in the hope that it will be useful,
+  13:../libopencm3/lib/cm3/vector.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  14:../libopencm3/lib/cm3/vector.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  15:../libopencm3/lib/cm3/vector.c ****  * GNU Lesser General Public License for more details.
+  16:../libopencm3/lib/cm3/vector.c ****  *
+  17:../libopencm3/lib/cm3/vector.c ****  * You should have received a copy of the GNU Lesser General Public License
+  18:../libopencm3/lib/cm3/vector.c ****  * along with this library. If not, see <http://www.gnu.org/licenses/>.
+  19:../libopencm3/lib/cm3/vector.c ****  */
+  20:../libopencm3/lib/cm3/vector.c **** 
+  21:../libopencm3/lib/cm3/vector.c **** #include <libopencm3/cm3/scb.h>
+  22:../libopencm3/lib/cm3/vector.c **** #include <libopencm3/cm3/vector.h>
+  23:../libopencm3/lib/cm3/vector.c **** 
+  24:../libopencm3/lib/cm3/vector.c **** /* load optional platform dependent initialization routines */
+  25:../libopencm3/lib/cm3/vector.c **** #include "../dispatch/vector_chipset.c"
+  26:../libopencm3/lib/cm3/vector.c **** /* load the weak symbols for IRQ_HANDLERS */
+  27:../libopencm3/lib/cm3/vector.c **** #include "../dispatch/vector_nvic.c"
+  28:../libopencm3/lib/cm3/vector.c **** 
+  29:../libopencm3/lib/cm3/vector.c **** /* Less common symbols exported by the linker script(s): */
+  30:../libopencm3/lib/cm3/vector.c **** typedef void (*funcp_t) (void);
+  31:../libopencm3/lib/cm3/vector.c **** extern funcp_t __preinit_array_start, __preinit_array_end;
+  32:../libopencm3/lib/cm3/vector.c **** extern funcp_t __init_array_start, __init_array_end;
+  33:../libopencm3/lib/cm3/vector.c **** extern funcp_t __fini_array_start, __fini_array_end;
+  34:../libopencm3/lib/cm3/vector.c **** 
+  35:../libopencm3/lib/cm3/vector.c **** int main(void);
+  36:../libopencm3/lib/cm3/vector.c **** void blocking_handler(void);
+  37:../libopencm3/lib/cm3/vector.c **** void null_handler(void);
+  38:../libopencm3/lib/cm3/vector.c **** 
+  39:../libopencm3/lib/cm3/vector.c **** __attribute__ ((section(".vectors")))
+  40:../libopencm3/lib/cm3/vector.c **** vector_table_t vector_table = {
+  41:../libopencm3/lib/cm3/vector.c **** 	.initial_sp_value = &_stack,
+  42:../libopencm3/lib/cm3/vector.c **** 	.reset = reset_handler,
+  43:../libopencm3/lib/cm3/vector.c **** 	.nmi = nmi_handler,
+  44:../libopencm3/lib/cm3/vector.c **** 	.hard_fault = hard_fault_handler,
+  45:../libopencm3/lib/cm3/vector.c **** 
+  46:../libopencm3/lib/cm3/vector.c **** /* Those are defined only on CM3 or CM4 */
+  47:../libopencm3/lib/cm3/vector.c **** #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+  48:../libopencm3/lib/cm3/vector.c **** 	.memory_manage_fault = mem_manage_handler,
+  49:../libopencm3/lib/cm3/vector.c **** 	.bus_fault = bus_fault_handler,
+  50:../libopencm3/lib/cm3/vector.c **** 	.usage_fault = usage_fault_handler,
+  51:../libopencm3/lib/cm3/vector.c **** 	.debug_monitor = debug_monitor_handler,
+  52:../libopencm3/lib/cm3/vector.c **** #endif
+  53:../libopencm3/lib/cm3/vector.c **** 
+  54:../libopencm3/lib/cm3/vector.c **** 	.sv_call = sv_call_handler,
+  55:../libopencm3/lib/cm3/vector.c **** 	.pend_sv = pend_sv_handler,
+  56:../libopencm3/lib/cm3/vector.c **** 	.systick = sys_tick_handler,
+  57:../libopencm3/lib/cm3/vector.c **** 	.irq = {
+  58:../libopencm3/lib/cm3/vector.c **** 		IRQ_HANDLERS
+  59:../libopencm3/lib/cm3/vector.c **** 	}
+  60:../libopencm3/lib/cm3/vector.c **** };
+  61:../libopencm3/lib/cm3/vector.c **** 
+  62:../libopencm3/lib/cm3/vector.c **** void __attribute__ ((weak)) reset_handler(void)
+  63:../libopencm3/lib/cm3/vector.c **** {
+ 146              		.loc 2 63 1
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 16
+ 149              		@ frame_needed = 1, uses_anonymous_args = 0
+ 150 0000 80B5     		push	{r7, lr}
+ 151              		.cfi_def_cfa_offset 8
+ 152              		.cfi_offset 7, -8
+ 153              		.cfi_offset 14, -4
+ 154 0002 84B0     		sub	sp, sp, #16
+ 155              		.cfi_def_cfa_offset 24
+ 156 0004 00AF     		add	r7, sp, #0
+ 157              		.cfi_def_cfa_register 7
+  64:../libopencm3/lib/cm3/vector.c **** 	volatile unsigned *src, *dest;
+  65:../libopencm3/lib/cm3/vector.c **** 	funcp_t *fp;
+  66:../libopencm3/lib/cm3/vector.c **** 
+  67:../libopencm3/lib/cm3/vector.c **** 	for (src = &_data_loadaddr, dest = &_data;
+ 158              		.loc 2 67 11
+ 159 0006 344B     		ldr	r3, .L13+4
+ 160 0008 59F80330 		ldr	r3, [r9, r3]
+ 161 000c FB60     		str	r3, [r7, #12]
+ 162              		.loc 2 67 35
+ 163 000e 334B     		ldr	r3, .L13+8
+ 164 0010 59F80330 		ldr	r3, [r9, r3]
+ 165 0014 BB60     		str	r3, [r7, #8]
+ 166              		.loc 2 67 2
+ 167 0016 09E0     		b	.L3
+ 168              	.L4:
+  68:../libopencm3/lib/cm3/vector.c **** 		dest < &_edata;
+  69:../libopencm3/lib/cm3/vector.c **** 		src++, dest++) {
+  70:../libopencm3/lib/cm3/vector.c **** 		*dest = *src;
+ 169              		.loc 2 70 11
+ 170 0018 FB68     		ldr	r3, [r7, #12]
+ 171 001a 1A68     		ldr	r2, [r3]
+ 172              		.loc 2 70 9
+ 173 001c BB68     		ldr	r3, [r7, #8]
+ 174 001e 1A60     		str	r2, [r3]
+  69:../libopencm3/lib/cm3/vector.c **** 		*dest = *src;
+ 175              		.loc 2 69 6
+ 176 0020 FB68     		ldr	r3, [r7, #12]
+ 177 0022 0433     		adds	r3, r3, #4
+ 178 0024 FB60     		str	r3, [r7, #12]
+  69:../libopencm3/lib/cm3/vector.c **** 		*dest = *src;
+ 179              		.loc 2 69 14
+ 180 0026 BB68     		ldr	r3, [r7, #8]
+ 181 0028 0433     		adds	r3, r3, #4
+ 182 002a BB60     		str	r3, [r7, #8]
+ 183              	.L3:
+  67:../libopencm3/lib/cm3/vector.c **** 		dest < &_edata;
+ 184              		.loc 2 67 2 discriminator 1
+ 185 002c BB68     		ldr	r3, [r7, #8]
+ 186 002e 2C4A     		ldr	r2, .L13+12
+ 187 0030 59F80220 		ldr	r2, [r9, r2]
+ 188 0034 9342     		cmp	r3, r2
+ 189 0036 EFD3     		bcc	.L4
+  71:../libopencm3/lib/cm3/vector.c **** 	}
+  72:../libopencm3/lib/cm3/vector.c **** 
+  73:../libopencm3/lib/cm3/vector.c **** 	while (dest < &_ebss) {
+ 190              		.loc 2 73 8
+ 191 0038 04E0     		b	.L5
+ 192              	.L6:
+  74:../libopencm3/lib/cm3/vector.c **** 		*dest++ = 0;
+ 193              		.loc 2 74 8
+ 194 003a BB68     		ldr	r3, [r7, #8]
+ 195 003c 1A1D     		adds	r2, r3, #4
+ 196 003e BA60     		str	r2, [r7, #8]
+ 197              		.loc 2 74 11
+ 198 0040 0022     		movs	r2, #0
+ 199 0042 1A60     		str	r2, [r3]
+ 200              	.L5:
+  73:../libopencm3/lib/cm3/vector.c **** 		*dest++ = 0;
+ 201              		.loc 2 73 8
+ 202 0044 BB68     		ldr	r3, [r7, #8]
+ 203 0046 274A     		ldr	r2, .L13+16
+ 204 0048 59F80220 		ldr	r2, [r9, r2]
+ 205 004c 9342     		cmp	r3, r2
+ 206 004e F4D3     		bcc	.L6
+  75:../libopencm3/lib/cm3/vector.c **** 	}
+  76:../libopencm3/lib/cm3/vector.c **** 
+  77:../libopencm3/lib/cm3/vector.c **** 	/* Ensure 8-byte alignment of stack pointer on interrupts */
+  78:../libopencm3/lib/cm3/vector.c **** 	/* Enabled by default on most Cortex-M parts, but not M3 r1 */
+  79:../libopencm3/lib/cm3/vector.c **** 	SCB_CCR |= SCB_CCR_STKALIGN;
+ 207              		.loc 2 79 10
+ 208 0050 204B     		ldr	r3, .L13
+ 209 0052 1B68     		ldr	r3, [r3]
+ 210 0054 1F4A     		ldr	r2, .L13
+ 211 0056 43F40073 		orr	r3, r3, #512
+ 212 005a 1360     		str	r3, [r2]
+  80:../libopencm3/lib/cm3/vector.c **** 
+  81:../libopencm3/lib/cm3/vector.c **** 	/* might be provided by platform specific vector.c */
+  82:../libopencm3/lib/cm3/vector.c **** 	pre_main();
+ 213              		.loc 2 82 2
+ 214 005c FFF7FEFF 		bl	pre_main(PLT)
+  83:../libopencm3/lib/cm3/vector.c **** 
+  84:../libopencm3/lib/cm3/vector.c **** 	/* Constructors. */
+  85:../libopencm3/lib/cm3/vector.c **** 	for (fp = &__preinit_array_start; fp < &__preinit_array_end; fp++) {
+ 215              		.loc 2 85 10
+ 216 0060 214B     		ldr	r3, .L13+20
+ 217 0062 59F80330 		ldr	r3, [r9, r3]
+ 218 0066 7B60     		str	r3, [r7, #4]
+ 219              		.loc 2 85 2
+ 220 0068 05E0     		b	.L7
+ 221              	.L8:
+  86:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 222              		.loc 2 86 4 discriminator 3
+ 223 006a 7B68     		ldr	r3, [r7, #4]
+ 224 006c 1B68     		ldr	r3, [r3]
+ 225 006e 9847     		blx	r3
+ 226              	.LVL0:
+  85:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 227              		.loc 2 85 65 discriminator 3
+ 228 0070 7B68     		ldr	r3, [r7, #4]
+ 229 0072 0433     		adds	r3, r3, #4
+ 230 0074 7B60     		str	r3, [r7, #4]
+ 231              	.L7:
+  85:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 232              		.loc 2 85 2 discriminator 1
+ 233 0076 7B68     		ldr	r3, [r7, #4]
+ 234 0078 1C4A     		ldr	r2, .L13+24
+ 235 007a 59F80220 		ldr	r2, [r9, r2]
+ 236 007e 9342     		cmp	r3, r2
+ 237 0080 F3D3     		bcc	.L8
+  87:../libopencm3/lib/cm3/vector.c **** 	}
+  88:../libopencm3/lib/cm3/vector.c **** 	for (fp = &__init_array_start; fp < &__init_array_end; fp++) {
+ 238              		.loc 2 88 10
+ 239 0082 1B4B     		ldr	r3, .L13+28
+ 240 0084 59F80330 		ldr	r3, [r9, r3]
+ 241 0088 7B60     		str	r3, [r7, #4]
+ 242              		.loc 2 88 2
+ 243 008a 05E0     		b	.L9
+ 244              	.L10:
+  89:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 245              		.loc 2 89 4 discriminator 3
+ 246 008c 7B68     		ldr	r3, [r7, #4]
+ 247 008e 1B68     		ldr	r3, [r3]
+ 248 0090 9847     		blx	r3
+ 249              	.LVL1:
+  88:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 250              		.loc 2 88 59 discriminator 3
+ 251 0092 7B68     		ldr	r3, [r7, #4]
+ 252 0094 0433     		adds	r3, r3, #4
+ 253 0096 7B60     		str	r3, [r7, #4]
+ 254              	.L9:
+  88:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 255              		.loc 2 88 2 discriminator 1
+ 256 0098 7B68     		ldr	r3, [r7, #4]
+ 257 009a 164A     		ldr	r2, .L13+32
+ 258 009c 59F80220 		ldr	r2, [r9, r2]
+ 259 00a0 9342     		cmp	r3, r2
+ 260 00a2 F3D3     		bcc	.L10
+  90:../libopencm3/lib/cm3/vector.c **** 	}
+  91:../libopencm3/lib/cm3/vector.c **** 
+  92:../libopencm3/lib/cm3/vector.c **** 	/* Call the application's entry point. */
+  93:../libopencm3/lib/cm3/vector.c **** 	(void)main();
+ 261              		.loc 2 93 8
+ 262 00a4 FFF7FEFF 		bl	main(PLT)
+  94:../libopencm3/lib/cm3/vector.c **** 
+  95:../libopencm3/lib/cm3/vector.c **** 	/* Destructors. */
+  96:../libopencm3/lib/cm3/vector.c **** 	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
+ 263              		.loc 2 96 10
+ 264 00a8 134B     		ldr	r3, .L13+36
+ 265 00aa 59F80330 		ldr	r3, [r9, r3]
+ 266 00ae 7B60     		str	r3, [r7, #4]
+ 267              		.loc 2 96 2
+ 268 00b0 05E0     		b	.L11
+ 269              	.L12:
+  97:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 270              		.loc 2 97 4 discriminator 3
+ 271 00b2 7B68     		ldr	r3, [r7, #4]
+ 272 00b4 1B68     		ldr	r3, [r3]
+ 273 00b6 9847     		blx	r3
+ 274              	.LVL2:
+  96:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 275              		.loc 2 96 59 discriminator 3
+ 276 00b8 7B68     		ldr	r3, [r7, #4]
+ 277 00ba 0433     		adds	r3, r3, #4
+ 278 00bc 7B60     		str	r3, [r7, #4]
+ 279              	.L11:
+  96:../libopencm3/lib/cm3/vector.c **** 		(*fp)();
+ 280              		.loc 2 96 2 discriminator 1
+ 281 00be 7B68     		ldr	r3, [r7, #4]
+ 282 00c0 0E4A     		ldr	r2, .L13+40
+ 283 00c2 59F80220 		ldr	r2, [r9, r2]
+ 284 00c6 9342     		cmp	r3, r2
+ 285 00c8 F3D3     		bcc	.L12
+  98:../libopencm3/lib/cm3/vector.c **** 	}
+  99:../libopencm3/lib/cm3/vector.c **** 
+ 100:../libopencm3/lib/cm3/vector.c **** }
+ 286              		.loc 2 100 1
+ 287 00ca 00BF     		nop
+ 288 00cc 1037     		adds	r7, r7, #16
+ 289              		.cfi_def_cfa_offset 8
+ 290 00ce BD46     		mov	sp, r7
+ 291              		.cfi_def_cfa_register 13
+ 292              		@ sp needed
+ 293 00d0 80BD     		pop	{r7, pc}
+ 294              	.L14:
+ 295 00d2 00BF     		.align	2
+ 296              	.L13:
+ 297 00d4 14ED00E0 		.word	-536810220
+ 298 00d8 00000000 		.word	_data_loadaddr(GOT)
+ 299 00dc 00000000 		.word	_data(GOT)
+ 300 00e0 00000000 		.word	_edata(GOT)
+ 301 00e4 00000000 		.word	_ebss(GOT)
+ 302 00e8 00000000 		.word	__preinit_array_start(GOT)
+ 303 00ec 00000000 		.word	__preinit_array_end(GOT)
+ 304 00f0 00000000 		.word	__init_array_start(GOT)
+ 305 00f4 00000000 		.word	__init_array_end(GOT)
+ 306 00f8 00000000 		.word	__fini_array_start(GOT)
+ 307 00fc 00000000 		.word	__fini_array_end(GOT)
+ 308              		.cfi_endproc
+ 309              	.LFE1:
+ 311              		.section	.text.blocking_handler,"ax",%progbits
+ 312              		.align	1
+ 313              		.global	blocking_handler
+ 314              		.syntax unified
+ 315              		.thumb
+ 316              		.thumb_func
+ 317              		.fpu softvfp
+ 319              	blocking_handler:
+ 320              	.LFB2:
+ 101:../libopencm3/lib/cm3/vector.c **** 
+ 102:../libopencm3/lib/cm3/vector.c **** void blocking_handler(void)
+ 103:../libopencm3/lib/cm3/vector.c **** {
+ 321              		.loc 2 103 1
+ 322              		.cfi_startproc
+ 323              		@ args = 0, pretend = 0, frame = 0
+ 324              		@ frame_needed = 1, uses_anonymous_args = 0
+ 325              		@ link register save eliminated.
+ 326 0000 80B4     		push	{r7}
+ 327              		.cfi_def_cfa_offset 4
+ 328              		.cfi_offset 7, -4
+ 329 0002 00AF     		add	r7, sp, #0
+ 330              		.cfi_def_cfa_register 7
+ 331              	.L16:
+ 104:../libopencm3/lib/cm3/vector.c **** 	while (1);
+ 332              		.loc 2 104 8 discriminator 1
+ 333 0004 FEE7     		b	.L16
+ 334              		.cfi_endproc
+ 335              	.LFE2:
+ 337              		.weak	usage_fault_handler
+ 338              		.thumb_set usage_fault_handler,blocking_handler
+ 339              		.weak	bus_fault_handler
+ 340              		.thumb_set bus_fault_handler,blocking_handler
+ 341              		.weak	mem_manage_handler
+ 342              		.thumb_set mem_manage_handler,blocking_handler
+ 343              		.weak	hard_fault_handler
+ 344              		.thumb_set hard_fault_handler,blocking_handler
+ 345              		.weak	otg_fs_isr
+ 346              		.thumb_set otg_fs_isr,blocking_handler
+ 347              		.weak	can2_sce_isr
+ 348              		.thumb_set can2_sce_isr,blocking_handler
+ 349              		.weak	can2_rx1_isr
+ 350              		.thumb_set can2_rx1_isr,blocking_handler
+ 351              		.weak	can2_rx0_isr
+ 352              		.thumb_set can2_rx0_isr,blocking_handler
+ 353              		.weak	can2_tx_isr
+ 354              		.thumb_set can2_tx_isr,blocking_handler
+ 355              		.weak	eth_wkup_isr
+ 356              		.thumb_set eth_wkup_isr,blocking_handler
+ 357              		.weak	eth_isr
+ 358              		.thumb_set eth_isr,blocking_handler
+ 359              		.weak	dma2_channel5_isr
+ 360              		.thumb_set dma2_channel5_isr,blocking_handler
+ 361              		.weak	dma2_channel4_5_isr
+ 362              		.thumb_set dma2_channel4_5_isr,blocking_handler
+ 363              		.weak	dma2_channel3_isr
+ 364              		.thumb_set dma2_channel3_isr,blocking_handler
+ 365              		.weak	dma2_channel2_isr
+ 366              		.thumb_set dma2_channel2_isr,blocking_handler
+ 367              		.weak	dma2_channel1_isr
+ 368              		.thumb_set dma2_channel1_isr,blocking_handler
+ 369              		.weak	tim7_isr
+ 370              		.thumb_set tim7_isr,blocking_handler
+ 371              		.weak	tim6_isr
+ 372              		.thumb_set tim6_isr,blocking_handler
+ 373              		.weak	uart5_isr
+ 374              		.thumb_set uart5_isr,blocking_handler
+ 375              		.weak	uart4_isr
+ 376              		.thumb_set uart4_isr,blocking_handler
+ 377              		.weak	spi3_isr
+ 378              		.thumb_set spi3_isr,blocking_handler
+ 379              		.weak	tim5_isr
+ 380              		.thumb_set tim5_isr,blocking_handler
+ 381              		.weak	sdio_isr
+ 382              		.thumb_set sdio_isr,blocking_handler
+ 383              		.weak	fsmc_isr
+ 384              		.thumb_set fsmc_isr,blocking_handler
+ 385              		.weak	adc3_isr
+ 386              		.thumb_set adc3_isr,blocking_handler
+ 387              		.weak	tim8_cc_isr
+ 388              		.thumb_set tim8_cc_isr,blocking_handler
+ 389              		.weak	tim8_trg_com_isr
+ 390              		.thumb_set tim8_trg_com_isr,blocking_handler
+ 391              		.weak	tim8_up_isr
+ 392              		.thumb_set tim8_up_isr,blocking_handler
+ 393              		.weak	tim8_brk_isr
+ 394              		.thumb_set tim8_brk_isr,blocking_handler
+ 395              		.weak	usb_wakeup_isr
+ 396              		.thumb_set usb_wakeup_isr,blocking_handler
+ 397              		.weak	rtc_alarm_isr
+ 398              		.thumb_set rtc_alarm_isr,blocking_handler
+ 399              		.weak	exti15_10_isr
+ 400              		.thumb_set exti15_10_isr,blocking_handler
+ 401              		.weak	usart3_isr
+ 402              		.thumb_set usart3_isr,blocking_handler
+ 403              		.weak	usart2_isr
+ 404              		.thumb_set usart2_isr,blocking_handler
+ 405              		.weak	usart1_isr
+ 406              		.thumb_set usart1_isr,blocking_handler
+ 407              		.weak	spi2_isr
+ 408              		.thumb_set spi2_isr,blocking_handler
+ 409              		.weak	spi1_isr
+ 410              		.thumb_set spi1_isr,blocking_handler
+ 411              		.weak	i2c2_er_isr
+ 412              		.thumb_set i2c2_er_isr,blocking_handler
+ 413              		.weak	i2c2_ev_isr
+ 414              		.thumb_set i2c2_ev_isr,blocking_handler
+ 415              		.weak	i2c1_er_isr
+ 416              		.thumb_set i2c1_er_isr,blocking_handler
+ 417              		.weak	i2c1_ev_isr
+ 418              		.thumb_set i2c1_ev_isr,blocking_handler
+ 419              		.weak	tim4_isr
+ 420              		.thumb_set tim4_isr,blocking_handler
+ 421              		.weak	tim3_isr
+ 422              		.thumb_set tim3_isr,blocking_handler
+ 423              		.weak	tim2_isr
+ 424              		.thumb_set tim2_isr,blocking_handler
+ 425              		.weak	tim1_cc_isr
+ 426              		.thumb_set tim1_cc_isr,blocking_handler
+ 427              		.weak	tim1_trg_com_isr
+ 428              		.thumb_set tim1_trg_com_isr,blocking_handler
+ 429              		.weak	tim1_up_isr
+ 430              		.thumb_set tim1_up_isr,blocking_handler
+ 431              		.weak	tim1_brk_isr
+ 432              		.thumb_set tim1_brk_isr,blocking_handler
+ 433              		.weak	exti9_5_isr
+ 434              		.thumb_set exti9_5_isr,blocking_handler
+ 435              		.weak	can_sce_isr
+ 436              		.thumb_set can_sce_isr,blocking_handler
+ 437              		.weak	can_rx1_isr
+ 438              		.thumb_set can_rx1_isr,blocking_handler
+ 439              		.weak	usb_lp_can_rx0_isr
+ 440              		.thumb_set usb_lp_can_rx0_isr,blocking_handler
+ 441              		.weak	usb_hp_can_tx_isr
+ 442              		.thumb_set usb_hp_can_tx_isr,blocking_handler
+ 443              		.weak	adc1_2_isr
+ 444              		.thumb_set adc1_2_isr,blocking_handler
+ 445              		.weak	dma1_channel7_isr
+ 446              		.thumb_set dma1_channel7_isr,blocking_handler
+ 447              		.weak	dma1_channel6_isr
+ 448              		.thumb_set dma1_channel6_isr,blocking_handler
+ 449              		.weak	dma1_channel5_isr
+ 450              		.thumb_set dma1_channel5_isr,blocking_handler
+ 451              		.weak	dma1_channel4_isr
+ 452              		.thumb_set dma1_channel4_isr,blocking_handler
+ 453              		.weak	dma1_channel3_isr
+ 454              		.thumb_set dma1_channel3_isr,blocking_handler
+ 455              		.weak	dma1_channel2_isr
+ 456              		.thumb_set dma1_channel2_isr,blocking_handler
+ 457              		.weak	dma1_channel1_isr
+ 458              		.thumb_set dma1_channel1_isr,blocking_handler
+ 459              		.weak	exti4_isr
+ 460              		.thumb_set exti4_isr,blocking_handler
+ 461              		.weak	exti3_isr
+ 462              		.thumb_set exti3_isr,blocking_handler
+ 463              		.weak	exti2_isr
+ 464              		.thumb_set exti2_isr,blocking_handler
+ 465              		.weak	exti1_isr
+ 466              		.thumb_set exti1_isr,blocking_handler
+ 467              		.weak	exti0_isr
+ 468              		.thumb_set exti0_isr,blocking_handler
+ 469              		.weak	rcc_isr
+ 470              		.thumb_set rcc_isr,blocking_handler
+ 471              		.weak	flash_isr
+ 472              		.thumb_set flash_isr,blocking_handler
+ 473              		.weak	rtc_isr
+ 474              		.thumb_set rtc_isr,blocking_handler
+ 475              		.weak	tamper_isr
+ 476              		.thumb_set tamper_isr,blocking_handler
+ 477              		.weak	pvd_isr
+ 478              		.thumb_set pvd_isr,blocking_handler
+ 479              		.weak	wwdg_isr
+ 480              		.thumb_set wwdg_isr,blocking_handler
+ 481              		.section	.text.null_handler,"ax",%progbits
+ 482              		.align	1
+ 483              		.global	null_handler
+ 484              		.syntax unified
+ 485              		.thumb
+ 486              		.thumb_func
+ 487              		.fpu softvfp
+ 489              	null_handler:
+ 490              	.LFB3:
+ 105:../libopencm3/lib/cm3/vector.c **** }
+ 106:../libopencm3/lib/cm3/vector.c **** 
+ 107:../libopencm3/lib/cm3/vector.c **** void null_handler(void)
+ 108:../libopencm3/lib/cm3/vector.c **** {
+ 491              		.loc 2 108 1
+ 492              		.cfi_startproc
+ 493              		@ args = 0, pretend = 0, frame = 0
+ 494              		@ frame_needed = 1, uses_anonymous_args = 0
+ 495              		@ link register save eliminated.
+ 496 0000 80B4     		push	{r7}
+ 497              		.cfi_def_cfa_offset 4
+ 498              		.cfi_offset 7, -4
+ 499 0002 00AF     		add	r7, sp, #0
+ 500              		.cfi_def_cfa_register 7
+ 109:../libopencm3/lib/cm3/vector.c **** 	/* Do nothing. */
+ 110:../libopencm3/lib/cm3/vector.c **** }
+ 501              		.loc 2 110 1
+ 502 0004 00BF     		nop
+ 503 0006 BD46     		mov	sp, r7
+ 504              		.cfi_def_cfa_register 13
+ 505              		@ sp needed
+ 506 0008 80BC     		pop	{r7}
+ 507              		.cfi_restore 7
+ 508              		.cfi_def_cfa_offset 0
+ 509 000a 7047     		bx	lr
+ 510              		.cfi_endproc
+ 511              	.LFE3:
+ 513              		.weak	debug_monitor_handler
+ 514              		.thumb_set debug_monitor_handler,null_handler
+ 515              		.weak	sys_tick_handler
+ 516              		.thumb_set sys_tick_handler,null_handler
+ 517              		.weak	pend_sv_handler
+ 518              		.thumb_set pend_sv_handler,null_handler
+ 519              		.weak	sv_call_handler
+ 520              		.thumb_set sv_call_handler,null_handler
+ 521              		.weak	nmi_handler
+ 522              		.thumb_set nmi_handler,null_handler
+ 523              		.text
+ 524              	.Letext0:
+ 525              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 526              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 527              		.file 5 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/cm3/vector.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 vector.c
+     /tmp/ccQQuDBf.s:16     .text.pre_main:0000000000000000 $t
+     /tmp/ccQQuDBf.s:23     .text.pre_main:0000000000000000 pre_main
+     /tmp/ccQQuDBf.s:53     .vectors:0000000000000000 vector_table
+     /tmp/ccQQuDBf.s:50     .vectors:0000000000000000 $d
+     /tmp/ccQQuDBf.s:143    .text.reset_handler:0000000000000000 reset_handler
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 nmi_handler
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 hard_fault_handler
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 mem_manage_handler
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 bus_fault_handler
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usage_fault_handler
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 sv_call_handler
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 debug_monitor_handler
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 pend_sv_handler
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 sys_tick_handler
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 wwdg_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 pvd_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tamper_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 rtc_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 flash_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 rcc_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti0_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti4_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel4_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel6_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma1_channel7_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 adc1_2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usb_hp_can_tx_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usb_lp_can_rx0_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can_rx1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can_sce_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti9_5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim1_brk_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim1_up_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim1_trg_com_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim1_cc_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim4_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 i2c1_ev_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 i2c1_er_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 i2c2_ev_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 i2c2_er_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 spi1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 spi2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usart1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usart2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usart3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 exti15_10_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 rtc_alarm_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 usb_wakeup_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim8_brk_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim8_up_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim8_trg_com_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim8_cc_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 adc3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 fsmc_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 sdio_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 spi3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 uart4_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 uart5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim6_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 tim7_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma2_channel1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma2_channel2_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma2_channel3_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma2_channel4_5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 dma2_channel5_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 eth_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 eth_wkup_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can2_tx_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can2_rx0_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can2_rx1_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 can2_sce_isr
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 otg_fs_isr
+     /tmp/ccQQuDBf.s:136    .text.reset_handler:0000000000000000 $t
+     /tmp/ccQQuDBf.s:297    .text.reset_handler:00000000000000d4 $d
+     /tmp/ccQQuDBf.s:312    .text.blocking_handler:0000000000000000 $t
+     /tmp/ccQQuDBf.s:319    .text.blocking_handler:0000000000000000 blocking_handler
+     /tmp/ccQQuDBf.s:482    .text.null_handler:0000000000000000 $t
+     /tmp/ccQQuDBf.s:489    .text.null_handler:0000000000000000 null_handler
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.scb.h.43.8b4f1f26a2f656642be580b6ecb65fcd
+                           .group:0000000000000000 wm4.nvic.h.38.3b30e3268bee285344f6b283a9023580
+                           .group:0000000000000000 wm4.nvic.h.16.2afd64cac85d5d54f32177e020bf398f
+
+UNDEFINED SYMBOLS
+_stack
+main
+_data_loadaddr
+_data
+_edata
+_ebss
+__preinit_array_start
+__preinit_array_end
+__init_array_start
+__init_array_end
+__fini_array_start
+__fini_array_end

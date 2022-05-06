@@ -1,0 +1,81 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"vector_chipset.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.pre_main,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv7-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	pre_main:
+  24              	.LFB0:
+  25              		.file 1 "../libopencm3/lib/dispatch/vector_chipset.c"
+   1:../libopencm3/lib/dispatch/vector_chipset.c **** #if defined(STM32F3)
+   2:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/f3/vector_chipset.c"
+   3:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(STM32F4)
+   4:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/f4/vector_chipset.c"
+   5:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(STM32F7)
+   6:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/f7/vector_chipset.c"
+   7:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(STM32G4)
+   8:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/g4/vector_chipset.c"
+   9:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(STM32H7)
+  10:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/h7/vector_chipset.c"
+  11:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(STM32L4)
+  12:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../stm32/l4/vector_chipset.c"
+  13:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(LM4F)
+  14:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../lm4f/vector_chipset.c"
+  15:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(LPC43XX_M4)
+  16:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../lpc43xx/m4/vector_chipset.c"
+  17:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(VF6XX)
+  18:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../vf6xx/vector_chipset.c"
+  19:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(EFM32WG)
+  20:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../efm32/wg/vector_chipset.c"
+  21:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(EZR32WG)
+  22:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../efm32/ezr32wg/vector_chipset.c"
+  23:../libopencm3/lib/dispatch/vector_chipset.c **** #elif defined(PAC55XX)
+  24:../libopencm3/lib/dispatch/vector_chipset.c **** #	include "../pac55xx/vector_chipset.c"
+  25:../libopencm3/lib/dispatch/vector_chipset.c **** #else
+  26:../libopencm3/lib/dispatch/vector_chipset.c **** 
+  27:../libopencm3/lib/dispatch/vector_chipset.c **** static void pre_main(void) {}
+  26              		.loc 1 27 28
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 0
+  29              		@ frame_needed = 1, uses_anonymous_args = 0
+  30              		@ link register save eliminated.
+  31 0000 80B4     		push	{r7}
+  32              		.cfi_def_cfa_offset 4
+  33              		.cfi_offset 7, -4
+  34 0002 00AF     		add	r7, sp, #0
+  35              		.cfi_def_cfa_register 7
+  36              		.loc 1 27 1
+  37 0004 00BF     		nop
+  38 0006 BD46     		mov	sp, r7
+  39              		.cfi_def_cfa_register 13
+  40              		@ sp needed
+  41 0008 80BC     		pop	{r7}
+  42              		.cfi_restore 7
+  43              		.cfi_def_cfa_offset 0
+  44 000a 7047     		bx	lr
+  45              		.cfi_endproc
+  46              	.LFE0:
+  48              		.text
+  49              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 vector_chipset.c
+     /tmp/ccwTBBad.s:16     .text.pre_main:0000000000000000 $t
+     /tmp/ccwTBBad.s:23     .text.pre_main:0000000000000000 pre_main
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+
+NO UNDEFINED SYMBOLS

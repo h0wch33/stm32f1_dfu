@@ -1,0 +1,203 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"phy.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.phy_link_isup,"ax",%progbits
+  16              		.align	1
+  17              		.global	phy_link_isup
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	phy_link_isup:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/ethernet/phy.c"
+   1:../libopencm3/lib/ethernet/phy.c **** /** @defgroup ethernet_phy_file PHY Generic Drivers
+   2:../libopencm3/lib/ethernet/phy.c ****  *
+   3:../libopencm3/lib/ethernet/phy.c ****  * @ingroup ETH
+   4:../libopencm3/lib/ethernet/phy.c ****  *
+   5:../libopencm3/lib/ethernet/phy.c ****  * @brief <b>Ethernet PHY Generic Drivers</b>
+   6:../libopencm3/lib/ethernet/phy.c ****  *
+   7:../libopencm3/lib/ethernet/phy.c ****  * @version 1.0.0
+   8:../libopencm3/lib/ethernet/phy.c ****  * @author @htmlonly &copy; @endhtmlonly 2013 Frantisek Burian <BuFran@seznam.cz>
+   9:../libopencm3/lib/ethernet/phy.c ****  *
+  10:../libopencm3/lib/ethernet/phy.c ****  * @date 1 September 2013
+  11:../libopencm3/lib/ethernet/phy.c ****  *
+  12:../libopencm3/lib/ethernet/phy.c ****  *
+  13:../libopencm3/lib/ethernet/phy.c ****  * LGPL License Terms @ref lgpl_license
+  14:../libopencm3/lib/ethernet/phy.c ****  */
+  15:../libopencm3/lib/ethernet/phy.c **** 
+  16:../libopencm3/lib/ethernet/phy.c **** /*
+  17:../libopencm3/lib/ethernet/phy.c ****  * This file is part of the libopencm3 project.
+  18:../libopencm3/lib/ethernet/phy.c ****  *
+  19:../libopencm3/lib/ethernet/phy.c ****  * Copyright (C) 2013 Frantisek Burian <BuFran@seznam.cz>
+  20:../libopencm3/lib/ethernet/phy.c ****  *
+  21:../libopencm3/lib/ethernet/phy.c ****  * This library is free software: you can redistribute it and/or modify
+  22:../libopencm3/lib/ethernet/phy.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  23:../libopencm3/lib/ethernet/phy.c ****  * the Free Software Foundation, either version 3 of the License, or
+  24:../libopencm3/lib/ethernet/phy.c ****  * (at your option) any later version.
+  25:../libopencm3/lib/ethernet/phy.c ****  *
+  26:../libopencm3/lib/ethernet/phy.c ****  * This library is distributed in the hope that it will be useful,
+  27:../libopencm3/lib/ethernet/phy.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  28:../libopencm3/lib/ethernet/phy.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  29:../libopencm3/lib/ethernet/phy.c ****  * GNU Lesser General Public License for more details.
+  30:../libopencm3/lib/ethernet/phy.c ****  *
+  31:../libopencm3/lib/ethernet/phy.c ****  * You should have received a copy of the GNU Lesser General Public License
+  32:../libopencm3/lib/ethernet/phy.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  33:../libopencm3/lib/ethernet/phy.c ****  */
+  34:../libopencm3/lib/ethernet/phy.c **** 
+  35:../libopencm3/lib/ethernet/phy.c **** #include <libopencm3/ethernet/mac.h>
+  36:../libopencm3/lib/ethernet/phy.c **** #include <libopencm3/ethernet/phy.h>
+  37:../libopencm3/lib/ethernet/phy.c **** 
+  38:../libopencm3/lib/ethernet/phy.c **** /**@{*/
+  39:../libopencm3/lib/ethernet/phy.c **** 
+  40:../libopencm3/lib/ethernet/phy.c **** /*---------------------------------------------------------------------------*/
+  41:../libopencm3/lib/ethernet/phy.c **** /** @brief Is the link up ?
+  42:../libopencm3/lib/ethernet/phy.c ****  *
+  43:../libopencm3/lib/ethernet/phy.c ****  * @param[in] phy uint8_t phy ID of the PHY
+  44:../libopencm3/lib/ethernet/phy.c ****  * @returns bool true, if link is up
+  45:../libopencm3/lib/ethernet/phy.c ****  */
+  46:../libopencm3/lib/ethernet/phy.c **** bool phy_link_isup(uint8_t phy)
+  47:../libopencm3/lib/ethernet/phy.c **** {
+  27              		.loc 1 47 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 82B0     		sub	sp, sp, #8
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 0346     		mov	r3, r0
+  40 0008 FB71     		strb	r3, [r7, #7]
+  48:../libopencm3/lib/ethernet/phy.c **** 	return eth_smi_read(phy, PHY_REG_BSR) & PHY_REG_BSR_UP;
+  41              		.loc 1 48 9
+  42 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  43 000c 0121     		movs	r1, #1
+  44 000e 1846     		mov	r0, r3
+  45 0010 FFF7FEFF 		bl	eth_smi_read(PLT)
+  46 0014 0346     		mov	r3, r0
+  47              		.loc 1 48 40
+  48 0016 03F00403 		and	r3, r3, #4
+  49 001a 002B     		cmp	r3, #0
+  50 001c 14BF     		ite	ne
+  51 001e 0123     		movne	r3, #1
+  52 0020 0023     		moveq	r3, #0
+  53 0022 DBB2     		uxtb	r3, r3
+  49:../libopencm3/lib/ethernet/phy.c **** }
+  54              		.loc 1 49 1
+  55 0024 1846     		mov	r0, r3
+  56 0026 0837     		adds	r7, r7, #8
+  57              		.cfi_def_cfa_offset 8
+  58 0028 BD46     		mov	sp, r7
+  59              		.cfi_def_cfa_register 13
+  60              		@ sp needed
+  61 002a 80BD     		pop	{r7, pc}
+  62              		.cfi_endproc
+  63              	.LFE0:
+  65              		.section	.text.phy_reset,"ax",%progbits
+  66              		.align	1
+  67              		.global	phy_reset
+  68              		.syntax unified
+  69              		.thumb
+  70              		.thumb_func
+  71              		.fpu softvfp
+  73              	phy_reset:
+  74              	.LFB1:
+  50:../libopencm3/lib/ethernet/phy.c **** 
+  51:../libopencm3/lib/ethernet/phy.c **** /*---------------------------------------------------------------------------*/
+  52:../libopencm3/lib/ethernet/phy.c **** /** @brief Reset the PHY
+  53:../libopencm3/lib/ethernet/phy.c ****  *
+  54:../libopencm3/lib/ethernet/phy.c ****  * Reset the PHY chip and wait for done
+  55:../libopencm3/lib/ethernet/phy.c ****  * @param[in] phy uint8_t phy ID of the PHY
+  56:../libopencm3/lib/ethernet/phy.c ****  */
+  57:../libopencm3/lib/ethernet/phy.c **** void phy_reset(uint8_t phy)
+  58:../libopencm3/lib/ethernet/phy.c **** {
+  75              		.loc 1 58 1
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 8
+  78              		@ frame_needed = 1, uses_anonymous_args = 0
+  79 0000 80B5     		push	{r7, lr}
+  80              		.cfi_def_cfa_offset 8
+  81              		.cfi_offset 7, -8
+  82              		.cfi_offset 14, -4
+  83 0002 82B0     		sub	sp, sp, #8
+  84              		.cfi_def_cfa_offset 16
+  85 0004 00AF     		add	r7, sp, #0
+  86              		.cfi_def_cfa_register 7
+  87 0006 0346     		mov	r3, r0
+  88 0008 FB71     		strb	r3, [r7, #7]
+  59:../libopencm3/lib/ethernet/phy.c **** 	eth_smi_write(phy, PHY_REG_BCR, PHY_REG_BCR_RESET);
+  89              		.loc 1 59 2
+  90 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  91 000c 4FF40042 		mov	r2, #32768
+  92 0010 0021     		movs	r1, #0
+  93 0012 1846     		mov	r0, r3
+  94 0014 FFF7FEFF 		bl	eth_smi_write(PLT)
+  60:../libopencm3/lib/ethernet/phy.c **** 	while (eth_smi_read(phy, PHY_REG_BCR) & PHY_REG_BCR_RESET);
+  95              		.loc 1 60 8
+  96 0018 00BF     		nop
+  97              	.L4:
+  98              		.loc 1 60 9 discriminator 1
+  99 001a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 100 001c 0021     		movs	r1, #0
+ 101 001e 1846     		mov	r0, r3
+ 102 0020 FFF7FEFF 		bl	eth_smi_read(PLT)
+ 103 0024 0346     		mov	r3, r0
+ 104 0026 1BB2     		sxth	r3, r3
+ 105              		.loc 1 60 8 discriminator 1
+ 106 0028 002B     		cmp	r3, #0
+ 107 002a F6DB     		blt	.L4
+  61:../libopencm3/lib/ethernet/phy.c **** }
+ 108              		.loc 1 61 1
+ 109 002c 00BF     		nop
+ 110 002e 0837     		adds	r7, r7, #8
+ 111              		.cfi_def_cfa_offset 8
+ 112 0030 BD46     		mov	sp, r7
+ 113              		.cfi_def_cfa_register 13
+ 114              		@ sp needed
+ 115 0032 80BD     		pop	{r7, pc}
+ 116              		.cfi_endproc
+ 117              	.LFE1:
+ 119              		.text
+ 120              	.Letext0:
+ 121              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 122              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 phy.c
+     /tmp/ccYTOmnZ.s:16     .text.phy_link_isup:0000000000000000 $t
+     /tmp/ccYTOmnZ.s:24     .text.phy_link_isup:0000000000000000 phy_link_isup
+     /tmp/ccYTOmnZ.s:66     .text.phy_reset:0000000000000000 $t
+     /tmp/ccYTOmnZ.s:73     .text.phy_reset:0000000000000000 phy_reset
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.mac_stm32fxx7.h.51.744719e25fe42bc6859e0e370e4857da
+                           .group:0000000000000000 wm4.phy.h.34.adf7f3db071b9fe4f2c46e612a9f2775
+
+UNDEFINED SYMBOLS
+eth_smi_read
+eth_smi_write

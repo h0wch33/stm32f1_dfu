@@ -1,0 +1,2317 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"dma_common_l1f013.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.dma_channel_reset,"ax",%progbits
+  16              		.align	1
+  17              		.global	dma_channel_reset
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	dma_channel_reset:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/dma_common_l1f013.c"
+   1:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @defgroup dma_file DMA peripheral API
+   2:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @brief DMA library for the multi channel controller found in F0/1/3 & L/G parts.
+   4:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+   5:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @author @htmlonly &copy; @endhtmlonly 2010 Thomas Otto <tommi@viadmin.org>
+   6:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+   7:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** This library supports the DMA Control System in the STM32 series of ARM Cortex
+   8:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Microcontrollers by ST Microelectronics.
+   9:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  10:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Up to two DMA controllers are supported. 12 DMA channels are allocated 7 to
+  11:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** the first DMA controller and 5 to the second. Each channel is connected to
+  12:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** between 3 and 6 hardware peripheral DMA signals in a logical OR arrangement.
+  13:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  14:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** DMA transfers can be configured to occur between peripheral and memory in
+  15:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** any combination including memory to memory. Circular mode transfers are
+  16:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** also supported in transfers involving a peripheral. An arbiter is provided
+  17:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** to resolve priority DMA requests. Transfers can be made with 8, 16 or 32 bit
+  18:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** words.
+  19:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  20:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** LGPL License Terms @ref lgpl_license
+  21:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  */
+  22:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*
+  23:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * This file is part of the libopencm3 project.
+  24:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  *
+  25:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
+  26:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  *
+  27:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * This library is free software: you can redistribute it and/or modify
+  28:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  29:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * the Free Software Foundation, either version 3 of the License, or
+  30:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * (at your option) any later version.
+  31:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  *
+  32:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * This library is distributed in the hope that it will be useful,
+  33:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  34:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  35:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * GNU Lesser General Public License for more details.
+  36:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  *
+  37:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * You should have received a copy of the GNU Lesser General Public License
+  38:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  39:../libopencm3/lib/stm32/common/dma_common_l1f013.c ****  */
+  40:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  41:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /**@{*/
+  42:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  43:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** #include <libopencm3/stm32/dma.h>
+  44:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  45:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+  46:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Reset
+  47:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  48:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** The channel is disabled and configuration registers are cleared.
+  49:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  50:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+  51:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+  52:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+  53:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  54:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_channel_reset(uint32_t dma, uint8_t channel)
+  55:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+  27              		.loc 1 55 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 0B46     		mov	r3, r1
+  41 000a FB70     		strb	r3, [r7, #3]
+  56:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	/* Disable channel and reset config bits. */
+  57:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) = 0;
+  42              		.loc 1 57 2
+  43 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  44 000e 5A1E     		subs	r2, r3, #1
+  45 0010 1346     		mov	r3, r2
+  46 0012 9B00     		lsls	r3, r3, #2
+  47 0014 1344     		add	r3, r3, r2
+  48 0016 9B00     		lsls	r3, r3, #2
+  49 0018 1A46     		mov	r2, r3
+  50 001a 7B68     		ldr	r3, [r7, #4]
+  51 001c 1344     		add	r3, r3, r2
+  52 001e 0833     		adds	r3, r3, #8
+  53 0020 1A46     		mov	r2, r3
+  54              		.loc 1 57 24
+  55 0022 0023     		movs	r3, #0
+  56 0024 1360     		str	r3, [r2]
+  58:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	/* Reset data transfer number. */
+  59:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CNDTR(dma, channel) = 0;
+  57              		.loc 1 59 2
+  58 0026 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  59 0028 5A1E     		subs	r2, r3, #1
+  60 002a 1346     		mov	r3, r2
+  61 002c 9B00     		lsls	r3, r3, #2
+  62 002e 1344     		add	r3, r3, r2
+  63 0030 9B00     		lsls	r3, r3, #2
+  64 0032 1A46     		mov	r2, r3
+  65 0034 7B68     		ldr	r3, [r7, #4]
+  66 0036 1344     		add	r3, r3, r2
+  67 0038 0C33     		adds	r3, r3, #12
+  68 003a 1A46     		mov	r2, r3
+  69              		.loc 1 59 26
+  70 003c 0023     		movs	r3, #0
+  71 003e 1360     		str	r3, [r2]
+  60:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	/* Reset peripheral address. */
+  61:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CPAR(dma, channel) = 0;
+  72              		.loc 1 61 2
+  73 0040 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  74 0042 5A1E     		subs	r2, r3, #1
+  75 0044 1346     		mov	r3, r2
+  76 0046 9B00     		lsls	r3, r3, #2
+  77 0048 1344     		add	r3, r3, r2
+  78 004a 9B00     		lsls	r3, r3, #2
+  79 004c 1A46     		mov	r2, r3
+  80 004e 7B68     		ldr	r3, [r7, #4]
+  81 0050 1344     		add	r3, r3, r2
+  82 0052 1033     		adds	r3, r3, #16
+  83 0054 1A46     		mov	r2, r3
+  84              		.loc 1 61 25
+  85 0056 0023     		movs	r3, #0
+  86 0058 1360     		str	r3, [r2]
+  62:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	/* Reset memory address. */
+  63:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CMAR(dma, channel) = 0;
+  87              		.loc 1 63 2
+  88 005a FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  89 005c 5A1E     		subs	r2, r3, #1
+  90 005e 1346     		mov	r3, r2
+  91 0060 9B00     		lsls	r3, r3, #2
+  92 0062 1344     		add	r3, r3, r2
+  93 0064 9B00     		lsls	r3, r3, #2
+  94 0066 1A46     		mov	r2, r3
+  95 0068 7B68     		ldr	r3, [r7, #4]
+  96 006a 1344     		add	r3, r3, r2
+  97 006c 1433     		adds	r3, r3, #20
+  98 006e 1A46     		mov	r2, r3
+  99              		.loc 1 63 25
+ 100 0070 0023     		movs	r3, #0
+ 101 0072 1360     		str	r3, [r2]
+  64:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	/* Reset interrupt flags. */
+  65:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_IFCR(dma) |= DMA_IFCR_CIF(channel);
+ 102              		.loc 1 65 16
+ 103 0074 7B68     		ldr	r3, [r7, #4]
+ 104 0076 0433     		adds	r3, r3, #4
+ 105 0078 1B68     		ldr	r3, [r3]
+ 106              		.loc 1 65 19
+ 107 007a FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 108 007c 013A     		subs	r2, r2, #1
+ 109 007e 9200     		lsls	r2, r2, #2
+ 110 0080 0F21     		movs	r1, #15
+ 111 0082 01FA02F2 		lsl	r2, r1, r2
+ 112 0086 1146     		mov	r1, r2
+ 113              		.loc 1 65 16
+ 114 0088 7A68     		ldr	r2, [r7, #4]
+ 115 008a 0432     		adds	r2, r2, #4
+ 116 008c 0B43     		orrs	r3, r3, r1
+ 117 008e 1360     		str	r3, [r2]
+  66:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 118              		.loc 1 66 1
+ 119 0090 00BF     		nop
+ 120 0092 0C37     		adds	r7, r7, #12
+ 121              		.cfi_def_cfa_offset 4
+ 122 0094 BD46     		mov	sp, r7
+ 123              		.cfi_def_cfa_register 13
+ 124              		@ sp needed
+ 125 0096 80BC     		pop	{r7}
+ 126              		.cfi_restore 7
+ 127              		.cfi_def_cfa_offset 0
+ 128 0098 7047     		bx	lr
+ 129              		.cfi_endproc
+ 130              	.LFE0:
+ 132              		.section	.text.dma_clear_interrupt_flags,"ax",%progbits
+ 133              		.align	1
+ 134              		.global	dma_clear_interrupt_flags
+ 135              		.syntax unified
+ 136              		.thumb
+ 137              		.thumb_func
+ 138              		.fpu softvfp
+ 140              	dma_clear_interrupt_flags:
+ 141              	.LFB1:
+  67:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  68:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+  69:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Clear Interrupt Flag
+  70:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  71:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** The interrupt flag for the channel is cleared. More than one interrupt for the
+  72:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** same channel may be cleared by using the logical OR of the interrupt flags.
+  73:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  74:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+  75:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: @ref dma_ch
+  76:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] interrupts unsigned int32. Logical OR of interrupt numbers: @ref
+  77:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** dma_if_offset
+  78:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+  79:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  80:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_clear_interrupt_flags(uint32_t dma, uint8_t channel,
+  81:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 			       uint32_t interrupts)
+  82:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 142              		.loc 1 82 1
+ 143              		.cfi_startproc
+ 144              		@ args = 0, pretend = 0, frame = 24
+ 145              		@ frame_needed = 1, uses_anonymous_args = 0
+ 146              		@ link register save eliminated.
+ 147 0000 80B4     		push	{r7}
+ 148              		.cfi_def_cfa_offset 4
+ 149              		.cfi_offset 7, -4
+ 150 0002 87B0     		sub	sp, sp, #28
+ 151              		.cfi_def_cfa_offset 32
+ 152 0004 00AF     		add	r7, sp, #0
+ 153              		.cfi_def_cfa_register 7
+ 154 0006 F860     		str	r0, [r7, #12]
+ 155 0008 0B46     		mov	r3, r1
+ 156 000a 7A60     		str	r2, [r7, #4]
+ 157 000c FB72     		strb	r3, [r7, #11]
+  83:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /* Get offset to interrupt flag location in channel field */
+  84:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	uint32_t flags = (interrupts << DMA_FLAG_OFFSET(channel));
+ 158              		.loc 1 84 34
+ 159 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 160 0010 013B     		subs	r3, r3, #1
+ 161 0012 9B00     		lsls	r3, r3, #2
+ 162              		.loc 1 84 11
+ 163 0014 7A68     		ldr	r2, [r7, #4]
+ 164 0016 02FA03F3 		lsl	r3, r2, r3
+ 165 001a 7B61     		str	r3, [r7, #20]
+  85:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_IFCR(dma) = flags;
+ 166              		.loc 1 85 2
+ 167 001c FB68     		ldr	r3, [r7, #12]
+ 168 001e 0433     		adds	r3, r3, #4
+ 169 0020 1A46     		mov	r2, r3
+ 170              		.loc 1 85 16
+ 171 0022 7B69     		ldr	r3, [r7, #20]
+ 172 0024 1360     		str	r3, [r2]
+  86:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 173              		.loc 1 86 1
+ 174 0026 00BF     		nop
+ 175 0028 1C37     		adds	r7, r7, #28
+ 176              		.cfi_def_cfa_offset 4
+ 177 002a BD46     		mov	sp, r7
+ 178              		.cfi_def_cfa_register 13
+ 179              		@ sp needed
+ 180 002c 80BC     		pop	{r7}
+ 181              		.cfi_restore 7
+ 182              		.cfi_def_cfa_offset 0
+ 183 002e 7047     		bx	lr
+ 184              		.cfi_endproc
+ 185              	.LFE1:
+ 187              		.section	.text.dma_get_interrupt_flag,"ax",%progbits
+ 188              		.align	1
+ 189              		.global	dma_get_interrupt_flag
+ 190              		.syntax unified
+ 191              		.thumb
+ 192              		.thumb_func
+ 193              		.fpu softvfp
+ 195              	dma_get_interrupt_flag:
+ 196              	.LFB2:
+  87:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  88:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+  89:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Read Interrupt Flag
+  90:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  91:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** The interrupt flag for the channel is returned.
+  92:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  93:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+  94:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: @ref dma_ch
+  95:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] interrupt unsigned int32. Interrupt number: @ref dma_if_offset
+  96:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @returns bool interrupt flag is set.
+  97:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+  98:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+  99:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** bool dma_get_interrupt_flag(uint32_t dma, uint8_t channel, uint32_t interrupt)
+ 100:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 197              		.loc 1 100 1
+ 198              		.cfi_startproc
+ 199              		@ args = 0, pretend = 0, frame = 24
+ 200              		@ frame_needed = 1, uses_anonymous_args = 0
+ 201              		@ link register save eliminated.
+ 202 0000 80B4     		push	{r7}
+ 203              		.cfi_def_cfa_offset 4
+ 204              		.cfi_offset 7, -4
+ 205 0002 87B0     		sub	sp, sp, #28
+ 206              		.cfi_def_cfa_offset 32
+ 207 0004 00AF     		add	r7, sp, #0
+ 208              		.cfi_def_cfa_register 7
+ 209 0006 F860     		str	r0, [r7, #12]
+ 210 0008 0B46     		mov	r3, r1
+ 211 000a 7A60     		str	r2, [r7, #4]
+ 212 000c FB72     		strb	r3, [r7, #11]
+ 101:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /* get offset to interrupt flag location in channel field. */
+ 102:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	uint32_t flag = (interrupt << DMA_FLAG_OFFSET(channel));
+ 213              		.loc 1 102 32
+ 214 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 215 0010 013B     		subs	r3, r3, #1
+ 216 0012 9B00     		lsls	r3, r3, #2
+ 217              		.loc 1 102 11
+ 218 0014 7A68     		ldr	r2, [r7, #4]
+ 219 0016 02FA03F3 		lsl	r3, r2, r3
+ 220 001a 7B61     		str	r3, [r7, #20]
+ 103:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	return ((DMA_ISR(dma) & flag) > 0);
+ 221              		.loc 1 103 11
+ 222 001c FB68     		ldr	r3, [r7, #12]
+ 223 001e 1A68     		ldr	r2, [r3]
+ 224              		.loc 1 103 24
+ 225 0020 7B69     		ldr	r3, [r7, #20]
+ 226 0022 1340     		ands	r3, r3, r2
+ 227              		.loc 1 103 32
+ 228 0024 002B     		cmp	r3, #0
+ 229 0026 14BF     		ite	ne
+ 230 0028 0123     		movne	r3, #1
+ 231 002a 0023     		moveq	r3, #0
+ 232 002c DBB2     		uxtb	r3, r3
+ 104:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 233              		.loc 1 104 1
+ 234 002e 1846     		mov	r0, r3
+ 235 0030 1C37     		adds	r7, r7, #28
+ 236              		.cfi_def_cfa_offset 4
+ 237 0032 BD46     		mov	sp, r7
+ 238              		.cfi_def_cfa_register 13
+ 239              		@ sp needed
+ 240 0034 80BC     		pop	{r7}
+ 241              		.cfi_restore 7
+ 242              		.cfi_def_cfa_offset 0
+ 243 0036 7047     		bx	lr
+ 244              		.cfi_endproc
+ 245              	.LFE2:
+ 247              		.section	.text.dma_enable_mem2mem_mode,"ax",%progbits
+ 248              		.align	1
+ 249              		.global	dma_enable_mem2mem_mode
+ 250              		.syntax unified
+ 251              		.thumb
+ 252              		.thumb_func
+ 253              		.fpu softvfp
+ 255              	dma_enable_mem2mem_mode:
+ 256              	.LFB3:
+ 105:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 106:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 107:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Memory to Memory Transfers
+ 108:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 109:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Memory to memory transfers do not require a trigger to activate each transfer.
+ 110:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Transfers begin immediately the channel has been enabled, and proceed without
+ 111:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** intervention.
+ 112:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 113:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 114:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 115:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 116:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 117:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_mem2mem_mode(uint32_t dma, uint8_t channel)
+ 118:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 257              		.loc 1 118 1
+ 258              		.cfi_startproc
+ 259              		@ args = 0, pretend = 0, frame = 8
+ 260              		@ frame_needed = 1, uses_anonymous_args = 0
+ 261              		@ link register save eliminated.
+ 262 0000 80B4     		push	{r7}
+ 263              		.cfi_def_cfa_offset 4
+ 264              		.cfi_offset 7, -4
+ 265 0002 83B0     		sub	sp, sp, #12
+ 266              		.cfi_def_cfa_offset 16
+ 267 0004 00AF     		add	r7, sp, #0
+ 268              		.cfi_def_cfa_register 7
+ 269 0006 7860     		str	r0, [r7, #4]
+ 270 0008 0B46     		mov	r3, r1
+ 271 000a FB70     		strb	r3, [r7, #3]
+ 119:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_MEM2MEM;
+ 272              		.loc 1 119 24
+ 273 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 274 000e 5A1E     		subs	r2, r3, #1
+ 275 0010 1346     		mov	r3, r2
+ 276 0012 9B00     		lsls	r3, r3, #2
+ 277 0014 1344     		add	r3, r3, r2
+ 278 0016 9B00     		lsls	r3, r3, #2
+ 279 0018 1A46     		mov	r2, r3
+ 280 001a 7B68     		ldr	r3, [r7, #4]
+ 281 001c 1344     		add	r3, r3, r2
+ 282 001e 0833     		adds	r3, r3, #8
+ 283 0020 1968     		ldr	r1, [r3]
+ 284 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 285 0024 5A1E     		subs	r2, r3, #1
+ 286 0026 1346     		mov	r3, r2
+ 287 0028 9B00     		lsls	r3, r3, #2
+ 288 002a 1344     		add	r3, r3, r2
+ 289 002c 9B00     		lsls	r3, r3, #2
+ 290 002e 1A46     		mov	r2, r3
+ 291 0030 7B68     		ldr	r3, [r7, #4]
+ 292 0032 1344     		add	r3, r3, r2
+ 293 0034 0833     		adds	r3, r3, #8
+ 294 0036 1A46     		mov	r2, r3
+ 295 0038 41F48043 		orr	r3, r1, #16384
+ 296 003c 1360     		str	r3, [r2]
+ 120:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_CIRC;
+ 297              		.loc 1 120 24
+ 298 003e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 299 0040 5A1E     		subs	r2, r3, #1
+ 300 0042 1346     		mov	r3, r2
+ 301 0044 9B00     		lsls	r3, r3, #2
+ 302 0046 1344     		add	r3, r3, r2
+ 303 0048 9B00     		lsls	r3, r3, #2
+ 304 004a 1A46     		mov	r2, r3
+ 305 004c 7B68     		ldr	r3, [r7, #4]
+ 306 004e 1344     		add	r3, r3, r2
+ 307 0050 0833     		adds	r3, r3, #8
+ 308 0052 1968     		ldr	r1, [r3]
+ 309 0054 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 310 0056 5A1E     		subs	r2, r3, #1
+ 311 0058 1346     		mov	r3, r2
+ 312 005a 9B00     		lsls	r3, r3, #2
+ 313 005c 1344     		add	r3, r3, r2
+ 314 005e 9B00     		lsls	r3, r3, #2
+ 315 0060 1A46     		mov	r2, r3
+ 316 0062 7B68     		ldr	r3, [r7, #4]
+ 317 0064 1344     		add	r3, r3, r2
+ 318 0066 0833     		adds	r3, r3, #8
+ 319 0068 1A46     		mov	r2, r3
+ 320 006a 21F02003 		bic	r3, r1, #32
+ 321 006e 1360     		str	r3, [r2]
+ 121:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 322              		.loc 1 121 1
+ 323 0070 00BF     		nop
+ 324 0072 0C37     		adds	r7, r7, #12
+ 325              		.cfi_def_cfa_offset 4
+ 326 0074 BD46     		mov	sp, r7
+ 327              		.cfi_def_cfa_register 13
+ 328              		@ sp needed
+ 329 0076 80BC     		pop	{r7}
+ 330              		.cfi_restore 7
+ 331              		.cfi_def_cfa_offset 0
+ 332 0078 7047     		bx	lr
+ 333              		.cfi_endproc
+ 334              	.LFE3:
+ 336              		.section	.text.dma_set_priority,"ax",%progbits
+ 337              		.align	1
+ 338              		.global	dma_set_priority
+ 339              		.syntax unified
+ 340              		.thumb
+ 341              		.thumb_func
+ 342              		.fpu softvfp
+ 344              	dma_set_priority:
+ 345              	.LFB4:
+ 122:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 123:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 124:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set Priority
+ 125:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 126:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Channel Priority has four levels: low to very high. This has precedence over the
+ 127:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** hardware priority.
+ 128:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 129:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 130:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 131:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] prio unsigned int32. Priority level @ref dma_ch_pri.
+ 132:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 133:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 134:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_priority(uint32_t dma, uint8_t channel, uint32_t prio)
+ 135:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 346              		.loc 1 135 1
+ 347              		.cfi_startproc
+ 348              		@ args = 0, pretend = 0, frame = 16
+ 349              		@ frame_needed = 1, uses_anonymous_args = 0
+ 350              		@ link register save eliminated.
+ 351 0000 80B4     		push	{r7}
+ 352              		.cfi_def_cfa_offset 4
+ 353              		.cfi_offset 7, -4
+ 354 0002 85B0     		sub	sp, sp, #20
+ 355              		.cfi_def_cfa_offset 24
+ 356 0004 00AF     		add	r7, sp, #0
+ 357              		.cfi_def_cfa_register 7
+ 358 0006 F860     		str	r0, [r7, #12]
+ 359 0008 0B46     		mov	r3, r1
+ 360 000a 7A60     		str	r2, [r7, #4]
+ 361 000c FB72     		strb	r3, [r7, #11]
+ 136:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~(DMA_CCR_PL_MASK);
+ 362              		.loc 1 136 24
+ 363 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 364 0010 5A1E     		subs	r2, r3, #1
+ 365 0012 1346     		mov	r3, r2
+ 366 0014 9B00     		lsls	r3, r3, #2
+ 367 0016 1344     		add	r3, r3, r2
+ 368 0018 9B00     		lsls	r3, r3, #2
+ 369 001a 1A46     		mov	r2, r3
+ 370 001c FB68     		ldr	r3, [r7, #12]
+ 371 001e 1344     		add	r3, r3, r2
+ 372 0020 0833     		adds	r3, r3, #8
+ 373 0022 1968     		ldr	r1, [r3]
+ 374 0024 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 375 0026 5A1E     		subs	r2, r3, #1
+ 376 0028 1346     		mov	r3, r2
+ 377 002a 9B00     		lsls	r3, r3, #2
+ 378 002c 1344     		add	r3, r3, r2
+ 379 002e 9B00     		lsls	r3, r3, #2
+ 380 0030 1A46     		mov	r2, r3
+ 381 0032 FB68     		ldr	r3, [r7, #12]
+ 382 0034 1344     		add	r3, r3, r2
+ 383 0036 0833     		adds	r3, r3, #8
+ 384 0038 1A46     		mov	r2, r3
+ 385 003a 21F44053 		bic	r3, r1, #12288
+ 386 003e 1360     		str	r3, [r2]
+ 137:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= prio;
+ 387              		.loc 1 137 24
+ 388 0040 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 389 0042 5A1E     		subs	r2, r3, #1
+ 390 0044 1346     		mov	r3, r2
+ 391 0046 9B00     		lsls	r3, r3, #2
+ 392 0048 1344     		add	r3, r3, r2
+ 393 004a 9B00     		lsls	r3, r3, #2
+ 394 004c 1A46     		mov	r2, r3
+ 395 004e FB68     		ldr	r3, [r7, #12]
+ 396 0050 1344     		add	r3, r3, r2
+ 397 0052 0833     		adds	r3, r3, #8
+ 398 0054 1968     		ldr	r1, [r3]
+ 399 0056 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 400 0058 5A1E     		subs	r2, r3, #1
+ 401 005a 1346     		mov	r3, r2
+ 402 005c 9B00     		lsls	r3, r3, #2
+ 403 005e 1344     		add	r3, r3, r2
+ 404 0060 9B00     		lsls	r3, r3, #2
+ 405 0062 1A46     		mov	r2, r3
+ 406 0064 FB68     		ldr	r3, [r7, #12]
+ 407 0066 1344     		add	r3, r3, r2
+ 408 0068 0833     		adds	r3, r3, #8
+ 409 006a 1A46     		mov	r2, r3
+ 410 006c 7B68     		ldr	r3, [r7, #4]
+ 411 006e 0B43     		orrs	r3, r3, r1
+ 412 0070 1360     		str	r3, [r2]
+ 138:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 413              		.loc 1 138 1
+ 414 0072 00BF     		nop
+ 415 0074 1437     		adds	r7, r7, #20
+ 416              		.cfi_def_cfa_offset 4
+ 417 0076 BD46     		mov	sp, r7
+ 418              		.cfi_def_cfa_register 13
+ 419              		@ sp needed
+ 420 0078 80BC     		pop	{r7}
+ 421              		.cfi_restore 7
+ 422              		.cfi_def_cfa_offset 0
+ 423 007a 7047     		bx	lr
+ 424              		.cfi_endproc
+ 425              	.LFE4:
+ 427              		.section	.text.dma_set_memory_size,"ax",%progbits
+ 428              		.align	1
+ 429              		.global	dma_set_memory_size
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 433              		.fpu softvfp
+ 435              	dma_set_memory_size:
+ 436              	.LFB5:
+ 139:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 140:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 141:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set Memory Word Width
+ 142:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 143:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Set the memory word width 8 bits, 16 bits, or 32 bits. Refer to datasheet for
+ 144:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** alignment information if the source and destination widths do not match.
+ 145:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 146:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 147:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 148:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] mem_size unsigned int32. Memory word width @ref dma_ch_memwidth.
+ 149:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 150:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 151:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_memory_size(uint32_t dma, uint8_t channel, uint32_t mem_size)
+ 152:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 437              		.loc 1 152 1
+ 438              		.cfi_startproc
+ 439              		@ args = 0, pretend = 0, frame = 16
+ 440              		@ frame_needed = 1, uses_anonymous_args = 0
+ 441              		@ link register save eliminated.
+ 442 0000 80B4     		push	{r7}
+ 443              		.cfi_def_cfa_offset 4
+ 444              		.cfi_offset 7, -4
+ 445 0002 85B0     		sub	sp, sp, #20
+ 446              		.cfi_def_cfa_offset 24
+ 447 0004 00AF     		add	r7, sp, #0
+ 448              		.cfi_def_cfa_register 7
+ 449 0006 F860     		str	r0, [r7, #12]
+ 450 0008 0B46     		mov	r3, r1
+ 451 000a 7A60     		str	r2, [r7, #4]
+ 452 000c FB72     		strb	r3, [r7, #11]
+ 153:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 154:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~(DMA_CCR_MSIZE_MASK);
+ 453              		.loc 1 154 24
+ 454 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 455 0010 5A1E     		subs	r2, r3, #1
+ 456 0012 1346     		mov	r3, r2
+ 457 0014 9B00     		lsls	r3, r3, #2
+ 458 0016 1344     		add	r3, r3, r2
+ 459 0018 9B00     		lsls	r3, r3, #2
+ 460 001a 1A46     		mov	r2, r3
+ 461 001c FB68     		ldr	r3, [r7, #12]
+ 462 001e 1344     		add	r3, r3, r2
+ 463 0020 0833     		adds	r3, r3, #8
+ 464 0022 1968     		ldr	r1, [r3]
+ 465 0024 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 466 0026 5A1E     		subs	r2, r3, #1
+ 467 0028 1346     		mov	r3, r2
+ 468 002a 9B00     		lsls	r3, r3, #2
+ 469 002c 1344     		add	r3, r3, r2
+ 470 002e 9B00     		lsls	r3, r3, #2
+ 471 0030 1A46     		mov	r2, r3
+ 472 0032 FB68     		ldr	r3, [r7, #12]
+ 473 0034 1344     		add	r3, r3, r2
+ 474 0036 0833     		adds	r3, r3, #8
+ 475 0038 1A46     		mov	r2, r3
+ 476 003a 21F44063 		bic	r3, r1, #3072
+ 477 003e 1360     		str	r3, [r2]
+ 155:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= mem_size;
+ 478              		.loc 1 155 24
+ 479 0040 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 480 0042 5A1E     		subs	r2, r3, #1
+ 481 0044 1346     		mov	r3, r2
+ 482 0046 9B00     		lsls	r3, r3, #2
+ 483 0048 1344     		add	r3, r3, r2
+ 484 004a 9B00     		lsls	r3, r3, #2
+ 485 004c 1A46     		mov	r2, r3
+ 486 004e FB68     		ldr	r3, [r7, #12]
+ 487 0050 1344     		add	r3, r3, r2
+ 488 0052 0833     		adds	r3, r3, #8
+ 489 0054 1968     		ldr	r1, [r3]
+ 490 0056 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 491 0058 5A1E     		subs	r2, r3, #1
+ 492 005a 1346     		mov	r3, r2
+ 493 005c 9B00     		lsls	r3, r3, #2
+ 494 005e 1344     		add	r3, r3, r2
+ 495 0060 9B00     		lsls	r3, r3, #2
+ 496 0062 1A46     		mov	r2, r3
+ 497 0064 FB68     		ldr	r3, [r7, #12]
+ 498 0066 1344     		add	r3, r3, r2
+ 499 0068 0833     		adds	r3, r3, #8
+ 500 006a 1A46     		mov	r2, r3
+ 501 006c 7B68     		ldr	r3, [r7, #4]
+ 502 006e 0B43     		orrs	r3, r3, r1
+ 503 0070 1360     		str	r3, [r2]
+ 156:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 504              		.loc 1 156 1
+ 505 0072 00BF     		nop
+ 506 0074 1437     		adds	r7, r7, #20
+ 507              		.cfi_def_cfa_offset 4
+ 508 0076 BD46     		mov	sp, r7
+ 509              		.cfi_def_cfa_register 13
+ 510              		@ sp needed
+ 511 0078 80BC     		pop	{r7}
+ 512              		.cfi_restore 7
+ 513              		.cfi_def_cfa_offset 0
+ 514 007a 7047     		bx	lr
+ 515              		.cfi_endproc
+ 516              	.LFE5:
+ 518              		.section	.text.dma_set_peripheral_size,"ax",%progbits
+ 519              		.align	1
+ 520              		.global	dma_set_peripheral_size
+ 521              		.syntax unified
+ 522              		.thumb
+ 523              		.thumb_func
+ 524              		.fpu softvfp
+ 526              	dma_set_peripheral_size:
+ 527              	.LFB6:
+ 157:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 158:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 159:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set Peripheral Word Width
+ 160:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 161:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Set the peripheral word width 8 bits, 16 bits, or 32 bits. Refer to datasheet
+ 162:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** for alignment information if the source and destination widths do not match, or
+ 163:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** if the peripheral does not support byte or half-word writes.
+ 164:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 165:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 166:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 167:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] peripheral_size unsigned int32. Peripheral word width @ref
+ 168:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** dma_ch_perwidth.
+ 169:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 170:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 171:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_peripheral_size(uint32_t dma, uint8_t channel,
+ 172:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 			     uint32_t peripheral_size)
+ 173:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 528              		.loc 1 173 1
+ 529              		.cfi_startproc
+ 530              		@ args = 0, pretend = 0, frame = 16
+ 531              		@ frame_needed = 1, uses_anonymous_args = 0
+ 532              		@ link register save eliminated.
+ 533 0000 80B4     		push	{r7}
+ 534              		.cfi_def_cfa_offset 4
+ 535              		.cfi_offset 7, -4
+ 536 0002 85B0     		sub	sp, sp, #20
+ 537              		.cfi_def_cfa_offset 24
+ 538 0004 00AF     		add	r7, sp, #0
+ 539              		.cfi_def_cfa_register 7
+ 540 0006 F860     		str	r0, [r7, #12]
+ 541 0008 0B46     		mov	r3, r1
+ 542 000a 7A60     		str	r2, [r7, #4]
+ 543 000c FB72     		strb	r3, [r7, #11]
+ 174:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~(DMA_CCR_PSIZE_MASK);
+ 544              		.loc 1 174 24
+ 545 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 546 0010 5A1E     		subs	r2, r3, #1
+ 547 0012 1346     		mov	r3, r2
+ 548 0014 9B00     		lsls	r3, r3, #2
+ 549 0016 1344     		add	r3, r3, r2
+ 550 0018 9B00     		lsls	r3, r3, #2
+ 551 001a 1A46     		mov	r2, r3
+ 552 001c FB68     		ldr	r3, [r7, #12]
+ 553 001e 1344     		add	r3, r3, r2
+ 554 0020 0833     		adds	r3, r3, #8
+ 555 0022 1968     		ldr	r1, [r3]
+ 556 0024 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 557 0026 5A1E     		subs	r2, r3, #1
+ 558 0028 1346     		mov	r3, r2
+ 559 002a 9B00     		lsls	r3, r3, #2
+ 560 002c 1344     		add	r3, r3, r2
+ 561 002e 9B00     		lsls	r3, r3, #2
+ 562 0030 1A46     		mov	r2, r3
+ 563 0032 FB68     		ldr	r3, [r7, #12]
+ 564 0034 1344     		add	r3, r3, r2
+ 565 0036 0833     		adds	r3, r3, #8
+ 566 0038 1A46     		mov	r2, r3
+ 567 003a 21F44073 		bic	r3, r1, #768
+ 568 003e 1360     		str	r3, [r2]
+ 175:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= peripheral_size;
+ 569              		.loc 1 175 24
+ 570 0040 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 571 0042 5A1E     		subs	r2, r3, #1
+ 572 0044 1346     		mov	r3, r2
+ 573 0046 9B00     		lsls	r3, r3, #2
+ 574 0048 1344     		add	r3, r3, r2
+ 575 004a 9B00     		lsls	r3, r3, #2
+ 576 004c 1A46     		mov	r2, r3
+ 577 004e FB68     		ldr	r3, [r7, #12]
+ 578 0050 1344     		add	r3, r3, r2
+ 579 0052 0833     		adds	r3, r3, #8
+ 580 0054 1968     		ldr	r1, [r3]
+ 581 0056 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 582 0058 5A1E     		subs	r2, r3, #1
+ 583 005a 1346     		mov	r3, r2
+ 584 005c 9B00     		lsls	r3, r3, #2
+ 585 005e 1344     		add	r3, r3, r2
+ 586 0060 9B00     		lsls	r3, r3, #2
+ 587 0062 1A46     		mov	r2, r3
+ 588 0064 FB68     		ldr	r3, [r7, #12]
+ 589 0066 1344     		add	r3, r3, r2
+ 590 0068 0833     		adds	r3, r3, #8
+ 591 006a 1A46     		mov	r2, r3
+ 592 006c 7B68     		ldr	r3, [r7, #4]
+ 593 006e 0B43     		orrs	r3, r3, r1
+ 594 0070 1360     		str	r3, [r2]
+ 176:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 595              		.loc 1 176 1
+ 596 0072 00BF     		nop
+ 597 0074 1437     		adds	r7, r7, #20
+ 598              		.cfi_def_cfa_offset 4
+ 599 0076 BD46     		mov	sp, r7
+ 600              		.cfi_def_cfa_register 13
+ 601              		@ sp needed
+ 602 0078 80BC     		pop	{r7}
+ 603              		.cfi_restore 7
+ 604              		.cfi_def_cfa_offset 0
+ 605 007a 7047     		bx	lr
+ 606              		.cfi_endproc
+ 607              	.LFE6:
+ 609              		.section	.text.dma_enable_memory_increment_mode,"ax",%progbits
+ 610              		.align	1
+ 611              		.global	dma_enable_memory_increment_mode
+ 612              		.syntax unified
+ 613              		.thumb
+ 614              		.thumb_func
+ 615              		.fpu softvfp
+ 617              	dma_enable_memory_increment_mode:
+ 618              	.LFB7:
+ 177:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 178:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 179:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Memory Increment after Transfer
+ 180:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 181:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Following each transfer the current memory address is incremented by
+ 182:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 1, 2 or 4 depending on the data size set in @ref dma_set_memory_size. The
+ 183:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** value held by the base memory address register is unchanged.
+ 184:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 185:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 186:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 187:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 188:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 189:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_memory_increment_mode(uint32_t dma, uint8_t channel)
+ 190:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 619              		.loc 1 190 1
+ 620              		.cfi_startproc
+ 621              		@ args = 0, pretend = 0, frame = 8
+ 622              		@ frame_needed = 1, uses_anonymous_args = 0
+ 623              		@ link register save eliminated.
+ 624 0000 80B4     		push	{r7}
+ 625              		.cfi_def_cfa_offset 4
+ 626              		.cfi_offset 7, -4
+ 627 0002 83B0     		sub	sp, sp, #12
+ 628              		.cfi_def_cfa_offset 16
+ 629 0004 00AF     		add	r7, sp, #0
+ 630              		.cfi_def_cfa_register 7
+ 631 0006 7860     		str	r0, [r7, #4]
+ 632 0008 0B46     		mov	r3, r1
+ 633 000a FB70     		strb	r3, [r7, #3]
+ 191:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_MINC;
+ 634              		.loc 1 191 24
+ 635 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 636 000e 5A1E     		subs	r2, r3, #1
+ 637 0010 1346     		mov	r3, r2
+ 638 0012 9B00     		lsls	r3, r3, #2
+ 639 0014 1344     		add	r3, r3, r2
+ 640 0016 9B00     		lsls	r3, r3, #2
+ 641 0018 1A46     		mov	r2, r3
+ 642 001a 7B68     		ldr	r3, [r7, #4]
+ 643 001c 1344     		add	r3, r3, r2
+ 644 001e 0833     		adds	r3, r3, #8
+ 645 0020 1968     		ldr	r1, [r3]
+ 646 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 647 0024 5A1E     		subs	r2, r3, #1
+ 648 0026 1346     		mov	r3, r2
+ 649 0028 9B00     		lsls	r3, r3, #2
+ 650 002a 1344     		add	r3, r3, r2
+ 651 002c 9B00     		lsls	r3, r3, #2
+ 652 002e 1A46     		mov	r2, r3
+ 653 0030 7B68     		ldr	r3, [r7, #4]
+ 654 0032 1344     		add	r3, r3, r2
+ 655 0034 0833     		adds	r3, r3, #8
+ 656 0036 1A46     		mov	r2, r3
+ 657 0038 41F08003 		orr	r3, r1, #128
+ 658 003c 1360     		str	r3, [r2]
+ 192:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 659              		.loc 1 192 1
+ 660 003e 00BF     		nop
+ 661 0040 0C37     		adds	r7, r7, #12
+ 662              		.cfi_def_cfa_offset 4
+ 663 0042 BD46     		mov	sp, r7
+ 664              		.cfi_def_cfa_register 13
+ 665              		@ sp needed
+ 666 0044 80BC     		pop	{r7}
+ 667              		.cfi_restore 7
+ 668              		.cfi_def_cfa_offset 0
+ 669 0046 7047     		bx	lr
+ 670              		.cfi_endproc
+ 671              	.LFE7:
+ 673              		.section	.text.dma_disable_memory_increment_mode,"ax",%progbits
+ 674              		.align	1
+ 675              		.global	dma_disable_memory_increment_mode
+ 676              		.syntax unified
+ 677              		.thumb
+ 678              		.thumb_func
+ 679              		.fpu softvfp
+ 681              	dma_disable_memory_increment_mode:
+ 682              	.LFB8:
+ 193:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 194:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 195:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable Memory Increment after Transfer
+ 196:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 197:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 198:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 199:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 200:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 201:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_memory_increment_mode(uint32_t dma, uint8_t channel)
+ 202:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 683              		.loc 1 202 1
+ 684              		.cfi_startproc
+ 685              		@ args = 0, pretend = 0, frame = 8
+ 686              		@ frame_needed = 1, uses_anonymous_args = 0
+ 687              		@ link register save eliminated.
+ 688 0000 80B4     		push	{r7}
+ 689              		.cfi_def_cfa_offset 4
+ 690              		.cfi_offset 7, -4
+ 691 0002 83B0     		sub	sp, sp, #12
+ 692              		.cfi_def_cfa_offset 16
+ 693 0004 00AF     		add	r7, sp, #0
+ 694              		.cfi_def_cfa_register 7
+ 695 0006 7860     		str	r0, [r7, #4]
+ 696 0008 0B46     		mov	r3, r1
+ 697 000a FB70     		strb	r3, [r7, #3]
+ 203:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_MINC;
+ 698              		.loc 1 203 24
+ 699 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 700 000e 5A1E     		subs	r2, r3, #1
+ 701 0010 1346     		mov	r3, r2
+ 702 0012 9B00     		lsls	r3, r3, #2
+ 703 0014 1344     		add	r3, r3, r2
+ 704 0016 9B00     		lsls	r3, r3, #2
+ 705 0018 1A46     		mov	r2, r3
+ 706 001a 7B68     		ldr	r3, [r7, #4]
+ 707 001c 1344     		add	r3, r3, r2
+ 708 001e 0833     		adds	r3, r3, #8
+ 709 0020 1968     		ldr	r1, [r3]
+ 710 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 711 0024 5A1E     		subs	r2, r3, #1
+ 712 0026 1346     		mov	r3, r2
+ 713 0028 9B00     		lsls	r3, r3, #2
+ 714 002a 1344     		add	r3, r3, r2
+ 715 002c 9B00     		lsls	r3, r3, #2
+ 716 002e 1A46     		mov	r2, r3
+ 717 0030 7B68     		ldr	r3, [r7, #4]
+ 718 0032 1344     		add	r3, r3, r2
+ 719 0034 0833     		adds	r3, r3, #8
+ 720 0036 1A46     		mov	r2, r3
+ 721 0038 21F08003 		bic	r3, r1, #128
+ 722 003c 1360     		str	r3, [r2]
+ 204:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 723              		.loc 1 204 1
+ 724 003e 00BF     		nop
+ 725 0040 0C37     		adds	r7, r7, #12
+ 726              		.cfi_def_cfa_offset 4
+ 727 0042 BD46     		mov	sp, r7
+ 728              		.cfi_def_cfa_register 13
+ 729              		@ sp needed
+ 730 0044 80BC     		pop	{r7}
+ 731              		.cfi_restore 7
+ 732              		.cfi_def_cfa_offset 0
+ 733 0046 7047     		bx	lr
+ 734              		.cfi_endproc
+ 735              	.LFE8:
+ 737              		.section	.text.dma_enable_peripheral_increment_mode,"ax",%progbits
+ 738              		.align	1
+ 739              		.global	dma_enable_peripheral_increment_mode
+ 740              		.syntax unified
+ 741              		.thumb
+ 742              		.thumb_func
+ 743              		.fpu softvfp
+ 745              	dma_enable_peripheral_increment_mode:
+ 746              	.LFB9:
+ 205:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 206:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 207:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Peripheral Increment after Transfer
+ 208:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 209:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Following each transfer the current peripheral address is incremented by
+ 210:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 1, 2 or 4 depending on the data size set in @ref dma_set_peripheral_size. The
+ 211:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** value held by the base peripheral address register is unchanged.
+ 212:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 213:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 214:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 215:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 216:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 217:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_peripheral_increment_mode(uint32_t dma, uint8_t channel)
+ 218:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 747              		.loc 1 218 1
+ 748              		.cfi_startproc
+ 749              		@ args = 0, pretend = 0, frame = 8
+ 750              		@ frame_needed = 1, uses_anonymous_args = 0
+ 751              		@ link register save eliminated.
+ 752 0000 80B4     		push	{r7}
+ 753              		.cfi_def_cfa_offset 4
+ 754              		.cfi_offset 7, -4
+ 755 0002 83B0     		sub	sp, sp, #12
+ 756              		.cfi_def_cfa_offset 16
+ 757 0004 00AF     		add	r7, sp, #0
+ 758              		.cfi_def_cfa_register 7
+ 759 0006 7860     		str	r0, [r7, #4]
+ 760 0008 0B46     		mov	r3, r1
+ 761 000a FB70     		strb	r3, [r7, #3]
+ 219:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_PINC;
+ 762              		.loc 1 219 24
+ 763 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 764 000e 5A1E     		subs	r2, r3, #1
+ 765 0010 1346     		mov	r3, r2
+ 766 0012 9B00     		lsls	r3, r3, #2
+ 767 0014 1344     		add	r3, r3, r2
+ 768 0016 9B00     		lsls	r3, r3, #2
+ 769 0018 1A46     		mov	r2, r3
+ 770 001a 7B68     		ldr	r3, [r7, #4]
+ 771 001c 1344     		add	r3, r3, r2
+ 772 001e 0833     		adds	r3, r3, #8
+ 773 0020 1968     		ldr	r1, [r3]
+ 774 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 775 0024 5A1E     		subs	r2, r3, #1
+ 776 0026 1346     		mov	r3, r2
+ 777 0028 9B00     		lsls	r3, r3, #2
+ 778 002a 1344     		add	r3, r3, r2
+ 779 002c 9B00     		lsls	r3, r3, #2
+ 780 002e 1A46     		mov	r2, r3
+ 781 0030 7B68     		ldr	r3, [r7, #4]
+ 782 0032 1344     		add	r3, r3, r2
+ 783 0034 0833     		adds	r3, r3, #8
+ 784 0036 1A46     		mov	r2, r3
+ 785 0038 41F04003 		orr	r3, r1, #64
+ 786 003c 1360     		str	r3, [r2]
+ 220:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 787              		.loc 1 220 1
+ 788 003e 00BF     		nop
+ 789 0040 0C37     		adds	r7, r7, #12
+ 790              		.cfi_def_cfa_offset 4
+ 791 0042 BD46     		mov	sp, r7
+ 792              		.cfi_def_cfa_register 13
+ 793              		@ sp needed
+ 794 0044 80BC     		pop	{r7}
+ 795              		.cfi_restore 7
+ 796              		.cfi_def_cfa_offset 0
+ 797 0046 7047     		bx	lr
+ 798              		.cfi_endproc
+ 799              	.LFE9:
+ 801              		.section	.text.dma_disable_peripheral_increment_mode,"ax",%progbits
+ 802              		.align	1
+ 803              		.global	dma_disable_peripheral_increment_mode
+ 804              		.syntax unified
+ 805              		.thumb
+ 806              		.thumb_func
+ 807              		.fpu softvfp
+ 809              	dma_disable_peripheral_increment_mode:
+ 810              	.LFB10:
+ 221:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 222:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 223:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable Peripheral Increment after Transfer
+ 224:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 225:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 226:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 227:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 228:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 229:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_peripheral_increment_mode(uint32_t dma, uint8_t channel)
+ 230:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 811              		.loc 1 230 1
+ 812              		.cfi_startproc
+ 813              		@ args = 0, pretend = 0, frame = 8
+ 814              		@ frame_needed = 1, uses_anonymous_args = 0
+ 815              		@ link register save eliminated.
+ 816 0000 80B4     		push	{r7}
+ 817              		.cfi_def_cfa_offset 4
+ 818              		.cfi_offset 7, -4
+ 819 0002 83B0     		sub	sp, sp, #12
+ 820              		.cfi_def_cfa_offset 16
+ 821 0004 00AF     		add	r7, sp, #0
+ 822              		.cfi_def_cfa_register 7
+ 823 0006 7860     		str	r0, [r7, #4]
+ 824 0008 0B46     		mov	r3, r1
+ 825 000a FB70     		strb	r3, [r7, #3]
+ 231:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_PINC;
+ 826              		.loc 1 231 24
+ 827 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 828 000e 5A1E     		subs	r2, r3, #1
+ 829 0010 1346     		mov	r3, r2
+ 830 0012 9B00     		lsls	r3, r3, #2
+ 831 0014 1344     		add	r3, r3, r2
+ 832 0016 9B00     		lsls	r3, r3, #2
+ 833 0018 1A46     		mov	r2, r3
+ 834 001a 7B68     		ldr	r3, [r7, #4]
+ 835 001c 1344     		add	r3, r3, r2
+ 836 001e 0833     		adds	r3, r3, #8
+ 837 0020 1968     		ldr	r1, [r3]
+ 838 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 839 0024 5A1E     		subs	r2, r3, #1
+ 840 0026 1346     		mov	r3, r2
+ 841 0028 9B00     		lsls	r3, r3, #2
+ 842 002a 1344     		add	r3, r3, r2
+ 843 002c 9B00     		lsls	r3, r3, #2
+ 844 002e 1A46     		mov	r2, r3
+ 845 0030 7B68     		ldr	r3, [r7, #4]
+ 846 0032 1344     		add	r3, r3, r2
+ 847 0034 0833     		adds	r3, r3, #8
+ 848 0036 1A46     		mov	r2, r3
+ 849 0038 21F04003 		bic	r3, r1, #64
+ 850 003c 1360     		str	r3, [r2]
+ 232:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 851              		.loc 1 232 1
+ 852 003e 00BF     		nop
+ 853 0040 0C37     		adds	r7, r7, #12
+ 854              		.cfi_def_cfa_offset 4
+ 855 0042 BD46     		mov	sp, r7
+ 856              		.cfi_def_cfa_register 13
+ 857              		@ sp needed
+ 858 0044 80BC     		pop	{r7}
+ 859              		.cfi_restore 7
+ 860              		.cfi_def_cfa_offset 0
+ 861 0046 7047     		bx	lr
+ 862              		.cfi_endproc
+ 863              	.LFE10:
+ 865              		.section	.text.dma_enable_circular_mode,"ax",%progbits
+ 866              		.align	1
+ 867              		.global	dma_enable_circular_mode
+ 868              		.syntax unified
+ 869              		.thumb
+ 870              		.thumb_func
+ 871              		.fpu softvfp
+ 873              	dma_enable_circular_mode:
+ 874              	.LFB11:
+ 233:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 234:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 235:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Memory Circular Mode
+ 236:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 237:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** After the number of bytes/words to be transferred has been completed, the
+ 238:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** original transfer block size, memory and peripheral base addresses are
+ 239:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** reloaded and the process repeats.
+ 240:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 241:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @note This cannot be used with memory to memory mode, which is explicitly
+ 242:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** disabled here.
+ 243:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 244:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 245:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 246:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 247:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 248:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_circular_mode(uint32_t dma, uint8_t channel)
+ 249:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 875              		.loc 1 249 1
+ 876              		.cfi_startproc
+ 877              		@ args = 0, pretend = 0, frame = 8
+ 878              		@ frame_needed = 1, uses_anonymous_args = 0
+ 879              		@ link register save eliminated.
+ 880 0000 80B4     		push	{r7}
+ 881              		.cfi_def_cfa_offset 4
+ 882              		.cfi_offset 7, -4
+ 883 0002 83B0     		sub	sp, sp, #12
+ 884              		.cfi_def_cfa_offset 16
+ 885 0004 00AF     		add	r7, sp, #0
+ 886              		.cfi_def_cfa_register 7
+ 887 0006 7860     		str	r0, [r7, #4]
+ 888 0008 0B46     		mov	r3, r1
+ 889 000a FB70     		strb	r3, [r7, #3]
+ 250:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_CIRC;
+ 890              		.loc 1 250 24
+ 891 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 892 000e 5A1E     		subs	r2, r3, #1
+ 893 0010 1346     		mov	r3, r2
+ 894 0012 9B00     		lsls	r3, r3, #2
+ 895 0014 1344     		add	r3, r3, r2
+ 896 0016 9B00     		lsls	r3, r3, #2
+ 897 0018 1A46     		mov	r2, r3
+ 898 001a 7B68     		ldr	r3, [r7, #4]
+ 899 001c 1344     		add	r3, r3, r2
+ 900 001e 0833     		adds	r3, r3, #8
+ 901 0020 1968     		ldr	r1, [r3]
+ 902 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 903 0024 5A1E     		subs	r2, r3, #1
+ 904 0026 1346     		mov	r3, r2
+ 905 0028 9B00     		lsls	r3, r3, #2
+ 906 002a 1344     		add	r3, r3, r2
+ 907 002c 9B00     		lsls	r3, r3, #2
+ 908 002e 1A46     		mov	r2, r3
+ 909 0030 7B68     		ldr	r3, [r7, #4]
+ 910 0032 1344     		add	r3, r3, r2
+ 911 0034 0833     		adds	r3, r3, #8
+ 912 0036 1A46     		mov	r2, r3
+ 913 0038 41F02003 		orr	r3, r1, #32
+ 914 003c 1360     		str	r3, [r2]
+ 251:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_MEM2MEM;
+ 915              		.loc 1 251 24
+ 916 003e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 917 0040 5A1E     		subs	r2, r3, #1
+ 918 0042 1346     		mov	r3, r2
+ 919 0044 9B00     		lsls	r3, r3, #2
+ 920 0046 1344     		add	r3, r3, r2
+ 921 0048 9B00     		lsls	r3, r3, #2
+ 922 004a 1A46     		mov	r2, r3
+ 923 004c 7B68     		ldr	r3, [r7, #4]
+ 924 004e 1344     		add	r3, r3, r2
+ 925 0050 0833     		adds	r3, r3, #8
+ 926 0052 1968     		ldr	r1, [r3]
+ 927 0054 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 928 0056 5A1E     		subs	r2, r3, #1
+ 929 0058 1346     		mov	r3, r2
+ 930 005a 9B00     		lsls	r3, r3, #2
+ 931 005c 1344     		add	r3, r3, r2
+ 932 005e 9B00     		lsls	r3, r3, #2
+ 933 0060 1A46     		mov	r2, r3
+ 934 0062 7B68     		ldr	r3, [r7, #4]
+ 935 0064 1344     		add	r3, r3, r2
+ 936 0066 0833     		adds	r3, r3, #8
+ 937 0068 1A46     		mov	r2, r3
+ 938 006a 21F48043 		bic	r3, r1, #16384
+ 939 006e 1360     		str	r3, [r2]
+ 252:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 940              		.loc 1 252 1
+ 941 0070 00BF     		nop
+ 942 0072 0C37     		adds	r7, r7, #12
+ 943              		.cfi_def_cfa_offset 4
+ 944 0074 BD46     		mov	sp, r7
+ 945              		.cfi_def_cfa_register 13
+ 946              		@ sp needed
+ 947 0076 80BC     		pop	{r7}
+ 948              		.cfi_restore 7
+ 949              		.cfi_def_cfa_offset 0
+ 950 0078 7047     		bx	lr
+ 951              		.cfi_endproc
+ 952              	.LFE11:
+ 954              		.section	.text.dma_set_read_from_peripheral,"ax",%progbits
+ 955              		.align	1
+ 956              		.global	dma_set_read_from_peripheral
+ 957              		.syntax unified
+ 958              		.thumb
+ 959              		.thumb_func
+ 960              		.fpu softvfp
+ 962              	dma_set_read_from_peripheral:
+ 963              	.LFB12:
+ 253:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 254:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 255:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Transfers from a Peripheral
+ 256:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 257:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** The data direction is set to read from a peripheral.
+ 258:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 259:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 260:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 261:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 262:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 263:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_read_from_peripheral(uint32_t dma, uint8_t channel)
+ 264:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 964              		.loc 1 264 1
+ 965              		.cfi_startproc
+ 966              		@ args = 0, pretend = 0, frame = 8
+ 967              		@ frame_needed = 1, uses_anonymous_args = 0
+ 968              		@ link register save eliminated.
+ 969 0000 80B4     		push	{r7}
+ 970              		.cfi_def_cfa_offset 4
+ 971              		.cfi_offset 7, -4
+ 972 0002 83B0     		sub	sp, sp, #12
+ 973              		.cfi_def_cfa_offset 16
+ 974 0004 00AF     		add	r7, sp, #0
+ 975              		.cfi_def_cfa_register 7
+ 976 0006 7860     		str	r0, [r7, #4]
+ 977 0008 0B46     		mov	r3, r1
+ 978 000a FB70     		strb	r3, [r7, #3]
+ 265:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_DIR;
+ 979              		.loc 1 265 24
+ 980 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 981 000e 5A1E     		subs	r2, r3, #1
+ 982 0010 1346     		mov	r3, r2
+ 983 0012 9B00     		lsls	r3, r3, #2
+ 984 0014 1344     		add	r3, r3, r2
+ 985 0016 9B00     		lsls	r3, r3, #2
+ 986 0018 1A46     		mov	r2, r3
+ 987 001a 7B68     		ldr	r3, [r7, #4]
+ 988 001c 1344     		add	r3, r3, r2
+ 989 001e 0833     		adds	r3, r3, #8
+ 990 0020 1968     		ldr	r1, [r3]
+ 991 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 992 0024 5A1E     		subs	r2, r3, #1
+ 993 0026 1346     		mov	r3, r2
+ 994 0028 9B00     		lsls	r3, r3, #2
+ 995 002a 1344     		add	r3, r3, r2
+ 996 002c 9B00     		lsls	r3, r3, #2
+ 997 002e 1A46     		mov	r2, r3
+ 998 0030 7B68     		ldr	r3, [r7, #4]
+ 999 0032 1344     		add	r3, r3, r2
+ 1000 0034 0833     		adds	r3, r3, #8
+ 1001 0036 1A46     		mov	r2, r3
+ 1002 0038 21F01003 		bic	r3, r1, #16
+ 1003 003c 1360     		str	r3, [r2]
+ 266:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1004              		.loc 1 266 1
+ 1005 003e 00BF     		nop
+ 1006 0040 0C37     		adds	r7, r7, #12
+ 1007              		.cfi_def_cfa_offset 4
+ 1008 0042 BD46     		mov	sp, r7
+ 1009              		.cfi_def_cfa_register 13
+ 1010              		@ sp needed
+ 1011 0044 80BC     		pop	{r7}
+ 1012              		.cfi_restore 7
+ 1013              		.cfi_def_cfa_offset 0
+ 1014 0046 7047     		bx	lr
+ 1015              		.cfi_endproc
+ 1016              	.LFE12:
+ 1018              		.section	.text.dma_set_read_from_memory,"ax",%progbits
+ 1019              		.align	1
+ 1020              		.global	dma_set_read_from_memory
+ 1021              		.syntax unified
+ 1022              		.thumb
+ 1023              		.thumb_func
+ 1024              		.fpu softvfp
+ 1026              	dma_set_read_from_memory:
+ 1027              	.LFB13:
+ 267:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 268:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 269:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Transfers from Memory
+ 270:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 271:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** The data direction is set to read from memory.
+ 272:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 273:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 274:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 275:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 276:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 277:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_read_from_memory(uint32_t dma, uint8_t channel)
+ 278:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1028              		.loc 1 278 1
+ 1029              		.cfi_startproc
+ 1030              		@ args = 0, pretend = 0, frame = 8
+ 1031              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1032              		@ link register save eliminated.
+ 1033 0000 80B4     		push	{r7}
+ 1034              		.cfi_def_cfa_offset 4
+ 1035              		.cfi_offset 7, -4
+ 1036 0002 83B0     		sub	sp, sp, #12
+ 1037              		.cfi_def_cfa_offset 16
+ 1038 0004 00AF     		add	r7, sp, #0
+ 1039              		.cfi_def_cfa_register 7
+ 1040 0006 7860     		str	r0, [r7, #4]
+ 1041 0008 0B46     		mov	r3, r1
+ 1042 000a FB70     		strb	r3, [r7, #3]
+ 279:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_DIR;
+ 1043              		.loc 1 279 24
+ 1044 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1045 000e 5A1E     		subs	r2, r3, #1
+ 1046 0010 1346     		mov	r3, r2
+ 1047 0012 9B00     		lsls	r3, r3, #2
+ 1048 0014 1344     		add	r3, r3, r2
+ 1049 0016 9B00     		lsls	r3, r3, #2
+ 1050 0018 1A46     		mov	r2, r3
+ 1051 001a 7B68     		ldr	r3, [r7, #4]
+ 1052 001c 1344     		add	r3, r3, r2
+ 1053 001e 0833     		adds	r3, r3, #8
+ 1054 0020 1968     		ldr	r1, [r3]
+ 1055 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1056 0024 5A1E     		subs	r2, r3, #1
+ 1057 0026 1346     		mov	r3, r2
+ 1058 0028 9B00     		lsls	r3, r3, #2
+ 1059 002a 1344     		add	r3, r3, r2
+ 1060 002c 9B00     		lsls	r3, r3, #2
+ 1061 002e 1A46     		mov	r2, r3
+ 1062 0030 7B68     		ldr	r3, [r7, #4]
+ 1063 0032 1344     		add	r3, r3, r2
+ 1064 0034 0833     		adds	r3, r3, #8
+ 1065 0036 1A46     		mov	r2, r3
+ 1066 0038 41F01003 		orr	r3, r1, #16
+ 1067 003c 1360     		str	r3, [r2]
+ 280:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1068              		.loc 1 280 1
+ 1069 003e 00BF     		nop
+ 1070 0040 0C37     		adds	r7, r7, #12
+ 1071              		.cfi_def_cfa_offset 4
+ 1072 0042 BD46     		mov	sp, r7
+ 1073              		.cfi_def_cfa_register 13
+ 1074              		@ sp needed
+ 1075 0044 80BC     		pop	{r7}
+ 1076              		.cfi_restore 7
+ 1077              		.cfi_def_cfa_offset 0
+ 1078 0046 7047     		bx	lr
+ 1079              		.cfi_endproc
+ 1080              	.LFE13:
+ 1082              		.section	.text.dma_enable_transfer_error_interrupt,"ax",%progbits
+ 1083              		.align	1
+ 1084              		.global	dma_enable_transfer_error_interrupt
+ 1085              		.syntax unified
+ 1086              		.thumb
+ 1087              		.thumb_func
+ 1088              		.fpu softvfp
+ 1090              	dma_enable_transfer_error_interrupt:
+ 1091              	.LFB14:
+ 281:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 282:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 283:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Interrupt on Transfer Error
+ 284:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 285:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 286:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 287:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 288:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 289:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_transfer_error_interrupt(uint32_t dma, uint8_t channel)
+ 290:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1092              		.loc 1 290 1
+ 1093              		.cfi_startproc
+ 1094              		@ args = 0, pretend = 0, frame = 8
+ 1095              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1096              		@ link register save eliminated.
+ 1097 0000 80B4     		push	{r7}
+ 1098              		.cfi_def_cfa_offset 4
+ 1099              		.cfi_offset 7, -4
+ 1100 0002 83B0     		sub	sp, sp, #12
+ 1101              		.cfi_def_cfa_offset 16
+ 1102 0004 00AF     		add	r7, sp, #0
+ 1103              		.cfi_def_cfa_register 7
+ 1104 0006 7860     		str	r0, [r7, #4]
+ 1105 0008 0B46     		mov	r3, r1
+ 1106 000a FB70     		strb	r3, [r7, #3]
+ 291:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_TEIE;
+ 1107              		.loc 1 291 24
+ 1108 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1109 000e 5A1E     		subs	r2, r3, #1
+ 1110 0010 1346     		mov	r3, r2
+ 1111 0012 9B00     		lsls	r3, r3, #2
+ 1112 0014 1344     		add	r3, r3, r2
+ 1113 0016 9B00     		lsls	r3, r3, #2
+ 1114 0018 1A46     		mov	r2, r3
+ 1115 001a 7B68     		ldr	r3, [r7, #4]
+ 1116 001c 1344     		add	r3, r3, r2
+ 1117 001e 0833     		adds	r3, r3, #8
+ 1118 0020 1968     		ldr	r1, [r3]
+ 1119 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1120 0024 5A1E     		subs	r2, r3, #1
+ 1121 0026 1346     		mov	r3, r2
+ 1122 0028 9B00     		lsls	r3, r3, #2
+ 1123 002a 1344     		add	r3, r3, r2
+ 1124 002c 9B00     		lsls	r3, r3, #2
+ 1125 002e 1A46     		mov	r2, r3
+ 1126 0030 7B68     		ldr	r3, [r7, #4]
+ 1127 0032 1344     		add	r3, r3, r2
+ 1128 0034 0833     		adds	r3, r3, #8
+ 1129 0036 1A46     		mov	r2, r3
+ 1130 0038 41F00803 		orr	r3, r1, #8
+ 1131 003c 1360     		str	r3, [r2]
+ 292:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1132              		.loc 1 292 1
+ 1133 003e 00BF     		nop
+ 1134 0040 0C37     		adds	r7, r7, #12
+ 1135              		.cfi_def_cfa_offset 4
+ 1136 0042 BD46     		mov	sp, r7
+ 1137              		.cfi_def_cfa_register 13
+ 1138              		@ sp needed
+ 1139 0044 80BC     		pop	{r7}
+ 1140              		.cfi_restore 7
+ 1141              		.cfi_def_cfa_offset 0
+ 1142 0046 7047     		bx	lr
+ 1143              		.cfi_endproc
+ 1144              	.LFE14:
+ 1146              		.section	.text.dma_disable_transfer_error_interrupt,"ax",%progbits
+ 1147              		.align	1
+ 1148              		.global	dma_disable_transfer_error_interrupt
+ 1149              		.syntax unified
+ 1150              		.thumb
+ 1151              		.thumb_func
+ 1152              		.fpu softvfp
+ 1154              	dma_disable_transfer_error_interrupt:
+ 1155              	.LFB15:
+ 293:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 294:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 295:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable Interrupt on Transfer Error
+ 296:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 297:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 298:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 299:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 300:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 301:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_transfer_error_interrupt(uint32_t dma, uint8_t channel)
+ 302:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1156              		.loc 1 302 1
+ 1157              		.cfi_startproc
+ 1158              		@ args = 0, pretend = 0, frame = 8
+ 1159              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1160              		@ link register save eliminated.
+ 1161 0000 80B4     		push	{r7}
+ 1162              		.cfi_def_cfa_offset 4
+ 1163              		.cfi_offset 7, -4
+ 1164 0002 83B0     		sub	sp, sp, #12
+ 1165              		.cfi_def_cfa_offset 16
+ 1166 0004 00AF     		add	r7, sp, #0
+ 1167              		.cfi_def_cfa_register 7
+ 1168 0006 7860     		str	r0, [r7, #4]
+ 1169 0008 0B46     		mov	r3, r1
+ 1170 000a FB70     		strb	r3, [r7, #3]
+ 303:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_TEIE;
+ 1171              		.loc 1 303 24
+ 1172 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1173 000e 5A1E     		subs	r2, r3, #1
+ 1174 0010 1346     		mov	r3, r2
+ 1175 0012 9B00     		lsls	r3, r3, #2
+ 1176 0014 1344     		add	r3, r3, r2
+ 1177 0016 9B00     		lsls	r3, r3, #2
+ 1178 0018 1A46     		mov	r2, r3
+ 1179 001a 7B68     		ldr	r3, [r7, #4]
+ 1180 001c 1344     		add	r3, r3, r2
+ 1181 001e 0833     		adds	r3, r3, #8
+ 1182 0020 1968     		ldr	r1, [r3]
+ 1183 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1184 0024 5A1E     		subs	r2, r3, #1
+ 1185 0026 1346     		mov	r3, r2
+ 1186 0028 9B00     		lsls	r3, r3, #2
+ 1187 002a 1344     		add	r3, r3, r2
+ 1188 002c 9B00     		lsls	r3, r3, #2
+ 1189 002e 1A46     		mov	r2, r3
+ 1190 0030 7B68     		ldr	r3, [r7, #4]
+ 1191 0032 1344     		add	r3, r3, r2
+ 1192 0034 0833     		adds	r3, r3, #8
+ 1193 0036 1A46     		mov	r2, r3
+ 1194 0038 21F00803 		bic	r3, r1, #8
+ 1195 003c 1360     		str	r3, [r2]
+ 304:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1196              		.loc 1 304 1
+ 1197 003e 00BF     		nop
+ 1198 0040 0C37     		adds	r7, r7, #12
+ 1199              		.cfi_def_cfa_offset 4
+ 1200 0042 BD46     		mov	sp, r7
+ 1201              		.cfi_def_cfa_register 13
+ 1202              		@ sp needed
+ 1203 0044 80BC     		pop	{r7}
+ 1204              		.cfi_restore 7
+ 1205              		.cfi_def_cfa_offset 0
+ 1206 0046 7047     		bx	lr
+ 1207              		.cfi_endproc
+ 1208              	.LFE15:
+ 1210              		.section	.text.dma_enable_half_transfer_interrupt,"ax",%progbits
+ 1211              		.align	1
+ 1212              		.global	dma_enable_half_transfer_interrupt
+ 1213              		.syntax unified
+ 1214              		.thumb
+ 1215              		.thumb_func
+ 1216              		.fpu softvfp
+ 1218              	dma_enable_half_transfer_interrupt:
+ 1219              	.LFB16:
+ 305:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 306:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 307:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Interrupt on Transfer Half Complete
+ 308:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 309:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 310:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 311:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 312:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 313:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_half_transfer_interrupt(uint32_t dma, uint8_t channel)
+ 314:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1220              		.loc 1 314 1
+ 1221              		.cfi_startproc
+ 1222              		@ args = 0, pretend = 0, frame = 8
+ 1223              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1224              		@ link register save eliminated.
+ 1225 0000 80B4     		push	{r7}
+ 1226              		.cfi_def_cfa_offset 4
+ 1227              		.cfi_offset 7, -4
+ 1228 0002 83B0     		sub	sp, sp, #12
+ 1229              		.cfi_def_cfa_offset 16
+ 1230 0004 00AF     		add	r7, sp, #0
+ 1231              		.cfi_def_cfa_register 7
+ 1232 0006 7860     		str	r0, [r7, #4]
+ 1233 0008 0B46     		mov	r3, r1
+ 1234 000a FB70     		strb	r3, [r7, #3]
+ 315:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_HTIE;
+ 1235              		.loc 1 315 24
+ 1236 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1237 000e 5A1E     		subs	r2, r3, #1
+ 1238 0010 1346     		mov	r3, r2
+ 1239 0012 9B00     		lsls	r3, r3, #2
+ 1240 0014 1344     		add	r3, r3, r2
+ 1241 0016 9B00     		lsls	r3, r3, #2
+ 1242 0018 1A46     		mov	r2, r3
+ 1243 001a 7B68     		ldr	r3, [r7, #4]
+ 1244 001c 1344     		add	r3, r3, r2
+ 1245 001e 0833     		adds	r3, r3, #8
+ 1246 0020 1968     		ldr	r1, [r3]
+ 1247 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1248 0024 5A1E     		subs	r2, r3, #1
+ 1249 0026 1346     		mov	r3, r2
+ 1250 0028 9B00     		lsls	r3, r3, #2
+ 1251 002a 1344     		add	r3, r3, r2
+ 1252 002c 9B00     		lsls	r3, r3, #2
+ 1253 002e 1A46     		mov	r2, r3
+ 1254 0030 7B68     		ldr	r3, [r7, #4]
+ 1255 0032 1344     		add	r3, r3, r2
+ 1256 0034 0833     		adds	r3, r3, #8
+ 1257 0036 1A46     		mov	r2, r3
+ 1258 0038 41F00403 		orr	r3, r1, #4
+ 1259 003c 1360     		str	r3, [r2]
+ 316:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1260              		.loc 1 316 1
+ 1261 003e 00BF     		nop
+ 1262 0040 0C37     		adds	r7, r7, #12
+ 1263              		.cfi_def_cfa_offset 4
+ 1264 0042 BD46     		mov	sp, r7
+ 1265              		.cfi_def_cfa_register 13
+ 1266              		@ sp needed
+ 1267 0044 80BC     		pop	{r7}
+ 1268              		.cfi_restore 7
+ 1269              		.cfi_def_cfa_offset 0
+ 1270 0046 7047     		bx	lr
+ 1271              		.cfi_endproc
+ 1272              	.LFE16:
+ 1274              		.section	.text.dma_disable_half_transfer_interrupt,"ax",%progbits
+ 1275              		.align	1
+ 1276              		.global	dma_disable_half_transfer_interrupt
+ 1277              		.syntax unified
+ 1278              		.thumb
+ 1279              		.thumb_func
+ 1280              		.fpu softvfp
+ 1282              	dma_disable_half_transfer_interrupt:
+ 1283              	.LFB17:
+ 317:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 318:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 319:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable Interrupt on Transfer Half Complete
+ 320:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 321:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 322:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 323:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 324:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 325:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_half_transfer_interrupt(uint32_t dma, uint8_t channel)
+ 326:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1284              		.loc 1 326 1
+ 1285              		.cfi_startproc
+ 1286              		@ args = 0, pretend = 0, frame = 8
+ 1287              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1288              		@ link register save eliminated.
+ 1289 0000 80B4     		push	{r7}
+ 1290              		.cfi_def_cfa_offset 4
+ 1291              		.cfi_offset 7, -4
+ 1292 0002 83B0     		sub	sp, sp, #12
+ 1293              		.cfi_def_cfa_offset 16
+ 1294 0004 00AF     		add	r7, sp, #0
+ 1295              		.cfi_def_cfa_register 7
+ 1296 0006 7860     		str	r0, [r7, #4]
+ 1297 0008 0B46     		mov	r3, r1
+ 1298 000a FB70     		strb	r3, [r7, #3]
+ 327:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_HTIE;
+ 1299              		.loc 1 327 24
+ 1300 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1301 000e 5A1E     		subs	r2, r3, #1
+ 1302 0010 1346     		mov	r3, r2
+ 1303 0012 9B00     		lsls	r3, r3, #2
+ 1304 0014 1344     		add	r3, r3, r2
+ 1305 0016 9B00     		lsls	r3, r3, #2
+ 1306 0018 1A46     		mov	r2, r3
+ 1307 001a 7B68     		ldr	r3, [r7, #4]
+ 1308 001c 1344     		add	r3, r3, r2
+ 1309 001e 0833     		adds	r3, r3, #8
+ 1310 0020 1968     		ldr	r1, [r3]
+ 1311 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1312 0024 5A1E     		subs	r2, r3, #1
+ 1313 0026 1346     		mov	r3, r2
+ 1314 0028 9B00     		lsls	r3, r3, #2
+ 1315 002a 1344     		add	r3, r3, r2
+ 1316 002c 9B00     		lsls	r3, r3, #2
+ 1317 002e 1A46     		mov	r2, r3
+ 1318 0030 7B68     		ldr	r3, [r7, #4]
+ 1319 0032 1344     		add	r3, r3, r2
+ 1320 0034 0833     		adds	r3, r3, #8
+ 1321 0036 1A46     		mov	r2, r3
+ 1322 0038 21F00403 		bic	r3, r1, #4
+ 1323 003c 1360     		str	r3, [r2]
+ 328:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1324              		.loc 1 328 1
+ 1325 003e 00BF     		nop
+ 1326 0040 0C37     		adds	r7, r7, #12
+ 1327              		.cfi_def_cfa_offset 4
+ 1328 0042 BD46     		mov	sp, r7
+ 1329              		.cfi_def_cfa_register 13
+ 1330              		@ sp needed
+ 1331 0044 80BC     		pop	{r7}
+ 1332              		.cfi_restore 7
+ 1333              		.cfi_def_cfa_offset 0
+ 1334 0046 7047     		bx	lr
+ 1335              		.cfi_endproc
+ 1336              	.LFE17:
+ 1338              		.section	.text.dma_enable_transfer_complete_interrupt,"ax",%progbits
+ 1339              		.align	1
+ 1340              		.global	dma_enable_transfer_complete_interrupt
+ 1341              		.syntax unified
+ 1342              		.thumb
+ 1343              		.thumb_func
+ 1344              		.fpu softvfp
+ 1346              	dma_enable_transfer_complete_interrupt:
+ 1347              	.LFB18:
+ 329:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 330:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 331:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable Interrupt on Transfer Complete
+ 332:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 333:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 334:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 335:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 336:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 337:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_transfer_complete_interrupt(uint32_t dma, uint8_t channel)
+ 338:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1348              		.loc 1 338 1
+ 1349              		.cfi_startproc
+ 1350              		@ args = 0, pretend = 0, frame = 8
+ 1351              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1352              		@ link register save eliminated.
+ 1353 0000 80B4     		push	{r7}
+ 1354              		.cfi_def_cfa_offset 4
+ 1355              		.cfi_offset 7, -4
+ 1356 0002 83B0     		sub	sp, sp, #12
+ 1357              		.cfi_def_cfa_offset 16
+ 1358 0004 00AF     		add	r7, sp, #0
+ 1359              		.cfi_def_cfa_register 7
+ 1360 0006 7860     		str	r0, [r7, #4]
+ 1361 0008 0B46     		mov	r3, r1
+ 1362 000a FB70     		strb	r3, [r7, #3]
+ 339:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_TCIE;
+ 1363              		.loc 1 339 24
+ 1364 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1365 000e 5A1E     		subs	r2, r3, #1
+ 1366 0010 1346     		mov	r3, r2
+ 1367 0012 9B00     		lsls	r3, r3, #2
+ 1368 0014 1344     		add	r3, r3, r2
+ 1369 0016 9B00     		lsls	r3, r3, #2
+ 1370 0018 1A46     		mov	r2, r3
+ 1371 001a 7B68     		ldr	r3, [r7, #4]
+ 1372 001c 1344     		add	r3, r3, r2
+ 1373 001e 0833     		adds	r3, r3, #8
+ 1374 0020 1968     		ldr	r1, [r3]
+ 1375 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1376 0024 5A1E     		subs	r2, r3, #1
+ 1377 0026 1346     		mov	r3, r2
+ 1378 0028 9B00     		lsls	r3, r3, #2
+ 1379 002a 1344     		add	r3, r3, r2
+ 1380 002c 9B00     		lsls	r3, r3, #2
+ 1381 002e 1A46     		mov	r2, r3
+ 1382 0030 7B68     		ldr	r3, [r7, #4]
+ 1383 0032 1344     		add	r3, r3, r2
+ 1384 0034 0833     		adds	r3, r3, #8
+ 1385 0036 1A46     		mov	r2, r3
+ 1386 0038 41F00203 		orr	r3, r1, #2
+ 1387 003c 1360     		str	r3, [r2]
+ 340:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1388              		.loc 1 340 1
+ 1389 003e 00BF     		nop
+ 1390 0040 0C37     		adds	r7, r7, #12
+ 1391              		.cfi_def_cfa_offset 4
+ 1392 0042 BD46     		mov	sp, r7
+ 1393              		.cfi_def_cfa_register 13
+ 1394              		@ sp needed
+ 1395 0044 80BC     		pop	{r7}
+ 1396              		.cfi_restore 7
+ 1397              		.cfi_def_cfa_offset 0
+ 1398 0046 7047     		bx	lr
+ 1399              		.cfi_endproc
+ 1400              	.LFE18:
+ 1402              		.section	.text.dma_disable_transfer_complete_interrupt,"ax",%progbits
+ 1403              		.align	1
+ 1404              		.global	dma_disable_transfer_complete_interrupt
+ 1405              		.syntax unified
+ 1406              		.thumb
+ 1407              		.thumb_func
+ 1408              		.fpu softvfp
+ 1410              	dma_disable_transfer_complete_interrupt:
+ 1411              	.LFB19:
+ 341:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 342:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 343:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable Interrupt on Transfer Complete
+ 344:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 345:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 346:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 347:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 348:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 349:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_transfer_complete_interrupt(uint32_t dma, uint8_t channel)
+ 350:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1412              		.loc 1 350 1
+ 1413              		.cfi_startproc
+ 1414              		@ args = 0, pretend = 0, frame = 8
+ 1415              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1416              		@ link register save eliminated.
+ 1417 0000 80B4     		push	{r7}
+ 1418              		.cfi_def_cfa_offset 4
+ 1419              		.cfi_offset 7, -4
+ 1420 0002 83B0     		sub	sp, sp, #12
+ 1421              		.cfi_def_cfa_offset 16
+ 1422 0004 00AF     		add	r7, sp, #0
+ 1423              		.cfi_def_cfa_register 7
+ 1424 0006 7860     		str	r0, [r7, #4]
+ 1425 0008 0B46     		mov	r3, r1
+ 1426 000a FB70     		strb	r3, [r7, #3]
+ 351:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_TCIE;
+ 1427              		.loc 1 351 24
+ 1428 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1429 000e 5A1E     		subs	r2, r3, #1
+ 1430 0010 1346     		mov	r3, r2
+ 1431 0012 9B00     		lsls	r3, r3, #2
+ 1432 0014 1344     		add	r3, r3, r2
+ 1433 0016 9B00     		lsls	r3, r3, #2
+ 1434 0018 1A46     		mov	r2, r3
+ 1435 001a 7B68     		ldr	r3, [r7, #4]
+ 1436 001c 1344     		add	r3, r3, r2
+ 1437 001e 0833     		adds	r3, r3, #8
+ 1438 0020 1968     		ldr	r1, [r3]
+ 1439 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1440 0024 5A1E     		subs	r2, r3, #1
+ 1441 0026 1346     		mov	r3, r2
+ 1442 0028 9B00     		lsls	r3, r3, #2
+ 1443 002a 1344     		add	r3, r3, r2
+ 1444 002c 9B00     		lsls	r3, r3, #2
+ 1445 002e 1A46     		mov	r2, r3
+ 1446 0030 7B68     		ldr	r3, [r7, #4]
+ 1447 0032 1344     		add	r3, r3, r2
+ 1448 0034 0833     		adds	r3, r3, #8
+ 1449 0036 1A46     		mov	r2, r3
+ 1450 0038 21F00203 		bic	r3, r1, #2
+ 1451 003c 1360     		str	r3, [r2]
+ 352:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1452              		.loc 1 352 1
+ 1453 003e 00BF     		nop
+ 1454 0040 0C37     		adds	r7, r7, #12
+ 1455              		.cfi_def_cfa_offset 4
+ 1456 0042 BD46     		mov	sp, r7
+ 1457              		.cfi_def_cfa_register 13
+ 1458              		@ sp needed
+ 1459 0044 80BC     		pop	{r7}
+ 1460              		.cfi_restore 7
+ 1461              		.cfi_def_cfa_offset 0
+ 1462 0046 7047     		bx	lr
+ 1463              		.cfi_endproc
+ 1464              	.LFE19:
+ 1466              		.section	.text.dma_enable_channel,"ax",%progbits
+ 1467              		.align	1
+ 1468              		.global	dma_enable_channel
+ 1469              		.syntax unified
+ 1470              		.thumb
+ 1471              		.thumb_func
+ 1472              		.fpu softvfp
+ 1474              	dma_enable_channel:
+ 1475              	.LFB20:
+ 353:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 354:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 355:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Enable
+ 356:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 357:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 358:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 359:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 360:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 361:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_enable_channel(uint32_t dma, uint8_t channel)
+ 362:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1476              		.loc 1 362 1
+ 1477              		.cfi_startproc
+ 1478              		@ args = 0, pretend = 0, frame = 8
+ 1479              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1480              		@ link register save eliminated.
+ 1481 0000 80B4     		push	{r7}
+ 1482              		.cfi_def_cfa_offset 4
+ 1483              		.cfi_offset 7, -4
+ 1484 0002 83B0     		sub	sp, sp, #12
+ 1485              		.cfi_def_cfa_offset 16
+ 1486 0004 00AF     		add	r7, sp, #0
+ 1487              		.cfi_def_cfa_register 7
+ 1488 0006 7860     		str	r0, [r7, #4]
+ 1489 0008 0B46     		mov	r3, r1
+ 1490 000a FB70     		strb	r3, [r7, #3]
+ 363:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) |= DMA_CCR_EN;
+ 1491              		.loc 1 363 24
+ 1492 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1493 000e 5A1E     		subs	r2, r3, #1
+ 1494 0010 1346     		mov	r3, r2
+ 1495 0012 9B00     		lsls	r3, r3, #2
+ 1496 0014 1344     		add	r3, r3, r2
+ 1497 0016 9B00     		lsls	r3, r3, #2
+ 1498 0018 1A46     		mov	r2, r3
+ 1499 001a 7B68     		ldr	r3, [r7, #4]
+ 1500 001c 1344     		add	r3, r3, r2
+ 1501 001e 0833     		adds	r3, r3, #8
+ 1502 0020 1968     		ldr	r1, [r3]
+ 1503 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1504 0024 5A1E     		subs	r2, r3, #1
+ 1505 0026 1346     		mov	r3, r2
+ 1506 0028 9B00     		lsls	r3, r3, #2
+ 1507 002a 1344     		add	r3, r3, r2
+ 1508 002c 9B00     		lsls	r3, r3, #2
+ 1509 002e 1A46     		mov	r2, r3
+ 1510 0030 7B68     		ldr	r3, [r7, #4]
+ 1511 0032 1344     		add	r3, r3, r2
+ 1512 0034 0833     		adds	r3, r3, #8
+ 1513 0036 1A46     		mov	r2, r3
+ 1514 0038 41F00103 		orr	r3, r1, #1
+ 1515 003c 1360     		str	r3, [r2]
+ 364:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1516              		.loc 1 364 1
+ 1517 003e 00BF     		nop
+ 1518 0040 0C37     		adds	r7, r7, #12
+ 1519              		.cfi_def_cfa_offset 4
+ 1520 0042 BD46     		mov	sp, r7
+ 1521              		.cfi_def_cfa_register 13
+ 1522              		@ sp needed
+ 1523 0044 80BC     		pop	{r7}
+ 1524              		.cfi_restore 7
+ 1525              		.cfi_def_cfa_offset 0
+ 1526 0046 7047     		bx	lr
+ 1527              		.cfi_endproc
+ 1528              	.LFE20:
+ 1530              		.section	.text.dma_disable_channel,"ax",%progbits
+ 1531              		.align	1
+ 1532              		.global	dma_disable_channel
+ 1533              		.syntax unified
+ 1534              		.thumb
+ 1535              		.thumb_func
+ 1536              		.fpu softvfp
+ 1538              	dma_disable_channel:
+ 1539              	.LFB21:
+ 365:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 366:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 367:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Disable
+ 368:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 369:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @note The DMA channel registers retain their values when the channel is
+ 370:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** disabled.
+ 371:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 372:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 373:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 374:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 375:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 376:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_disable_channel(uint32_t dma, uint8_t channel)
+ 377:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1540              		.loc 1 377 1
+ 1541              		.cfi_startproc
+ 1542              		@ args = 0, pretend = 0, frame = 8
+ 1543              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1544              		@ link register save eliminated.
+ 1545 0000 80B4     		push	{r7}
+ 1546              		.cfi_def_cfa_offset 4
+ 1547              		.cfi_offset 7, -4
+ 1548 0002 83B0     		sub	sp, sp, #12
+ 1549              		.cfi_def_cfa_offset 16
+ 1550 0004 00AF     		add	r7, sp, #0
+ 1551              		.cfi_def_cfa_register 7
+ 1552 0006 7860     		str	r0, [r7, #4]
+ 1553 0008 0B46     		mov	r3, r1
+ 1554 000a FB70     		strb	r3, [r7, #3]
+ 378:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CCR(dma, channel) &= ~DMA_CCR_EN;
+ 1555              		.loc 1 378 24
+ 1556 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1557 000e 5A1E     		subs	r2, r3, #1
+ 1558 0010 1346     		mov	r3, r2
+ 1559 0012 9B00     		lsls	r3, r3, #2
+ 1560 0014 1344     		add	r3, r3, r2
+ 1561 0016 9B00     		lsls	r3, r3, #2
+ 1562 0018 1A46     		mov	r2, r3
+ 1563 001a 7B68     		ldr	r3, [r7, #4]
+ 1564 001c 1344     		add	r3, r3, r2
+ 1565 001e 0833     		adds	r3, r3, #8
+ 1566 0020 1968     		ldr	r1, [r3]
+ 1567 0022 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1568 0024 5A1E     		subs	r2, r3, #1
+ 1569 0026 1346     		mov	r3, r2
+ 1570 0028 9B00     		lsls	r3, r3, #2
+ 1571 002a 1344     		add	r3, r3, r2
+ 1572 002c 9B00     		lsls	r3, r3, #2
+ 1573 002e 1A46     		mov	r2, r3
+ 1574 0030 7B68     		ldr	r3, [r7, #4]
+ 1575 0032 1344     		add	r3, r3, r2
+ 1576 0034 0833     		adds	r3, r3, #8
+ 1577 0036 1A46     		mov	r2, r3
+ 1578 0038 21F00103 		bic	r3, r1, #1
+ 1579 003c 1360     		str	r3, [r2]
+ 379:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1580              		.loc 1 379 1
+ 1581 003e 00BF     		nop
+ 1582 0040 0C37     		adds	r7, r7, #12
+ 1583              		.cfi_def_cfa_offset 4
+ 1584 0042 BD46     		mov	sp, r7
+ 1585              		.cfi_def_cfa_register 13
+ 1586              		@ sp needed
+ 1587 0044 80BC     		pop	{r7}
+ 1588              		.cfi_restore 7
+ 1589              		.cfi_def_cfa_offset 0
+ 1590 0046 7047     		bx	lr
+ 1591              		.cfi_endproc
+ 1592              	.LFE21:
+ 1594              		.section	.text.dma_set_peripheral_address,"ax",%progbits
+ 1595              		.align	1
+ 1596              		.global	dma_set_peripheral_address
+ 1597              		.syntax unified
+ 1598              		.thumb
+ 1599              		.thumb_func
+ 1600              		.fpu softvfp
+ 1602              	dma_set_peripheral_address:
+ 1603              	.LFB22:
+ 380:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 381:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 382:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set the Peripheral Address
+ 383:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 384:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** Set the address of the peripheral register to or from which data is to be
+ 385:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** transferred.  Refer to the documentation for the specific peripheral.
+ 386:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 387:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @note The DMA channel must be disabled before setting this address. This
+ 388:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** function has no effect if the channel is enabled.
+ 389:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 390:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 391:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 392:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] address unsigned int32. Peripheral Address.
+ 393:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 394:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 395:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_peripheral_address(uint32_t dma, uint8_t channel, uint32_t address)
+ 396:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1604              		.loc 1 396 1
+ 1605              		.cfi_startproc
+ 1606              		@ args = 0, pretend = 0, frame = 16
+ 1607              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1608              		@ link register save eliminated.
+ 1609 0000 80B4     		push	{r7}
+ 1610              		.cfi_def_cfa_offset 4
+ 1611              		.cfi_offset 7, -4
+ 1612 0002 85B0     		sub	sp, sp, #20
+ 1613              		.cfi_def_cfa_offset 24
+ 1614 0004 00AF     		add	r7, sp, #0
+ 1615              		.cfi_def_cfa_register 7
+ 1616 0006 F860     		str	r0, [r7, #12]
+ 1617 0008 0B46     		mov	r3, r1
+ 1618 000a 7A60     		str	r2, [r7, #4]
+ 1619 000c FB72     		strb	r3, [r7, #11]
+ 397:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	if (!(DMA_CCR(dma, channel) & DMA_CCR_EN)) {
+ 1620              		.loc 1 397 8
+ 1621 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1622 0010 5A1E     		subs	r2, r3, #1
+ 1623 0012 1346     		mov	r3, r2
+ 1624 0014 9B00     		lsls	r3, r3, #2
+ 1625 0016 1344     		add	r3, r3, r2
+ 1626 0018 9B00     		lsls	r3, r3, #2
+ 1627 001a 1A46     		mov	r2, r3
+ 1628 001c FB68     		ldr	r3, [r7, #12]
+ 1629 001e 1344     		add	r3, r3, r2
+ 1630 0020 0833     		adds	r3, r3, #8
+ 1631 0022 1B68     		ldr	r3, [r3]
+ 1632              		.loc 1 397 30
+ 1633 0024 03F00103 		and	r3, r3, #1
+ 1634              		.loc 1 397 5
+ 1635 0028 002B     		cmp	r3, #0
+ 1636 002a 0CD1     		bne	.L26
+ 398:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 		DMA_CPAR(dma, channel) = (uint32_t) address;
+ 1637              		.loc 1 398 3
+ 1638 002c FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1639 002e 5A1E     		subs	r2, r3, #1
+ 1640 0030 1346     		mov	r3, r2
+ 1641 0032 9B00     		lsls	r3, r3, #2
+ 1642 0034 1344     		add	r3, r3, r2
+ 1643 0036 9B00     		lsls	r3, r3, #2
+ 1644 0038 1A46     		mov	r2, r3
+ 1645 003a FB68     		ldr	r3, [r7, #12]
+ 1646 003c 1344     		add	r3, r3, r2
+ 1647 003e 1033     		adds	r3, r3, #16
+ 1648 0040 1A46     		mov	r2, r3
+ 1649              		.loc 1 398 26
+ 1650 0042 7B68     		ldr	r3, [r7, #4]
+ 1651 0044 1360     		str	r3, [r2]
+ 1652              	.L26:
+ 399:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	}
+ 400:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1653              		.loc 1 400 1
+ 1654 0046 00BF     		nop
+ 1655 0048 1437     		adds	r7, r7, #20
+ 1656              		.cfi_def_cfa_offset 4
+ 1657 004a BD46     		mov	sp, r7
+ 1658              		.cfi_def_cfa_register 13
+ 1659              		@ sp needed
+ 1660 004c 80BC     		pop	{r7}
+ 1661              		.cfi_restore 7
+ 1662              		.cfi_def_cfa_offset 0
+ 1663 004e 7047     		bx	lr
+ 1664              		.cfi_endproc
+ 1665              	.LFE22:
+ 1667              		.section	.text.dma_set_memory_address,"ax",%progbits
+ 1668              		.align	1
+ 1669              		.global	dma_set_memory_address
+ 1670              		.syntax unified
+ 1671              		.thumb
+ 1672              		.thumb_func
+ 1673              		.fpu softvfp
+ 1675              	dma_set_memory_address:
+ 1676              	.LFB23:
+ 401:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 402:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 403:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set the Base Memory Address
+ 404:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 405:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @note The DMA channel must be disabled before setting this address. This
+ 406:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** function has no effect if the channel is enabled.
+ 407:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 408:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 409:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 410:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] address unsigned int32. Memory Initial Address.
+ 411:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 412:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 413:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_memory_address(uint32_t dma, uint8_t channel, uint32_t address)
+ 414:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1677              		.loc 1 414 1
+ 1678              		.cfi_startproc
+ 1679              		@ args = 0, pretend = 0, frame = 16
+ 1680              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1681              		@ link register save eliminated.
+ 1682 0000 80B4     		push	{r7}
+ 1683              		.cfi_def_cfa_offset 4
+ 1684              		.cfi_offset 7, -4
+ 1685 0002 85B0     		sub	sp, sp, #20
+ 1686              		.cfi_def_cfa_offset 24
+ 1687 0004 00AF     		add	r7, sp, #0
+ 1688              		.cfi_def_cfa_register 7
+ 1689 0006 F860     		str	r0, [r7, #12]
+ 1690 0008 0B46     		mov	r3, r1
+ 1691 000a 7A60     		str	r2, [r7, #4]
+ 1692 000c FB72     		strb	r3, [r7, #11]
+ 415:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	if (!(DMA_CCR(dma, channel) & DMA_CCR_EN)) {
+ 1693              		.loc 1 415 8
+ 1694 000e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1695 0010 5A1E     		subs	r2, r3, #1
+ 1696 0012 1346     		mov	r3, r2
+ 1697 0014 9B00     		lsls	r3, r3, #2
+ 1698 0016 1344     		add	r3, r3, r2
+ 1699 0018 9B00     		lsls	r3, r3, #2
+ 1700 001a 1A46     		mov	r2, r3
+ 1701 001c FB68     		ldr	r3, [r7, #12]
+ 1702 001e 1344     		add	r3, r3, r2
+ 1703 0020 0833     		adds	r3, r3, #8
+ 1704 0022 1B68     		ldr	r3, [r3]
+ 1705              		.loc 1 415 30
+ 1706 0024 03F00103 		and	r3, r3, #1
+ 1707              		.loc 1 415 5
+ 1708 0028 002B     		cmp	r3, #0
+ 1709 002a 0CD1     		bne	.L29
+ 416:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 		DMA_CMAR(dma, channel) = (uint32_t) address;
+ 1710              		.loc 1 416 3
+ 1711 002c FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1712 002e 5A1E     		subs	r2, r3, #1
+ 1713 0030 1346     		mov	r3, r2
+ 1714 0032 9B00     		lsls	r3, r3, #2
+ 1715 0034 1344     		add	r3, r3, r2
+ 1716 0036 9B00     		lsls	r3, r3, #2
+ 1717 0038 1A46     		mov	r2, r3
+ 1718 003a FB68     		ldr	r3, [r7, #12]
+ 1719 003c 1344     		add	r3, r3, r2
+ 1720 003e 1433     		adds	r3, r3, #20
+ 1721 0040 1A46     		mov	r2, r3
+ 1722              		.loc 1 416 26
+ 1723 0042 7B68     		ldr	r3, [r7, #4]
+ 1724 0044 1360     		str	r3, [r2]
+ 1725              	.L29:
+ 417:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	}
+ 418:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1726              		.loc 1 418 1
+ 1727 0046 00BF     		nop
+ 1728 0048 1437     		adds	r7, r7, #20
+ 1729              		.cfi_def_cfa_offset 4
+ 1730 004a BD46     		mov	sp, r7
+ 1731              		.cfi_def_cfa_register 13
+ 1732              		@ sp needed
+ 1733 004c 80BC     		pop	{r7}
+ 1734              		.cfi_restore 7
+ 1735              		.cfi_def_cfa_offset 0
+ 1736 004e 7047     		bx	lr
+ 1737              		.cfi_endproc
+ 1738              	.LFE23:
+ 1740              		.section	.text.dma_get_number_of_data,"ax",%progbits
+ 1741              		.align	1
+ 1742              		.global	dma_get_number_of_data
+ 1743              		.syntax unified
+ 1744              		.thumb
+ 1745              		.thumb_func
+ 1746              		.fpu softvfp
+ 1748              	dma_get_number_of_data:
+ 1749              	.LFB24:
+ 419:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 420:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 421:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Get the Transfer Block Size
+ 422:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 423:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 424:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 425:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @returns unsigned int16. Number of remaining data words to transfer (65535
+ 426:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** maximum).
+ 427:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 428:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 429:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** uint16_t dma_get_number_of_data(uint32_t dma, uint8_t channel)
+ 430:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1750              		.loc 1 430 1
+ 1751              		.cfi_startproc
+ 1752              		@ args = 0, pretend = 0, frame = 8
+ 1753              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1754              		@ link register save eliminated.
+ 1755 0000 80B4     		push	{r7}
+ 1756              		.cfi_def_cfa_offset 4
+ 1757              		.cfi_offset 7, -4
+ 1758 0002 83B0     		sub	sp, sp, #12
+ 1759              		.cfi_def_cfa_offset 16
+ 1760 0004 00AF     		add	r7, sp, #0
+ 1761              		.cfi_def_cfa_register 7
+ 1762 0006 7860     		str	r0, [r7, #4]
+ 1763 0008 0B46     		mov	r3, r1
+ 1764 000a FB70     		strb	r3, [r7, #3]
+ 431:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	return DMA_CNDTR(dma, channel);
+ 1765              		.loc 1 431 9
+ 1766 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1767 000e 5A1E     		subs	r2, r3, #1
+ 1768 0010 1346     		mov	r3, r2
+ 1769 0012 9B00     		lsls	r3, r3, #2
+ 1770 0014 1344     		add	r3, r3, r2
+ 1771 0016 9B00     		lsls	r3, r3, #2
+ 1772 0018 1A46     		mov	r2, r3
+ 1773 001a 7B68     		ldr	r3, [r7, #4]
+ 1774 001c 1344     		add	r3, r3, r2
+ 1775 001e 0C33     		adds	r3, r3, #12
+ 1776 0020 1B68     		ldr	r3, [r3]
+ 1777 0022 9BB2     		uxth	r3, r3
+ 432:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1778              		.loc 1 432 1
+ 1779 0024 1846     		mov	r0, r3
+ 1780 0026 0C37     		adds	r7, r7, #12
+ 1781              		.cfi_def_cfa_offset 4
+ 1782 0028 BD46     		mov	sp, r7
+ 1783              		.cfi_def_cfa_register 13
+ 1784              		@ sp needed
+ 1785 002a 80BC     		pop	{r7}
+ 1786              		.cfi_restore 7
+ 1787              		.cfi_def_cfa_offset 0
+ 1788 002c 7047     		bx	lr
+ 1789              		.cfi_endproc
+ 1790              	.LFE24:
+ 1792              		.section	.text.dma_set_number_of_data,"ax",%progbits
+ 1793              		.align	1
+ 1794              		.global	dma_set_number_of_data
+ 1795              		.syntax unified
+ 1796              		.thumb
+ 1797              		.thumb_func
+ 1798              		.fpu softvfp
+ 1800              	dma_set_number_of_data:
+ 1801              	.LFB25:
+ 433:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 434:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /*---------------------------------------------------------------------------*/
+ 435:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** /** @brief DMA Channel Set the Transfer Block Size
+ 436:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 437:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @note The DMA channel must be disabled before setting this count value. The
+ 438:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** count is not changed if the channel is enabled.
+ 439:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 440:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] dma unsigned int32. DMA controller base address: DMA1 or DMA2
+ 441:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] channel unsigned int8. Channel number: 1-7 for DMA1 or 1-5 for DMA2
+ 442:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** @param[in] number unsigned int16. Number of data words to transfer (65535
+ 443:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** maximum).
+ 444:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** */
+ 445:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 
+ 446:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** void dma_set_number_of_data(uint32_t dma, uint8_t channel, uint16_t number)
+ 447:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** {
+ 1802              		.loc 1 447 1
+ 1803              		.cfi_startproc
+ 1804              		@ args = 0, pretend = 0, frame = 8
+ 1805              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1806              		@ link register save eliminated.
+ 1807 0000 80B4     		push	{r7}
+ 1808              		.cfi_def_cfa_offset 4
+ 1809              		.cfi_offset 7, -4
+ 1810 0002 83B0     		sub	sp, sp, #12
+ 1811              		.cfi_def_cfa_offset 16
+ 1812 0004 00AF     		add	r7, sp, #0
+ 1813              		.cfi_def_cfa_register 7
+ 1814 0006 7860     		str	r0, [r7, #4]
+ 1815 0008 0B46     		mov	r3, r1
+ 1816 000a FB70     		strb	r3, [r7, #3]
+ 1817 000c 1346     		mov	r3, r2	@ movhi
+ 1818 000e 3B80     		strh	r3, [r7]	@ movhi
+ 448:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** 	DMA_CNDTR(dma, channel) = number;
+ 1819              		.loc 1 448 2
+ 1820 0010 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 1821 0012 5A1E     		subs	r2, r3, #1
+ 1822 0014 1346     		mov	r3, r2
+ 1823 0016 9B00     		lsls	r3, r3, #2
+ 1824 0018 1344     		add	r3, r3, r2
+ 1825 001a 9B00     		lsls	r3, r3, #2
+ 1826 001c 1A46     		mov	r2, r3
+ 1827 001e 7B68     		ldr	r3, [r7, #4]
+ 1828 0020 1344     		add	r3, r3, r2
+ 1829 0022 0C33     		adds	r3, r3, #12
+ 1830 0024 1A46     		mov	r2, r3
+ 1831              		.loc 1 448 26
+ 1832 0026 3B88     		ldrh	r3, [r7]
+ 1833 0028 1360     		str	r3, [r2]
+ 449:../libopencm3/lib/stm32/common/dma_common_l1f013.c **** }
+ 1834              		.loc 1 449 1
+ 1835 002a 00BF     		nop
+ 1836 002c 0C37     		adds	r7, r7, #12
+ 1837              		.cfi_def_cfa_offset 4
+ 1838 002e BD46     		mov	sp, r7
+ 1839              		.cfi_def_cfa_register 13
+ 1840              		@ sp needed
+ 1841 0030 80BC     		pop	{r7}
+ 1842              		.cfi_restore 7
+ 1843              		.cfi_def_cfa_offset 0
+ 1844 0032 7047     		bx	lr
+ 1845              		.cfi_endproc
+ 1846              	.LFE25:
+ 1848              		.text
+ 1849              	.Letext0:
+ 1850              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1851              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 dma_common_l1f013.c
+     /tmp/ccqTx6iX.s:16     .text.dma_channel_reset:0000000000000000 $t
+     /tmp/ccqTx6iX.s:24     .text.dma_channel_reset:0000000000000000 dma_channel_reset
+     /tmp/ccqTx6iX.s:133    .text.dma_clear_interrupt_flags:0000000000000000 $t
+     /tmp/ccqTx6iX.s:140    .text.dma_clear_interrupt_flags:0000000000000000 dma_clear_interrupt_flags
+     /tmp/ccqTx6iX.s:188    .text.dma_get_interrupt_flag:0000000000000000 $t
+     /tmp/ccqTx6iX.s:195    .text.dma_get_interrupt_flag:0000000000000000 dma_get_interrupt_flag
+     /tmp/ccqTx6iX.s:248    .text.dma_enable_mem2mem_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:255    .text.dma_enable_mem2mem_mode:0000000000000000 dma_enable_mem2mem_mode
+     /tmp/ccqTx6iX.s:337    .text.dma_set_priority:0000000000000000 $t
+     /tmp/ccqTx6iX.s:344    .text.dma_set_priority:0000000000000000 dma_set_priority
+     /tmp/ccqTx6iX.s:428    .text.dma_set_memory_size:0000000000000000 $t
+     /tmp/ccqTx6iX.s:435    .text.dma_set_memory_size:0000000000000000 dma_set_memory_size
+     /tmp/ccqTx6iX.s:519    .text.dma_set_peripheral_size:0000000000000000 $t
+     /tmp/ccqTx6iX.s:526    .text.dma_set_peripheral_size:0000000000000000 dma_set_peripheral_size
+     /tmp/ccqTx6iX.s:610    .text.dma_enable_memory_increment_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:617    .text.dma_enable_memory_increment_mode:0000000000000000 dma_enable_memory_increment_mode
+     /tmp/ccqTx6iX.s:674    .text.dma_disable_memory_increment_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:681    .text.dma_disable_memory_increment_mode:0000000000000000 dma_disable_memory_increment_mode
+     /tmp/ccqTx6iX.s:738    .text.dma_enable_peripheral_increment_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:745    .text.dma_enable_peripheral_increment_mode:0000000000000000 dma_enable_peripheral_increment_mode
+     /tmp/ccqTx6iX.s:802    .text.dma_disable_peripheral_increment_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:809    .text.dma_disable_peripheral_increment_mode:0000000000000000 dma_disable_peripheral_increment_mode
+     /tmp/ccqTx6iX.s:866    .text.dma_enable_circular_mode:0000000000000000 $t
+     /tmp/ccqTx6iX.s:873    .text.dma_enable_circular_mode:0000000000000000 dma_enable_circular_mode
+     /tmp/ccqTx6iX.s:955    .text.dma_set_read_from_peripheral:0000000000000000 $t
+     /tmp/ccqTx6iX.s:962    .text.dma_set_read_from_peripheral:0000000000000000 dma_set_read_from_peripheral
+     /tmp/ccqTx6iX.s:1019   .text.dma_set_read_from_memory:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1026   .text.dma_set_read_from_memory:0000000000000000 dma_set_read_from_memory
+     /tmp/ccqTx6iX.s:1083   .text.dma_enable_transfer_error_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1090   .text.dma_enable_transfer_error_interrupt:0000000000000000 dma_enable_transfer_error_interrupt
+     /tmp/ccqTx6iX.s:1147   .text.dma_disable_transfer_error_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1154   .text.dma_disable_transfer_error_interrupt:0000000000000000 dma_disable_transfer_error_interrupt
+     /tmp/ccqTx6iX.s:1211   .text.dma_enable_half_transfer_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1218   .text.dma_enable_half_transfer_interrupt:0000000000000000 dma_enable_half_transfer_interrupt
+     /tmp/ccqTx6iX.s:1275   .text.dma_disable_half_transfer_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1282   .text.dma_disable_half_transfer_interrupt:0000000000000000 dma_disable_half_transfer_interrupt
+     /tmp/ccqTx6iX.s:1339   .text.dma_enable_transfer_complete_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1346   .text.dma_enable_transfer_complete_interrupt:0000000000000000 dma_enable_transfer_complete_interrupt
+     /tmp/ccqTx6iX.s:1403   .text.dma_disable_transfer_complete_interrupt:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1410   .text.dma_disable_transfer_complete_interrupt:0000000000000000 dma_disable_transfer_complete_interrupt
+     /tmp/ccqTx6iX.s:1467   .text.dma_enable_channel:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1474   .text.dma_enable_channel:0000000000000000 dma_enable_channel
+     /tmp/ccqTx6iX.s:1531   .text.dma_disable_channel:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1538   .text.dma_disable_channel:0000000000000000 dma_disable_channel
+     /tmp/ccqTx6iX.s:1595   .text.dma_set_peripheral_address:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1602   .text.dma_set_peripheral_address:0000000000000000 dma_set_peripheral_address
+     /tmp/ccqTx6iX.s:1668   .text.dma_set_memory_address:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1675   .text.dma_set_memory_address:0000000000000000 dma_set_memory_address
+     /tmp/ccqTx6iX.s:1741   .text.dma_get_number_of_data:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1748   .text.dma_get_number_of_data:0000000000000000 dma_get_number_of_data
+     /tmp/ccqTx6iX.s:1793   .text.dma_set_number_of_data:0000000000000000 $t
+     /tmp/ccqTx6iX.s:1800   .text.dma_set_number_of_data:0000000000000000 dma_set_number_of_data
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.dma_common_l1f013.h.40.d146a609b72d90beef1aca4a3724028b
+
+NO UNDEFINED SYMBOLS

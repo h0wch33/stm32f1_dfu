@@ -1,0 +1,393 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"sync.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.__dmb,"ax",%progbits
+  16              		.align	1
+  17              		.global	__dmb
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	__dmb:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/cm3/sync.c"
+   1:../libopencm3/lib/cm3/sync.c **** /*
+   2:../libopencm3/lib/cm3/sync.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/cm3/sync.c ****  *
+   4:../libopencm3/lib/cm3/sync.c ****  * Copyright (C) 2012 Fergus Noble <fergusnoble@gmail.com>
+   5:../libopencm3/lib/cm3/sync.c ****  *
+   6:../libopencm3/lib/cm3/sync.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../libopencm3/lib/cm3/sync.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../libopencm3/lib/cm3/sync.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../libopencm3/lib/cm3/sync.c ****  * (at your option) any later version.
+  10:../libopencm3/lib/cm3/sync.c ****  *
+  11:../libopencm3/lib/cm3/sync.c ****  * This library is distributed in the hope that it will be useful,
+  12:../libopencm3/lib/cm3/sync.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../libopencm3/lib/cm3/sync.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../libopencm3/lib/cm3/sync.c ****  * GNU Lesser General Public License for more details.
+  15:../libopencm3/lib/cm3/sync.c ****  *
+  16:../libopencm3/lib/cm3/sync.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../libopencm3/lib/cm3/sync.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../libopencm3/lib/cm3/sync.c ****  */
+  19:../libopencm3/lib/cm3/sync.c **** 
+  20:../libopencm3/lib/cm3/sync.c **** #include <libopencm3/cm3/sync.h>
+  21:../libopencm3/lib/cm3/sync.c **** 
+  22:../libopencm3/lib/cm3/sync.c **** /* DMB is supported on CM0 */
+  23:../libopencm3/lib/cm3/sync.c **** void __dmb()
+  24:../libopencm3/lib/cm3/sync.c **** {
+  27              		.loc 1 24 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  25:../libopencm3/lib/cm3/sync.c **** 	__asm__ volatile ("dmb");
+  37              		.loc 1 25 2
+  38              		.syntax unified
+  39              	@ 25 "../libopencm3/lib/cm3/sync.c" 1
+  40 0004 BFF35F8F 		dmb
+  41              	@ 0 "" 2
+  26:../libopencm3/lib/cm3/sync.c **** }
+  42              		.loc 1 26 1
+  43              		.thumb
+  44              		.syntax unified
+  45 0008 00BF     		nop
+  46 000a BD46     		mov	sp, r7
+  47              		.cfi_def_cfa_register 13
+  48              		@ sp needed
+  49 000c 80BC     		pop	{r7}
+  50              		.cfi_restore 7
+  51              		.cfi_def_cfa_offset 0
+  52 000e 7047     		bx	lr
+  53              		.cfi_endproc
+  54              	.LFE0:
+  56              		.section	.text.__ldrex,"ax",%progbits
+  57              		.align	1
+  58              		.global	__ldrex
+  59              		.syntax unified
+  60              		.thumb
+  61              		.thumb_func
+  62              		.fpu softvfp
+  64              	__ldrex:
+  65              	.LFB1:
+  27:../libopencm3/lib/cm3/sync.c **** 
+  28:../libopencm3/lib/cm3/sync.c **** /* Those are defined only on CM3 or CM4 */
+  29:../libopencm3/lib/cm3/sync.c **** #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+  30:../libopencm3/lib/cm3/sync.c **** 
+  31:../libopencm3/lib/cm3/sync.c **** uint32_t __ldrex(volatile uint32_t *addr)
+  32:../libopencm3/lib/cm3/sync.c **** {
+  66              		.loc 1 32 1
+  67              		.cfi_startproc
+  68              		@ args = 0, pretend = 0, frame = 16
+  69              		@ frame_needed = 1, uses_anonymous_args = 0
+  70              		@ link register save eliminated.
+  71 0000 80B4     		push	{r7}
+  72              		.cfi_def_cfa_offset 4
+  73              		.cfi_offset 7, -4
+  74 0002 85B0     		sub	sp, sp, #20
+  75              		.cfi_def_cfa_offset 24
+  76 0004 00AF     		add	r7, sp, #0
+  77              		.cfi_def_cfa_register 7
+  78 0006 7860     		str	r0, [r7, #4]
+  33:../libopencm3/lib/cm3/sync.c **** 	uint32_t res;
+  34:../libopencm3/lib/cm3/sync.c **** 	__asm__ volatile ("ldrex %0, [%1]" : "=r" (res) : "r" (addr));
+  79              		.loc 1 34 2
+  80 0008 7B68     		ldr	r3, [r7, #4]
+  81              		.syntax unified
+  82              	@ 34 "../libopencm3/lib/cm3/sync.c" 1
+  83 000a 53E8003F 		ldrex r3, [r3]
+  84              	@ 0 "" 2
+  85              		.thumb
+  86              		.syntax unified
+  87 000e FB60     		str	r3, [r7, #12]
+  35:../libopencm3/lib/cm3/sync.c **** 	return res;
+  88              		.loc 1 35 9
+  89 0010 FB68     		ldr	r3, [r7, #12]
+  36:../libopencm3/lib/cm3/sync.c **** }
+  90              		.loc 1 36 1
+  91 0012 1846     		mov	r0, r3
+  92 0014 1437     		adds	r7, r7, #20
+  93              		.cfi_def_cfa_offset 4
+  94 0016 BD46     		mov	sp, r7
+  95              		.cfi_def_cfa_register 13
+  96              		@ sp needed
+  97 0018 80BC     		pop	{r7}
+  98              		.cfi_restore 7
+  99              		.cfi_def_cfa_offset 0
+ 100 001a 7047     		bx	lr
+ 101              		.cfi_endproc
+ 102              	.LFE1:
+ 104              		.section	.text.__strex,"ax",%progbits
+ 105              		.align	1
+ 106              		.global	__strex
+ 107              		.syntax unified
+ 108              		.thumb
+ 109              		.thumb_func
+ 110              		.fpu softvfp
+ 112              	__strex:
+ 113              	.LFB2:
+  37:../libopencm3/lib/cm3/sync.c **** 
+  38:../libopencm3/lib/cm3/sync.c **** uint32_t __strex(uint32_t val, volatile uint32_t *addr)
+  39:../libopencm3/lib/cm3/sync.c **** {
+ 114              		.loc 1 39 1
+ 115              		.cfi_startproc
+ 116              		@ args = 0, pretend = 0, frame = 16
+ 117              		@ frame_needed = 1, uses_anonymous_args = 0
+ 118              		@ link register save eliminated.
+ 119 0000 80B4     		push	{r7}
+ 120              		.cfi_def_cfa_offset 4
+ 121              		.cfi_offset 7, -4
+ 122 0002 85B0     		sub	sp, sp, #20
+ 123              		.cfi_def_cfa_offset 24
+ 124 0004 00AF     		add	r7, sp, #0
+ 125              		.cfi_def_cfa_register 7
+ 126 0006 7860     		str	r0, [r7, #4]
+ 127 0008 3960     		str	r1, [r7]
+  40:../libopencm3/lib/cm3/sync.c **** 	uint32_t res;
+  41:../libopencm3/lib/cm3/sync.c **** 	__asm__ volatile ("strex %0, %2, [%1]"
+ 128              		.loc 1 41 2
+ 129 000a 3A68     		ldr	r2, [r7]
+ 130 000c 7968     		ldr	r1, [r7, #4]
+ 131              		.syntax unified
+ 132              	@ 41 "../libopencm3/lib/cm3/sync.c" 1
+ 133 000e 42E80013 		strex r3, r1, [r2]
+ 134              	@ 0 "" 2
+ 135              		.thumb
+ 136              		.syntax unified
+ 137 0012 FB60     		str	r3, [r7, #12]
+  42:../libopencm3/lib/cm3/sync.c **** 			  : "=&r" (res) : "r" (addr), "r" (val));
+  43:../libopencm3/lib/cm3/sync.c **** 	return res;
+ 138              		.loc 1 43 9
+ 139 0014 FB68     		ldr	r3, [r7, #12]
+  44:../libopencm3/lib/cm3/sync.c **** }
+ 140              		.loc 1 44 1
+ 141 0016 1846     		mov	r0, r3
+ 142 0018 1437     		adds	r7, r7, #20
+ 143              		.cfi_def_cfa_offset 4
+ 144 001a BD46     		mov	sp, r7
+ 145              		.cfi_def_cfa_register 13
+ 146              		@ sp needed
+ 147 001c 80BC     		pop	{r7}
+ 148              		.cfi_restore 7
+ 149              		.cfi_def_cfa_offset 0
+ 150 001e 7047     		bx	lr
+ 151              		.cfi_endproc
+ 152              	.LFE2:
+ 154              		.section	.text.mutex_lock,"ax",%progbits
+ 155              		.align	1
+ 156              		.global	mutex_lock
+ 157              		.syntax unified
+ 158              		.thumb
+ 159              		.thumb_func
+ 160              		.fpu softvfp
+ 162              	mutex_lock:
+ 163              	.LFB3:
+  45:../libopencm3/lib/cm3/sync.c **** 
+  46:../libopencm3/lib/cm3/sync.c **** void mutex_lock(mutex_t *m)
+  47:../libopencm3/lib/cm3/sync.c **** {
+ 164              		.loc 1 47 1
+ 165              		.cfi_startproc
+ 166              		@ args = 0, pretend = 0, frame = 8
+ 167              		@ frame_needed = 1, uses_anonymous_args = 0
+ 168 0000 80B5     		push	{r7, lr}
+ 169              		.cfi_def_cfa_offset 8
+ 170              		.cfi_offset 7, -8
+ 171              		.cfi_offset 14, -4
+ 172 0002 82B0     		sub	sp, sp, #8
+ 173              		.cfi_def_cfa_offset 16
+ 174 0004 00AF     		add	r7, sp, #0
+ 175              		.cfi_def_cfa_register 7
+ 176 0006 7860     		str	r0, [r7, #4]
+  48:../libopencm3/lib/cm3/sync.c **** 	while (!mutex_trylock(m));
+ 177              		.loc 1 48 8
+ 178 0008 00BF     		nop
+ 179              	.L7:
+ 180              		.loc 1 48 10 discriminator 1
+ 181 000a 7868     		ldr	r0, [r7, #4]
+ 182 000c FFF7FEFF 		bl	mutex_trylock(PLT)
+ 183 0010 0346     		mov	r3, r0
+ 184              		.loc 1 48 8 discriminator 1
+ 185 0012 002B     		cmp	r3, #0
+ 186 0014 F9D0     		beq	.L7
+  49:../libopencm3/lib/cm3/sync.c **** }
+ 187              		.loc 1 49 1
+ 188 0016 00BF     		nop
+ 189 0018 0837     		adds	r7, r7, #8
+ 190              		.cfi_def_cfa_offset 8
+ 191 001a BD46     		mov	sp, r7
+ 192              		.cfi_def_cfa_register 13
+ 193              		@ sp needed
+ 194 001c 80BD     		pop	{r7, pc}
+ 195              		.cfi_endproc
+ 196              	.LFE3:
+ 198              		.section	.text.mutex_trylock,"ax",%progbits
+ 199              		.align	1
+ 200              		.global	mutex_trylock
+ 201              		.syntax unified
+ 202              		.thumb
+ 203              		.thumb_func
+ 204              		.fpu softvfp
+ 206              	mutex_trylock:
+ 207              	.LFB4:
+  50:../libopencm3/lib/cm3/sync.c **** 
+  51:../libopencm3/lib/cm3/sync.c **** /* returns 1 if the lock was acquired */
+  52:../libopencm3/lib/cm3/sync.c **** uint32_t mutex_trylock(mutex_t *m)
+  53:../libopencm3/lib/cm3/sync.c **** {
+ 208              		.loc 1 53 1
+ 209              		.cfi_startproc
+ 210              		@ args = 0, pretend = 0, frame = 16
+ 211              		@ frame_needed = 1, uses_anonymous_args = 0
+ 212 0000 80B5     		push	{r7, lr}
+ 213              		.cfi_def_cfa_offset 8
+ 214              		.cfi_offset 7, -8
+ 215              		.cfi_offset 14, -4
+ 216 0002 84B0     		sub	sp, sp, #16
+ 217              		.cfi_def_cfa_offset 24
+ 218 0004 00AF     		add	r7, sp, #0
+ 219              		.cfi_def_cfa_register 7
+ 220 0006 7860     		str	r0, [r7, #4]
+  54:../libopencm3/lib/cm3/sync.c **** 	uint32_t status = 1;
+ 221              		.loc 1 54 11
+ 222 0008 0123     		movs	r3, #1
+ 223 000a FB60     		str	r3, [r7, #12]
+  55:../libopencm3/lib/cm3/sync.c **** 
+  56:../libopencm3/lib/cm3/sync.c **** 	/* If the mutex is unlocked. */
+  57:../libopencm3/lib/cm3/sync.c **** 	if (__ldrex(m) == MUTEX_UNLOCKED) {
+ 224              		.loc 1 57 6
+ 225 000c 7868     		ldr	r0, [r7, #4]
+ 226 000e FFF7FEFF 		bl	__ldrex(PLT)
+ 227 0012 0346     		mov	r3, r0
+ 228              		.loc 1 57 5
+ 229 0014 002B     		cmp	r3, #0
+ 230 0016 04D1     		bne	.L9
+  58:../libopencm3/lib/cm3/sync.c **** 		/* Try to lock it. */
+  59:../libopencm3/lib/cm3/sync.c **** 		status = __strex(MUTEX_LOCKED, m);
+ 231              		.loc 1 59 12
+ 232 0018 7968     		ldr	r1, [r7, #4]
+ 233 001a 0120     		movs	r0, #1
+ 234 001c FFF7FEFF 		bl	__strex(PLT)
+ 235 0020 F860     		str	r0, [r7, #12]
+ 236              	.L9:
+  60:../libopencm3/lib/cm3/sync.c **** 	}
+  61:../libopencm3/lib/cm3/sync.c **** 
+  62:../libopencm3/lib/cm3/sync.c **** 	/* Execute the mysterious Data Memory Barrier instruction! */
+  63:../libopencm3/lib/cm3/sync.c **** 	__dmb();
+ 237              		.loc 1 63 2
+ 238 0022 FFF7FEFF 		bl	__dmb(PLT)
+  64:../libopencm3/lib/cm3/sync.c **** 
+  65:../libopencm3/lib/cm3/sync.c **** 	/* Did we get the lock? If not then try again
+  66:../libopencm3/lib/cm3/sync.c **** 	 * by calling this function once more. */
+  67:../libopencm3/lib/cm3/sync.c **** 	return status == 0;
+ 239              		.loc 1 67 16
+ 240 0026 FB68     		ldr	r3, [r7, #12]
+ 241 0028 002B     		cmp	r3, #0
+ 242 002a 0CBF     		ite	eq
+ 243 002c 0123     		moveq	r3, #1
+ 244 002e 0023     		movne	r3, #0
+ 245 0030 DBB2     		uxtb	r3, r3
+  68:../libopencm3/lib/cm3/sync.c **** }
+ 246              		.loc 1 68 1
+ 247 0032 1846     		mov	r0, r3
+ 248 0034 1037     		adds	r7, r7, #16
+ 249              		.cfi_def_cfa_offset 8
+ 250 0036 BD46     		mov	sp, r7
+ 251              		.cfi_def_cfa_register 13
+ 252              		@ sp needed
+ 253 0038 80BD     		pop	{r7, pc}
+ 254              		.cfi_endproc
+ 255              	.LFE4:
+ 257              		.section	.text.mutex_unlock,"ax",%progbits
+ 258              		.align	1
+ 259              		.global	mutex_unlock
+ 260              		.syntax unified
+ 261              		.thumb
+ 262              		.thumb_func
+ 263              		.fpu softvfp
+ 265              	mutex_unlock:
+ 266              	.LFB5:
+  69:../libopencm3/lib/cm3/sync.c **** 
+  70:../libopencm3/lib/cm3/sync.c **** void mutex_unlock(mutex_t *m)
+  71:../libopencm3/lib/cm3/sync.c **** {
+ 267              		.loc 1 71 1
+ 268              		.cfi_startproc
+ 269              		@ args = 0, pretend = 0, frame = 8
+ 270              		@ frame_needed = 1, uses_anonymous_args = 0
+ 271 0000 80B5     		push	{r7, lr}
+ 272              		.cfi_def_cfa_offset 8
+ 273              		.cfi_offset 7, -8
+ 274              		.cfi_offset 14, -4
+ 275 0002 82B0     		sub	sp, sp, #8
+ 276              		.cfi_def_cfa_offset 16
+ 277 0004 00AF     		add	r7, sp, #0
+ 278              		.cfi_def_cfa_register 7
+ 279 0006 7860     		str	r0, [r7, #4]
+  72:../libopencm3/lib/cm3/sync.c **** 	/* Ensure accesses to protected resource are finished */
+  73:../libopencm3/lib/cm3/sync.c **** 	__dmb();
+ 280              		.loc 1 73 2
+ 281 0008 FFF7FEFF 		bl	__dmb(PLT)
+  74:../libopencm3/lib/cm3/sync.c **** 
+  75:../libopencm3/lib/cm3/sync.c **** 	/* Free the lock. */
+  76:../libopencm3/lib/cm3/sync.c **** 	*m = MUTEX_UNLOCKED;
+ 282              		.loc 1 76 5
+ 283 000c 7B68     		ldr	r3, [r7, #4]
+ 284 000e 0022     		movs	r2, #0
+ 285 0010 1A60     		str	r2, [r3]
+  77:../libopencm3/lib/cm3/sync.c **** }
+ 286              		.loc 1 77 1
+ 287 0012 00BF     		nop
+ 288 0014 0837     		adds	r7, r7, #8
+ 289              		.cfi_def_cfa_offset 8
+ 290 0016 BD46     		mov	sp, r7
+ 291              		.cfi_def_cfa_register 13
+ 292              		@ sp needed
+ 293 0018 80BD     		pop	{r7, pc}
+ 294              		.cfi_endproc
+ 295              	.LFE5:
+ 297              		.text
+ 298              	.Letext0:
+ 299              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 300              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 301              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/cm3/sync.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sync.c
+     /tmp/ccNbZlV3.s:16     .text.__dmb:0000000000000000 $t
+     /tmp/ccNbZlV3.s:24     .text.__dmb:0000000000000000 __dmb
+     /tmp/ccNbZlV3.s:57     .text.__ldrex:0000000000000000 $t
+     /tmp/ccNbZlV3.s:64     .text.__ldrex:0000000000000000 __ldrex
+     /tmp/ccNbZlV3.s:105    .text.__strex:0000000000000000 $t
+     /tmp/ccNbZlV3.s:112    .text.__strex:0000000000000000 __strex
+     /tmp/ccNbZlV3.s:155    .text.mutex_lock:0000000000000000 $t
+     /tmp/ccNbZlV3.s:162    .text.mutex_lock:0000000000000000 mutex_lock
+     /tmp/ccNbZlV3.s:206    .text.mutex_trylock:0000000000000000 mutex_trylock
+     /tmp/ccNbZlV3.s:199    .text.mutex_trylock:0000000000000000 $t
+     /tmp/ccNbZlV3.s:258    .text.mutex_unlock:0000000000000000 $t
+     /tmp/ccNbZlV3.s:265    .text.mutex_unlock:0000000000000000 mutex_unlock
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.sync.h.48.e752cb5d650fd04255cfa2820a67aec0
+
+NO UNDEFINED SYMBOLS

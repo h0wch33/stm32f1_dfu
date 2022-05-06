@@ -1,0 +1,488 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"flash_common_f01.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.flash_clear_pgerr_flag,"ax",%progbits
+  16              		.align	1
+  17              		.global	flash_clear_pgerr_flag
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	flash_clear_pgerr_flag:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/flash_common_f01.c"
+   1:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @addtogroup flash_file
+   2:../libopencm3/lib/stm32/common/flash_common_f01.c ****  *
+   3:../libopencm3/lib/stm32/common/flash_common_f01.c ****  */
+   4:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+   5:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*
+   6:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * This file is part of the libopencm3 project.
+   7:../libopencm3/lib/stm32/common/flash_common_f01.c ****  *
+   8:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * Copyright (C) 2014 Ken Sarkies <ksarkies@internode.on.net>
+   9:../libopencm3/lib/stm32/common/flash_common_f01.c ****  *
+  10:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * This library is free software: you can redistribute it and/or modify
+  11:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  12:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * the Free Software Foundation, either version 3 of the License, or
+  13:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * (at your option) any later version.
+  14:../libopencm3/lib/stm32/common/flash_common_f01.c ****  *
+  15:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * This library is distributed in the hope that it will be useful,
+  16:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  17:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  18:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * GNU Lesser General Public License for more details.
+  19:../libopencm3/lib/stm32/common/flash_common_f01.c ****  *
+  20:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * You should have received a copy of the GNU Lesser General Public License
+  21:../libopencm3/lib/stm32/common/flash_common_f01.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  22:../libopencm3/lib/stm32/common/flash_common_f01.c ****  */
+  23:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  24:../libopencm3/lib/stm32/common/flash_common_f01.c **** /**@{*/
+  25:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  26:../libopencm3/lib/stm32/common/flash_common_f01.c **** #include <libopencm3/stm32/flash.h>
+  27:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  28:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  29:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  30:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Unlock the Flash Program and Erase Controller
+  31:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  32:../libopencm3/lib/stm32/common/flash_common_f01.c **** This enables write access to the Flash memory. It is locked by default on
+  33:../libopencm3/lib/stm32/common/flash_common_f01.c **** reset.
+  34:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  35:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  36:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  37:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  38:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Clear the Programming Error Status Flag
+  39:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  40:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  41:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  42:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_clear_pgerr_flag(void)
+  43:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+  27              		.loc 1 43 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  44:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_SR |= FLASH_SR_PGERR;
+  37              		.loc 1 44 11
+  38 0004 044B     		ldr	r3, .L2
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 034A     		ldr	r2, .L2
+  41 000a 43F00403 		orr	r3, r3, #4
+  42 000e 1360     		str	r3, [r2]
+  45:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+  43              		.loc 1 45 1
+  44 0010 00BF     		nop
+  45 0012 BD46     		mov	sp, r7
+  46              		.cfi_def_cfa_register 13
+  47              		@ sp needed
+  48 0014 80BC     		pop	{r7}
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 0016 7047     		bx	lr
+  52              	.L3:
+  53              		.align	2
+  54              	.L2:
+  55 0018 0C200240 		.word	1073881100
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.section	.text.flash_clear_wrprterr_flag,"ax",%progbits
+  60              		.align	1
+  61              		.global	flash_clear_wrprterr_flag
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu softvfp
+  67              	flash_clear_wrprterr_flag:
+  68              	.LFB1:
+  46:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  47:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  48:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Clear the Write Protect Error Status Flag
+  49:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  50:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  51:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  52:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_clear_wrprterr_flag(void)
+  53:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+  69              		.loc 1 53 1
+  70              		.cfi_startproc
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 1, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 80B4     		push	{r7}
+  75              		.cfi_def_cfa_offset 4
+  76              		.cfi_offset 7, -4
+  77 0002 00AF     		add	r7, sp, #0
+  78              		.cfi_def_cfa_register 7
+  54:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_SR |= FLASH_SR_WRPRTERR;
+  79              		.loc 1 54 11
+  80 0004 044B     		ldr	r3, .L5
+  81 0006 1B68     		ldr	r3, [r3]
+  82 0008 034A     		ldr	r2, .L5
+  83 000a 43F01003 		orr	r3, r3, #16
+  84 000e 1360     		str	r3, [r2]
+  55:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+  85              		.loc 1 55 1
+  86 0010 00BF     		nop
+  87 0012 BD46     		mov	sp, r7
+  88              		.cfi_def_cfa_register 13
+  89              		@ sp needed
+  90 0014 80BC     		pop	{r7}
+  91              		.cfi_restore 7
+  92              		.cfi_def_cfa_offset 0
+  93 0016 7047     		bx	lr
+  94              	.L6:
+  95              		.align	2
+  96              	.L5:
+  97 0018 0C200240 		.word	1073881100
+  98              		.cfi_endproc
+  99              	.LFE1:
+ 101              		.section	.text.flash_wait_for_last_operation,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	flash_wait_for_last_operation
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu softvfp
+ 109              	flash_wait_for_last_operation:
+ 110              	.LFB2:
+  56:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  57:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  58:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Wait until Last Operation has Ended
+  59:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  60:../libopencm3/lib/stm32/common/flash_common_f01.c **** This loops indefinitely until an operation (write or erase) has completed by
+  61:../libopencm3/lib/stm32/common/flash_common_f01.c **** testing the busy flag.
+  62:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  63:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  64:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_wait_for_last_operation(void)
+  65:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+ 111              		.loc 1 65 1
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 1, uses_anonymous_args = 0
+ 115 0000 80B5     		push	{r7, lr}
+ 116              		.cfi_def_cfa_offset 8
+ 117              		.cfi_offset 7, -8
+ 118              		.cfi_offset 14, -4
+ 119 0002 00AF     		add	r7, sp, #0
+ 120              		.cfi_def_cfa_register 7
+  66:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	while ((flash_get_status_flags() & FLASH_SR_BSY) == FLASH_SR_BSY);
+ 121              		.loc 1 66 8
+ 122 0004 00BF     		nop
+ 123              	.L8:
+ 124              		.loc 1 66 10 discriminator 1
+ 125 0006 FFF7FEFF 		bl	flash_get_status_flags(PLT)
+ 126 000a 0346     		mov	r3, r0
+ 127              		.loc 1 66 35 discriminator 1
+ 128 000c 03F00103 		and	r3, r3, #1
+ 129              		.loc 1 66 8 discriminator 1
+ 130 0010 012B     		cmp	r3, #1
+ 131 0012 F8D0     		beq	.L8
+  67:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+ 132              		.loc 1 67 1
+ 133 0014 00BF     		nop
+ 134 0016 80BD     		pop	{r7, pc}
+ 135              		.cfi_endproc
+ 136              	.LFE2:
+ 138              		.section	.text.flash_program_word,"ax",%progbits
+ 139              		.align	1
+ 140              		.global	flash_program_word
+ 141              		.syntax unified
+ 142              		.thumb
+ 143              		.thumb_func
+ 144              		.fpu softvfp
+ 146              	flash_program_word:
+ 147              	.LFB3:
+  68:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  69:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  70:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Program a 32 bit Word to FLASH
+  71:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  72:../libopencm3/lib/stm32/common/flash_common_f01.c **** This performs all operations necessary to program a 32 bit word to FLASH memory.
+  73:../libopencm3/lib/stm32/common/flash_common_f01.c **** The program error flag should be checked separately for the event that memory
+  74:../libopencm3/lib/stm32/common/flash_common_f01.c **** was not properly erased.
+  75:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  76:../libopencm3/lib/stm32/common/flash_common_f01.c **** Status bit polling is used to detect end of operation.
+  77:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  78:../libopencm3/lib/stm32/common/flash_common_f01.c **** @param[in] address Full address of flash word to be programmed.
+  79:../libopencm3/lib/stm32/common/flash_common_f01.c **** @param[in] data word to write
+  80:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  81:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  82:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_program_word(uint32_t address, uint32_t data)
+  83:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+ 148              		.loc 1 83 1
+ 149              		.cfi_startproc
+ 150              		@ args = 0, pretend = 0, frame = 8
+ 151              		@ frame_needed = 1, uses_anonymous_args = 0
+ 152 0000 80B5     		push	{r7, lr}
+ 153              		.cfi_def_cfa_offset 8
+ 154              		.cfi_offset 7, -8
+ 155              		.cfi_offset 14, -4
+ 156 0002 82B0     		sub	sp, sp, #8
+ 157              		.cfi_def_cfa_offset 16
+ 158 0004 00AF     		add	r7, sp, #0
+ 159              		.cfi_def_cfa_register 7
+ 160 0006 7860     		str	r0, [r7, #4]
+ 161 0008 3960     		str	r1, [r7]
+  84:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_program_half_word(address, (uint16_t)data);
+ 162              		.loc 1 84 2
+ 163 000a 3B68     		ldr	r3, [r7]
+ 164 000c 9BB2     		uxth	r3, r3
+ 165 000e 1946     		mov	r1, r3
+ 166 0010 7868     		ldr	r0, [r7, #4]
+ 167 0012 FFF7FEFF 		bl	flash_program_half_word(PLT)
+  85:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_program_half_word(address+2, (uint16_t)(data>>16));
+ 168              		.loc 1 85 2
+ 169 0016 7B68     		ldr	r3, [r7, #4]
+ 170 0018 9A1C     		adds	r2, r3, #2
+ 171              		.loc 1 85 52
+ 172 001a 3B68     		ldr	r3, [r7]
+ 173 001c 1B0C     		lsrs	r3, r3, #16
+ 174              		.loc 1 85 2
+ 175 001e 9BB2     		uxth	r3, r3
+ 176 0020 1946     		mov	r1, r3
+ 177 0022 1046     		mov	r0, r2
+ 178 0024 FFF7FEFF 		bl	flash_program_half_word(PLT)
+  86:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+ 179              		.loc 1 86 1
+ 180 0028 00BF     		nop
+ 181 002a 0837     		adds	r7, r7, #8
+ 182              		.cfi_def_cfa_offset 8
+ 183 002c BD46     		mov	sp, r7
+ 184              		.cfi_def_cfa_register 13
+ 185              		@ sp needed
+ 186 002e 80BD     		pop	{r7, pc}
+ 187              		.cfi_endproc
+ 188              	.LFE3:
+ 190              		.section	.text.flash_erase_option_bytes,"ax",%progbits
+ 191              		.align	1
+ 192              		.global	flash_erase_option_bytes
+ 193              		.syntax unified
+ 194              		.thumb
+ 195              		.thumb_func
+ 196              		.fpu softvfp
+ 198              	flash_erase_option_bytes:
+ 199              	.LFB4:
+  87:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  88:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+  89:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Erase All Option Bytes
+  90:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  91:../libopencm3/lib/stm32/common/flash_common_f01.c **** This performs all operations necessary to erase the option bytes. These must
+  92:../libopencm3/lib/stm32/common/flash_common_f01.c **** first be fully erased before attempting to program them, therefore it is
+  93:../libopencm3/lib/stm32/common/flash_common_f01.c **** recommended to check these after an erase attempt.
+  94:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+  95:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+  96:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_erase_option_bytes(void)
+  97:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+ 200              		.loc 1 97 1
+ 201              		.cfi_startproc
+ 202              		@ args = 0, pretend = 0, frame = 0
+ 203              		@ frame_needed = 1, uses_anonymous_args = 0
+ 204 0000 80B5     		push	{r7, lr}
+ 205              		.cfi_def_cfa_offset 8
+ 206              		.cfi_offset 7, -8
+ 207              		.cfi_offset 14, -4
+ 208 0002 00AF     		add	r7, sp, #0
+ 209              		.cfi_def_cfa_register 7
+  98:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_wait_for_last_operation();
+ 210              		.loc 1 98 2
+ 211 0004 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+  99:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 100:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	if ((FLASH_CR & FLASH_CR_OPTWRE) == 0) {
+ 212              		.loc 1 100 7
+ 213 0008 0E4B     		ldr	r3, .L12
+ 214 000a 1B68     		ldr	r3, [r3]
+ 215              		.loc 1 100 16
+ 216 000c 03F40073 		and	r3, r3, #512
+ 217              		.loc 1 100 5
+ 218 0010 002B     		cmp	r3, #0
+ 219 0012 01D1     		bne	.L11
+ 101:../libopencm3/lib/stm32/common/flash_common_f01.c **** 		flash_unlock_option_bytes();
+ 220              		.loc 1 101 3
+ 221 0014 FFF7FEFF 		bl	flash_unlock_option_bytes(PLT)
+ 222              	.L11:
+ 102:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	}
+ 103:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 104:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_CR |= FLASH_CR_OPTER;	/* Enable option byte erase. */
+ 223              		.loc 1 104 11
+ 224 0018 0A4B     		ldr	r3, .L12
+ 225 001a 1B68     		ldr	r3, [r3]
+ 226 001c 094A     		ldr	r2, .L12
+ 227 001e 43F02003 		orr	r3, r3, #32
+ 228 0022 1360     		str	r3, [r2]
+ 105:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_CR |= FLASH_CR_STRT;
+ 229              		.loc 1 105 11
+ 230 0024 074B     		ldr	r3, .L12
+ 231 0026 1B68     		ldr	r3, [r3]
+ 232 0028 064A     		ldr	r2, .L12
+ 233 002a 43F04003 		orr	r3, r3, #64
+ 234 002e 1360     		str	r3, [r2]
+ 106:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_wait_for_last_operation();
+ 235              		.loc 1 106 2
+ 236 0030 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 107:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_CR &= ~FLASH_CR_OPTER;	/* Disable option byte erase. */
+ 237              		.loc 1 107 11
+ 238 0034 034B     		ldr	r3, .L12
+ 239 0036 1B68     		ldr	r3, [r3]
+ 240 0038 024A     		ldr	r2, .L12
+ 241 003a 23F02003 		bic	r3, r3, #32
+ 242 003e 1360     		str	r3, [r2]
+ 108:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+ 243              		.loc 1 108 1
+ 244 0040 00BF     		nop
+ 245 0042 80BD     		pop	{r7, pc}
+ 246              	.L13:
+ 247              		.align	2
+ 248              	.L12:
+ 249 0044 10200240 		.word	1073881104
+ 250              		.cfi_endproc
+ 251              	.LFE4:
+ 253              		.section	.text.flash_program_option_bytes,"ax",%progbits
+ 254              		.align	1
+ 255              		.global	flash_program_option_bytes
+ 256              		.syntax unified
+ 257              		.thumb
+ 258              		.thumb_func
+ 259              		.fpu softvfp
+ 261              	flash_program_option_bytes:
+ 262              	.LFB5:
+ 109:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 110:../libopencm3/lib/stm32/common/flash_common_f01.c **** /*---------------------------------------------------------------------------*/
+ 111:../libopencm3/lib/stm32/common/flash_common_f01.c **** /** @brief Program the Option Bytes
+ 112:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 113:../libopencm3/lib/stm32/common/flash_common_f01.c **** This performs all operations necessary to program the option bytes.
+ 114:../libopencm3/lib/stm32/common/flash_common_f01.c **** The write protect error flag should be checked separately for the event that
+ 115:../libopencm3/lib/stm32/common/flash_common_f01.c **** an option byte had not been properly erased before calling this function.
+ 116:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 117:../libopencm3/lib/stm32/common/flash_common_f01.c **** Only the lower 8 bits of the data is significant.
+ 118:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 119:../libopencm3/lib/stm32/common/flash_common_f01.c **** @param[in] address Address of option byte from @ref flash_options.
+ 120:../libopencm3/lib/stm32/common/flash_common_f01.c **** @param[in] data value to write
+ 121:../libopencm3/lib/stm32/common/flash_common_f01.c **** */
+ 122:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 123:../libopencm3/lib/stm32/common/flash_common_f01.c **** void flash_program_option_bytes(uint32_t address, uint16_t data)
+ 124:../libopencm3/lib/stm32/common/flash_common_f01.c **** {
+ 263              		.loc 1 124 1
+ 264              		.cfi_startproc
+ 265              		@ args = 0, pretend = 0, frame = 8
+ 266              		@ frame_needed = 1, uses_anonymous_args = 0
+ 267 0000 80B5     		push	{r7, lr}
+ 268              		.cfi_def_cfa_offset 8
+ 269              		.cfi_offset 7, -8
+ 270              		.cfi_offset 14, -4
+ 271 0002 82B0     		sub	sp, sp, #8
+ 272              		.cfi_def_cfa_offset 16
+ 273 0004 00AF     		add	r7, sp, #0
+ 274              		.cfi_def_cfa_register 7
+ 275 0006 7860     		str	r0, [r7, #4]
+ 276 0008 0B46     		mov	r3, r1
+ 277 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 125:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_wait_for_last_operation();
+ 278              		.loc 1 125 2
+ 279 000c FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 126:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 127:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	if ((FLASH_CR & FLASH_CR_OPTWRE) == 0) {
+ 280              		.loc 1 127 7
+ 281 0010 0E4B     		ldr	r3, .L16
+ 282 0012 1B68     		ldr	r3, [r3]
+ 283              		.loc 1 127 16
+ 284 0014 03F40073 		and	r3, r3, #512
+ 285              		.loc 1 127 5
+ 286 0018 002B     		cmp	r3, #0
+ 287 001a 01D1     		bne	.L15
+ 128:../libopencm3/lib/stm32/common/flash_common_f01.c **** 		flash_unlock_option_bytes();
+ 288              		.loc 1 128 3
+ 289 001c FFF7FEFF 		bl	flash_unlock_option_bytes(PLT)
+ 290              	.L15:
+ 129:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	}
+ 130:../libopencm3/lib/stm32/common/flash_common_f01.c **** 
+ 131:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_CR |= FLASH_CR_OPTPG;	/* Enable option byte programming. */
+ 291              		.loc 1 131 11
+ 292 0020 0A4B     		ldr	r3, .L16
+ 293 0022 1B68     		ldr	r3, [r3]
+ 294 0024 094A     		ldr	r2, .L16
+ 295 0026 43F01003 		orr	r3, r3, #16
+ 296 002a 1360     		str	r3, [r2]
+ 132:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	MMIO16(address) = data;
+ 297              		.loc 1 132 2
+ 298 002c 7B68     		ldr	r3, [r7, #4]
+ 299              		.loc 1 132 18
+ 300 002e 7A88     		ldrh	r2, [r7, #2]	@ movhi
+ 301 0030 1A80     		strh	r2, [r3]	@ movhi
+ 133:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	flash_wait_for_last_operation();
+ 302              		.loc 1 133 2
+ 303 0032 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 134:../libopencm3/lib/stm32/common/flash_common_f01.c **** 	FLASH_CR &= ~FLASH_CR_OPTPG;	/* Disable option byte programming. */
+ 304              		.loc 1 134 11
+ 305 0036 054B     		ldr	r3, .L16
+ 306 0038 1B68     		ldr	r3, [r3]
+ 307 003a 044A     		ldr	r2, .L16
+ 308 003c 23F01003 		bic	r3, r3, #16
+ 309 0040 1360     		str	r3, [r2]
+ 135:../libopencm3/lib/stm32/common/flash_common_f01.c **** }
+ 310              		.loc 1 135 1
+ 311 0042 00BF     		nop
+ 312 0044 0837     		adds	r7, r7, #8
+ 313              		.cfi_def_cfa_offset 8
+ 314 0046 BD46     		mov	sp, r7
+ 315              		.cfi_def_cfa_register 13
+ 316              		@ sp needed
+ 317 0048 80BD     		pop	{r7, pc}
+ 318              	.L17:
+ 319 004a 00BF     		.align	2
+ 320              	.L16:
+ 321 004c 10200240 		.word	1073881104
+ 322              		.cfi_endproc
+ 323              	.LFE5:
+ 325              		.text
+ 326              	.Letext0:
+ 327              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 328              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 flash_common_f01.c
+     /tmp/cchG9045.s:16     .text.flash_clear_pgerr_flag:0000000000000000 $t
+     /tmp/cchG9045.s:24     .text.flash_clear_pgerr_flag:0000000000000000 flash_clear_pgerr_flag
+     /tmp/cchG9045.s:55     .text.flash_clear_pgerr_flag:0000000000000018 $d
+     /tmp/cchG9045.s:60     .text.flash_clear_wrprterr_flag:0000000000000000 $t
+     /tmp/cchG9045.s:67     .text.flash_clear_wrprterr_flag:0000000000000000 flash_clear_wrprterr_flag
+     /tmp/cchG9045.s:97     .text.flash_clear_wrprterr_flag:0000000000000018 $d
+     /tmp/cchG9045.s:102    .text.flash_wait_for_last_operation:0000000000000000 $t
+     /tmp/cchG9045.s:109    .text.flash_wait_for_last_operation:0000000000000000 flash_wait_for_last_operation
+     /tmp/cchG9045.s:139    .text.flash_program_word:0000000000000000 $t
+     /tmp/cchG9045.s:146    .text.flash_program_word:0000000000000000 flash_program_word
+     /tmp/cchG9045.s:191    .text.flash_erase_option_bytes:0000000000000000 $t
+     /tmp/cchG9045.s:198    .text.flash_erase_option_bytes:0000000000000000 flash_erase_option_bytes
+     /tmp/cchG9045.s:249    .text.flash_erase_option_bytes:0000000000000044 $d
+     /tmp/cchG9045.s:254    .text.flash_program_option_bytes:0000000000000000 $t
+     /tmp/cchG9045.s:261    .text.flash_program_option_bytes:0000000000000000 flash_program_option_bytes
+     /tmp/cchG9045.s:321    .text.flash_program_option_bytes:000000000000004c $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.flash_common_f01.h.35.08a510204460b203acd9a4d6dd59edc6
+                           .group:0000000000000000 wm4.flash.h.55.42f95aa46a0865597bcfe2be66f7631d
+
+UNDEFINED SYMBOLS
+flash_get_status_flags
+flash_program_half_word
+flash_unlock_option_bytes

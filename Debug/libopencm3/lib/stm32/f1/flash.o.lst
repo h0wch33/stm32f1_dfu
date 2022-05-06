@@ -1,0 +1,1068 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"flash.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.flash_halfcycle_enable,"ax",%progbits
+  16              		.align	1
+  17              		.global	flash_halfcycle_enable
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	flash_halfcycle_enable:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/f1/flash.c"
+   1:../libopencm3/lib/stm32/f1/flash.c **** /** @defgroup flash_file FLASH peripheral API
+   2:../libopencm3/lib/stm32/f1/flash.c ****  *
+   3:../libopencm3/lib/stm32/f1/flash.c ****  * @ingroup peripheral_apis
+   4:../libopencm3/lib/stm32/f1/flash.c ****  *
+   5:../libopencm3/lib/stm32/f1/flash.c ****  * @brief <b>libopencm3 STM32F1xx FLASH Memory</b>
+   6:../libopencm3/lib/stm32/f1/flash.c ****  *
+   7:../libopencm3/lib/stm32/f1/flash.c ****  * @version 1.0.0
+   8:../libopencm3/lib/stm32/f1/flash.c ****  *
+   9:../libopencm3/lib/stm32/f1/flash.c ****  * @author @htmlonly &copy; @endhtmlonly 2010
+  10:../libopencm3/lib/stm32/f1/flash.c ****  * Thomas Otto <tommi@viadmin.org>
+  11:../libopencm3/lib/stm32/f1/flash.c ****  * @author @htmlonly &copy; @endhtmlonly 2010
+  12:../libopencm3/lib/stm32/f1/flash.c ****  * Mark Butler <mbutler@physics.otago.ac.nz>
+  13:../libopencm3/lib/stm32/f1/flash.c ****  *
+  14:../libopencm3/lib/stm32/f1/flash.c ****  * @date 14 January 2014
+  15:../libopencm3/lib/stm32/f1/flash.c ****  *
+  16:../libopencm3/lib/stm32/f1/flash.c ****  * For the STM32F1xx, accessing FLASH memory is described briefly in
+  17:../libopencm3/lib/stm32/f1/flash.c ****  * section 3.3.3 of the STM32F10x Reference Manual.
+  18:../libopencm3/lib/stm32/f1/flash.c ****  * For detailed programming information see:
+  19:../libopencm3/lib/stm32/f1/flash.c ****  * PM0075 programming manual: STM32F10xxx Flash programming
+  20:../libopencm3/lib/stm32/f1/flash.c ****  * August 2010, Doc ID 17863 Rev 1
+  21:../libopencm3/lib/stm32/f1/flash.c ****  * https://github.com/libopencm3/libopencm3-archive/blob/master/st_micro/CD00283419.pdf
+  22:../libopencm3/lib/stm32/f1/flash.c ****  *
+  23:../libopencm3/lib/stm32/f1/flash.c ****  * FLASH memory may be used for data storage as well as code, and may be
+  24:../libopencm3/lib/stm32/f1/flash.c ****  * programmatically modified. Note that for firmware upload the STM32F1xx
+  25:../libopencm3/lib/stm32/f1/flash.c ****  * provides a built-in bootloader in system memory that can be entered from a
+  26:../libopencm3/lib/stm32/f1/flash.c ****  * running program.
+  27:../libopencm3/lib/stm32/f1/flash.c ****  *
+  28:../libopencm3/lib/stm32/f1/flash.c ****  * FLASH must first be unlocked before programming. In this module a write to
+  29:../libopencm3/lib/stm32/f1/flash.c ****  * FLASH is a blocking operation until the end-of-operation flag is asserted.
+  30:../libopencm3/lib/stm32/f1/flash.c ****  *
+  31:../libopencm3/lib/stm32/f1/flash.c ****  * @note: don't forget to lock it again when all operations are complete.
+  32:../libopencm3/lib/stm32/f1/flash.c ****  *
+  33:../libopencm3/lib/stm32/f1/flash.c ****  * For the large memory XL series, with two banks of FLASH, the upper bank is
+  34:../libopencm3/lib/stm32/f1/flash.c ****  * accessed with a second set of registers. In principle both banks can be
+  35:../libopencm3/lib/stm32/f1/flash.c ****  * written simultaneously, or one read while the other is written. This module
+  36:../libopencm3/lib/stm32/f1/flash.c ****  * does not support the simultaneous write feature.
+  37:../libopencm3/lib/stm32/f1/flash.c ****  *
+  38:../libopencm3/lib/stm32/f1/flash.c ****  * LGPL License Terms @ref lgpl_license
+  39:../libopencm3/lib/stm32/f1/flash.c ****  */
+  40:../libopencm3/lib/stm32/f1/flash.c **** /*
+  41:../libopencm3/lib/stm32/f1/flash.c ****  * This file is part of the libopencm3 project.
+  42:../libopencm3/lib/stm32/f1/flash.c ****  *
+  43:../libopencm3/lib/stm32/f1/flash.c ****  * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
+  44:../libopencm3/lib/stm32/f1/flash.c ****  * Copyright (C) 2010 Mark Butler <mbutler@physics.otago.ac.nz>
+  45:../libopencm3/lib/stm32/f1/flash.c ****  *
+  46:../libopencm3/lib/stm32/f1/flash.c ****  * This library is free software: you can redistribute it and/or modify
+  47:../libopencm3/lib/stm32/f1/flash.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  48:../libopencm3/lib/stm32/f1/flash.c ****  * the Free Software Foundation, either version 3 of the License, or
+  49:../libopencm3/lib/stm32/f1/flash.c ****  * (at your option) any later version.
+  50:../libopencm3/lib/stm32/f1/flash.c ****  *
+  51:../libopencm3/lib/stm32/f1/flash.c ****  * This library is distributed in the hope that it will be useful,
+  52:../libopencm3/lib/stm32/f1/flash.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  53:../libopencm3/lib/stm32/f1/flash.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  54:../libopencm3/lib/stm32/f1/flash.c ****  * GNU Lesser General Public License for more details.
+  55:../libopencm3/lib/stm32/f1/flash.c ****  *
+  56:../libopencm3/lib/stm32/f1/flash.c ****  * You should have received a copy of the GNU Lesser General Public License
+  57:../libopencm3/lib/stm32/f1/flash.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  58:../libopencm3/lib/stm32/f1/flash.c ****  */
+  59:../libopencm3/lib/stm32/f1/flash.c **** 
+  60:../libopencm3/lib/stm32/f1/flash.c **** /**@{*/
+  61:../libopencm3/lib/stm32/f1/flash.c **** 
+  62:../libopencm3/lib/stm32/f1/flash.c **** #include <libopencm3/stm32/desig.h>
+  63:../libopencm3/lib/stm32/f1/flash.c **** #include <libopencm3/stm32/flash.h>
+  64:../libopencm3/lib/stm32/f1/flash.c **** 
+  65:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+  66:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Enable the FLASH Half Cycle Mode
+  67:../libopencm3/lib/stm32/f1/flash.c **** 
+  68:../libopencm3/lib/stm32/f1/flash.c **** This mode is used for power saving during read access. It is disabled by default
+  69:../libopencm3/lib/stm32/f1/flash.c **** on reset.
+  70:../libopencm3/lib/stm32/f1/flash.c **** 
+  71:../libopencm3/lib/stm32/f1/flash.c **** Note carefully the clock restrictions under which the half cycle mode may be
+  72:../libopencm3/lib/stm32/f1/flash.c **** enabled or disabled. This mode may only be used while the clock is running at
+  73:../libopencm3/lib/stm32/f1/flash.c **** 8MHz. See the reference manual for details.
+  74:../libopencm3/lib/stm32/f1/flash.c **** */
+  75:../libopencm3/lib/stm32/f1/flash.c **** 
+  76:../libopencm3/lib/stm32/f1/flash.c **** void flash_halfcycle_enable(void)
+  77:../libopencm3/lib/stm32/f1/flash.c **** {
+  27              		.loc 1 77 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  78:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_ACR |= FLASH_ACR_HLFCYA;
+  37              		.loc 1 78 12
+  38 0004 044B     		ldr	r3, .L2
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 034A     		ldr	r2, .L2
+  41 000a 43F00803 		orr	r3, r3, #8
+  42 000e 1360     		str	r3, [r2]
+  79:../libopencm3/lib/stm32/f1/flash.c **** }
+  43              		.loc 1 79 1
+  44 0010 00BF     		nop
+  45 0012 BD46     		mov	sp, r7
+  46              		.cfi_def_cfa_register 13
+  47              		@ sp needed
+  48 0014 80BC     		pop	{r7}
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 0016 7047     		bx	lr
+  52              	.L3:
+  53              		.align	2
+  54              	.L2:
+  55 0018 00200240 		.word	1073881088
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.section	.text.flash_halfcycle_disable,"ax",%progbits
+  60              		.align	1
+  61              		.global	flash_halfcycle_disable
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu softvfp
+  67              	flash_halfcycle_disable:
+  68              	.LFB1:
+  80:../libopencm3/lib/stm32/f1/flash.c **** 
+  81:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+  82:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Disable the FLASH Half Cycle Mode
+  83:../libopencm3/lib/stm32/f1/flash.c **** 
+  84:../libopencm3/lib/stm32/f1/flash.c **** */
+  85:../libopencm3/lib/stm32/f1/flash.c **** 
+  86:../libopencm3/lib/stm32/f1/flash.c **** void flash_halfcycle_disable(void)
+  87:../libopencm3/lib/stm32/f1/flash.c **** {
+  69              		.loc 1 87 1
+  70              		.cfi_startproc
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 1, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 80B4     		push	{r7}
+  75              		.cfi_def_cfa_offset 4
+  76              		.cfi_offset 7, -4
+  77 0002 00AF     		add	r7, sp, #0
+  78              		.cfi_def_cfa_register 7
+  88:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_ACR &= ~FLASH_ACR_HLFCYA;
+  79              		.loc 1 88 12
+  80 0004 044B     		ldr	r3, .L5
+  81 0006 1B68     		ldr	r3, [r3]
+  82 0008 034A     		ldr	r2, .L5
+  83 000a 23F00803 		bic	r3, r3, #8
+  84 000e 1360     		str	r3, [r2]
+  89:../libopencm3/lib/stm32/f1/flash.c **** }
+  85              		.loc 1 89 1
+  86 0010 00BF     		nop
+  87 0012 BD46     		mov	sp, r7
+  88              		.cfi_def_cfa_register 13
+  89              		@ sp needed
+  90 0014 80BC     		pop	{r7}
+  91              		.cfi_restore 7
+  92              		.cfi_def_cfa_offset 0
+  93 0016 7047     		bx	lr
+  94              	.L6:
+  95              		.align	2
+  96              	.L5:
+  97 0018 00200240 		.word	1073881088
+  98              		.cfi_endproc
+  99              	.LFE1:
+ 101              		.section	.text.flash_unlock_upper,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	flash_unlock_upper
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu softvfp
+ 109              	flash_unlock_upper:
+ 110              	.LFB2:
+  90:../libopencm3/lib/stm32/f1/flash.c **** 
+  91:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+  92:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Unlock the Flash Program and Erase Controller, upper Bank
+  93:../libopencm3/lib/stm32/f1/flash.c **** 
+  94:../libopencm3/lib/stm32/f1/flash.c **** This enables write access to the upper bank of the Flash memory in XL devices.
+  95:../libopencm3/lib/stm32/f1/flash.c **** It is locked by default on reset.
+  96:../libopencm3/lib/stm32/f1/flash.c **** */
+  97:../libopencm3/lib/stm32/f1/flash.c **** 
+  98:../libopencm3/lib/stm32/f1/flash.c **** void flash_unlock_upper(void)
+  99:../libopencm3/lib/stm32/f1/flash.c **** {
+ 111              		.loc 1 99 1
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 1, uses_anonymous_args = 0
+ 115 0000 80B5     		push	{r7, lr}
+ 116              		.cfi_def_cfa_offset 8
+ 117              		.cfi_offset 7, -8
+ 118              		.cfi_offset 14, -4
+ 119 0002 00AF     		add	r7, sp, #0
+ 120              		.cfi_def_cfa_register 7
+ 100:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 121              		.loc 1 100 6
+ 122 0004 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 123 0008 0346     		mov	r3, r0
+ 124              		.loc 1 100 5
+ 125 000a B3F5007F 		cmp	r3, #512
+ 126 000e 0BD9     		bls	.L9
+ 101:../libopencm3/lib/stm32/f1/flash.c **** 
+ 102:../libopencm3/lib/stm32/f1/flash.c **** 		/* Clear the unlock state. */
+ 103:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 |= FLASH_CR_LOCK;
+ 127              		.loc 1 103 13
+ 128 0010 064B     		ldr	r3, .L10
+ 129 0012 1B68     		ldr	r3, [r3]
+ 130 0014 054A     		ldr	r2, .L10
+ 131 0016 43F08003 		orr	r3, r3, #128
+ 132 001a 1360     		str	r3, [r2]
+ 104:../libopencm3/lib/stm32/f1/flash.c **** 
+ 105:../libopencm3/lib/stm32/f1/flash.c **** 		/* Authorize the FPEC access. */
+ 106:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_KEYR2 = FLASH_KEYR_KEY1;
+ 133              		.loc 1 106 3
+ 134 001c 044B     		ldr	r3, .L10+4
+ 135              		.loc 1 106 15
+ 136 001e 054A     		ldr	r2, .L10+8
+ 137 0020 1A60     		str	r2, [r3]
+ 107:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_KEYR2 = FLASH_KEYR_KEY2;
+ 138              		.loc 1 107 3
+ 139 0022 034B     		ldr	r3, .L10+4
+ 140              		.loc 1 107 15
+ 141 0024 044A     		ldr	r2, .L10+12
+ 142 0026 1A60     		str	r2, [r3]
+ 143              	.L9:
+ 108:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 109:../libopencm3/lib/stm32/f1/flash.c **** }
+ 144              		.loc 1 109 1
+ 145 0028 00BF     		nop
+ 146 002a 80BD     		pop	{r7, pc}
+ 147              	.L11:
+ 148              		.align	2
+ 149              	.L10:
+ 150 002c 50200240 		.word	1073881168
+ 151 0030 44200240 		.word	1073881156
+ 152 0034 23016745 		.word	1164378403
+ 153 0038 AB89EFCD 		.word	-839939669
+ 154              		.cfi_endproc
+ 155              	.LFE2:
+ 157              		.section	.text.flash_lock_upper,"ax",%progbits
+ 158              		.align	1
+ 159              		.global	flash_lock_upper
+ 160              		.syntax unified
+ 161              		.thumb
+ 162              		.thumb_func
+ 163              		.fpu softvfp
+ 165              	flash_lock_upper:
+ 166              	.LFB3:
+ 110:../libopencm3/lib/stm32/f1/flash.c **** 
+ 111:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 112:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Lock the Flash Program and Erase Controller, upper Bank
+ 113:../libopencm3/lib/stm32/f1/flash.c **** 
+ 114:../libopencm3/lib/stm32/f1/flash.c **** Used to prevent spurious writes to FLASH.
+ 115:../libopencm3/lib/stm32/f1/flash.c **** */
+ 116:../libopencm3/lib/stm32/f1/flash.c **** 
+ 117:../libopencm3/lib/stm32/f1/flash.c **** void flash_lock_upper(void)
+ 118:../libopencm3/lib/stm32/f1/flash.c **** {
+ 167              		.loc 1 118 1
+ 168              		.cfi_startproc
+ 169              		@ args = 0, pretend = 0, frame = 0
+ 170              		@ frame_needed = 1, uses_anonymous_args = 0
+ 171              		@ link register save eliminated.
+ 172 0000 80B4     		push	{r7}
+ 173              		.cfi_def_cfa_offset 4
+ 174              		.cfi_offset 7, -4
+ 175 0002 00AF     		add	r7, sp, #0
+ 176              		.cfi_def_cfa_register 7
+ 119:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR2 |= FLASH_CR_LOCK;
+ 177              		.loc 1 119 12
+ 178 0004 044B     		ldr	r3, .L13
+ 179 0006 1B68     		ldr	r3, [r3]
+ 180 0008 034A     		ldr	r2, .L13
+ 181 000a 43F08003 		orr	r3, r3, #128
+ 182 000e 1360     		str	r3, [r2]
+ 120:../libopencm3/lib/stm32/f1/flash.c **** }
+ 183              		.loc 1 120 1
+ 184 0010 00BF     		nop
+ 185 0012 BD46     		mov	sp, r7
+ 186              		.cfi_def_cfa_register 13
+ 187              		@ sp needed
+ 188 0014 80BC     		pop	{r7}
+ 189              		.cfi_restore 7
+ 190              		.cfi_def_cfa_offset 0
+ 191 0016 7047     		bx	lr
+ 192              	.L14:
+ 193              		.align	2
+ 194              	.L13:
+ 195 0018 50200240 		.word	1073881168
+ 196              		.cfi_endproc
+ 197              	.LFE3:
+ 199              		.section	.text.flash_clear_pgerr_flag_upper,"ax",%progbits
+ 200              		.align	1
+ 201              		.global	flash_clear_pgerr_flag_upper
+ 202              		.syntax unified
+ 203              		.thumb
+ 204              		.thumb_func
+ 205              		.fpu softvfp
+ 207              	flash_clear_pgerr_flag_upper:
+ 208              	.LFB4:
+ 121:../libopencm3/lib/stm32/f1/flash.c **** 
+ 122:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 123:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Clear the Programming Error Status Flag, upper Bank
+ 124:../libopencm3/lib/stm32/f1/flash.c **** 
+ 125:../libopencm3/lib/stm32/f1/flash.c **** */
+ 126:../libopencm3/lib/stm32/f1/flash.c **** 
+ 127:../libopencm3/lib/stm32/f1/flash.c **** void flash_clear_pgerr_flag_upper(void)
+ 128:../libopencm3/lib/stm32/f1/flash.c **** {
+ 209              		.loc 1 128 1
+ 210              		.cfi_startproc
+ 211              		@ args = 0, pretend = 0, frame = 0
+ 212              		@ frame_needed = 1, uses_anonymous_args = 0
+ 213 0000 80B5     		push	{r7, lr}
+ 214              		.cfi_def_cfa_offset 8
+ 215              		.cfi_offset 7, -8
+ 216              		.cfi_offset 14, -4
+ 217 0002 00AF     		add	r7, sp, #0
+ 218              		.cfi_def_cfa_register 7
+ 129:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 219              		.loc 1 129 6
+ 220 0004 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 221 0008 0346     		mov	r3, r0
+ 222              		.loc 1 129 5
+ 223 000a B3F5007F 		cmp	r3, #512
+ 224 000e 05D9     		bls	.L17
+ 130:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_SR2 |= FLASH_SR_PGERR;
+ 225              		.loc 1 130 13
+ 226 0010 034B     		ldr	r3, .L18
+ 227 0012 1B68     		ldr	r3, [r3]
+ 228 0014 024A     		ldr	r2, .L18
+ 229 0016 43F00403 		orr	r3, r3, #4
+ 230 001a 1360     		str	r3, [r2]
+ 231              	.L17:
+ 131:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 132:../libopencm3/lib/stm32/f1/flash.c **** }
+ 232              		.loc 1 132 1
+ 233 001c 00BF     		nop
+ 234 001e 80BD     		pop	{r7, pc}
+ 235              	.L19:
+ 236              		.align	2
+ 237              	.L18:
+ 238 0020 4C200240 		.word	1073881164
+ 239              		.cfi_endproc
+ 240              	.LFE4:
+ 242              		.section	.text.flash_clear_eop_flag_upper,"ax",%progbits
+ 243              		.align	1
+ 244              		.global	flash_clear_eop_flag_upper
+ 245              		.syntax unified
+ 246              		.thumb
+ 247              		.thumb_func
+ 248              		.fpu softvfp
+ 250              	flash_clear_eop_flag_upper:
+ 251              	.LFB5:
+ 133:../libopencm3/lib/stm32/f1/flash.c **** 
+ 134:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 135:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Clear the End of Operation Status Flag, upper Bank
+ 136:../libopencm3/lib/stm32/f1/flash.c **** 
+ 137:../libopencm3/lib/stm32/f1/flash.c **** */
+ 138:../libopencm3/lib/stm32/f1/flash.c **** 
+ 139:../libopencm3/lib/stm32/f1/flash.c **** void flash_clear_eop_flag_upper(void)
+ 140:../libopencm3/lib/stm32/f1/flash.c **** {
+ 252              		.loc 1 140 1
+ 253              		.cfi_startproc
+ 254              		@ args = 0, pretend = 0, frame = 0
+ 255              		@ frame_needed = 1, uses_anonymous_args = 0
+ 256 0000 80B5     		push	{r7, lr}
+ 257              		.cfi_def_cfa_offset 8
+ 258              		.cfi_offset 7, -8
+ 259              		.cfi_offset 14, -4
+ 260 0002 00AF     		add	r7, sp, #0
+ 261              		.cfi_def_cfa_register 7
+ 141:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 262              		.loc 1 141 6
+ 263 0004 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 264 0008 0346     		mov	r3, r0
+ 265              		.loc 1 141 5
+ 266 000a B3F5007F 		cmp	r3, #512
+ 267 000e 05D9     		bls	.L22
+ 142:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_SR2 |= FLASH_SR_EOP;
+ 268              		.loc 1 142 13
+ 269 0010 034B     		ldr	r3, .L23
+ 270 0012 1B68     		ldr	r3, [r3]
+ 271 0014 024A     		ldr	r2, .L23
+ 272 0016 43F02003 		orr	r3, r3, #32
+ 273 001a 1360     		str	r3, [r2]
+ 274              	.L22:
+ 143:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 144:../libopencm3/lib/stm32/f1/flash.c **** }
+ 275              		.loc 1 144 1
+ 276 001c 00BF     		nop
+ 277 001e 80BD     		pop	{r7, pc}
+ 278              	.L24:
+ 279              		.align	2
+ 280              	.L23:
+ 281 0020 4C200240 		.word	1073881164
+ 282              		.cfi_endproc
+ 283              	.LFE5:
+ 285              		.section	.text.flash_clear_wrprterr_flag_upper,"ax",%progbits
+ 286              		.align	1
+ 287              		.global	flash_clear_wrprterr_flag_upper
+ 288              		.syntax unified
+ 289              		.thumb
+ 290              		.thumb_func
+ 291              		.fpu softvfp
+ 293              	flash_clear_wrprterr_flag_upper:
+ 294              	.LFB6:
+ 145:../libopencm3/lib/stm32/f1/flash.c **** 
+ 146:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 147:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Clear the Write Protect Error Status Flag, upper Bank
+ 148:../libopencm3/lib/stm32/f1/flash.c **** 
+ 149:../libopencm3/lib/stm32/f1/flash.c **** */
+ 150:../libopencm3/lib/stm32/f1/flash.c **** 
+ 151:../libopencm3/lib/stm32/f1/flash.c **** void flash_clear_wrprterr_flag_upper(void)
+ 152:../libopencm3/lib/stm32/f1/flash.c **** {
+ 295              		.loc 1 152 1
+ 296              		.cfi_startproc
+ 297              		@ args = 0, pretend = 0, frame = 0
+ 298              		@ frame_needed = 1, uses_anonymous_args = 0
+ 299 0000 80B5     		push	{r7, lr}
+ 300              		.cfi_def_cfa_offset 8
+ 301              		.cfi_offset 7, -8
+ 302              		.cfi_offset 14, -4
+ 303 0002 00AF     		add	r7, sp, #0
+ 304              		.cfi_def_cfa_register 7
+ 153:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 305              		.loc 1 153 6
+ 306 0004 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 307 0008 0346     		mov	r3, r0
+ 308              		.loc 1 153 5
+ 309 000a B3F5007F 		cmp	r3, #512
+ 310 000e 05D9     		bls	.L27
+ 154:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_SR2 |= FLASH_SR_WRPRTERR;
+ 311              		.loc 1 154 13
+ 312 0010 034B     		ldr	r3, .L28
+ 313 0012 1B68     		ldr	r3, [r3]
+ 314 0014 024A     		ldr	r2, .L28
+ 315 0016 43F01003 		orr	r3, r3, #16
+ 316 001a 1360     		str	r3, [r2]
+ 317              	.L27:
+ 155:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 156:../libopencm3/lib/stm32/f1/flash.c **** }
+ 318              		.loc 1 156 1
+ 319 001c 00BF     		nop
+ 320 001e 80BD     		pop	{r7, pc}
+ 321              	.L29:
+ 322              		.align	2
+ 323              	.L28:
+ 324 0020 4C200240 		.word	1073881164
+ 325              		.cfi_endproc
+ 326              	.LFE6:
+ 328              		.section	.text.flash_clear_status_flags,"ax",%progbits
+ 329              		.align	1
+ 330              		.global	flash_clear_status_flags
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 334              		.fpu softvfp
+ 336              	flash_clear_status_flags:
+ 337              	.LFB7:
+ 157:../libopencm3/lib/stm32/f1/flash.c **** 
+ 158:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 159:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Clear All Status Flags
+ 160:../libopencm3/lib/stm32/f1/flash.c **** 
+ 161:../libopencm3/lib/stm32/f1/flash.c **** Program error, end of operation, write protect error, busy. Both banks cleared.
+ 162:../libopencm3/lib/stm32/f1/flash.c **** */
+ 163:../libopencm3/lib/stm32/f1/flash.c **** 
+ 164:../libopencm3/lib/stm32/f1/flash.c **** void flash_clear_status_flags(void)
+ 165:../libopencm3/lib/stm32/f1/flash.c **** {
+ 338              		.loc 1 165 1
+ 339              		.cfi_startproc
+ 340              		@ args = 0, pretend = 0, frame = 0
+ 341              		@ frame_needed = 1, uses_anonymous_args = 0
+ 342 0000 80B5     		push	{r7, lr}
+ 343              		.cfi_def_cfa_offset 8
+ 344              		.cfi_offset 7, -8
+ 345              		.cfi_offset 14, -4
+ 346 0002 00AF     		add	r7, sp, #0
+ 347              		.cfi_def_cfa_register 7
+ 166:../libopencm3/lib/stm32/f1/flash.c **** 	flash_clear_pgerr_flag();
+ 348              		.loc 1 166 2
+ 349 0004 FFF7FEFF 		bl	flash_clear_pgerr_flag(PLT)
+ 167:../libopencm3/lib/stm32/f1/flash.c **** 	flash_clear_eop_flag();
+ 350              		.loc 1 167 2
+ 351 0008 FFF7FEFF 		bl	flash_clear_eop_flag(PLT)
+ 168:../libopencm3/lib/stm32/f1/flash.c **** 	flash_clear_wrprterr_flag();
+ 352              		.loc 1 168 2
+ 353 000c FFF7FEFF 		bl	flash_clear_wrprterr_flag(PLT)
+ 169:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 354              		.loc 1 169 6
+ 355 0010 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 356 0014 0346     		mov	r3, r0
+ 357              		.loc 1 169 5
+ 358 0016 B3F5007F 		cmp	r3, #512
+ 359 001a 05D9     		bls	.L32
+ 170:../libopencm3/lib/stm32/f1/flash.c **** 		flash_clear_pgerr_flag_upper();
+ 360              		.loc 1 170 3
+ 361 001c FFF7FEFF 		bl	flash_clear_pgerr_flag_upper(PLT)
+ 171:../libopencm3/lib/stm32/f1/flash.c **** 		flash_clear_eop_flag_upper();
+ 362              		.loc 1 171 3
+ 363 0020 FFF7FEFF 		bl	flash_clear_eop_flag_upper(PLT)
+ 172:../libopencm3/lib/stm32/f1/flash.c **** 		flash_clear_wrprterr_flag_upper();
+ 364              		.loc 1 172 3
+ 365 0024 FFF7FEFF 		bl	flash_clear_wrprterr_flag_upper(PLT)
+ 366              	.L32:
+ 173:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 174:../libopencm3/lib/stm32/f1/flash.c **** }
+ 367              		.loc 1 174 1
+ 368 0028 00BF     		nop
+ 369 002a 80BD     		pop	{r7, pc}
+ 370              		.cfi_endproc
+ 371              	.LFE7:
+ 373              		.section	.text.flash_get_status_flags,"ax",%progbits
+ 374              		.align	1
+ 375              		.global	flash_get_status_flags
+ 376              		.syntax unified
+ 377              		.thumb
+ 378              		.thumb_func
+ 379              		.fpu softvfp
+ 381              	flash_get_status_flags:
+ 382              	.LFB8:
+ 175:../libopencm3/lib/stm32/f1/flash.c **** 
+ 176:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 177:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Read All Status Flags
+ 178:../libopencm3/lib/stm32/f1/flash.c **** 
+ 179:../libopencm3/lib/stm32/f1/flash.c **** The programming error, end of operation, write protect error and busy flags
+ 180:../libopencm3/lib/stm32/f1/flash.c **** are returned in the order of appearance in the status register.
+ 181:../libopencm3/lib/stm32/f1/flash.c **** 
+ 182:../libopencm3/lib/stm32/f1/flash.c **** Flags for the upper bank, where appropriate, are combined with those for
+ 183:../libopencm3/lib/stm32/f1/flash.c **** the lower bank using bitwise OR, without distinction.
+ 184:../libopencm3/lib/stm32/f1/flash.c **** 
+ 185:../libopencm3/lib/stm32/f1/flash.c **** @returns uint32_t. bit 0: busy, bit 2: programming error, bit 4: write protect
+ 186:../libopencm3/lib/stm32/f1/flash.c **** error, bit 5: end of operation.
+ 187:../libopencm3/lib/stm32/f1/flash.c **** */
+ 188:../libopencm3/lib/stm32/f1/flash.c **** 
+ 189:../libopencm3/lib/stm32/f1/flash.c **** uint32_t flash_get_status_flags(void)
+ 190:../libopencm3/lib/stm32/f1/flash.c **** {
+ 383              		.loc 1 190 1
+ 384              		.cfi_startproc
+ 385              		@ args = 0, pretend = 0, frame = 8
+ 386              		@ frame_needed = 1, uses_anonymous_args = 0
+ 387 0000 80B5     		push	{r7, lr}
+ 388              		.cfi_def_cfa_offset 8
+ 389              		.cfi_offset 7, -8
+ 390              		.cfi_offset 14, -4
+ 391 0002 82B0     		sub	sp, sp, #8
+ 392              		.cfi_def_cfa_offset 16
+ 393 0004 00AF     		add	r7, sp, #0
+ 394              		.cfi_def_cfa_register 7
+ 191:../libopencm3/lib/stm32/f1/flash.c **** 	uint32_t flags = (FLASH_SR & (FLASH_SR_PGERR |
+ 395              		.loc 1 191 20
+ 396 0006 0B4B     		ldr	r3, .L36
+ 397 0008 1B68     		ldr	r3, [r3]
+ 398              		.loc 1 191 11
+ 399 000a 03F03503 		and	r3, r3, #53
+ 400 000e 7B60     		str	r3, [r7, #4]
+ 192:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_EOP |
+ 193:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_WRPRTERR |
+ 194:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_BSY));
+ 195:../libopencm3/lib/stm32/f1/flash.c **** 	if (desig_get_flash_size() > 512) {
+ 401              		.loc 1 195 6
+ 402 0010 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 403 0014 0346     		mov	r3, r0
+ 404              		.loc 1 195 5
+ 405 0016 B3F5007F 		cmp	r3, #512
+ 406 001a 06D9     		bls	.L34
+ 196:../libopencm3/lib/stm32/f1/flash.c **** 		flags |= (FLASH_SR2 & (FLASH_SR_PGERR |
+ 407              		.loc 1 196 13
+ 408 001c 064B     		ldr	r3, .L36+4
+ 409 001e 1B68     		ldr	r3, [r3]
+ 410              		.loc 1 196 23
+ 411 0020 03F03503 		and	r3, r3, #53
+ 412              		.loc 1 196 9
+ 413 0024 7A68     		ldr	r2, [r7, #4]
+ 414 0026 1343     		orrs	r3, r3, r2
+ 415 0028 7B60     		str	r3, [r7, #4]
+ 416              	.L34:
+ 197:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_EOP |
+ 198:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_WRPRTERR |
+ 199:../libopencm3/lib/stm32/f1/flash.c **** 			FLASH_SR_BSY));
+ 200:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 201:../libopencm3/lib/stm32/f1/flash.c **** 
+ 202:../libopencm3/lib/stm32/f1/flash.c **** 	return flags;
+ 417              		.loc 1 202 9
+ 418 002a 7B68     		ldr	r3, [r7, #4]
+ 203:../libopencm3/lib/stm32/f1/flash.c **** }
+ 419              		.loc 1 203 1
+ 420 002c 1846     		mov	r0, r3
+ 421 002e 0837     		adds	r7, r7, #8
+ 422              		.cfi_def_cfa_offset 8
+ 423 0030 BD46     		mov	sp, r7
+ 424              		.cfi_def_cfa_register 13
+ 425              		@ sp needed
+ 426 0032 80BD     		pop	{r7, pc}
+ 427              	.L37:
+ 428              		.align	2
+ 429              	.L36:
+ 430 0034 0C200240 		.word	1073881100
+ 431 0038 4C200240 		.word	1073881164
+ 432              		.cfi_endproc
+ 433              	.LFE8:
+ 435              		.section	.text.flash_program_half_word,"ax",%progbits
+ 436              		.align	1
+ 437              		.global	flash_program_half_word
+ 438              		.syntax unified
+ 439              		.thumb
+ 440              		.thumb_func
+ 441              		.fpu softvfp
+ 443              	flash_program_half_word:
+ 444              	.LFB9:
+ 204:../libopencm3/lib/stm32/f1/flash.c **** 
+ 205:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 206:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Program a Half Word to FLASH
+ 207:../libopencm3/lib/stm32/f1/flash.c **** 
+ 208:../libopencm3/lib/stm32/f1/flash.c **** This performs all operations necessary to program a 16 bit word to FLASH memory.
+ 209:../libopencm3/lib/stm32/f1/flash.c **** The program error flag should be checked separately for the event that memory
+ 210:../libopencm3/lib/stm32/f1/flash.c **** was not properly erased.
+ 211:../libopencm3/lib/stm32/f1/flash.c **** 
+ 212:../libopencm3/lib/stm32/f1/flash.c **** Status bit polling is used to detect end of operation.
+ 213:../libopencm3/lib/stm32/f1/flash.c **** 
+ 214:../libopencm3/lib/stm32/f1/flash.c **** @param[in] address Full address of flash half word to be programmed.
+ 215:../libopencm3/lib/stm32/f1/flash.c **** @param[in] data half word to write
+ 216:../libopencm3/lib/stm32/f1/flash.c **** */
+ 217:../libopencm3/lib/stm32/f1/flash.c **** 
+ 218:../libopencm3/lib/stm32/f1/flash.c **** void flash_program_half_word(uint32_t address, uint16_t data)
+ 219:../libopencm3/lib/stm32/f1/flash.c **** {
+ 445              		.loc 1 219 1
+ 446              		.cfi_startproc
+ 447              		@ args = 0, pretend = 0, frame = 8
+ 448              		@ frame_needed = 1, uses_anonymous_args = 0
+ 449 0000 80B5     		push	{r7, lr}
+ 450              		.cfi_def_cfa_offset 8
+ 451              		.cfi_offset 7, -8
+ 452              		.cfi_offset 14, -4
+ 453 0002 82B0     		sub	sp, sp, #8
+ 454              		.cfi_def_cfa_offset 16
+ 455 0004 00AF     		add	r7, sp, #0
+ 456              		.cfi_def_cfa_register 7
+ 457 0006 7860     		str	r0, [r7, #4]
+ 458 0008 0B46     		mov	r3, r1
+ 459 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 220:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 460              		.loc 1 220 2
+ 461 000c FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 221:../libopencm3/lib/stm32/f1/flash.c **** 
+ 222:../libopencm3/lib/stm32/f1/flash.c **** 	if ((desig_get_flash_size() > 512) && (address >= FLASH_BASE+0x00080000)) {
+ 462              		.loc 1 222 7
+ 463 0010 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 464 0014 0346     		mov	r3, r0
+ 465              		.loc 1 222 5
+ 466 0016 B3F5007F 		cmp	r3, #512
+ 467 001a 0AD9     		bls	.L39
+ 468              		.loc 1 222 37 discriminator 1
+ 469 001c 7B68     		ldr	r3, [r7, #4]
+ 470 001e 184A     		ldr	r2, .L43
+ 471 0020 9342     		cmp	r3, r2
+ 472 0022 06D9     		bls	.L39
+ 223:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 |= FLASH_CR_PG;
+ 473              		.loc 1 223 13
+ 474 0024 174B     		ldr	r3, .L43+4
+ 475 0026 1B68     		ldr	r3, [r3]
+ 476 0028 164A     		ldr	r2, .L43+4
+ 477 002a 43F00103 		orr	r3, r3, #1
+ 478 002e 1360     		str	r3, [r2]
+ 479 0030 05E0     		b	.L40
+ 480              	.L39:
+ 224:../libopencm3/lib/stm32/f1/flash.c **** 	} else {
+ 225:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR |= FLASH_CR_PG;
+ 481              		.loc 1 225 12
+ 482 0032 154B     		ldr	r3, .L43+8
+ 483 0034 1B68     		ldr	r3, [r3]
+ 484 0036 144A     		ldr	r2, .L43+8
+ 485 0038 43F00103 		orr	r3, r3, #1
+ 486 003c 1360     		str	r3, [r2]
+ 487              	.L40:
+ 226:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 227:../libopencm3/lib/stm32/f1/flash.c **** 
+ 228:../libopencm3/lib/stm32/f1/flash.c **** 	MMIO16(address) = data;
+ 488              		.loc 1 228 2
+ 489 003e 7B68     		ldr	r3, [r7, #4]
+ 490              		.loc 1 228 18
+ 491 0040 7A88     		ldrh	r2, [r7, #2]	@ movhi
+ 492 0042 1A80     		strh	r2, [r3]	@ movhi
+ 229:../libopencm3/lib/stm32/f1/flash.c **** 
+ 230:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 493              		.loc 1 230 2
+ 494 0044 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 231:../libopencm3/lib/stm32/f1/flash.c **** 
+ 232:../libopencm3/lib/stm32/f1/flash.c **** 	if ((desig_get_flash_size() > 512) && (address >= FLASH_BASE+0x00080000)) {
+ 495              		.loc 1 232 7
+ 496 0048 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 497 004c 0346     		mov	r3, r0
+ 498              		.loc 1 232 5
+ 499 004e B3F5007F 		cmp	r3, #512
+ 500 0052 0AD9     		bls	.L41
+ 501              		.loc 1 232 37 discriminator 1
+ 502 0054 7B68     		ldr	r3, [r7, #4]
+ 503 0056 0A4A     		ldr	r2, .L43
+ 504 0058 9342     		cmp	r3, r2
+ 505 005a 06D9     		bls	.L41
+ 233:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 &= ~FLASH_CR_PG;
+ 506              		.loc 1 233 13
+ 507 005c 094B     		ldr	r3, .L43+4
+ 508 005e 1B68     		ldr	r3, [r3]
+ 509 0060 084A     		ldr	r2, .L43+4
+ 510 0062 23F00103 		bic	r3, r3, #1
+ 511 0066 1360     		str	r3, [r2]
+ 512 0068 05E0     		b	.L42
+ 513              	.L41:
+ 234:../libopencm3/lib/stm32/f1/flash.c **** 	} else {
+ 235:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR &= ~FLASH_CR_PG;
+ 514              		.loc 1 235 12
+ 515 006a 074B     		ldr	r3, .L43+8
+ 516 006c 1B68     		ldr	r3, [r3]
+ 517 006e 064A     		ldr	r2, .L43+8
+ 518 0070 23F00103 		bic	r3, r3, #1
+ 519 0074 1360     		str	r3, [r2]
+ 520              	.L42:
+ 236:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 237:../libopencm3/lib/stm32/f1/flash.c **** }
+ 521              		.loc 1 237 1
+ 522 0076 00BF     		nop
+ 523 0078 0837     		adds	r7, r7, #8
+ 524              		.cfi_def_cfa_offset 8
+ 525 007a BD46     		mov	sp, r7
+ 526              		.cfi_def_cfa_register 13
+ 527              		@ sp needed
+ 528 007c 80BD     		pop	{r7, pc}
+ 529              	.L44:
+ 530 007e 00BF     		.align	2
+ 531              	.L43:
+ 532 0080 FFFF0708 		.word	134742015
+ 533 0084 50200240 		.word	1073881168
+ 534 0088 10200240 		.word	1073881104
+ 535              		.cfi_endproc
+ 536              	.LFE9:
+ 538              		.section	.text.flash_erase_page,"ax",%progbits
+ 539              		.align	1
+ 540              		.global	flash_erase_page
+ 541              		.syntax unified
+ 542              		.thumb
+ 543              		.thumb_func
+ 544              		.fpu softvfp
+ 546              	flash_erase_page:
+ 547              	.LFB10:
+ 238:../libopencm3/lib/stm32/f1/flash.c **** 
+ 239:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 240:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Erase a Page of FLASH
+ 241:../libopencm3/lib/stm32/f1/flash.c **** 
+ 242:../libopencm3/lib/stm32/f1/flash.c **** This performs all operations necessary to erase a page in FLASH memory.
+ 243:../libopencm3/lib/stm32/f1/flash.c **** The page should be checked to ensure that it was properly erased. A page must
+ 244:../libopencm3/lib/stm32/f1/flash.c **** first be fully erased before attempting to program it.
+ 245:../libopencm3/lib/stm32/f1/flash.c **** 
+ 246:../libopencm3/lib/stm32/f1/flash.c **** Note that the page sizes differ between devices. See the reference manual or
+ 247:../libopencm3/lib/stm32/f1/flash.c **** the FLASH programming manual for details.
+ 248:../libopencm3/lib/stm32/f1/flash.c **** 
+ 249:../libopencm3/lib/stm32/f1/flash.c **** @param[in] page_address Full address of flash page to be erased.
+ 250:../libopencm3/lib/stm32/f1/flash.c **** */
+ 251:../libopencm3/lib/stm32/f1/flash.c **** 
+ 252:../libopencm3/lib/stm32/f1/flash.c **** void flash_erase_page(uint32_t page_address)
+ 253:../libopencm3/lib/stm32/f1/flash.c **** {
+ 548              		.loc 1 253 1
+ 549              		.cfi_startproc
+ 550              		@ args = 0, pretend = 0, frame = 8
+ 551              		@ frame_needed = 1, uses_anonymous_args = 0
+ 552 0000 80B5     		push	{r7, lr}
+ 553              		.cfi_def_cfa_offset 8
+ 554              		.cfi_offset 7, -8
+ 555              		.cfi_offset 14, -4
+ 556 0002 82B0     		sub	sp, sp, #8
+ 557              		.cfi_def_cfa_offset 16
+ 558 0004 00AF     		add	r7, sp, #0
+ 559              		.cfi_def_cfa_register 7
+ 560 0006 7860     		str	r0, [r7, #4]
+ 254:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 561              		.loc 1 254 2
+ 562 0008 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 255:../libopencm3/lib/stm32/f1/flash.c **** 
+ 256:../libopencm3/lib/stm32/f1/flash.c **** 	if ((desig_get_flash_size() > 512)
+ 563              		.loc 1 256 7
+ 564 000c FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 565 0010 0346     		mov	r3, r0
+ 566              		.loc 1 256 5
+ 567 0012 B3F5007F 		cmp	r3, #512
+ 568 0016 13D9     		bls	.L46
+ 257:../libopencm3/lib/stm32/f1/flash.c **** 	    && (page_address >= FLASH_BASE+0x00080000)) {
+ 569              		.loc 1 257 6
+ 570 0018 7B68     		ldr	r3, [r7, #4]
+ 571 001a 1F4A     		ldr	r2, .L50
+ 572 001c 9342     		cmp	r3, r2
+ 573 001e 0FD9     		bls	.L46
+ 258:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 |= FLASH_CR_PER;
+ 574              		.loc 1 258 13
+ 575 0020 1E4B     		ldr	r3, .L50+4
+ 576 0022 1B68     		ldr	r3, [r3]
+ 577 0024 1D4A     		ldr	r2, .L50+4
+ 578 0026 43F00203 		orr	r3, r3, #2
+ 579 002a 1360     		str	r3, [r2]
+ 259:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_AR2 = page_address;
+ 580              		.loc 1 259 3
+ 581 002c 1C4A     		ldr	r2, .L50+8
+ 582              		.loc 1 259 13
+ 583 002e 7B68     		ldr	r3, [r7, #4]
+ 584 0030 1360     		str	r3, [r2]
+ 260:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 |= FLASH_CR_STRT;
+ 585              		.loc 1 260 13
+ 586 0032 1A4B     		ldr	r3, .L50+4
+ 587 0034 1B68     		ldr	r3, [r3]
+ 588 0036 194A     		ldr	r2, .L50+4
+ 589 0038 43F04003 		orr	r3, r3, #64
+ 590 003c 1360     		str	r3, [r2]
+ 591 003e 0EE0     		b	.L47
+ 592              	.L46:
+ 261:../libopencm3/lib/stm32/f1/flash.c **** 	} else  {
+ 262:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR |= FLASH_CR_PER;
+ 593              		.loc 1 262 12
+ 594 0040 184B     		ldr	r3, .L50+12
+ 595 0042 1B68     		ldr	r3, [r3]
+ 596 0044 174A     		ldr	r2, .L50+12
+ 597 0046 43F00203 		orr	r3, r3, #2
+ 598 004a 1360     		str	r3, [r2]
+ 263:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_AR = page_address;
+ 599              		.loc 1 263 3
+ 600 004c 164A     		ldr	r2, .L50+16
+ 601              		.loc 1 263 12
+ 602 004e 7B68     		ldr	r3, [r7, #4]
+ 603 0050 1360     		str	r3, [r2]
+ 264:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR |= FLASH_CR_STRT;
+ 604              		.loc 1 264 12
+ 605 0052 144B     		ldr	r3, .L50+12
+ 606 0054 1B68     		ldr	r3, [r3]
+ 607 0056 134A     		ldr	r2, .L50+12
+ 608 0058 43F04003 		orr	r3, r3, #64
+ 609 005c 1360     		str	r3, [r2]
+ 610              	.L47:
+ 265:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 266:../libopencm3/lib/stm32/f1/flash.c **** 
+ 267:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 611              		.loc 1 267 2
+ 612 005e FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 268:../libopencm3/lib/stm32/f1/flash.c **** 
+ 269:../libopencm3/lib/stm32/f1/flash.c **** 	if ((desig_get_flash_size() > 512)
+ 613              		.loc 1 269 7
+ 614 0062 FFF7FEFF 		bl	desig_get_flash_size(PLT)
+ 615 0066 0346     		mov	r3, r0
+ 616              		.loc 1 269 5
+ 617 0068 B3F5007F 		cmp	r3, #512
+ 618 006c 0AD9     		bls	.L48
+ 270:../libopencm3/lib/stm32/f1/flash.c **** 	    && (page_address >= FLASH_BASE+0x00080000)) {
+ 619              		.loc 1 270 6
+ 620 006e 7B68     		ldr	r3, [r7, #4]
+ 621 0070 094A     		ldr	r2, .L50
+ 622 0072 9342     		cmp	r3, r2
+ 623 0074 06D9     		bls	.L48
+ 271:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR2 &= ~FLASH_CR_PER;
+ 624              		.loc 1 271 13
+ 625 0076 094B     		ldr	r3, .L50+4
+ 626 0078 1B68     		ldr	r3, [r3]
+ 627 007a 084A     		ldr	r2, .L50+4
+ 628 007c 23F00203 		bic	r3, r3, #2
+ 629 0080 1360     		str	r3, [r2]
+ 630 0082 05E0     		b	.L49
+ 631              	.L48:
+ 272:../libopencm3/lib/stm32/f1/flash.c **** 	} else {
+ 273:../libopencm3/lib/stm32/f1/flash.c **** 		FLASH_CR &= ~FLASH_CR_PER;
+ 632              		.loc 1 273 12
+ 633 0084 074B     		ldr	r3, .L50+12
+ 634 0086 1B68     		ldr	r3, [r3]
+ 635 0088 064A     		ldr	r2, .L50+12
+ 636 008a 23F00203 		bic	r3, r3, #2
+ 637 008e 1360     		str	r3, [r2]
+ 638              	.L49:
+ 274:../libopencm3/lib/stm32/f1/flash.c **** 	}
+ 275:../libopencm3/lib/stm32/f1/flash.c **** }
+ 639              		.loc 1 275 1
+ 640 0090 00BF     		nop
+ 641 0092 0837     		adds	r7, r7, #8
+ 642              		.cfi_def_cfa_offset 8
+ 643 0094 BD46     		mov	sp, r7
+ 644              		.cfi_def_cfa_register 13
+ 645              		@ sp needed
+ 646 0096 80BD     		pop	{r7, pc}
+ 647              	.L51:
+ 648              		.align	2
+ 649              	.L50:
+ 650 0098 FFFF0708 		.word	134742015
+ 651 009c 50200240 		.word	1073881168
+ 652 00a0 54200240 		.word	1073881172
+ 653 00a4 10200240 		.word	1073881104
+ 654 00a8 14200240 		.word	1073881108
+ 655              		.cfi_endproc
+ 656              	.LFE10:
+ 658              		.section	.text.flash_erase_all_pages,"ax",%progbits
+ 659              		.align	1
+ 660              		.global	flash_erase_all_pages
+ 661              		.syntax unified
+ 662              		.thumb
+ 663              		.thumb_func
+ 664              		.fpu softvfp
+ 666              	flash_erase_all_pages:
+ 667              	.LFB11:
+ 276:../libopencm3/lib/stm32/f1/flash.c **** 
+ 277:../libopencm3/lib/stm32/f1/flash.c **** /*---------------------------------------------------------------------------*/
+ 278:../libopencm3/lib/stm32/f1/flash.c **** /** @brief Erase All FLASH
+ 279:../libopencm3/lib/stm32/f1/flash.c **** 
+ 280:../libopencm3/lib/stm32/f1/flash.c **** This performs all operations necessary to erase all user pages in the FLASH
+ 281:../libopencm3/lib/stm32/f1/flash.c **** memory. The information block is unaffected.
+ 282:../libopencm3/lib/stm32/f1/flash.c **** */
+ 283:../libopencm3/lib/stm32/f1/flash.c **** 
+ 284:../libopencm3/lib/stm32/f1/flash.c **** void flash_erase_all_pages(void)
+ 285:../libopencm3/lib/stm32/f1/flash.c **** {
+ 668              		.loc 1 285 1
+ 669              		.cfi_startproc
+ 670              		@ args = 0, pretend = 0, frame = 0
+ 671              		@ frame_needed = 1, uses_anonymous_args = 0
+ 672 0000 80B5     		push	{r7, lr}
+ 673              		.cfi_def_cfa_offset 8
+ 674              		.cfi_offset 7, -8
+ 675              		.cfi_offset 14, -4
+ 676 0002 00AF     		add	r7, sp, #0
+ 677              		.cfi_def_cfa_register 7
+ 286:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 678              		.loc 1 286 2
+ 679 0004 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 287:../libopencm3/lib/stm32/f1/flash.c **** 
+ 288:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR |= FLASH_CR_MER;		/* Enable mass erase. */
+ 680              		.loc 1 288 11
+ 681 0008 144B     		ldr	r3, .L53
+ 682 000a 1B68     		ldr	r3, [r3]
+ 683 000c 134A     		ldr	r2, .L53
+ 684 000e 43F00403 		orr	r3, r3, #4
+ 685 0012 1360     		str	r3, [r2]
+ 289:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR |= FLASH_CR_STRT;		/* Trigger the erase. */
+ 686              		.loc 1 289 11
+ 687 0014 114B     		ldr	r3, .L53
+ 688 0016 1B68     		ldr	r3, [r3]
+ 689 0018 104A     		ldr	r2, .L53
+ 690 001a 43F04003 		orr	r3, r3, #64
+ 691 001e 1360     		str	r3, [r2]
+ 290:../libopencm3/lib/stm32/f1/flash.c **** 
+ 291:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 692              		.loc 1 291 2
+ 693 0020 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 292:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR &= ~FLASH_CR_MER;		/* Disable mass erase. */
+ 694              		.loc 1 292 11
+ 695 0024 0D4B     		ldr	r3, .L53
+ 696 0026 1B68     		ldr	r3, [r3]
+ 697 0028 0C4A     		ldr	r2, .L53
+ 698 002a 23F00403 		bic	r3, r3, #4
+ 699 002e 1360     		str	r3, [r2]
+ 293:../libopencm3/lib/stm32/f1/flash.c **** 
+ 294:../libopencm3/lib/stm32/f1/flash.c **** /* Repeat for bank 2 */
+ 295:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR2 |= FLASH_CR_MER;
+ 700              		.loc 1 295 12
+ 701 0030 0B4B     		ldr	r3, .L53+4
+ 702 0032 1B68     		ldr	r3, [r3]
+ 703 0034 0A4A     		ldr	r2, .L53+4
+ 704 0036 43F00403 		orr	r3, r3, #4
+ 705 003a 1360     		str	r3, [r2]
+ 296:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR2 |= FLASH_CR_STRT;
+ 706              		.loc 1 296 12
+ 707 003c 084B     		ldr	r3, .L53+4
+ 708 003e 1B68     		ldr	r3, [r3]
+ 709 0040 074A     		ldr	r2, .L53+4
+ 710 0042 43F04003 		orr	r3, r3, #64
+ 711 0046 1360     		str	r3, [r2]
+ 297:../libopencm3/lib/stm32/f1/flash.c **** 
+ 298:../libopencm3/lib/stm32/f1/flash.c **** 	flash_wait_for_last_operation();
+ 712              		.loc 1 298 2
+ 713 0048 FFF7FEFF 		bl	flash_wait_for_last_operation(PLT)
+ 299:../libopencm3/lib/stm32/f1/flash.c **** 	FLASH_CR2 &= ~FLASH_CR_MER;
+ 714              		.loc 1 299 12
+ 715 004c 044B     		ldr	r3, .L53+4
+ 716 004e 1B68     		ldr	r3, [r3]
+ 717 0050 034A     		ldr	r2, .L53+4
+ 718 0052 23F00403 		bic	r3, r3, #4
+ 719 0056 1360     		str	r3, [r2]
+ 300:../libopencm3/lib/stm32/f1/flash.c **** }
+ 720              		.loc 1 300 1
+ 721 0058 00BF     		nop
+ 722 005a 80BD     		pop	{r7, pc}
+ 723              	.L54:
+ 724              		.align	2
+ 725              	.L53:
+ 726 005c 10200240 		.word	1073881104
+ 727 0060 50200240 		.word	1073881168
+ 728              		.cfi_endproc
+ 729              	.LFE11:
+ 731              		.text
+ 732              	.Letext0:
+ 733              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 734              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 flash.c
+     /tmp/ccRTyExG.s:16     .text.flash_halfcycle_enable:0000000000000000 $t
+     /tmp/ccRTyExG.s:24     .text.flash_halfcycle_enable:0000000000000000 flash_halfcycle_enable
+     /tmp/ccRTyExG.s:55     .text.flash_halfcycle_enable:0000000000000018 $d
+     /tmp/ccRTyExG.s:60     .text.flash_halfcycle_disable:0000000000000000 $t
+     /tmp/ccRTyExG.s:67     .text.flash_halfcycle_disable:0000000000000000 flash_halfcycle_disable
+     /tmp/ccRTyExG.s:97     .text.flash_halfcycle_disable:0000000000000018 $d
+     /tmp/ccRTyExG.s:102    .text.flash_unlock_upper:0000000000000000 $t
+     /tmp/ccRTyExG.s:109    .text.flash_unlock_upper:0000000000000000 flash_unlock_upper
+     /tmp/ccRTyExG.s:150    .text.flash_unlock_upper:000000000000002c $d
+     /tmp/ccRTyExG.s:158    .text.flash_lock_upper:0000000000000000 $t
+     /tmp/ccRTyExG.s:165    .text.flash_lock_upper:0000000000000000 flash_lock_upper
+     /tmp/ccRTyExG.s:195    .text.flash_lock_upper:0000000000000018 $d
+     /tmp/ccRTyExG.s:200    .text.flash_clear_pgerr_flag_upper:0000000000000000 $t
+     /tmp/ccRTyExG.s:207    .text.flash_clear_pgerr_flag_upper:0000000000000000 flash_clear_pgerr_flag_upper
+     /tmp/ccRTyExG.s:238    .text.flash_clear_pgerr_flag_upper:0000000000000020 $d
+     /tmp/ccRTyExG.s:243    .text.flash_clear_eop_flag_upper:0000000000000000 $t
+     /tmp/ccRTyExG.s:250    .text.flash_clear_eop_flag_upper:0000000000000000 flash_clear_eop_flag_upper
+     /tmp/ccRTyExG.s:281    .text.flash_clear_eop_flag_upper:0000000000000020 $d
+     /tmp/ccRTyExG.s:286    .text.flash_clear_wrprterr_flag_upper:0000000000000000 $t
+     /tmp/ccRTyExG.s:293    .text.flash_clear_wrprterr_flag_upper:0000000000000000 flash_clear_wrprterr_flag_upper
+     /tmp/ccRTyExG.s:324    .text.flash_clear_wrprterr_flag_upper:0000000000000020 $d
+     /tmp/ccRTyExG.s:329    .text.flash_clear_status_flags:0000000000000000 $t
+     /tmp/ccRTyExG.s:336    .text.flash_clear_status_flags:0000000000000000 flash_clear_status_flags
+     /tmp/ccRTyExG.s:374    .text.flash_get_status_flags:0000000000000000 $t
+     /tmp/ccRTyExG.s:381    .text.flash_get_status_flags:0000000000000000 flash_get_status_flags
+     /tmp/ccRTyExG.s:430    .text.flash_get_status_flags:0000000000000034 $d
+     /tmp/ccRTyExG.s:436    .text.flash_program_half_word:0000000000000000 $t
+     /tmp/ccRTyExG.s:443    .text.flash_program_half_word:0000000000000000 flash_program_half_word
+     /tmp/ccRTyExG.s:532    .text.flash_program_half_word:0000000000000080 $d
+     /tmp/ccRTyExG.s:539    .text.flash_erase_page:0000000000000000 $t
+     /tmp/ccRTyExG.s:546    .text.flash_erase_page:0000000000000000 flash_erase_page
+     /tmp/ccRTyExG.s:650    .text.flash_erase_page:0000000000000098 $d
+     /tmp/ccRTyExG.s:659    .text.flash_erase_all_pages:0000000000000000 $t
+     /tmp/ccRTyExG.s:666    .text.flash_erase_all_pages:0000000000000000 flash_erase_all_pages
+     /tmp/ccRTyExG.s:726    .text.flash_erase_all_pages:000000000000005c $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.flash_common_f01.h.35.08a510204460b203acd9a4d6dd59edc6
+                           .group:0000000000000000 wm4.flash.h.55.42f95aa46a0865597bcfe2be66f7631d
+
+UNDEFINED SYMBOLS
+desig_get_flash_size
+flash_clear_pgerr_flag
+flash_clear_eop_flag
+flash_clear_wrprterr_flag
+flash_wait_for_last_operation

@@ -1,0 +1,3592 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"usb_msc.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.bss._mass_storage,"aw",%nobits
+  16              		.align	2
+  19              	_mass_storage:
+  20 0000 00000000 		.space	628
+  20      00000000 
+  20      00000000 
+  20      00000000 
+  20      00000000 
+  21              		.section	.rodata._spc3_inquiry_response,"a"
+  22              		.align	2
+  25              	_spc3_inquiry_response:
+  26 0000 00       		.byte	0
+  27 0001 80       		.byte	-128
+  28 0002 04       		.byte	4
+  29 0003 02       		.byte	2
+  30 0004 20       		.byte	32
+  31 0005 00       		.byte	0
+  32 0006 00       		.byte	0
+  33 0007 00       		.byte	0
+  34 0008 20       		.byte	32
+  35 0009 20       		.byte	32
+  36 000a 20       		.byte	32
+  37 000b 20       		.byte	32
+  38 000c 20       		.byte	32
+  39 000d 20       		.byte	32
+  40 000e 20       		.byte	32
+  41 000f 20       		.byte	32
+  42 0010 20       		.byte	32
+  43 0011 20       		.byte	32
+  44 0012 20       		.byte	32
+  45 0013 20       		.byte	32
+  46 0014 20       		.byte	32
+  47 0015 20       		.byte	32
+  48 0016 20       		.byte	32
+  49 0017 20       		.byte	32
+  50 0018 20       		.byte	32
+  51 0019 20       		.byte	32
+  52 001a 20       		.byte	32
+  53 001b 20       		.byte	32
+  54 001c 20       		.byte	32
+  55 001d 20       		.byte	32
+  56 001e 20       		.byte	32
+  57 001f 20       		.byte	32
+  58 0020 20       		.byte	32
+  59 0021 20       		.byte	32
+  60 0022 20       		.byte	32
+  61 0023 20       		.byte	32
+  62              		.section	.rodata._spc3_request_sense,"a"
+  63              		.align	2
+  66              	_spc3_request_sense:
+  67 0000 70       		.byte	112
+  68 0001 00       		.byte	0
+  69 0002 00       		.byte	0
+  70 0003 00       		.byte	0
+  71 0004 00       		.byte	0
+  72 0005 00       		.byte	0
+  73 0006 00       		.byte	0
+  74 0007 0A       		.byte	10
+  75 0008 00       		.byte	0
+  76 0009 00       		.byte	0
+  77 000a 00       		.byte	0
+  78 000b 00       		.byte	0
+  79 000c 00       		.byte	0
+  80 000d 00       		.byte	0
+  81 000e 00       		.byte	0
+  82 000f 00       		.byte	0
+  83 0010 00       		.byte	0
+  84 0011 00       		.byte	0
+  85              		.section	.text.set_sbc_status,"ax",%progbits
+  86              		.align	1
+  87              		.arch armv7-m
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  91              		.fpu softvfp
+  93              	set_sbc_status:
+  94              	.LFB0:
+  95              		.file 1 "../libopencm3/lib/usb/usb_msc.c"
+   1:../libopencm3/lib/usb/usb_msc.c **** /*
+   2:../libopencm3/lib/usb/usb_msc.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/usb/usb_msc.c ****  *
+   4:../libopencm3/lib/usb/usb_msc.c ****  * Copyright (C) 2013 Weston Schmidt <weston_schmidt@alumni.purdue.edu>
+   5:../libopencm3/lib/usb/usb_msc.c ****  * Copyright (C) 2013 Pavol Rusnak <stick@gk2.sk>
+   6:../libopencm3/lib/usb/usb_msc.c ****  *
+   7:../libopencm3/lib/usb/usb_msc.c ****  * This library is free software: you can redistribute it and/or modify
+   8:../libopencm3/lib/usb/usb_msc.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   9:../libopencm3/lib/usb/usb_msc.c ****  * the Free Software Foundation, either version 3 of the License, or
+  10:../libopencm3/lib/usb/usb_msc.c ****  * (at your option) any later version.
+  11:../libopencm3/lib/usb/usb_msc.c ****  *
+  12:../libopencm3/lib/usb/usb_msc.c ****  * This library is distributed in the hope that it will be useful,
+  13:../libopencm3/lib/usb/usb_msc.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  14:../libopencm3/lib/usb/usb_msc.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  15:../libopencm3/lib/usb/usb_msc.c ****  * GNU Lesser General Public License for more details.
+  16:../libopencm3/lib/usb/usb_msc.c ****  *
+  17:../libopencm3/lib/usb/usb_msc.c ****  * You should have received a copy of the GNU Lesser General Public License
+  18:../libopencm3/lib/usb/usb_msc.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  19:../libopencm3/lib/usb/usb_msc.c ****  */
+  20:../libopencm3/lib/usb/usb_msc.c **** 
+  21:../libopencm3/lib/usb/usb_msc.c **** #include <stdint.h>
+  22:../libopencm3/lib/usb/usb_msc.c **** #include <stdlib.h>
+  23:../libopencm3/lib/usb/usb_msc.c **** #include <string.h>
+  24:../libopencm3/lib/usb/usb_msc.c **** #include <libopencm3/cm3/common.h>
+  25:../libopencm3/lib/usb/usb_msc.c **** #include <libopencm3/usb/usbd.h>
+  26:../libopencm3/lib/usb/usb_msc.c **** #include <libopencm3/usb/msc.h>
+  27:../libopencm3/lib/usb/usb_msc.c **** #include "usb_private.h"
+  28:../libopencm3/lib/usb/usb_msc.c **** 
+  29:../libopencm3/lib/usb/usb_msc.c **** /* Definitions of Mass Storage Class from:
+  30:../libopencm3/lib/usb/usb_msc.c ****  *
+  31:../libopencm3/lib/usb/usb_msc.c ****  * (A) "Universal Serial Bus Mass Storage Class Bulk-Only Transport
+  32:../libopencm3/lib/usb/usb_msc.c ****  *      Revision 1.0"
+  33:../libopencm3/lib/usb/usb_msc.c ****  *
+  34:../libopencm3/lib/usb/usb_msc.c ****  * (B) "Universal Serial Bus Mass Storage Class Specification Overview
+  35:../libopencm3/lib/usb/usb_msc.c ****  *      Revision 1.0"
+  36:../libopencm3/lib/usb/usb_msc.c ****  */
+  37:../libopencm3/lib/usb/usb_msc.c **** 
+  38:../libopencm3/lib/usb/usb_msc.c **** /* Command Block Wrapper */
+  39:../libopencm3/lib/usb/usb_msc.c **** #define CBW_SIGNATURE				0x43425355
+  40:../libopencm3/lib/usb/usb_msc.c **** #define CBW_STATUS_SUCCESS			0
+  41:../libopencm3/lib/usb/usb_msc.c **** #define CBW_STATUS_FAILED			1
+  42:../libopencm3/lib/usb/usb_msc.c **** #define CBW_STATUS_PHASE_ERROR			2
+  43:../libopencm3/lib/usb/usb_msc.c **** 
+  44:../libopencm3/lib/usb/usb_msc.c **** /* Command Status Wrapper */
+  45:../libopencm3/lib/usb/usb_msc.c **** #define CSW_SIGNATURE				0x53425355
+  46:../libopencm3/lib/usb/usb_msc.c **** #define CSW_STATUS_SUCCESS			0
+  47:../libopencm3/lib/usb/usb_msc.c **** #define CSW_STATUS_FAILED			1
+  48:../libopencm3/lib/usb/usb_msc.c **** #define CSW_STATUS_PHASE_ERROR			2
+  49:../libopencm3/lib/usb/usb_msc.c **** 
+  50:../libopencm3/lib/usb/usb_msc.c **** /* Implemented SCSI Commands */
+  51:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_TEST_UNIT_READY			0x00
+  52:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_REQUEST_SENSE			0x03
+  53:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_FORMAT_UNIT			0x04
+  54:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_6				0x08
+  55:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_WRITE_6				0x0A
+  56:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_INQUIRY				0x12
+  57:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_MODE_SENSE_6			0x1A
+  58:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_SEND_DIAGNOSTIC			0x1D
+  59:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_CAPACITY			0x25
+  60:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_10				0x28
+  61:../libopencm3/lib/usb/usb_msc.c **** 
+  62:../libopencm3/lib/usb/usb_msc.c **** 
+  63:../libopencm3/lib/usb/usb_msc.c **** /* Required SCSI Commands */
+  64:../libopencm3/lib/usb/usb_msc.c **** 
+  65:../libopencm3/lib/usb/usb_msc.c **** /* Optional SCSI Commands */
+  66:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_REPORT_LUNS			0xA0
+  67:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_PREVENT_ALLOW_MEDIUM_REMOVAL	0x1E
+  68:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_MODE_SELECT_6			0x15
+  69:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_MODE_SELECT_10			0x55
+  70:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_MODE_SENSE_10			0x5A
+  71:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_12				0xA8
+  72:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_FORMAT_CAPACITIES		0x23
+  73:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_READ_TOC_PMA_ATIP			0x43
+  74:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_START_STOP_UNIT			0x1B
+  75:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_SYNCHRONIZE_CACHE			0x35
+  76:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_VERIFY				0x2F
+  77:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_WRITE_10				0x2A
+  78:../libopencm3/lib/usb/usb_msc.c **** #define SCSI_WRITE_12				0xAA
+  79:../libopencm3/lib/usb/usb_msc.c **** 
+  80:../libopencm3/lib/usb/usb_msc.c **** /* The sense codes */
+  81:../libopencm3/lib/usb/usb_msc.c **** enum sbc_sense_key {
+  82:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_NO_SENSE			= 0x00,
+  83:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_RECOVERED_ERROR		= 0x01,
+  84:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_NOT_READY			= 0x02,
+  85:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_MEDIUM_ERROR		= 0x03,
+  86:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_HARDWARE_ERROR		= 0x04,
+  87:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_ILLEGAL_REQUEST		= 0x05,
+  88:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_UNIT_ATTENTION		= 0x06,
+  89:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_DATA_PROTECT		= 0x07,
+  90:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_BLANK_CHECK		= 0x08,
+  91:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_VENDOR_SPECIFIC		= 0x09,
+  92:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_COPY_ABORTED		= 0x0A,
+  93:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_ABORTED_COMMAND		= 0x0B,
+  94:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_VOLUME_OVERFLOW		= 0x0D,
+  95:../libopencm3/lib/usb/usb_msc.c **** 	SBC_SENSE_KEY_MISCOMPARE		= 0x0E
+  96:../libopencm3/lib/usb/usb_msc.c **** };
+  97:../libopencm3/lib/usb/usb_msc.c **** 
+  98:../libopencm3/lib/usb/usb_msc.c **** enum sbc_asc {
+  99:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_NO_ADDITIONAL_SENSE_INFORMATION	= 0x00,
+ 100:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_PERIPHERAL_DEVICE_WRITE_FAULT	= 0x03,
+ 101:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_LOGICAL_UNIT_NOT_READY		= 0x04,
+ 102:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_UNRECOVERED_READ_ERROR		= 0x11,
+ 103:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_INVALID_COMMAND_OPERATION_CODE	= 0x20,
+ 104:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_LBA_OUT_OF_RANGE		= 0x21,
+ 105:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_INVALID_FIELD_IN_CDB		= 0x24,
+ 106:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_WRITE_PROTECTED			= 0x27,
+ 107:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_NOT_READY_TO_READY_CHANGE	= 0x28,
+ 108:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_FORMAT_ERROR			= 0x31,
+ 109:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASC_MEDIUM_NOT_PRESENT		= 0x3A
+ 110:../libopencm3/lib/usb/usb_msc.c **** };
+ 111:../libopencm3/lib/usb/usb_msc.c **** 
+ 112:../libopencm3/lib/usb/usb_msc.c **** enum sbc_ascq {
+ 113:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASCQ_NA				= 0x00,
+ 114:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASCQ_FORMAT_COMMAND_FAILED		= 0x01,
+ 115:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASCQ_INITIALIZING_COMMAND_REQUIRED	= 0x02,
+ 116:../libopencm3/lib/usb/usb_msc.c **** 	SBC_ASCQ_OPERATION_IN_PROGRESS		= 0x07
+ 117:../libopencm3/lib/usb/usb_msc.c **** };
+ 118:../libopencm3/lib/usb/usb_msc.c **** 
+ 119:../libopencm3/lib/usb/usb_msc.c **** enum trans_event {
+ 120:../libopencm3/lib/usb/usb_msc.c **** 	EVENT_CBW_VALID,
+ 121:../libopencm3/lib/usb/usb_msc.c **** 	EVENT_NEED_STATUS
+ 122:../libopencm3/lib/usb/usb_msc.c **** };
+ 123:../libopencm3/lib/usb/usb_msc.c **** 
+ 124:../libopencm3/lib/usb/usb_msc.c **** struct usb_msc_cbw {
+ 125:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCBWSignature;
+ 126:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCBWTag;
+ 127:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCBWDataTransferLength;
+ 128:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t  bmCBWFlags;
+ 129:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t  bCBWLUN;
+ 130:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t  bCBWCBLength;
+ 131:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t  CBWCB[16];
+ 132:../libopencm3/lib/usb/usb_msc.c **** } __attribute__((packed));
+ 133:../libopencm3/lib/usb/usb_msc.c **** 
+ 134:../libopencm3/lib/usb/usb_msc.c **** struct usb_msc_csw {
+ 135:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCSWSignature;
+ 136:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCSWTag;
+ 137:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t dCSWDataResidue;
+ 138:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t  bCSWStatus;
+ 139:../libopencm3/lib/usb/usb_msc.c **** } __attribute__((packed));
+ 140:../libopencm3/lib/usb/usb_msc.c **** 
+ 141:../libopencm3/lib/usb/usb_msc.c **** struct sbc_sense_info {
+ 142:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t key;
+ 143:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t asc;
+ 144:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t ascq;
+ 145:../libopencm3/lib/usb/usb_msc.c **** };
+ 146:../libopencm3/lib/usb/usb_msc.c **** 
+ 147:../libopencm3/lib/usb/usb_msc.c **** struct usb_msc_trans {
+ 148:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t cbw_cnt;		/* Read until 31 bytes */
+ 149:../libopencm3/lib/usb/usb_msc.c **** 	union {
+ 150:../libopencm3/lib/usb/usb_msc.c **** 		struct usb_msc_cbw cbw;
+ 151:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t buf[1];
+ 152:../libopencm3/lib/usb/usb_msc.c **** 	} cbw;
+ 153:../libopencm3/lib/usb/usb_msc.c **** 
+ 154:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t bytes_to_read;
+ 155:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t bytes_to_write;
+ 156:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t byte_count;		/* Either read until equal to
+ 157:../libopencm3/lib/usb/usb_msc.c **** 					   bytes_to_read or write until equal
+ 158:../libopencm3/lib/usb/usb_msc.c **** 					   to bytes_to_write. */
+ 159:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t lba_start;
+ 160:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t block_count;
+ 161:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t current_block;
+ 162:../libopencm3/lib/usb/usb_msc.c **** 
+ 163:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t msd_buf[512];
+ 164:../libopencm3/lib/usb/usb_msc.c **** 
+ 165:../libopencm3/lib/usb/usb_msc.c **** 	bool csw_valid;
+ 166:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t csw_sent;		/* Write until 13 bytes */
+ 167:../libopencm3/lib/usb/usb_msc.c **** 	union {
+ 168:../libopencm3/lib/usb/usb_msc.c **** 		struct usb_msc_csw csw;
+ 169:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t buf[1];
+ 170:../libopencm3/lib/usb/usb_msc.c **** 	} csw;
+ 171:../libopencm3/lib/usb/usb_msc.c **** };
+ 172:../libopencm3/lib/usb/usb_msc.c **** 
+ 173:../libopencm3/lib/usb/usb_msc.c **** struct _usbd_mass_storage {
+ 174:../libopencm3/lib/usb/usb_msc.c **** 	usbd_device *usbd_dev;
+ 175:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t ep_in;
+ 176:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t ep_in_size;
+ 177:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t ep_out;
+ 178:../libopencm3/lib/usb/usb_msc.c **** 	uint8_t ep_out_size;
+ 179:../libopencm3/lib/usb/usb_msc.c **** 
+ 180:../libopencm3/lib/usb/usb_msc.c **** 	const char *vendor_id;
+ 181:../libopencm3/lib/usb/usb_msc.c **** 	const char *product_id;
+ 182:../libopencm3/lib/usb/usb_msc.c **** 	const char *product_revision_level;
+ 183:../libopencm3/lib/usb/usb_msc.c **** 	uint32_t block_count;
+ 184:../libopencm3/lib/usb/usb_msc.c **** 
+ 185:../libopencm3/lib/usb/usb_msc.c **** 	int (*read_block)(uint32_t lba, uint8_t *copy_to);
+ 186:../libopencm3/lib/usb/usb_msc.c **** 	int (*write_block)(uint32_t lba, const uint8_t *copy_from);
+ 187:../libopencm3/lib/usb/usb_msc.c **** 
+ 188:../libopencm3/lib/usb/usb_msc.c **** 	void (*lock)(void);
+ 189:../libopencm3/lib/usb/usb_msc.c **** 	void (*unlock)(void);
+ 190:../libopencm3/lib/usb/usb_msc.c **** 
+ 191:../libopencm3/lib/usb/usb_msc.c **** 	struct usb_msc_trans trans;
+ 192:../libopencm3/lib/usb/usb_msc.c **** 	struct sbc_sense_info sense;
+ 193:../libopencm3/lib/usb/usb_msc.c **** };
+ 194:../libopencm3/lib/usb/usb_msc.c **** 
+ 195:../libopencm3/lib/usb/usb_msc.c **** static usbd_mass_storage _mass_storage;
+ 196:../libopencm3/lib/usb/usb_msc.c **** 
+ 197:../libopencm3/lib/usb/usb_msc.c **** /*-- SCSI Base Responses -----------------------------------------------------*/
+ 198:../libopencm3/lib/usb/usb_msc.c **** 
+ 199:../libopencm3/lib/usb/usb_msc.c **** static const uint8_t _spc3_inquiry_response[36] = {
+ 200:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 0: Peripheral Qualifier = 0, Peripheral Device Type = 0 */
+ 201:../libopencm3/lib/usb/usb_msc.c **** 	0x80,	/* Byte 1: RMB = 1, Reserved = 0 */
+ 202:../libopencm3/lib/usb/usb_msc.c **** 	0x04,	/* Byte 2: Version = 0 */
+ 203:../libopencm3/lib/usb/usb_msc.c **** 	0x02,	/* Byte 3: Obsolete = 0, NormACA = 0, HiSup = 0, Response Data Format = 2 */
+ 204:../libopencm3/lib/usb/usb_msc.c **** 	0x20,	/* Byte 4: Additional Length (n-4) = 31 + 4 */
+ 205:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 5: SCCS = 0, ACC = 0, TPGS = 0, 3PC = 0, Reserved = 0, Protect = 0 */
+ 206:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 6: BQue = 0, EncServ = 0, VS = 0, MultiP = 0, MChngr = 0, Obsolete = 0, Addr16 = 0 *
+ 207:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 7: Obsolete = 0, Wbus16 = 0, Sync = 0, Linked = 0, CmdQue = 0, VS = 0 */
+ 208:../libopencm3/lib/usb/usb_msc.c **** 		/* Byte 8 - Byte 15: Vendor Identification */
+ 209:../libopencm3/lib/usb/usb_msc.c **** 	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+ 210:../libopencm3/lib/usb/usb_msc.c **** 		/* Byte 16 - Byte 31: Product Identification */
+ 211:../libopencm3/lib/usb/usb_msc.c **** 	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+ 212:../libopencm3/lib/usb/usb_msc.c **** 	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+ 213:../libopencm3/lib/usb/usb_msc.c **** 		/* Byte 32 - Byte 35: Product Revision Level */
+ 214:../libopencm3/lib/usb/usb_msc.c **** 	0x20, 0x20, 0x20, 0x20
+ 215:../libopencm3/lib/usb/usb_msc.c **** };
+ 216:../libopencm3/lib/usb/usb_msc.c **** 
+ 217:../libopencm3/lib/usb/usb_msc.c **** static const uint8_t _spc3_request_sense[18] = {
+ 218:../libopencm3/lib/usb/usb_msc.c **** 	0x70,	/* Byte 0: VALID = 0, Response Code = 112 */
+ 219:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 1: Obsolete = 0 */
+ 220:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 2: Filemark = 0, EOM = 0, ILI = 0, Reserved = 0, Sense Key = 0 */
+ 221:../libopencm3/lib/usb/usb_msc.c **** 		/* Byte 3 - Byte 6: Information = 0 */
+ 222:../libopencm3/lib/usb/usb_msc.c **** 	0, 0, 0, 0,
+ 223:../libopencm3/lib/usb/usb_msc.c **** 	0x0a,	/* Byte 7: Additional Sense Length = 10 */
+ 224:../libopencm3/lib/usb/usb_msc.c **** 		/* Byte 8 - Byte 11: Command Specific Info = 0 */
+ 225:../libopencm3/lib/usb/usb_msc.c **** 	0, 0, 0, 0,
+ 226:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 12: Additional Sense Code (ASC) = 0 */
+ 227:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 13: Additional Sense Code Qualifier (ASCQ) = 0 */
+ 228:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 14: Field Replaceable Unit Code (FRUC) = 0 */
+ 229:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 15: SKSV = 0, SenseKeySpecific[0] = 0 */
+ 230:../libopencm3/lib/usb/usb_msc.c **** 	0x00,	/* Byte 16: SenseKeySpecific[0] = 0 */
+ 231:../libopencm3/lib/usb/usb_msc.c **** 	0x00	/* Byte 17: SenseKeySpecific[0] = 0 */
+ 232:../libopencm3/lib/usb/usb_msc.c **** };
+ 233:../libopencm3/lib/usb/usb_msc.c **** 
+ 234:../libopencm3/lib/usb/usb_msc.c **** /*-- SCSI Layer --------------------------------------------------------------*/
+ 235:../libopencm3/lib/usb/usb_msc.c **** 
+ 236:../libopencm3/lib/usb/usb_msc.c **** static void set_sbc_status(usbd_mass_storage *ms,
+ 237:../libopencm3/lib/usb/usb_msc.c **** 			   enum sbc_sense_key key,
+ 238:../libopencm3/lib/usb/usb_msc.c **** 			   enum sbc_asc asc,
+ 239:../libopencm3/lib/usb/usb_msc.c **** 			   enum sbc_ascq ascq)
+ 240:../libopencm3/lib/usb/usb_msc.c **** {
+  96              		.loc 1 240 1
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 8
+  99              		@ frame_needed = 1, uses_anonymous_args = 0
+ 100              		@ link register save eliminated.
+ 101 0000 80B4     		push	{r7}
+ 102              		.cfi_def_cfa_offset 4
+ 103              		.cfi_offset 7, -4
+ 104 0002 83B0     		sub	sp, sp, #12
+ 105              		.cfi_def_cfa_offset 16
+ 106 0004 00AF     		add	r7, sp, #0
+ 107              		.cfi_def_cfa_register 7
+ 108 0006 7860     		str	r0, [r7, #4]
+ 109 0008 0846     		mov	r0, r1
+ 110 000a 1146     		mov	r1, r2
+ 111 000c 1A46     		mov	r2, r3
+ 112 000e 0346     		mov	r3, r0
+ 113 0010 FB70     		strb	r3, [r7, #3]
+ 114 0012 0B46     		mov	r3, r1
+ 115 0014 BB70     		strb	r3, [r7, #2]
+ 116 0016 1346     		mov	r3, r2
+ 117 0018 7B70     		strb	r3, [r7, #1]
+ 241:../libopencm3/lib/usb/usb_msc.c **** 	ms->sense.key = (uint8_t) key;
+ 118              		.loc 1 241 16
+ 119 001a 7B68     		ldr	r3, [r7, #4]
+ 120 001c FA78     		ldrb	r2, [r7, #3]
+ 121 001e 83F87022 		strb	r2, [r3, #624]
+ 242:../libopencm3/lib/usb/usb_msc.c **** 	ms->sense.asc = (uint8_t) asc;
+ 122              		.loc 1 242 16
+ 123 0022 7B68     		ldr	r3, [r7, #4]
+ 124 0024 BA78     		ldrb	r2, [r7, #2]
+ 125 0026 83F87122 		strb	r2, [r3, #625]
+ 243:../libopencm3/lib/usb/usb_msc.c **** 	ms->sense.ascq = (uint8_t) ascq;
+ 126              		.loc 1 243 17
+ 127 002a 7B68     		ldr	r3, [r7, #4]
+ 128 002c 7A78     		ldrb	r2, [r7, #1]
+ 129 002e 83F87222 		strb	r2, [r3, #626]
+ 244:../libopencm3/lib/usb/usb_msc.c **** }
+ 130              		.loc 1 244 1
+ 131 0032 00BF     		nop
+ 132 0034 0C37     		adds	r7, r7, #12
+ 133              		.cfi_def_cfa_offset 4
+ 134 0036 BD46     		mov	sp, r7
+ 135              		.cfi_def_cfa_register 13
+ 136              		@ sp needed
+ 137 0038 80BC     		pop	{r7}
+ 138              		.cfi_restore 7
+ 139              		.cfi_def_cfa_offset 0
+ 140 003a 7047     		bx	lr
+ 141              		.cfi_endproc
+ 142              	.LFE0:
+ 144              		.section	.text.set_sbc_status_good,"ax",%progbits
+ 145              		.align	1
+ 146              		.syntax unified
+ 147              		.thumb
+ 148              		.thumb_func
+ 149              		.fpu softvfp
+ 151              	set_sbc_status_good:
+ 152              	.LFB1:
+ 245:../libopencm3/lib/usb/usb_msc.c **** 
+ 246:../libopencm3/lib/usb/usb_msc.c **** static void set_sbc_status_good(usbd_mass_storage *ms)
+ 247:../libopencm3/lib/usb/usb_msc.c **** {
+ 153              		.loc 1 247 1
+ 154              		.cfi_startproc
+ 155              		@ args = 0, pretend = 0, frame = 8
+ 156              		@ frame_needed = 1, uses_anonymous_args = 0
+ 157 0000 80B5     		push	{r7, lr}
+ 158              		.cfi_def_cfa_offset 8
+ 159              		.cfi_offset 7, -8
+ 160              		.cfi_offset 14, -4
+ 161 0002 82B0     		sub	sp, sp, #8
+ 162              		.cfi_def_cfa_offset 16
+ 163 0004 00AF     		add	r7, sp, #0
+ 164              		.cfi_def_cfa_register 7
+ 165 0006 7860     		str	r0, [r7, #4]
+ 248:../libopencm3/lib/usb/usb_msc.c **** 	set_sbc_status(ms,
+ 166              		.loc 1 248 2
+ 167 0008 0023     		movs	r3, #0
+ 168 000a 0022     		movs	r2, #0
+ 169 000c 0021     		movs	r1, #0
+ 170 000e 7868     		ldr	r0, [r7, #4]
+ 171 0010 FFF7FEFF 		bl	set_sbc_status(PLT)
+ 249:../libopencm3/lib/usb/usb_msc.c **** 		       SBC_SENSE_KEY_NO_SENSE,
+ 250:../libopencm3/lib/usb/usb_msc.c **** 		       SBC_ASC_NO_ADDITIONAL_SENSE_INFORMATION,
+ 251:../libopencm3/lib/usb/usb_msc.c **** 		       SBC_ASCQ_NA);
+ 252:../libopencm3/lib/usb/usb_msc.c **** }
+ 172              		.loc 1 252 1
+ 173 0014 00BF     		nop
+ 174 0016 0837     		adds	r7, r7, #8
+ 175              		.cfi_def_cfa_offset 8
+ 176 0018 BD46     		mov	sp, r7
+ 177              		.cfi_def_cfa_register 13
+ 178              		@ sp needed
+ 179 001a 80BD     		pop	{r7, pc}
+ 180              		.cfi_endproc
+ 181              	.LFE1:
+ 183              		.section	.text.get_cbw_buf,"ax",%progbits
+ 184              		.align	1
+ 185              		.syntax unified
+ 186              		.thumb
+ 187              		.thumb_func
+ 188              		.fpu softvfp
+ 190              	get_cbw_buf:
+ 191              	.LFB2:
+ 253:../libopencm3/lib/usb/usb_msc.c **** 
+ 254:../libopencm3/lib/usb/usb_msc.c **** static uint8_t *get_cbw_buf(struct usb_msc_trans *trans)
+ 255:../libopencm3/lib/usb/usb_msc.c **** {
+ 192              		.loc 1 255 1
+ 193              		.cfi_startproc
+ 194              		@ args = 0, pretend = 0, frame = 8
+ 195              		@ frame_needed = 1, uses_anonymous_args = 0
+ 196              		@ link register save eliminated.
+ 197 0000 80B4     		push	{r7}
+ 198              		.cfi_def_cfa_offset 4
+ 199              		.cfi_offset 7, -4
+ 200 0002 83B0     		sub	sp, sp, #12
+ 201              		.cfi_def_cfa_offset 16
+ 202 0004 00AF     		add	r7, sp, #0
+ 203              		.cfi_def_cfa_register 7
+ 204 0006 7860     		str	r0, [r7, #4]
+ 256:../libopencm3/lib/usb/usb_msc.c **** 	return &trans->cbw.cbw.CBWCB[0];
+ 205              		.loc 1 256 9
+ 206 0008 7B68     		ldr	r3, [r7, #4]
+ 207 000a 1033     		adds	r3, r3, #16
+ 257:../libopencm3/lib/usb/usb_msc.c **** }
+ 208              		.loc 1 257 1
+ 209 000c 1846     		mov	r0, r3
+ 210 000e 0C37     		adds	r7, r7, #12
+ 211              		.cfi_def_cfa_offset 4
+ 212 0010 BD46     		mov	sp, r7
+ 213              		.cfi_def_cfa_register 13
+ 214              		@ sp needed
+ 215 0012 80BC     		pop	{r7}
+ 216              		.cfi_restore 7
+ 217              		.cfi_def_cfa_offset 0
+ 218 0014 7047     		bx	lr
+ 219              		.cfi_endproc
+ 220              	.LFE2:
+ 222              		.section	.text.scsi_read_6,"ax",%progbits
+ 223              		.align	1
+ 224              		.syntax unified
+ 225              		.thumb
+ 226              		.thumb_func
+ 227              		.fpu softvfp
+ 229              	scsi_read_6:
+ 230              	.LFB3:
+ 258:../libopencm3/lib/usb/usb_msc.c **** 
+ 259:../libopencm3/lib/usb/usb_msc.c **** static void scsi_read_6(usbd_mass_storage *ms,
+ 260:../libopencm3/lib/usb/usb_msc.c **** 			struct usb_msc_trans *trans,
+ 261:../libopencm3/lib/usb/usb_msc.c **** 			enum trans_event event)
+ 262:../libopencm3/lib/usb/usb_msc.c **** {
+ 231              		.loc 1 262 1
+ 232              		.cfi_startproc
+ 233              		@ args = 0, pretend = 0, frame = 24
+ 234              		@ frame_needed = 1, uses_anonymous_args = 0
+ 235 0000 80B5     		push	{r7, lr}
+ 236              		.cfi_def_cfa_offset 8
+ 237              		.cfi_offset 7, -8
+ 238              		.cfi_offset 14, -4
+ 239 0002 86B0     		sub	sp, sp, #24
+ 240              		.cfi_def_cfa_offset 32
+ 241 0004 00AF     		add	r7, sp, #0
+ 242              		.cfi_def_cfa_register 7
+ 243 0006 F860     		str	r0, [r7, #12]
+ 244 0008 B960     		str	r1, [r7, #8]
+ 245 000a 1346     		mov	r3, r2
+ 246 000c FB71     		strb	r3, [r7, #7]
+ 263:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 247              		.loc 1 263 5
+ 248 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 249 0010 002B     		cmp	r3, #0
+ 250 0012 1FD1     		bne	.L7
+ 251              	.LBB2:
+ 264:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 265:../libopencm3/lib/usb/usb_msc.c **** 
+ 266:../libopencm3/lib/usb/usb_msc.c **** 		buf = get_cbw_buf(trans);
+ 252              		.loc 1 266 9
+ 253 0014 B868     		ldr	r0, [r7, #8]
+ 254 0016 FFF7FEFF 		bl	get_cbw_buf(PLT)
+ 255 001a 7861     		str	r0, [r7, #20]
+ 267:../libopencm3/lib/usb/usb_msc.c **** 
+ 268:../libopencm3/lib/usb/usb_msc.c **** 		trans->lba_start = (buf[2] << 8) | buf[3];
+ 256              		.loc 1 268 26
+ 257 001c 7B69     		ldr	r3, [r7, #20]
+ 258 001e 0233     		adds	r3, r3, #2
+ 259 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 260              		.loc 1 268 30
+ 261 0022 1B02     		lsls	r3, r3, #8
+ 262              		.loc 1 268 41
+ 263 0024 7A69     		ldr	r2, [r7, #20]
+ 264 0026 0332     		adds	r2, r2, #3
+ 265 0028 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 266              		.loc 1 268 36
+ 267 002a 1343     		orrs	r3, r3, r2
+ 268 002c 1A46     		mov	r2, r3
+ 269              		.loc 1 268 20
+ 270 002e BB68     		ldr	r3, [r7, #8]
+ 271 0030 DA62     		str	r2, [r3, #44]
+ 269:../libopencm3/lib/usb/usb_msc.c **** 		trans->block_count = buf[4];
+ 272              		.loc 1 269 27
+ 273 0032 7B69     		ldr	r3, [r7, #20]
+ 274 0034 0433     		adds	r3, r3, #4
+ 275 0036 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 276 0038 1A46     		mov	r2, r3
+ 277              		.loc 1 269 22
+ 278 003a BB68     		ldr	r3, [r7, #8]
+ 279 003c 1A63     		str	r2, [r3, #48]
+ 270:../libopencm3/lib/usb/usb_msc.c **** 		trans->current_block = 0;
+ 280              		.loc 1 270 24
+ 281 003e BB68     		ldr	r3, [r7, #8]
+ 282 0040 0022     		movs	r2, #0
+ 283 0042 5A63     		str	r2, [r3, #52]
+ 271:../libopencm3/lib/usb/usb_msc.c **** 
+ 272:../libopencm3/lib/usb/usb_msc.c **** 		/* TODO: Check the lba & block_count for range. */
+ 273:../libopencm3/lib/usb/usb_msc.c **** 
+ 274:../libopencm3/lib/usb/usb_msc.c **** 		/* both are in terms of 512 byte blocks, so shift by 9 */
+ 275:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = trans->block_count << 9;
+ 284              		.loc 1 275 32
+ 285 0044 BB68     		ldr	r3, [r7, #8]
+ 286 0046 1B6B     		ldr	r3, [r3, #48]
+ 287              		.loc 1 275 46
+ 288 0048 5A02     		lsls	r2, r3, #9
+ 289              		.loc 1 275 25
+ 290 004a BB68     		ldr	r3, [r7, #8]
+ 291 004c 5A62     		str	r2, [r3, #36]
+ 276:../libopencm3/lib/usb/usb_msc.c **** 
+ 277:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status_good(ms);
+ 292              		.loc 1 277 3
+ 293 004e F868     		ldr	r0, [r7, #12]
+ 294 0050 FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 295              	.L7:
+ 296              	.LBE2:
+ 278:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 279:../libopencm3/lib/usb/usb_msc.c **** }
+ 297              		.loc 1 279 1
+ 298 0054 00BF     		nop
+ 299 0056 1837     		adds	r7, r7, #24
+ 300              		.cfi_def_cfa_offset 8
+ 301 0058 BD46     		mov	sp, r7
+ 302              		.cfi_def_cfa_register 13
+ 303              		@ sp needed
+ 304 005a 80BD     		pop	{r7, pc}
+ 305              		.cfi_endproc
+ 306              	.LFE3:
+ 308              		.section	.text.scsi_write_6,"ax",%progbits
+ 309              		.align	1
+ 310              		.syntax unified
+ 311              		.thumb
+ 312              		.thumb_func
+ 313              		.fpu softvfp
+ 315              	scsi_write_6:
+ 316              	.LFB4:
+ 280:../libopencm3/lib/usb/usb_msc.c **** 
+ 281:../libopencm3/lib/usb/usb_msc.c **** static void scsi_write_6(usbd_mass_storage *ms,
+ 282:../libopencm3/lib/usb/usb_msc.c **** 			 struct usb_msc_trans *trans,
+ 283:../libopencm3/lib/usb/usb_msc.c **** 			 enum trans_event event)
+ 284:../libopencm3/lib/usb/usb_msc.c **** {
+ 317              		.loc 1 284 1
+ 318              		.cfi_startproc
+ 319              		@ args = 0, pretend = 0, frame = 24
+ 320              		@ frame_needed = 1, uses_anonymous_args = 0
+ 321 0000 80B5     		push	{r7, lr}
+ 322              		.cfi_def_cfa_offset 8
+ 323              		.cfi_offset 7, -8
+ 324              		.cfi_offset 14, -4
+ 325 0002 86B0     		sub	sp, sp, #24
+ 326              		.cfi_def_cfa_offset 32
+ 327 0004 00AF     		add	r7, sp, #0
+ 328              		.cfi_def_cfa_register 7
+ 329 0006 F860     		str	r0, [r7, #12]
+ 330 0008 B960     		str	r1, [r7, #8]
+ 331 000a 1346     		mov	r3, r2
+ 332 000c FB71     		strb	r3, [r7, #7]
+ 285:../libopencm3/lib/usb/usb_msc.c **** 	(void) ms;
+ 286:../libopencm3/lib/usb/usb_msc.c **** 
+ 287:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 333              		.loc 1 287 5
+ 334 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 335 0010 002B     		cmp	r3, #0
+ 336 0012 23D1     		bne	.L10
+ 337              	.LBB3:
+ 288:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 289:../libopencm3/lib/usb/usb_msc.c **** 
+ 290:../libopencm3/lib/usb/usb_msc.c **** 		buf = get_cbw_buf(trans);
+ 338              		.loc 1 290 9
+ 339 0014 B868     		ldr	r0, [r7, #8]
+ 340 0016 FFF7FEFF 		bl	get_cbw_buf(PLT)
+ 341 001a 7861     		str	r0, [r7, #20]
+ 291:../libopencm3/lib/usb/usb_msc.c **** 
+ 292:../libopencm3/lib/usb/usb_msc.c **** 		trans->lba_start = ((0x1f & buf[1]) << 16)
+ 342              		.loc 1 292 34
+ 343 001c 7B69     		ldr	r3, [r7, #20]
+ 344 001e 0133     		adds	r3, r3, #1
+ 345 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 346              		.loc 1 292 39
+ 347 0022 1B04     		lsls	r3, r3, #16
+ 348 0024 03F4F812 		and	r2, r3, #2031616
+ 293:../libopencm3/lib/usb/usb_msc.c **** 				    | (buf[2] << 8) | buf[3];
+ 349              		.loc 1 293 15
+ 350 0028 7B69     		ldr	r3, [r7, #20]
+ 351 002a 0233     		adds	r3, r3, #2
+ 352 002c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 353              		.loc 1 293 19
+ 354 002e 1B02     		lsls	r3, r3, #8
+ 355              		.loc 1 293 9
+ 356 0030 1343     		orrs	r3, r3, r2
+ 357              		.loc 1 293 30
+ 358 0032 7A69     		ldr	r2, [r7, #20]
+ 359 0034 0332     		adds	r2, r2, #3
+ 360 0036 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 361              		.loc 1 293 25
+ 362 0038 1343     		orrs	r3, r3, r2
+ 363 003a 1A46     		mov	r2, r3
+ 292:../libopencm3/lib/usb/usb_msc.c **** 				    | (buf[2] << 8) | buf[3];
+ 364              		.loc 1 292 20
+ 365 003c BB68     		ldr	r3, [r7, #8]
+ 366 003e DA62     		str	r2, [r3, #44]
+ 294:../libopencm3/lib/usb/usb_msc.c **** 		trans->block_count = buf[4];
+ 367              		.loc 1 294 27
+ 368 0040 7B69     		ldr	r3, [r7, #20]
+ 369 0042 0433     		adds	r3, r3, #4
+ 370 0044 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 371 0046 1A46     		mov	r2, r3
+ 372              		.loc 1 294 22
+ 373 0048 BB68     		ldr	r3, [r7, #8]
+ 374 004a 1A63     		str	r2, [r3, #48]
+ 295:../libopencm3/lib/usb/usb_msc.c **** 		trans->current_block = 0;
+ 375              		.loc 1 295 24
+ 376 004c BB68     		ldr	r3, [r7, #8]
+ 377 004e 0022     		movs	r2, #0
+ 378 0050 5A63     		str	r2, [r3, #52]
+ 296:../libopencm3/lib/usb/usb_msc.c **** 
+ 297:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_read = trans->block_count << 9;
+ 379              		.loc 1 297 31
+ 380 0052 BB68     		ldr	r3, [r7, #8]
+ 381 0054 1B6B     		ldr	r3, [r3, #48]
+ 382              		.loc 1 297 45
+ 383 0056 5A02     		lsls	r2, r3, #9
+ 384              		.loc 1 297 24
+ 385 0058 BB68     		ldr	r3, [r7, #8]
+ 386 005a 1A62     		str	r2, [r3, #32]
+ 387              	.L10:
+ 388              	.LBE3:
+ 298:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 299:../libopencm3/lib/usb/usb_msc.c **** }
+ 389              		.loc 1 299 1
+ 390 005c 00BF     		nop
+ 391 005e 1837     		adds	r7, r7, #24
+ 392              		.cfi_def_cfa_offset 8
+ 393 0060 BD46     		mov	sp, r7
+ 394              		.cfi_def_cfa_register 13
+ 395              		@ sp needed
+ 396 0062 80BD     		pop	{r7, pc}
+ 397              		.cfi_endproc
+ 398              	.LFE4:
+ 400              		.section	.text.scsi_write_10,"ax",%progbits
+ 401              		.align	1
+ 402              		.syntax unified
+ 403              		.thumb
+ 404              		.thumb_func
+ 405              		.fpu softvfp
+ 407              	scsi_write_10:
+ 408              	.LFB5:
+ 300:../libopencm3/lib/usb/usb_msc.c **** 
+ 301:../libopencm3/lib/usb/usb_msc.c **** static void scsi_write_10(usbd_mass_storage *ms,
+ 302:../libopencm3/lib/usb/usb_msc.c **** 			  struct usb_msc_trans *trans,
+ 303:../libopencm3/lib/usb/usb_msc.c **** 			  enum trans_event event)
+ 304:../libopencm3/lib/usb/usb_msc.c **** {
+ 409              		.loc 1 304 1
+ 410              		.cfi_startproc
+ 411              		@ args = 0, pretend = 0, frame = 24
+ 412              		@ frame_needed = 1, uses_anonymous_args = 0
+ 413 0000 80B5     		push	{r7, lr}
+ 414              		.cfi_def_cfa_offset 8
+ 415              		.cfi_offset 7, -8
+ 416              		.cfi_offset 14, -4
+ 417 0002 86B0     		sub	sp, sp, #24
+ 418              		.cfi_def_cfa_offset 32
+ 419 0004 00AF     		add	r7, sp, #0
+ 420              		.cfi_def_cfa_register 7
+ 421 0006 F860     		str	r0, [r7, #12]
+ 422 0008 B960     		str	r1, [r7, #8]
+ 423 000a 1346     		mov	r3, r2
+ 424 000c FB71     		strb	r3, [r7, #7]
+ 305:../libopencm3/lib/usb/usb_msc.c **** 	(void) ms;
+ 306:../libopencm3/lib/usb/usb_msc.c **** 
+ 307:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 425              		.loc 1 307 5
+ 426 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 427 0010 002B     		cmp	r3, #0
+ 428 0012 2BD1     		bne	.L13
+ 429              	.LBB4:
+ 308:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 309:../libopencm3/lib/usb/usb_msc.c **** 
+ 310:../libopencm3/lib/usb/usb_msc.c **** 		buf = get_cbw_buf(trans);
+ 430              		.loc 1 310 9
+ 431 0014 B868     		ldr	r0, [r7, #8]
+ 432 0016 FFF7FEFF 		bl	get_cbw_buf(PLT)
+ 433 001a 7861     		str	r0, [r7, #20]
+ 311:../libopencm3/lib/usb/usb_msc.c **** 
+ 312:../libopencm3/lib/usb/usb_msc.c **** 		trans->lba_start = (buf[2] << 24) | (buf[3] << 16) |
+ 434              		.loc 1 312 26
+ 435 001c 7B69     		ldr	r3, [r7, #20]
+ 436 001e 0233     		adds	r3, r3, #2
+ 437 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 438              		.loc 1 312 30
+ 439 0022 1A06     		lsls	r2, r3, #24
+ 440              		.loc 1 312 43
+ 441 0024 7B69     		ldr	r3, [r7, #20]
+ 442 0026 0333     		adds	r3, r3, #3
+ 443 0028 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 444              		.loc 1 312 47
+ 445 002a 1B04     		lsls	r3, r3, #16
+ 446              		.loc 1 312 37
+ 447 002c 1A43     		orrs	r2, r2, r3
+ 313:../libopencm3/lib/usb/usb_msc.c **** 					(buf[4] << 8) | buf[5];
+ 448              		.loc 1 313 10
+ 449 002e 7B69     		ldr	r3, [r7, #20]
+ 450 0030 0433     		adds	r3, r3, #4
+ 451 0032 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 452              		.loc 1 313 14
+ 453 0034 1B02     		lsls	r3, r3, #8
+ 312:../libopencm3/lib/usb/usb_msc.c **** 					(buf[4] << 8) | buf[5];
+ 454              		.loc 1 312 54
+ 455 0036 1343     		orrs	r3, r3, r2
+ 456              		.loc 1 313 25
+ 457 0038 7A69     		ldr	r2, [r7, #20]
+ 458 003a 0532     		adds	r2, r2, #5
+ 459 003c 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 460              		.loc 1 313 20
+ 461 003e 1343     		orrs	r3, r3, r2
+ 462 0040 1A46     		mov	r2, r3
+ 312:../libopencm3/lib/usb/usb_msc.c **** 					(buf[4] << 8) | buf[5];
+ 463              		.loc 1 312 20
+ 464 0042 BB68     		ldr	r3, [r7, #8]
+ 465 0044 DA62     		str	r2, [r3, #44]
+ 314:../libopencm3/lib/usb/usb_msc.c **** 		trans->block_count = (buf[7] << 8) | buf[8];
+ 466              		.loc 1 314 28
+ 467 0046 7B69     		ldr	r3, [r7, #20]
+ 468 0048 0733     		adds	r3, r3, #7
+ 469 004a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 470              		.loc 1 314 32
+ 471 004c 1B02     		lsls	r3, r3, #8
+ 472              		.loc 1 314 43
+ 473 004e 7A69     		ldr	r2, [r7, #20]
+ 474 0050 0832     		adds	r2, r2, #8
+ 475 0052 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 476              		.loc 1 314 38
+ 477 0054 1343     		orrs	r3, r3, r2
+ 478 0056 1A46     		mov	r2, r3
+ 479              		.loc 1 314 22
+ 480 0058 BB68     		ldr	r3, [r7, #8]
+ 481 005a 1A63     		str	r2, [r3, #48]
+ 315:../libopencm3/lib/usb/usb_msc.c **** 		trans->current_block = 0;
+ 482              		.loc 1 315 24
+ 483 005c BB68     		ldr	r3, [r7, #8]
+ 484 005e 0022     		movs	r2, #0
+ 485 0060 5A63     		str	r2, [r3, #52]
+ 316:../libopencm3/lib/usb/usb_msc.c **** 
+ 317:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_read = trans->block_count << 9;
+ 486              		.loc 1 317 31
+ 487 0062 BB68     		ldr	r3, [r7, #8]
+ 488 0064 1B6B     		ldr	r3, [r3, #48]
+ 489              		.loc 1 317 45
+ 490 0066 5A02     		lsls	r2, r3, #9
+ 491              		.loc 1 317 24
+ 492 0068 BB68     		ldr	r3, [r7, #8]
+ 493 006a 1A62     		str	r2, [r3, #32]
+ 494              	.L13:
+ 495              	.LBE4:
+ 318:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 319:../libopencm3/lib/usb/usb_msc.c **** }
+ 496              		.loc 1 319 1
+ 497 006c 00BF     		nop
+ 498 006e 1837     		adds	r7, r7, #24
+ 499              		.cfi_def_cfa_offset 8
+ 500 0070 BD46     		mov	sp, r7
+ 501              		.cfi_def_cfa_register 13
+ 502              		@ sp needed
+ 503 0072 80BD     		pop	{r7, pc}
+ 504              		.cfi_endproc
+ 505              	.LFE5:
+ 507              		.section	.text.scsi_read_10,"ax",%progbits
+ 508              		.align	1
+ 509              		.syntax unified
+ 510              		.thumb
+ 511              		.thumb_func
+ 512              		.fpu softvfp
+ 514              	scsi_read_10:
+ 515              	.LFB6:
+ 320:../libopencm3/lib/usb/usb_msc.c **** 
+ 321:../libopencm3/lib/usb/usb_msc.c **** static void scsi_read_10(usbd_mass_storage *ms,
+ 322:../libopencm3/lib/usb/usb_msc.c **** 			 struct usb_msc_trans *trans,
+ 323:../libopencm3/lib/usb/usb_msc.c **** 			 enum trans_event event)
+ 324:../libopencm3/lib/usb/usb_msc.c **** {
+ 516              		.loc 1 324 1
+ 517              		.cfi_startproc
+ 518              		@ args = 0, pretend = 0, frame = 24
+ 519              		@ frame_needed = 1, uses_anonymous_args = 0
+ 520 0000 80B5     		push	{r7, lr}
+ 521              		.cfi_def_cfa_offset 8
+ 522              		.cfi_offset 7, -8
+ 523              		.cfi_offset 14, -4
+ 524 0002 86B0     		sub	sp, sp, #24
+ 525              		.cfi_def_cfa_offset 32
+ 526 0004 00AF     		add	r7, sp, #0
+ 527              		.cfi_def_cfa_register 7
+ 528 0006 F860     		str	r0, [r7, #12]
+ 529 0008 B960     		str	r1, [r7, #8]
+ 530 000a 1346     		mov	r3, r2
+ 531 000c FB71     		strb	r3, [r7, #7]
+ 325:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 532              		.loc 1 325 5
+ 533 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 534 0010 002B     		cmp	r3, #0
+ 535 0012 2BD1     		bne	.L16
+ 536              	.LBB5:
+ 326:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 327:../libopencm3/lib/usb/usb_msc.c **** 
+ 328:../libopencm3/lib/usb/usb_msc.c **** 		buf = get_cbw_buf(trans);
+ 537              		.loc 1 328 9
+ 538 0014 B868     		ldr	r0, [r7, #8]
+ 539 0016 FFF7FEFF 		bl	get_cbw_buf(PLT)
+ 540 001a 7861     		str	r0, [r7, #20]
+ 329:../libopencm3/lib/usb/usb_msc.c **** 
+ 330:../libopencm3/lib/usb/usb_msc.c **** 		trans->lba_start = (buf[2] << 24) | (buf[3] << 16)
+ 541              		.loc 1 330 26
+ 542 001c 7B69     		ldr	r3, [r7, #20]
+ 543 001e 0233     		adds	r3, r3, #2
+ 544 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 545              		.loc 1 330 30
+ 546 0022 1A06     		lsls	r2, r3, #24
+ 547              		.loc 1 330 43
+ 548 0024 7B69     		ldr	r3, [r7, #20]
+ 549 0026 0333     		adds	r3, r3, #3
+ 550 0028 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 551              		.loc 1 330 47
+ 552 002a 1B04     		lsls	r3, r3, #16
+ 553              		.loc 1 330 37
+ 554 002c 1A43     		orrs	r2, r2, r3
+ 331:../libopencm3/lib/usb/usb_msc.c **** 				   | (buf[4] << 8) | buf[5];
+ 555              		.loc 1 331 14
+ 556 002e 7B69     		ldr	r3, [r7, #20]
+ 557 0030 0433     		adds	r3, r3, #4
+ 558 0032 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 559              		.loc 1 331 18
+ 560 0034 1B02     		lsls	r3, r3, #8
+ 561              		.loc 1 331 8
+ 562 0036 1343     		orrs	r3, r3, r2
+ 563              		.loc 1 331 29
+ 564 0038 7A69     		ldr	r2, [r7, #20]
+ 565 003a 0532     		adds	r2, r2, #5
+ 566 003c 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 567              		.loc 1 331 24
+ 568 003e 1343     		orrs	r3, r3, r2
+ 569 0040 1A46     		mov	r2, r3
+ 330:../libopencm3/lib/usb/usb_msc.c **** 				   | (buf[4] << 8) | buf[5];
+ 570              		.loc 1 330 20
+ 571 0042 BB68     		ldr	r3, [r7, #8]
+ 572 0044 DA62     		str	r2, [r3, #44]
+ 332:../libopencm3/lib/usb/usb_msc.c **** 		trans->block_count = (buf[7] << 8) | buf[8];
+ 573              		.loc 1 332 28
+ 574 0046 7B69     		ldr	r3, [r7, #20]
+ 575 0048 0733     		adds	r3, r3, #7
+ 576 004a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 577              		.loc 1 332 32
+ 578 004c 1B02     		lsls	r3, r3, #8
+ 579              		.loc 1 332 43
+ 580 004e 7A69     		ldr	r2, [r7, #20]
+ 581 0050 0832     		adds	r2, r2, #8
+ 582 0052 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 583              		.loc 1 332 38
+ 584 0054 1343     		orrs	r3, r3, r2
+ 585 0056 1A46     		mov	r2, r3
+ 586              		.loc 1 332 22
+ 587 0058 BB68     		ldr	r3, [r7, #8]
+ 588 005a 1A63     		str	r2, [r3, #48]
+ 333:../libopencm3/lib/usb/usb_msc.c **** 
+ 334:../libopencm3/lib/usb/usb_msc.c **** 		/* TODO: Check the lba & block_count for range. */
+ 335:../libopencm3/lib/usb/usb_msc.c **** 
+ 336:../libopencm3/lib/usb/usb_msc.c **** 		/* both are in terms of 512 byte blocks, so shift by 9 */
+ 337:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = trans->block_count << 9;
+ 589              		.loc 1 337 32
+ 590 005c BB68     		ldr	r3, [r7, #8]
+ 591 005e 1B6B     		ldr	r3, [r3, #48]
+ 592              		.loc 1 337 46
+ 593 0060 5A02     		lsls	r2, r3, #9
+ 594              		.loc 1 337 25
+ 595 0062 BB68     		ldr	r3, [r7, #8]
+ 596 0064 5A62     		str	r2, [r3, #36]
+ 338:../libopencm3/lib/usb/usb_msc.c **** 
+ 339:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status_good(ms);
+ 597              		.loc 1 339 3
+ 598 0066 F868     		ldr	r0, [r7, #12]
+ 599 0068 FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 600              	.L16:
+ 601              	.LBE5:
+ 340:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 341:../libopencm3/lib/usb/usb_msc.c **** }
+ 602              		.loc 1 341 1
+ 603 006c 00BF     		nop
+ 604 006e 1837     		adds	r7, r7, #24
+ 605              		.cfi_def_cfa_offset 8
+ 606 0070 BD46     		mov	sp, r7
+ 607              		.cfi_def_cfa_register 13
+ 608              		@ sp needed
+ 609 0072 80BD     		pop	{r7, pc}
+ 610              		.cfi_endproc
+ 611              	.LFE6:
+ 613              		.section	.text.scsi_read_capacity,"ax",%progbits
+ 614              		.align	1
+ 615              		.syntax unified
+ 616              		.thumb
+ 617              		.thumb_func
+ 618              		.fpu softvfp
+ 620              	scsi_read_capacity:
+ 621              	.LFB7:
+ 342:../libopencm3/lib/usb/usb_msc.c **** 
+ 343:../libopencm3/lib/usb/usb_msc.c **** static void scsi_read_capacity(usbd_mass_storage *ms,
+ 344:../libopencm3/lib/usb/usb_msc.c **** 			       struct usb_msc_trans *trans,
+ 345:../libopencm3/lib/usb/usb_msc.c **** 			       enum trans_event event)
+ 346:../libopencm3/lib/usb/usb_msc.c **** {
+ 622              		.loc 1 346 1
+ 623              		.cfi_startproc
+ 624              		@ args = 0, pretend = 0, frame = 16
+ 625              		@ frame_needed = 1, uses_anonymous_args = 0
+ 626 0000 80B5     		push	{r7, lr}
+ 627              		.cfi_def_cfa_offset 8
+ 628              		.cfi_offset 7, -8
+ 629              		.cfi_offset 14, -4
+ 630 0002 84B0     		sub	sp, sp, #16
+ 631              		.cfi_def_cfa_offset 24
+ 632 0004 00AF     		add	r7, sp, #0
+ 633              		.cfi_def_cfa_register 7
+ 634 0006 F860     		str	r0, [r7, #12]
+ 635 0008 B960     		str	r1, [r7, #8]
+ 636 000a 1346     		mov	r3, r2
+ 637 000c FB71     		strb	r3, [r7, #7]
+ 347:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 638              		.loc 1 347 5
+ 639 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 640 0010 002B     		cmp	r3, #0
+ 641 0012 30D1     		bne	.L19
+ 348:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[0] = ms->block_count >> 24;
+ 642              		.loc 1 348 25
+ 643 0014 FB68     		ldr	r3, [r7, #12]
+ 644 0016 5B69     		ldr	r3, [r3, #20]
+ 645              		.loc 1 348 39
+ 646 0018 1B0E     		lsrs	r3, r3, #24
+ 647              		.loc 1 348 21
+ 648 001a DAB2     		uxtb	r2, r3
+ 649 001c BB68     		ldr	r3, [r7, #8]
+ 650 001e 83F83820 		strb	r2, [r3, #56]
+ 349:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[1] = 0xff & (ms->block_count >> 16);
+ 651              		.loc 1 349 33
+ 652 0022 FB68     		ldr	r3, [r7, #12]
+ 653 0024 5B69     		ldr	r3, [r3, #20]
+ 654              		.loc 1 349 47
+ 655 0026 1B0C     		lsrs	r3, r3, #16
+ 656              		.loc 1 349 21
+ 657 0028 DAB2     		uxtb	r2, r3
+ 658 002a BB68     		ldr	r3, [r7, #8]
+ 659 002c 83F83920 		strb	r2, [r3, #57]
+ 350:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[2] = 0xff & (ms->block_count >> 8);
+ 660              		.loc 1 350 33
+ 661 0030 FB68     		ldr	r3, [r7, #12]
+ 662 0032 5B69     		ldr	r3, [r3, #20]
+ 663              		.loc 1 350 47
+ 664 0034 1B0A     		lsrs	r3, r3, #8
+ 665              		.loc 1 350 21
+ 666 0036 DAB2     		uxtb	r2, r3
+ 667 0038 BB68     		ldr	r3, [r7, #8]
+ 668 003a 83F83A20 		strb	r2, [r3, #58]
+ 351:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[3] = 0xff & ms->block_count;
+ 669              		.loc 1 351 32
+ 670 003e FB68     		ldr	r3, [r7, #12]
+ 671 0040 5B69     		ldr	r3, [r3, #20]
+ 672              		.loc 1 351 21
+ 673 0042 DAB2     		uxtb	r2, r3
+ 674 0044 BB68     		ldr	r3, [r7, #8]
+ 675 0046 83F83B20 		strb	r2, [r3, #59]
+ 352:../libopencm3/lib/usb/usb_msc.c **** 
+ 353:../libopencm3/lib/usb/usb_msc.c **** 		/* Block size: 512 */
+ 354:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[4] = 0;
+ 676              		.loc 1 354 21
+ 677 004a BB68     		ldr	r3, [r7, #8]
+ 678 004c 0022     		movs	r2, #0
+ 679 004e 83F83C20 		strb	r2, [r3, #60]
+ 355:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[5] = 0;
+ 680              		.loc 1 355 21
+ 681 0052 BB68     		ldr	r3, [r7, #8]
+ 682 0054 0022     		movs	r2, #0
+ 683 0056 83F83D20 		strb	r2, [r3, #61]
+ 356:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[6] = 2;
+ 684              		.loc 1 356 21
+ 685 005a BB68     		ldr	r3, [r7, #8]
+ 686 005c 0222     		movs	r2, #2
+ 687 005e 83F83E20 		strb	r2, [r3, #62]
+ 357:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[7] = 0;
+ 688              		.loc 1 357 21
+ 689 0062 BB68     		ldr	r3, [r7, #8]
+ 690 0064 0022     		movs	r2, #0
+ 691 0066 83F83F20 		strb	r2, [r3, #63]
+ 358:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = 8;
+ 692              		.loc 1 358 25
+ 693 006a BB68     		ldr	r3, [r7, #8]
+ 694 006c 0822     		movs	r2, #8
+ 695 006e 5A62     		str	r2, [r3, #36]
+ 359:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status_good(ms);
+ 696              		.loc 1 359 3
+ 697 0070 F868     		ldr	r0, [r7, #12]
+ 698 0072 FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 699              	.L19:
+ 360:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 361:../libopencm3/lib/usb/usb_msc.c **** }
+ 700              		.loc 1 361 1
+ 701 0076 00BF     		nop
+ 702 0078 1037     		adds	r7, r7, #16
+ 703              		.cfi_def_cfa_offset 8
+ 704 007a BD46     		mov	sp, r7
+ 705              		.cfi_def_cfa_register 13
+ 706              		@ sp needed
+ 707 007c 80BD     		pop	{r7, pc}
+ 708              		.cfi_endproc
+ 709              	.LFE7:
+ 711              		.section	.text.scsi_format_unit,"ax",%progbits
+ 712              		.align	1
+ 713              		.syntax unified
+ 714              		.thumb
+ 715              		.thumb_func
+ 716              		.fpu softvfp
+ 718              	scsi_format_unit:
+ 719              	.LFB8:
+ 362:../libopencm3/lib/usb/usb_msc.c **** 
+ 363:../libopencm3/lib/usb/usb_msc.c **** static void scsi_format_unit(usbd_mass_storage *ms,
+ 364:../libopencm3/lib/usb/usb_msc.c **** 			     struct usb_msc_trans *trans,
+ 365:../libopencm3/lib/usb/usb_msc.c **** 			     enum trans_event event)
+ 366:../libopencm3/lib/usb/usb_msc.c **** {
+ 720              		.loc 1 366 1
+ 721              		.cfi_startproc
+ 722              		@ args = 0, pretend = 0, frame = 24
+ 723              		@ frame_needed = 1, uses_anonymous_args = 0
+ 724 0000 80B5     		push	{r7, lr}
+ 725              		.cfi_def_cfa_offset 8
+ 726              		.cfi_offset 7, -8
+ 727              		.cfi_offset 14, -4
+ 728 0002 86B0     		sub	sp, sp, #24
+ 729              		.cfi_def_cfa_offset 32
+ 730 0004 00AF     		add	r7, sp, #0
+ 731              		.cfi_def_cfa_register 7
+ 732 0006 F860     		str	r0, [r7, #12]
+ 733 0008 B960     		str	r1, [r7, #8]
+ 734 000a 1346     		mov	r3, r2
+ 735 000c FB71     		strb	r3, [r7, #7]
+ 367:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 736              		.loc 1 367 5
+ 737 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 738 0010 002B     		cmp	r3, #0
+ 739 0012 1CD1     		bne	.L24
+ 740              	.LBB6:
+ 368:../libopencm3/lib/usb/usb_msc.c **** 		uint32_t i;
+ 369:../libopencm3/lib/usb/usb_msc.c **** 
+ 370:../libopencm3/lib/usb/usb_msc.c **** 		memset(trans->msd_buf, 0, 512);
+ 741              		.loc 1 370 15
+ 742 0014 BB68     		ldr	r3, [r7, #8]
+ 743 0016 3833     		adds	r3, r3, #56
+ 744              		.loc 1 370 3
+ 745 0018 4FF40072 		mov	r2, #512
+ 746 001c 0021     		movs	r1, #0
+ 747 001e 1846     		mov	r0, r3
+ 748 0020 FFF7FEFF 		bl	memset(PLT)
+ 371:../libopencm3/lib/usb/usb_msc.c **** 
+ 372:../libopencm3/lib/usb/usb_msc.c **** 		for (i = 0; i < ms->block_count; i++) {
+ 749              		.loc 1 372 10
+ 750 0024 0023     		movs	r3, #0
+ 751 0026 7B61     		str	r3, [r7, #20]
+ 752              		.loc 1 372 3
+ 753 0028 09E0     		b	.L22
+ 754              	.L23:
+ 373:../libopencm3/lib/usb/usb_msc.c **** 			(*ms->write_block)(i, trans->msd_buf);
+ 755              		.loc 1 373 5 discriminator 3
+ 756 002a FB68     		ldr	r3, [r7, #12]
+ 757 002c DB69     		ldr	r3, [r3, #28]
+ 758              		.loc 1 373 31 discriminator 3
+ 759 002e BA68     		ldr	r2, [r7, #8]
+ 760 0030 3832     		adds	r2, r2, #56
+ 761              		.loc 1 373 5 discriminator 3
+ 762 0032 1146     		mov	r1, r2
+ 763 0034 7869     		ldr	r0, [r7, #20]
+ 764 0036 9847     		blx	r3
+ 765              	.LVL0:
+ 372:../libopencm3/lib/usb/usb_msc.c **** 			(*ms->write_block)(i, trans->msd_buf);
+ 766              		.loc 1 372 37 discriminator 3
+ 767 0038 7B69     		ldr	r3, [r7, #20]
+ 768 003a 0133     		adds	r3, r3, #1
+ 769 003c 7B61     		str	r3, [r7, #20]
+ 770              	.L22:
+ 372:../libopencm3/lib/usb/usb_msc.c **** 			(*ms->write_block)(i, trans->msd_buf);
+ 771              		.loc 1 372 21 discriminator 1
+ 772 003e FB68     		ldr	r3, [r7, #12]
+ 773 0040 5B69     		ldr	r3, [r3, #20]
+ 372:../libopencm3/lib/usb/usb_msc.c **** 			(*ms->write_block)(i, trans->msd_buf);
+ 774              		.loc 1 372 3 discriminator 1
+ 775 0042 7A69     		ldr	r2, [r7, #20]
+ 776 0044 9A42     		cmp	r2, r3
+ 777 0046 F0D3     		bcc	.L23
+ 374:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 375:../libopencm3/lib/usb/usb_msc.c **** 
+ 376:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status_good(ms);
+ 778              		.loc 1 376 3
+ 779 0048 F868     		ldr	r0, [r7, #12]
+ 780 004a FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 781              	.L24:
+ 782              	.LBE6:
+ 377:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 378:../libopencm3/lib/usb/usb_msc.c **** }
+ 783              		.loc 1 378 1
+ 784 004e 00BF     		nop
+ 785 0050 1837     		adds	r7, r7, #24
+ 786              		.cfi_def_cfa_offset 8
+ 787 0052 BD46     		mov	sp, r7
+ 788              		.cfi_def_cfa_register 13
+ 789              		@ sp needed
+ 790 0054 80BD     		pop	{r7, pc}
+ 791              		.cfi_endproc
+ 792              	.LFE8:
+ 794              		.section	.text.scsi_request_sense,"ax",%progbits
+ 795              		.align	1
+ 796              		.syntax unified
+ 797              		.thumb
+ 798              		.thumb_func
+ 799              		.fpu softvfp
+ 801              	scsi_request_sense:
+ 802              	.LFB9:
+ 379:../libopencm3/lib/usb/usb_msc.c **** 
+ 380:../libopencm3/lib/usb/usb_msc.c **** static void scsi_request_sense(usbd_mass_storage *ms,
+ 381:../libopencm3/lib/usb/usb_msc.c **** 			       struct usb_msc_trans *trans,
+ 382:../libopencm3/lib/usb/usb_msc.c **** 			       enum trans_event event)
+ 383:../libopencm3/lib/usb/usb_msc.c **** {
+ 803              		.loc 1 383 1
+ 804              		.cfi_startproc
+ 805              		@ args = 0, pretend = 0, frame = 24
+ 806              		@ frame_needed = 1, uses_anonymous_args = 0
+ 807              		@ link register save eliminated.
+ 808 0000 B0B4     		push	{r4, r5, r7}
+ 809              		.cfi_def_cfa_offset 12
+ 810              		.cfi_offset 4, -12
+ 811              		.cfi_offset 5, -8
+ 812              		.cfi_offset 7, -4
+ 813 0002 87B0     		sub	sp, sp, #28
+ 814              		.cfi_def_cfa_offset 40
+ 815 0004 00AF     		add	r7, sp, #0
+ 816              		.cfi_def_cfa_register 7
+ 817 0006 F860     		str	r0, [r7, #12]
+ 818 0008 B960     		str	r1, [r7, #8]
+ 819 000a 1346     		mov	r3, r2
+ 820 000c FB71     		strb	r3, [r7, #7]
+ 384:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 821              		.loc 1 384 5
+ 822 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 823 0010 002B     		cmp	r3, #0
+ 824 0012 27D1     		bne	.L27
+ 825              	.LBB7:
+ 385:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 386:../libopencm3/lib/usb/usb_msc.c **** 
+ 387:../libopencm3/lib/usb/usb_msc.c **** 		buf = &trans->cbw.cbw.CBWCB[0];
+ 826              		.loc 1 387 7
+ 827 0014 BB68     		ldr	r3, [r7, #8]
+ 828 0016 1033     		adds	r3, r3, #16
+ 829 0018 7B61     		str	r3, [r7, #20]
+ 388:../libopencm3/lib/usb/usb_msc.c **** 
+ 389:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = buf[4];	/* allocation length */
+ 830              		.loc 1 389 30
+ 831 001a 7B69     		ldr	r3, [r7, #20]
+ 832 001c 0433     		adds	r3, r3, #4
+ 833 001e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 834 0020 1A46     		mov	r2, r3
+ 835              		.loc 1 389 25
+ 836 0022 BB68     		ldr	r3, [r7, #8]
+ 837 0024 5A62     		str	r2, [r3, #36]
+ 390:../libopencm3/lib/usb/usb_msc.c **** 		memcpy(trans->msd_buf, _spc3_request_sense,
+ 838              		.loc 1 390 15
+ 839 0026 BB68     		ldr	r3, [r7, #8]
+ 840 0028 3833     		adds	r3, r3, #56
+ 841              		.loc 1 390 3
+ 842 002a 114A     		ldr	r2, .L28
+ 843              	.LPIC0:
+ 844 002c 7A44     		add	r2, pc
+ 845 002e 1D46     		mov	r5, r3
+ 846 0030 1446     		mov	r4, r2
+ 847 0032 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 848 0034 2860     		str	r0, [r5]	@ unaligned
+ 849 0036 6960     		str	r1, [r5, #4]	@ unaligned
+ 850 0038 AA60     		str	r2, [r5, #8]	@ unaligned
+ 851 003a EB60     		str	r3, [r5, #12]	@ unaligned
+ 852 003c 2388     		ldrh	r3, [r4]	@ unaligned
+ 853 003e 2B82     		strh	r3, [r5, #16]	@ unaligned
+ 391:../libopencm3/lib/usb/usb_msc.c **** 		       sizeof(_spc3_request_sense));
+ 392:../libopencm3/lib/usb/usb_msc.c **** 
+ 393:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[2] = ms->sense.key;
+ 854              		.loc 1 393 32
+ 855 0040 FB68     		ldr	r3, [r7, #12]
+ 856 0042 93F87022 		ldrb	r2, [r3, #624]	@ zero_extendqisi2
+ 857              		.loc 1 393 21
+ 858 0046 BB68     		ldr	r3, [r7, #8]
+ 859 0048 83F83A20 		strb	r2, [r3, #58]
+ 394:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[12] = ms->sense.asc;
+ 860              		.loc 1 394 33
+ 861 004c FB68     		ldr	r3, [r7, #12]
+ 862 004e 93F87122 		ldrb	r2, [r3, #625]	@ zero_extendqisi2
+ 863              		.loc 1 394 22
+ 864 0052 BB68     		ldr	r3, [r7, #8]
+ 865 0054 83F84420 		strb	r2, [r3, #68]
+ 395:../libopencm3/lib/usb/usb_msc.c **** 		trans->msd_buf[13] = ms->sense.ascq;
+ 866              		.loc 1 395 33
+ 867 0058 FB68     		ldr	r3, [r7, #12]
+ 868 005a 93F87222 		ldrb	r2, [r3, #626]	@ zero_extendqisi2
+ 869              		.loc 1 395 22
+ 870 005e BB68     		ldr	r3, [r7, #8]
+ 871 0060 83F84520 		strb	r2, [r3, #69]
+ 872              	.L27:
+ 873              	.LBE7:
+ 396:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 397:../libopencm3/lib/usb/usb_msc.c **** }
+ 874              		.loc 1 397 1
+ 875 0064 00BF     		nop
+ 876 0066 1C37     		adds	r7, r7, #28
+ 877              		.cfi_def_cfa_offset 12
+ 878 0068 BD46     		mov	sp, r7
+ 879              		.cfi_def_cfa_register 13
+ 880              		@ sp needed
+ 881 006a B0BC     		pop	{r4, r5, r7}
+ 882              		.cfi_restore 7
+ 883              		.cfi_restore 5
+ 884              		.cfi_restore 4
+ 885              		.cfi_def_cfa_offset 0
+ 886 006c 7047     		bx	lr
+ 887              	.L29:
+ 888 006e 00BF     		.align	2
+ 889              	.L28:
+ 890 0070 40000000 		.word	_spc3_request_sense-(.LPIC0+4)
+ 891              		.cfi_endproc
+ 892              	.LFE9:
+ 894              		.section	.text.scsi_mode_sense_6,"ax",%progbits
+ 895              		.align	1
+ 896              		.syntax unified
+ 897              		.thumb
+ 898              		.thumb_func
+ 899              		.fpu softvfp
+ 901              	scsi_mode_sense_6:
+ 902              	.LFB10:
+ 398:../libopencm3/lib/usb/usb_msc.c **** 
+ 399:../libopencm3/lib/usb/usb_msc.c **** static void scsi_mode_sense_6(usbd_mass_storage *ms,
+ 400:../libopencm3/lib/usb/usb_msc.c **** 			      struct usb_msc_trans *trans,
+ 401:../libopencm3/lib/usb/usb_msc.c **** 			      enum trans_event event)
+ 402:../libopencm3/lib/usb/usb_msc.c **** {
+ 903              		.loc 1 402 1
+ 904              		.cfi_startproc
+ 905              		@ args = 0, pretend = 0, frame = 16
+ 906              		@ frame_needed = 1, uses_anonymous_args = 0
+ 907              		@ link register save eliminated.
+ 908 0000 80B4     		push	{r7}
+ 909              		.cfi_def_cfa_offset 4
+ 910              		.cfi_offset 7, -4
+ 911 0002 85B0     		sub	sp, sp, #20
+ 912              		.cfi_def_cfa_offset 24
+ 913 0004 00AF     		add	r7, sp, #0
+ 914              		.cfi_def_cfa_register 7
+ 915 0006 F860     		str	r0, [r7, #12]
+ 916 0008 B960     		str	r1, [r7, #8]
+ 917 000a 1346     		mov	r3, r2
+ 918 000c FB71     		strb	r3, [r7, #7]
+ 403:../libopencm3/lib/usb/usb_msc.c **** 	(void) ms;
+ 404:../libopencm3/lib/usb/usb_msc.c **** 
+ 405:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 919              		.loc 1 405 5
+ 920 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 921 0010 002B     		cmp	r3, #0
+ 922 0012 17D1     		bne	.L32
+ 406:../libopencm3/lib/usb/usb_msc.c **** #if 0
+ 407:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 408:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t page_code;
+ 409:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t allocation_length;
+ 410:../libopencm3/lib/usb/usb_msc.c **** 
+ 411:../libopencm3/lib/usb/usb_msc.c **** 		buf = &trans->cbw.cbw.CBWCB[0];
+ 412:../libopencm3/lib/usb/usb_msc.c **** 		page_code = buf[2];
+ 413:../libopencm3/lib/usb/usb_msc.c **** 		allocation_length = buf[4];
+ 414:../libopencm3/lib/usb/usb_msc.c **** 
+ 415:../libopencm3/lib/usb/usb_msc.c **** 		if (0x1C == page_code) {	/* Informational Exceptions */
+ 416:../libopencm3/lib/usb/usb_msc.c **** #endif
+ 417:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_write = 4;
+ 923              		.loc 1 417 26
+ 924 0014 BB68     		ldr	r3, [r7, #8]
+ 925 0016 0422     		movs	r2, #4
+ 926 0018 5A62     		str	r2, [r3, #36]
+ 418:../libopencm3/lib/usb/usb_msc.c **** 
+ 419:../libopencm3/lib/usb/usb_msc.c **** 			trans->msd_buf[0] = 3;	/* Num bytes that follow */
+ 927              		.loc 1 419 22
+ 928 001a BB68     		ldr	r3, [r7, #8]
+ 929 001c 0322     		movs	r2, #3
+ 930 001e 83F83820 		strb	r2, [r3, #56]
+ 420:../libopencm3/lib/usb/usb_msc.c **** 			trans->msd_buf[1] = 0;	/* Medium Type */
+ 931              		.loc 1 420 22
+ 932 0022 BB68     		ldr	r3, [r7, #8]
+ 933 0024 0022     		movs	r2, #0
+ 934 0026 83F83920 		strb	r2, [r3, #57]
+ 421:../libopencm3/lib/usb/usb_msc.c **** 			trans->msd_buf[2] = 0;	/* Device specific param */
+ 935              		.loc 1 421 22
+ 936 002a BB68     		ldr	r3, [r7, #8]
+ 937 002c 0022     		movs	r2, #0
+ 938 002e 83F83A20 		strb	r2, [r3, #58]
+ 422:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw.csw.dCSWDataResidue = 4;
+ 939              		.loc 1 422 35
+ 940 0032 BB68     		ldr	r3, [r7, #8]
+ 941 0034 0022     		movs	r2, #0
+ 942 0036 42F00402 		orr	r2, r2, #4
+ 943 003a A3F84222 		strh	r2, [r3, #578]	@ movhi
+ 944 003e 0022     		movs	r2, #0
+ 945 0040 A3F84422 		strh	r2, [r3, #580]	@ movhi
+ 946              	.L32:
+ 423:../libopencm3/lib/usb/usb_msc.c **** #if 0
+ 424:../libopencm3/lib/usb/usb_msc.c **** 		} else if (0x01 == page_code) {	/* Error recovery */
+ 425:../libopencm3/lib/usb/usb_msc.c **** 		} else if (0x3F == page_code) {	/* All */
+ 426:../libopencm3/lib/usb/usb_msc.c **** 		} else {
+ 427:../libopencm3/lib/usb/usb_msc.c **** 			/* Error */
+ 428:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw.csw.bCSWStatus = CSW_STATUS_FAILED;
+ 429:../libopencm3/lib/usb/usb_msc.c **** 			set_sbc_status(ms,
+ 430:../libopencm3/lib/usb/usb_msc.c **** 				       SBC_SENSE_KEY_ILLEGAL_REQUEST,
+ 431:../libopencm3/lib/usb/usb_msc.c **** 				       SBC_ASC_INVALID_FIELD_IN_CDB,
+ 432:../libopencm3/lib/usb/usb_msc.c **** 				       SBC_ASCQ_NA);
+ 433:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 434:../libopencm3/lib/usb/usb_msc.c **** #endif
+ 435:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 436:../libopencm3/lib/usb/usb_msc.c **** }
+ 947              		.loc 1 436 1
+ 948 0044 00BF     		nop
+ 949 0046 1437     		adds	r7, r7, #20
+ 950              		.cfi_def_cfa_offset 4
+ 951 0048 BD46     		mov	sp, r7
+ 952              		.cfi_def_cfa_register 13
+ 953              		@ sp needed
+ 954 004a 80BC     		pop	{r7}
+ 955              		.cfi_restore 7
+ 956              		.cfi_def_cfa_offset 0
+ 957 004c 7047     		bx	lr
+ 958              		.cfi_endproc
+ 959              	.LFE10:
+ 961              		.section	.text.scsi_inquiry,"ax",%progbits
+ 962              		.align	1
+ 963              		.syntax unified
+ 964              		.thumb
+ 965              		.thumb_func
+ 966              		.fpu softvfp
+ 968              	scsi_inquiry:
+ 969              	.LFB11:
+ 437:../libopencm3/lib/usb/usb_msc.c **** 
+ 438:../libopencm3/lib/usb/usb_msc.c **** static void scsi_inquiry(usbd_mass_storage *ms,
+ 439:../libopencm3/lib/usb/usb_msc.c **** 			 struct usb_msc_trans *trans,
+ 440:../libopencm3/lib/usb/usb_msc.c **** 			 enum trans_event event)
+ 441:../libopencm3/lib/usb/usb_msc.c **** {
+ 970              		.loc 1 441 1
+ 971              		.cfi_startproc
+ 972              		@ args = 0, pretend = 0, frame = 32
+ 973              		@ frame_needed = 1, uses_anonymous_args = 0
+ 974 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 975              		.cfi_def_cfa_offset 20
+ 976              		.cfi_offset 4, -20
+ 977              		.cfi_offset 5, -16
+ 978              		.cfi_offset 6, -12
+ 979              		.cfi_offset 7, -8
+ 980              		.cfi_offset 14, -4
+ 981 0002 89B0     		sub	sp, sp, #36
+ 982              		.cfi_def_cfa_offset 56
+ 983 0004 00AF     		add	r7, sp, #0
+ 984              		.cfi_def_cfa_register 7
+ 985 0006 F860     		str	r0, [r7, #12]
+ 986 0008 B960     		str	r1, [r7, #8]
+ 987 000a 1346     		mov	r3, r2
+ 988 000c FB71     		strb	r3, [r7, #7]
+ 442:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 989              		.loc 1 442 5
+ 990 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 991 0010 002B     		cmp	r3, #0
+ 992 0012 6FD1     		bne	.L36
+ 993              	.LBB8:
+ 443:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t evpd;
+ 444:../libopencm3/lib/usb/usb_msc.c **** 		uint8_t *buf;
+ 445:../libopencm3/lib/usb/usb_msc.c **** 
+ 446:../libopencm3/lib/usb/usb_msc.c **** 		buf = get_cbw_buf(trans);
+ 994              		.loc 1 446 9
+ 995 0014 B868     		ldr	r0, [r7, #8]
+ 996 0016 FFF7FEFF 		bl	get_cbw_buf(PLT)
+ 997 001a F861     		str	r0, [r7, #28]
+ 447:../libopencm3/lib/usb/usb_msc.c **** 		evpd = 1 & buf[1];
+ 998              		.loc 1 447 17
+ 999 001c FB69     		ldr	r3, [r7, #28]
+ 1000 001e 0133     		adds	r3, r3, #1
+ 1001 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1002              		.loc 1 447 8
+ 1003 0022 03F00103 		and	r3, r3, #1
+ 1004 0026 FB76     		strb	r3, [r7, #27]
+ 448:../libopencm3/lib/usb/usb_msc.c **** 
+ 449:../libopencm3/lib/usb/usb_msc.c **** 		if (0 == evpd) {
+ 1005              		.loc 1 449 6
+ 1006 0028 FB7E     		ldrb	r3, [r7, #27]	@ zero_extendqisi2
+ 1007 002a 002B     		cmp	r3, #0
+ 1008 002c 62D1     		bne	.L36
+ 1009              	.LBB9:
+ 450:../libopencm3/lib/usb/usb_msc.c **** 			size_t len;
+ 451:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_write = sizeof(_spc3_inquiry_response);
+ 1010              		.loc 1 451 26
+ 1011 002e BB68     		ldr	r3, [r7, #8]
+ 1012 0030 2422     		movs	r2, #36
+ 1013 0032 5A62     		str	r2, [r3, #36]
+ 452:../libopencm3/lib/usb/usb_msc.c **** 			memcpy(trans->msd_buf, _spc3_inquiry_response,
+ 1014              		.loc 1 452 16
+ 1015 0034 BB68     		ldr	r3, [r7, #8]
+ 1016 0036 3833     		adds	r3, r3, #56
+ 1017              		.loc 1 452 4
+ 1018 0038 304A     		ldr	r2, .L37
+ 1019              	.LPIC1:
+ 1020 003a 7A44     		add	r2, pc
+ 1021 003c 1446     		mov	r4, r2
+ 1022 003e 9C46     		mov	ip, r3
+ 1023 0040 04F1200E 		add	lr, r4, #32
+ 1024              	.L35:
+ 1025 0044 6546     		mov	r5, ip
+ 1026 0046 2646     		mov	r6, r4
+ 1027 0048 0FCE     		ldmia	r6!, {r0, r1, r2, r3}
+ 1028 004a 2860     		str	r0, [r5]	@ unaligned
+ 1029 004c 6960     		str	r1, [r5, #4]	@ unaligned
+ 1030 004e AA60     		str	r2, [r5, #8]	@ unaligned
+ 1031 0050 EB60     		str	r3, [r5, #12]	@ unaligned
+ 1032 0052 1034     		adds	r4, r4, #16
+ 1033 0054 0CF1100C 		add	ip, ip, #16
+ 1034 0058 7445     		cmp	r4, lr
+ 1035 005a F3D1     		bne	.L35
+ 1036 005c 6346     		mov	r3, ip
+ 1037 005e 2246     		mov	r2, r4
+ 1038 0060 1068     		ldr	r0, [r2]
+ 1039 0062 1860     		str	r0, [r3]	@ unaligned
+ 453:../libopencm3/lib/usb/usb_msc.c **** 			       sizeof(_spc3_inquiry_response));
+ 454:../libopencm3/lib/usb/usb_msc.c **** 
+ 455:../libopencm3/lib/usb/usb_msc.c **** 			len = strlen(ms->vendor_id);
+ 1040              		.loc 1 455 10
+ 1041 0064 FB68     		ldr	r3, [r7, #12]
+ 1042 0066 9B68     		ldr	r3, [r3, #8]
+ 1043 0068 1846     		mov	r0, r3
+ 1044 006a FFF7FEFF 		bl	strlen(PLT)
+ 1045 006e 7861     		str	r0, [r7, #20]
+ 456:../libopencm3/lib/usb/usb_msc.c **** 			len = MIN(len, 8);
+ 1046              		.loc 1 456 8
+ 1047 0070 7B69     		ldr	r3, [r7, #20]
+ 1048 0072 082B     		cmp	r3, #8
+ 1049 0074 28BF     		it	cs
+ 1050 0076 0823     		movcs	r3, #8
+ 1051 0078 7B61     		str	r3, [r7, #20]
+ 457:../libopencm3/lib/usb/usb_msc.c **** 			memcpy(&trans->msd_buf[8], ms->vendor_id, len);
+ 1052              		.loc 1 457 11
+ 1053 007a BB68     		ldr	r3, [r7, #8]
+ 1054 007c 03F14000 		add	r0, r3, #64
+ 1055              		.loc 1 457 33
+ 1056 0080 FB68     		ldr	r3, [r7, #12]
+ 1057 0082 9B68     		ldr	r3, [r3, #8]
+ 1058              		.loc 1 457 4
+ 1059 0084 7A69     		ldr	r2, [r7, #20]
+ 1060 0086 1946     		mov	r1, r3
+ 1061 0088 FFF7FEFF 		bl	memcpy(PLT)
+ 458:../libopencm3/lib/usb/usb_msc.c **** 
+ 459:../libopencm3/lib/usb/usb_msc.c **** 			len = strlen(ms->product_id);
+ 1062              		.loc 1 459 10
+ 1063 008c FB68     		ldr	r3, [r7, #12]
+ 1064 008e DB68     		ldr	r3, [r3, #12]
+ 1065 0090 1846     		mov	r0, r3
+ 1066 0092 FFF7FEFF 		bl	strlen(PLT)
+ 1067 0096 7861     		str	r0, [r7, #20]
+ 460:../libopencm3/lib/usb/usb_msc.c **** 			len = MIN(len, 16);
+ 1068              		.loc 1 460 8
+ 1069 0098 7B69     		ldr	r3, [r7, #20]
+ 1070 009a 102B     		cmp	r3, #16
+ 1071 009c 28BF     		it	cs
+ 1072 009e 1023     		movcs	r3, #16
+ 1073 00a0 7B61     		str	r3, [r7, #20]
+ 461:../libopencm3/lib/usb/usb_msc.c **** 			memcpy(&trans->msd_buf[16], ms->product_id, len);
+ 1074              		.loc 1 461 11
+ 1075 00a2 BB68     		ldr	r3, [r7, #8]
+ 1076 00a4 03F14800 		add	r0, r3, #72
+ 1077              		.loc 1 461 34
+ 1078 00a8 FB68     		ldr	r3, [r7, #12]
+ 1079 00aa DB68     		ldr	r3, [r3, #12]
+ 1080              		.loc 1 461 4
+ 1081 00ac 7A69     		ldr	r2, [r7, #20]
+ 1082 00ae 1946     		mov	r1, r3
+ 1083 00b0 FFF7FEFF 		bl	memcpy(PLT)
+ 462:../libopencm3/lib/usb/usb_msc.c **** 
+ 463:../libopencm3/lib/usb/usb_msc.c **** 			len = strlen(ms->product_revision_level);
+ 1084              		.loc 1 463 10
+ 1085 00b4 FB68     		ldr	r3, [r7, #12]
+ 1086 00b6 1B69     		ldr	r3, [r3, #16]
+ 1087 00b8 1846     		mov	r0, r3
+ 1088 00ba FFF7FEFF 		bl	strlen(PLT)
+ 1089 00be 7861     		str	r0, [r7, #20]
+ 464:../libopencm3/lib/usb/usb_msc.c **** 			len = MIN(len, 4);
+ 1090              		.loc 1 464 8
+ 1091 00c0 7B69     		ldr	r3, [r7, #20]
+ 1092 00c2 042B     		cmp	r3, #4
+ 1093 00c4 28BF     		it	cs
+ 1094 00c6 0423     		movcs	r3, #4
+ 1095 00c8 7B61     		str	r3, [r7, #20]
+ 465:../libopencm3/lib/usb/usb_msc.c **** 			memcpy(&trans->msd_buf[32], ms->product_revision_level,
+ 1096              		.loc 1 465 11
+ 1097 00ca BB68     		ldr	r3, [r7, #8]
+ 1098 00cc 03F15800 		add	r0, r3, #88
+ 1099              		.loc 1 465 34
+ 1100 00d0 FB68     		ldr	r3, [r7, #12]
+ 1101 00d2 1B69     		ldr	r3, [r3, #16]
+ 1102              		.loc 1 465 4
+ 1103 00d4 7A69     		ldr	r2, [r7, #20]
+ 1104 00d6 1946     		mov	r1, r3
+ 1105 00d8 FFF7FEFF 		bl	memcpy(PLT)
+ 466:../libopencm3/lib/usb/usb_msc.c **** 			       len);
+ 467:../libopencm3/lib/usb/usb_msc.c **** 
+ 468:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw.csw.dCSWDataResidue =
+ 1106              		.loc 1 468 35
+ 1107 00dc BB68     		ldr	r3, [r7, #8]
+ 1108 00de 0022     		movs	r2, #0
+ 1109 00e0 42F02402 		orr	r2, r2, #36
+ 1110 00e4 A3F84222 		strh	r2, [r3, #578]	@ movhi
+ 1111 00e8 0022     		movs	r2, #0
+ 1112 00ea A3F84422 		strh	r2, [r3, #580]	@ movhi
+ 469:../libopencm3/lib/usb/usb_msc.c **** 				sizeof(_spc3_inquiry_response);
+ 470:../libopencm3/lib/usb/usb_msc.c **** 
+ 471:../libopencm3/lib/usb/usb_msc.c **** 			set_sbc_status_good(ms);
+ 1113              		.loc 1 471 4
+ 1114 00ee F868     		ldr	r0, [r7, #12]
+ 1115 00f0 FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 1116              	.L36:
+ 1117              	.LBE9:
+ 1118              	.LBE8:
+ 472:../libopencm3/lib/usb/usb_msc.c **** 		} else {
+ 473:../libopencm3/lib/usb/usb_msc.c **** 			/* TODO: Add VPD 0x83 support */
+ 474:../libopencm3/lib/usb/usb_msc.c **** 			/* TODO: Add VPD 0x00 support */
+ 475:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 476:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 477:../libopencm3/lib/usb/usb_msc.c **** }
+ 1119              		.loc 1 477 1
+ 1120 00f4 00BF     		nop
+ 1121 00f6 2437     		adds	r7, r7, #36
+ 1122              		.cfi_def_cfa_offset 20
+ 1123 00f8 BD46     		mov	sp, r7
+ 1124              		.cfi_def_cfa_register 13
+ 1125              		@ sp needed
+ 1126 00fa F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1127              	.L38:
+ 1128              		.align	2
+ 1129              	.L37:
+ 1130 00fc BE000000 		.word	_spc3_inquiry_response-(.LPIC1+4)
+ 1131              		.cfi_endproc
+ 1132              	.LFE11:
+ 1134              		.section	.text.scsi_command,"ax",%progbits
+ 1135              		.align	1
+ 1136              		.syntax unified
+ 1137              		.thumb
+ 1138              		.thumb_func
+ 1139              		.fpu softvfp
+ 1141              	scsi_command:
+ 1142              	.LFB12:
+ 478:../libopencm3/lib/usb/usb_msc.c **** 
+ 479:../libopencm3/lib/usb/usb_msc.c **** static void scsi_command(usbd_mass_storage *ms,
+ 480:../libopencm3/lib/usb/usb_msc.c **** 			 struct usb_msc_trans *trans,
+ 481:../libopencm3/lib/usb/usb_msc.c **** 			 enum trans_event event)
+ 482:../libopencm3/lib/usb/usb_msc.c **** {
+ 1143              		.loc 1 482 1
+ 1144              		.cfi_startproc
+ 1145              		@ args = 0, pretend = 0, frame = 16
+ 1146              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1147 0000 80B5     		push	{r7, lr}
+ 1148              		.cfi_def_cfa_offset 8
+ 1149              		.cfi_offset 7, -8
+ 1150              		.cfi_offset 14, -4
+ 1151 0002 84B0     		sub	sp, sp, #16
+ 1152              		.cfi_def_cfa_offset 24
+ 1153 0004 00AF     		add	r7, sp, #0
+ 1154              		.cfi_def_cfa_register 7
+ 1155 0006 F860     		str	r0, [r7, #12]
+ 1156 0008 B960     		str	r1, [r7, #8]
+ 1157 000a 1346     		mov	r3, r2
+ 1158 000c FB71     		strb	r3, [r7, #7]
+ 483:../libopencm3/lib/usb/usb_msc.c **** 	if (EVENT_CBW_VALID == event) {
+ 1159              		.loc 1 483 5
+ 1160 000e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1161 0010 002B     		cmp	r3, #0
+ 1162 0012 2CD1     		bne	.L40
+ 484:../libopencm3/lib/usb/usb_msc.c **** 		/* Setup the default success */
+ 485:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw_sent = 0;
+ 1163              		.loc 1 485 19
+ 1164 0014 BB68     		ldr	r3, [r7, #8]
+ 1165 0016 0022     		movs	r2, #0
+ 1166 0018 83F83922 		strb	r2, [r3, #569]
+ 486:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw.csw.dCSWSignature = CSW_SIGNATURE;
+ 1167              		.loc 1 486 32
+ 1168 001c BA68     		ldr	r2, [r7, #8]
+ 1169 001e 0023     		movs	r3, #0
+ 1170 0020 43F4A643 		orr	r3, r3, #21248
+ 1171 0024 43F05503 		orr	r3, r3, #85
+ 1172 0028 A2F83A32 		strh	r3, [r2, #570]	@ movhi
+ 1173 002c 0023     		movs	r3, #0
+ 1174 002e 43F4A643 		orr	r3, r3, #21248
+ 1175 0032 43F04203 		orr	r3, r3, #66
+ 1176 0036 A2F83C32 		strh	r3, [r2, #572]	@ movhi
+ 487:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw.csw.dCSWTag = trans->cbw.cbw.dCBWTag;
+ 1177              		.loc 1 487 42
+ 1178 003a BB68     		ldr	r3, [r7, #8]
+ 1179 003c D3F80520 		ldr	r2, [r3, #5]	@ unaligned
+ 1180              		.loc 1 487 26
+ 1181 0040 BB68     		ldr	r3, [r7, #8]
+ 1182 0042 C3F83E22 		str	r2, [r3, #574]	@ unaligned
+ 488:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw.csw.dCSWDataResidue = 0;
+ 1183              		.loc 1 488 34
+ 1184 0046 BB68     		ldr	r3, [r7, #8]
+ 1185 0048 0022     		movs	r2, #0
+ 1186 004a A3F84222 		strh	r2, [r3, #578]	@ movhi
+ 1187 004e 0022     		movs	r2, #0
+ 1188 0050 A3F84422 		strh	r2, [r3, #580]	@ movhi
+ 489:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw.csw.bCSWStatus = CSW_STATUS_SUCCESS;
+ 1189              		.loc 1 489 29
+ 1190 0054 BB68     		ldr	r3, [r7, #8]
+ 1191 0056 0022     		movs	r2, #0
+ 1192 0058 83F84622 		strb	r2, [r3, #582]
+ 490:../libopencm3/lib/usb/usb_msc.c **** 
+ 491:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = 0;
+ 1193              		.loc 1 491 25
+ 1194 005c BB68     		ldr	r3, [r7, #8]
+ 1195 005e 0022     		movs	r2, #0
+ 1196 0060 5A62     		str	r2, [r3, #36]
+ 492:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_read = 0;
+ 1197              		.loc 1 492 24
+ 1198 0062 BB68     		ldr	r3, [r7, #8]
+ 1199 0064 0022     		movs	r2, #0
+ 1200 0066 1A62     		str	r2, [r3, #32]
+ 493:../libopencm3/lib/usb/usb_msc.c **** 		trans->byte_count = 0;
+ 1201              		.loc 1 493 21
+ 1202 0068 BB68     		ldr	r3, [r7, #8]
+ 1203 006a 0022     		movs	r2, #0
+ 1204 006c 9A62     		str	r2, [r3, #40]
+ 1205              	.L40:
+ 494:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 495:../libopencm3/lib/usb/usb_msc.c **** 
+ 496:../libopencm3/lib/usb/usb_msc.c **** 	switch (trans->cbw.cbw.CBWCB[0]) {
+ 1206              		.loc 1 496 30
+ 1207 006e BB68     		ldr	r3, [r7, #8]
+ 1208 0070 1B7C     		ldrb	r3, [r3, #16]	@ zero_extendqisi2
+ 1209              		.loc 1 496 2
+ 1210 0072 2A2B     		cmp	r3, #42
+ 1211 0074 00F29F80 		bhi	.L41
+ 1212 0078 02A2     		adr	r2, .L43
+ 1213 007a 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 1214 007e 1A44     		add	r2, r2, r3
+ 1215 0080 1047     		bx	r2
+ 1216 0082 00BF     		.p2align 2
+ 1217              	.L43:
+ 1218 0084 AD000000 		.word	.L46+1-.L43
+ 1219 0088 33010000 		.word	.L41+1-.L43
+ 1220 008c 33010000 		.word	.L41+1-.L43
+ 1221 0090 C3000000 		.word	.L52+1-.L43
+ 1222 0094 B5000000 		.word	.L51+1-.L43
+ 1223 0098 33010000 		.word	.L41+1-.L43
+ 1224 009c 33010000 		.word	.L41+1-.L43
+ 1225 00a0 33010000 		.word	.L41+1-.L43
+ 1226 00a4 DF000000 		.word	.L50+1-.L43
+ 1227 00a8 33010000 		.word	.L41+1-.L43
+ 1228 00ac 17010000 		.word	.L49+1-.L43
+ 1229 00b0 33010000 		.word	.L41+1-.L43
+ 1230 00b4 33010000 		.word	.L41+1-.L43
+ 1231 00b8 33010000 		.word	.L41+1-.L43
+ 1232 00bc 33010000 		.word	.L41+1-.L43
+ 1233 00c0 33010000 		.word	.L41+1-.L43
+ 1234 00c4 33010000 		.word	.L41+1-.L43
+ 1235 00c8 33010000 		.word	.L41+1-.L43
+ 1236 00cc ED000000 		.word	.L48+1-.L43
+ 1237 00d0 33010000 		.word	.L41+1-.L43
+ 1238 00d4 33010000 		.word	.L41+1-.L43
+ 1239 00d8 33010000 		.word	.L41+1-.L43
+ 1240 00dc 33010000 		.word	.L41+1-.L43
+ 1241 00e0 33010000 		.word	.L41+1-.L43
+ 1242 00e4 33010000 		.word	.L41+1-.L43
+ 1243 00e8 33010000 		.word	.L41+1-.L43
+ 1244 00ec D1000000 		.word	.L47+1-.L43
+ 1245 00f0 33010000 		.word	.L41+1-.L43
+ 1246 00f4 33010000 		.word	.L41+1-.L43
+ 1247 00f8 AD000000 		.word	.L46+1-.L43
+ 1248 00fc 33010000 		.word	.L41+1-.L43
+ 1249 0100 33010000 		.word	.L41+1-.L43
+ 1250 0104 33010000 		.word	.L41+1-.L43
+ 1251 0108 33010000 		.word	.L41+1-.L43
+ 1252 010c 33010000 		.word	.L41+1-.L43
+ 1253 0110 33010000 		.word	.L41+1-.L43
+ 1254 0114 33010000 		.word	.L41+1-.L43
+ 1255 0118 FB000000 		.word	.L45+1-.L43
+ 1256 011c 33010000 		.word	.L41+1-.L43
+ 1257 0120 33010000 		.word	.L41+1-.L43
+ 1258 0124 09010000 		.word	.L44+1-.L43
+ 1259 0128 33010000 		.word	.L41+1-.L43
+ 1260 012c 25010000 		.word	.L42+1-.L43
+ 1261              		.p2align 1
+ 1262              	.L46:
+ 497:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_TEST_UNIT_READY:
+ 498:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_SEND_DIAGNOSTIC:
+ 499:../libopencm3/lib/usb/usb_msc.c **** 		/* Do nothing, just send the success. */
+ 500:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status_good(ms);
+ 1263              		.loc 1 500 3
+ 1264 0130 F868     		ldr	r0, [r7, #12]
+ 1265 0132 FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 501:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1266              		.loc 1 501 3
+ 1267 0136 4FE0     		b	.L53
+ 1268              	.L51:
+ 502:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_FORMAT_UNIT:
+ 503:../libopencm3/lib/usb/usb_msc.c **** 		scsi_format_unit(ms, trans, event);
+ 1269              		.loc 1 503 3
+ 1270 0138 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1271 013a 1A46     		mov	r2, r3
+ 1272 013c B968     		ldr	r1, [r7, #8]
+ 1273 013e F868     		ldr	r0, [r7, #12]
+ 1274 0140 FFF7FEFF 		bl	scsi_format_unit(PLT)
+ 504:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1275              		.loc 1 504 3
+ 1276 0144 48E0     		b	.L53
+ 1277              	.L52:
+ 505:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_REQUEST_SENSE:
+ 506:../libopencm3/lib/usb/usb_msc.c **** 		scsi_request_sense(ms, trans, event);
+ 1278              		.loc 1 506 3
+ 1279 0146 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1280 0148 1A46     		mov	r2, r3
+ 1281 014a B968     		ldr	r1, [r7, #8]
+ 1282 014c F868     		ldr	r0, [r7, #12]
+ 1283 014e FFF7FEFF 		bl	scsi_request_sense(PLT)
+ 507:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1284              		.loc 1 507 3
+ 1285 0152 41E0     		b	.L53
+ 1286              	.L47:
+ 508:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_MODE_SENSE_6:
+ 509:../libopencm3/lib/usb/usb_msc.c **** 		scsi_mode_sense_6(ms, trans, event);
+ 1287              		.loc 1 509 3
+ 1288 0154 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1289 0156 1A46     		mov	r2, r3
+ 1290 0158 B968     		ldr	r1, [r7, #8]
+ 1291 015a F868     		ldr	r0, [r7, #12]
+ 1292 015c FFF7FEFF 		bl	scsi_mode_sense_6(PLT)
+ 510:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1293              		.loc 1 510 3
+ 1294 0160 3AE0     		b	.L53
+ 1295              	.L50:
+ 511:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_READ_6:
+ 512:../libopencm3/lib/usb/usb_msc.c **** 		scsi_read_6(ms, trans, event);
+ 1296              		.loc 1 512 3
+ 1297 0162 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1298 0164 1A46     		mov	r2, r3
+ 1299 0166 B968     		ldr	r1, [r7, #8]
+ 1300 0168 F868     		ldr	r0, [r7, #12]
+ 1301 016a FFF7FEFF 		bl	scsi_read_6(PLT)
+ 513:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1302              		.loc 1 513 3
+ 1303 016e 33E0     		b	.L53
+ 1304              	.L48:
+ 514:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_INQUIRY:
+ 515:../libopencm3/lib/usb/usb_msc.c **** 		scsi_inquiry(ms, trans, event);
+ 1305              		.loc 1 515 3
+ 1306 0170 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1307 0172 1A46     		mov	r2, r3
+ 1308 0174 B968     		ldr	r1, [r7, #8]
+ 1309 0176 F868     		ldr	r0, [r7, #12]
+ 1310 0178 FFF7FEFF 		bl	scsi_inquiry(PLT)
+ 516:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1311              		.loc 1 516 3
+ 1312 017c 2CE0     		b	.L53
+ 1313              	.L45:
+ 517:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_READ_CAPACITY:
+ 518:../libopencm3/lib/usb/usb_msc.c **** 		scsi_read_capacity(ms, trans, event);
+ 1314              		.loc 1 518 3
+ 1315 017e FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1316 0180 1A46     		mov	r2, r3
+ 1317 0182 B968     		ldr	r1, [r7, #8]
+ 1318 0184 F868     		ldr	r0, [r7, #12]
+ 1319 0186 FFF7FEFF 		bl	scsi_read_capacity(PLT)
+ 519:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1320              		.loc 1 519 3
+ 1321 018a 25E0     		b	.L53
+ 1322              	.L44:
+ 520:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_READ_10:
+ 521:../libopencm3/lib/usb/usb_msc.c **** 		scsi_read_10(ms, trans, event);
+ 1323              		.loc 1 521 3
+ 1324 018c FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1325 018e 1A46     		mov	r2, r3
+ 1326 0190 B968     		ldr	r1, [r7, #8]
+ 1327 0192 F868     		ldr	r0, [r7, #12]
+ 1328 0194 FFF7FEFF 		bl	scsi_read_10(PLT)
+ 522:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1329              		.loc 1 522 3
+ 1330 0198 1EE0     		b	.L53
+ 1331              	.L49:
+ 523:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_WRITE_6:
+ 524:../libopencm3/lib/usb/usb_msc.c **** 		scsi_write_6(ms, trans, event);
+ 1332              		.loc 1 524 3
+ 1333 019a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1334 019c 1A46     		mov	r2, r3
+ 1335 019e B968     		ldr	r1, [r7, #8]
+ 1336 01a0 F868     		ldr	r0, [r7, #12]
+ 1337 01a2 FFF7FEFF 		bl	scsi_write_6(PLT)
+ 525:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1338              		.loc 1 525 3
+ 1339 01a6 17E0     		b	.L53
+ 1340              	.L42:
+ 526:../libopencm3/lib/usb/usb_msc.c **** 	case SCSI_WRITE_10:
+ 527:../libopencm3/lib/usb/usb_msc.c **** 		scsi_write_10(ms, trans, event);
+ 1341              		.loc 1 527 3
+ 1342 01a8 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1343 01aa 1A46     		mov	r2, r3
+ 1344 01ac B968     		ldr	r1, [r7, #8]
+ 1345 01ae F868     		ldr	r0, [r7, #12]
+ 1346 01b0 FFF7FEFF 		bl	scsi_write_10(PLT)
+ 528:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1347              		.loc 1 528 3
+ 1348 01b4 10E0     		b	.L53
+ 1349              	.L41:
+ 529:../libopencm3/lib/usb/usb_msc.c **** 	default:
+ 530:../libopencm3/lib/usb/usb_msc.c **** 		set_sbc_status(ms, SBC_SENSE_KEY_ILLEGAL_REQUEST,
+ 1350              		.loc 1 530 3
+ 1351 01b6 0023     		movs	r3, #0
+ 1352 01b8 2022     		movs	r2, #32
+ 1353 01ba 0521     		movs	r1, #5
+ 1354 01bc F868     		ldr	r0, [r7, #12]
+ 1355 01be FFF7FEFF 		bl	set_sbc_status(PLT)
+ 531:../libopencm3/lib/usb/usb_msc.c **** 					SBC_ASC_INVALID_COMMAND_OPERATION_CODE,
+ 532:../libopencm3/lib/usb/usb_msc.c **** 					SBC_ASCQ_NA);
+ 533:../libopencm3/lib/usb/usb_msc.c **** 
+ 534:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_write = 0;
+ 1356              		.loc 1 534 25
+ 1357 01c2 BB68     		ldr	r3, [r7, #8]
+ 1358 01c4 0022     		movs	r2, #0
+ 1359 01c6 5A62     		str	r2, [r3, #36]
+ 535:../libopencm3/lib/usb/usb_msc.c **** 		trans->bytes_to_read = 0;
+ 1360              		.loc 1 535 24
+ 1361 01c8 BB68     		ldr	r3, [r7, #8]
+ 1362 01ca 0022     		movs	r2, #0
+ 1363 01cc 1A62     		str	r2, [r3, #32]
+ 536:../libopencm3/lib/usb/usb_msc.c **** 		trans->csw.csw.bCSWStatus = CSW_STATUS_FAILED;
+ 1364              		.loc 1 536 29
+ 1365 01ce BB68     		ldr	r3, [r7, #8]
+ 1366 01d0 0122     		movs	r2, #1
+ 1367 01d2 83F84622 		strb	r2, [r3, #582]
+ 537:../libopencm3/lib/usb/usb_msc.c **** 		break;
+ 1368              		.loc 1 537 3
+ 1369 01d6 00BF     		nop
+ 1370              	.L53:
+ 538:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 539:../libopencm3/lib/usb/usb_msc.c **** }
+ 1371              		.loc 1 539 1
+ 1372 01d8 00BF     		nop
+ 1373 01da 1037     		adds	r7, r7, #16
+ 1374              		.cfi_def_cfa_offset 8
+ 1375 01dc BD46     		mov	sp, r7
+ 1376              		.cfi_def_cfa_register 13
+ 1377              		@ sp needed
+ 1378 01de 80BD     		pop	{r7, pc}
+ 1379              		.cfi_endproc
+ 1380              	.LFE12:
+ 1382              		.section	.text.msc_data_rx_cb,"ax",%progbits
+ 1383              		.align	1
+ 1384              		.syntax unified
+ 1385              		.thumb
+ 1386              		.thumb_func
+ 1387              		.fpu softvfp
+ 1389              	msc_data_rx_cb:
+ 1390              	.LFB13:
+ 540:../libopencm3/lib/usb/usb_msc.c **** 
+ 541:../libopencm3/lib/usb/usb_msc.c **** /*-- USB Mass Storage Layer --------------------------------------------------*/
+ 542:../libopencm3/lib/usb/usb_msc.c **** 
+ 543:../libopencm3/lib/usb/usb_msc.c **** /** @brief Handle the USB 'OUT' requests. */
+ 544:../libopencm3/lib/usb/usb_msc.c **** static void msc_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
+ 545:../libopencm3/lib/usb/usb_msc.c **** {
+ 1391              		.loc 1 545 1
+ 1392              		.cfi_startproc
+ 1393              		@ args = 0, pretend = 0, frame = 48
+ 1394              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1395 0000 80B5     		push	{r7, lr}
+ 1396              		.cfi_def_cfa_offset 8
+ 1397              		.cfi_offset 7, -8
+ 1398              		.cfi_offset 14, -4
+ 1399 0002 8CB0     		sub	sp, sp, #48
+ 1400              		.cfi_def_cfa_offset 56
+ 1401 0004 00AF     		add	r7, sp, #0
+ 1402              		.cfi_def_cfa_register 7
+ 1403 0006 7860     		str	r0, [r7, #4]
+ 1404 0008 0B46     		mov	r3, r1
+ 1405 000a FB70     		strb	r3, [r7, #3]
+ 546:../libopencm3/lib/usb/usb_msc.c **** 	usbd_mass_storage *ms;
+ 547:../libopencm3/lib/usb/usb_msc.c **** 	struct usb_msc_trans *trans;
+ 548:../libopencm3/lib/usb/usb_msc.c **** 	int len, max_len, left;
+ 549:../libopencm3/lib/usb/usb_msc.c **** 	void *p;
+ 550:../libopencm3/lib/usb/usb_msc.c **** 
+ 551:../libopencm3/lib/usb/usb_msc.c **** 	ms = &_mass_storage;
+ 1406              		.loc 1 551 5
+ 1407 000c C74B     		ldr	r3, .L68
+ 1408              	.LPIC2:
+ 1409 000e 7B44     		add	r3, pc
+ 1410 0010 FB62     		str	r3, [r7, #44]
+ 552:../libopencm3/lib/usb/usb_msc.c **** 	trans = &ms->trans;
+ 1411              		.loc 1 552 8
+ 1412 0012 FB6A     		ldr	r3, [r7, #44]
+ 1413 0014 2833     		adds	r3, r3, #40
+ 1414 0016 BB62     		str	r3, [r7, #40]
+ 553:../libopencm3/lib/usb/usb_msc.c **** 
+ 554:../libopencm3/lib/usb/usb_msc.c **** 	/* RX only */
+ 555:../libopencm3/lib/usb/usb_msc.c **** 	left = sizeof(struct usb_msc_cbw) - trans->cbw_cnt;
+ 1415              		.loc 1 555 43
+ 1416 0018 BB6A     		ldr	r3, [r7, #40]
+ 1417 001a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1418              		.loc 1 555 36
+ 1419 001c C3F11F03 		rsb	r3, r3, #31
+ 1420              		.loc 1 555 7
+ 1421 0020 7B62     		str	r3, [r7, #36]
+ 556:../libopencm3/lib/usb/usb_msc.c **** 	if (0 < left) {
+ 1422              		.loc 1 556 5
+ 1423 0022 7B6A     		ldr	r3, [r7, #36]
+ 1424 0024 002B     		cmp	r3, #0
+ 1425 0026 2FDD     		ble	.L55
+ 557:../libopencm3/lib/usb/usb_msc.c **** 		max_len = MIN(ms->ep_out_size, left);
+ 1426              		.loc 1 557 13
+ 1427 0028 FB6A     		ldr	r3, [r7, #44]
+ 1428 002a DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1429 002c 1A46     		mov	r2, r3
+ 1430              		.loc 1 557 11
+ 1431 002e 7B6A     		ldr	r3, [r7, #36]
+ 1432 0030 9342     		cmp	r3, r2
+ 1433 0032 A8BF     		it	ge
+ 1434 0034 1346     		movge	r3, r2
+ 1435 0036 3B62     		str	r3, [r7, #32]
+ 558:../libopencm3/lib/usb/usb_msc.c **** 		p = &trans->cbw.buf[0x1ff & trans->cbw_cnt];
+ 1436              		.loc 1 558 36
+ 1437 0038 BB6A     		ldr	r3, [r7, #40]
+ 1438 003a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1439              		.loc 1 558 29
+ 1440 003c 1A46     		mov	r2, r3
+ 1441              		.loc 1 558 5
+ 1442 003e BB6A     		ldr	r3, [r7, #40]
+ 1443 0040 1344     		add	r3, r3, r2
+ 1444 0042 0133     		adds	r3, r3, #1
+ 1445 0044 FB61     		str	r3, [r7, #28]
+ 559:../libopencm3/lib/usb/usb_msc.c **** 		len = usbd_ep_read_packet(usbd_dev, ep, p, max_len);
+ 1446              		.loc 1 559 9
+ 1447 0046 3B6A     		ldr	r3, [r7, #32]
+ 1448 0048 9BB2     		uxth	r3, r3
+ 1449 004a F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 1450 004c FA69     		ldr	r2, [r7, #28]
+ 1451 004e 7868     		ldr	r0, [r7, #4]
+ 1452 0050 FFF7FEFF 		bl	usbd_ep_read_packet(PLT)
+ 1453 0054 0346     		mov	r3, r0
+ 1454              		.loc 1 559 7
+ 1455 0056 BB61     		str	r3, [r7, #24]
+ 560:../libopencm3/lib/usb/usb_msc.c **** 		trans->cbw_cnt += len;
+ 1456              		.loc 1 560 18
+ 1457 0058 BB6A     		ldr	r3, [r7, #40]
+ 1458 005a 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 1459 005c BB69     		ldr	r3, [r7, #24]
+ 1460 005e DBB2     		uxtb	r3, r3
+ 1461 0060 1344     		add	r3, r3, r2
+ 1462 0062 DAB2     		uxtb	r2, r3
+ 1463 0064 BB6A     		ldr	r3, [r7, #40]
+ 1464 0066 1A70     		strb	r2, [r3]
+ 561:../libopencm3/lib/usb/usb_msc.c **** 
+ 562:../libopencm3/lib/usb/usb_msc.c **** 		if (sizeof(struct usb_msc_cbw) == trans->cbw_cnt) {
+ 1465              		.loc 1 562 42
+ 1466 0068 BB6A     		ldr	r3, [r7, #40]
+ 1467 006a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1468              		.loc 1 562 6
+ 1469 006c 1F2B     		cmp	r3, #31
+ 1470 006e 0BD1     		bne	.L55
+ 563:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_CBW_VALID);
+ 1471              		.loc 1 563 4
+ 1472 0070 0022     		movs	r2, #0
+ 1473 0072 B96A     		ldr	r1, [r7, #40]
+ 1474 0074 F86A     		ldr	r0, [r7, #44]
+ 1475 0076 FFF7FEFF 		bl	scsi_command(PLT)
+ 564:../libopencm3/lib/usb/usb_msc.c **** 			if (trans->byte_count < trans->bytes_to_read) {
+ 1476              		.loc 1 564 13
+ 1477 007a BB6A     		ldr	r3, [r7, #40]
+ 1478 007c 9A6A     		ldr	r2, [r3, #40]
+ 1479              		.loc 1 564 33
+ 1480 007e BB6A     		ldr	r3, [r7, #40]
+ 1481 0080 1B6A     		ldr	r3, [r3, #32]
+ 1482              		.loc 1 564 7
+ 1483 0082 9A42     		cmp	r2, r3
+ 1484 0084 C0F04D81 		bcc	.L67
+ 1485              	.L55:
+ 565:../libopencm3/lib/usb/usb_msc.c **** 				/* We must wait until there is something to
+ 566:../libopencm3/lib/usb/usb_msc.c **** 				 * read again. */
+ 567:../libopencm3/lib/usb/usb_msc.c **** 				return;
+ 568:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 569:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 570:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 571:../libopencm3/lib/usb/usb_msc.c **** 
+ 572:../libopencm3/lib/usb/usb_msc.c **** 	if (trans->byte_count < trans->bytes_to_read) {
+ 1486              		.loc 1 572 11
+ 1487 0088 BB6A     		ldr	r3, [r7, #40]
+ 1488 008a 9A6A     		ldr	r2, [r3, #40]
+ 1489              		.loc 1 572 31
+ 1490 008c BB6A     		ldr	r3, [r7, #40]
+ 1491 008e 1B6A     		ldr	r3, [r3, #32]
+ 1492              		.loc 1 572 5
+ 1493 0090 9A42     		cmp	r2, r3
+ 1494 0092 80F09180 		bcs	.L57
+ 573:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 1495              		.loc 1 573 16
+ 1496 0096 BB6A     		ldr	r3, [r7, #40]
+ 1497 0098 1B6B     		ldr	r3, [r3, #48]
+ 1498              		.loc 1 573 6
+ 1499 009a 002B     		cmp	r3, #0
+ 1500 009c 0AD0     		beq	.L58
+ 574:../libopencm3/lib/usb/usb_msc.c **** 			if ((0 == trans->byte_count) && (NULL != ms->lock)) {
+ 1501              		.loc 1 574 19
+ 1502 009e BB6A     		ldr	r3, [r7, #40]
+ 1503 00a0 9B6A     		ldr	r3, [r3, #40]
+ 1504              		.loc 1 574 7
+ 1505 00a2 002B     		cmp	r3, #0
+ 1506 00a4 06D1     		bne	.L58
+ 1507              		.loc 1 574 47 discriminator 1
+ 1508 00a6 FB6A     		ldr	r3, [r7, #44]
+ 1509 00a8 1B6A     		ldr	r3, [r3, #32]
+ 1510              		.loc 1 574 33 discriminator 1
+ 1511 00aa 002B     		cmp	r3, #0
+ 1512 00ac 02D0     		beq	.L58
+ 575:../libopencm3/lib/usb/usb_msc.c **** 				(*ms->lock)();
+ 1513              		.loc 1 575 6
+ 1514 00ae FB6A     		ldr	r3, [r7, #44]
+ 1515 00b0 1B6A     		ldr	r3, [r3, #32]
+ 1516 00b2 9847     		blx	r3
+ 1517              	.LVL1:
+ 1518              	.L58:
+ 576:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 577:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 578:../libopencm3/lib/usb/usb_msc.c **** 
+ 579:../libopencm3/lib/usb/usb_msc.c **** 		left = trans->bytes_to_read - trans->byte_count;
+ 1519              		.loc 1 579 15
+ 1520 00b4 BB6A     		ldr	r3, [r7, #40]
+ 1521 00b6 1A6A     		ldr	r2, [r3, #32]
+ 1522              		.loc 1 579 38
+ 1523 00b8 BB6A     		ldr	r3, [r7, #40]
+ 1524 00ba 9B6A     		ldr	r3, [r3, #40]
+ 1525              		.loc 1 579 31
+ 1526 00bc D31A     		subs	r3, r2, r3
+ 1527              		.loc 1 579 8
+ 1528 00be 7B62     		str	r3, [r7, #36]
+ 580:../libopencm3/lib/usb/usb_msc.c **** 		max_len = MIN(ms->ep_out_size, left);
+ 1529              		.loc 1 580 13
+ 1530 00c0 FB6A     		ldr	r3, [r7, #44]
+ 1531 00c2 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1532 00c4 1A46     		mov	r2, r3
+ 1533              		.loc 1 580 11
+ 1534 00c6 7B6A     		ldr	r3, [r7, #36]
+ 1535 00c8 9342     		cmp	r3, r2
+ 1536 00ca A8BF     		it	ge
+ 1537 00cc 1346     		movge	r3, r2
+ 1538 00ce 3B62     		str	r3, [r7, #32]
+ 581:../libopencm3/lib/usb/usb_msc.c **** 		p = &trans->msd_buf[0x1ff & trans->byte_count];
+ 1539              		.loc 1 581 36
+ 1540 00d0 BB6A     		ldr	r3, [r7, #40]
+ 1541 00d2 9B6A     		ldr	r3, [r3, #40]
+ 1542              		.loc 1 581 29
+ 1543 00d4 C3F30803 		ubfx	r3, r3, #0, #9
+ 1544              		.loc 1 581 5
+ 1545 00d8 3833     		adds	r3, r3, #56
+ 1546 00da BA6A     		ldr	r2, [r7, #40]
+ 1547 00dc 1344     		add	r3, r3, r2
+ 1548 00de FB61     		str	r3, [r7, #28]
+ 582:../libopencm3/lib/usb/usb_msc.c **** 		len = usbd_ep_read_packet(usbd_dev, ep, p, max_len);
+ 1549              		.loc 1 582 9
+ 1550 00e0 3B6A     		ldr	r3, [r7, #32]
+ 1551 00e2 9BB2     		uxth	r3, r3
+ 1552 00e4 F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 1553 00e6 FA69     		ldr	r2, [r7, #28]
+ 1554 00e8 7868     		ldr	r0, [r7, #4]
+ 1555 00ea FFF7FEFF 		bl	usbd_ep_read_packet(PLT)
+ 1556 00ee 0346     		mov	r3, r0
+ 1557              		.loc 1 582 7
+ 1558 00f0 BB61     		str	r3, [r7, #24]
+ 583:../libopencm3/lib/usb/usb_msc.c **** 		trans->byte_count += len;
+ 1559              		.loc 1 583 21
+ 1560 00f2 BB6A     		ldr	r3, [r7, #40]
+ 1561 00f4 9A6A     		ldr	r2, [r3, #40]
+ 1562 00f6 BB69     		ldr	r3, [r7, #24]
+ 1563 00f8 1A44     		add	r2, r2, r3
+ 1564 00fa BB6A     		ldr	r3, [r7, #40]
+ 1565 00fc 9A62     		str	r2, [r3, #40]
+ 584:../libopencm3/lib/usb/usb_msc.c **** 
+ 585:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 1566              		.loc 1 585 16
+ 1567 00fe BB6A     		ldr	r3, [r7, #40]
+ 1568 0100 1B6B     		ldr	r3, [r3, #48]
+ 1569              		.loc 1 585 6
+ 1570 0102 002B     		cmp	r3, #0
+ 1571 0104 17D0     		beq	.L59
+ 586:../libopencm3/lib/usb/usb_msc.c **** 			if (0 == (0x1ff & trans->byte_count)) {
+ 1572              		.loc 1 586 27
+ 1573 0106 BB6A     		ldr	r3, [r7, #40]
+ 1574 0108 9B6A     		ldr	r3, [r3, #40]
+ 1575              		.loc 1 586 20
+ 1576 010a C3F30803 		ubfx	r3, r3, #0, #9
+ 1577              		.loc 1 586 7
+ 1578 010e 002B     		cmp	r3, #0
+ 1579 0110 11D1     		bne	.L59
+ 1580              	.LBB10:
+ 587:../libopencm3/lib/usb/usb_msc.c **** 				uint32_t lba;
+ 588:../libopencm3/lib/usb/usb_msc.c **** 
+ 589:../libopencm3/lib/usb/usb_msc.c **** 				lba = trans->lba_start + trans->current_block;
+ 1581              		.loc 1 589 16
+ 1582 0112 BB6A     		ldr	r3, [r7, #40]
+ 1583 0114 DA6A     		ldr	r2, [r3, #44]
+ 1584              		.loc 1 589 35
+ 1585 0116 BB6A     		ldr	r3, [r7, #40]
+ 1586 0118 5B6B     		ldr	r3, [r3, #52]
+ 1587              		.loc 1 589 9
+ 1588 011a 1344     		add	r3, r3, r2
+ 1589 011c 7B61     		str	r3, [r7, #20]
+ 590:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->write_block)(lba,
+ 1590              		.loc 1 590 15
+ 1591 011e FB6A     		ldr	r3, [r7, #44]
+ 1592 0120 DB69     		ldr	r3, [r3, #28]
+ 591:../libopencm3/lib/usb/usb_msc.c **** 							    trans->msd_buf)) {
+ 1593              		.loc 1 591 17
+ 1594 0122 BA6A     		ldr	r2, [r7, #40]
+ 1595 0124 3832     		adds	r2, r2, #56
+ 590:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->write_block)(lba,
+ 1596              		.loc 1 590 15
+ 1597 0126 1146     		mov	r1, r2
+ 1598 0128 7869     		ldr	r0, [r7, #20]
+ 1599 012a 9847     		blx	r3
+ 1600              	.LVL2:
+ 592:../libopencm3/lib/usb/usb_msc.c **** 					/* Error */
+ 593:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 594:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block++;
+ 1601              		.loc 1 594 10
+ 1602 012c BB6A     		ldr	r3, [r7, #40]
+ 1603 012e 5B6B     		ldr	r3, [r3, #52]
+ 1604              		.loc 1 594 25
+ 1605 0130 5A1C     		adds	r2, r3, #1
+ 1606 0132 BB6A     		ldr	r3, [r7, #40]
+ 1607 0134 5A63     		str	r2, [r3, #52]
+ 1608              	.L59:
+ 1609              	.LBE10:
+ 595:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 596:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 597:../libopencm3/lib/usb/usb_msc.c **** 
+ 598:../libopencm3/lib/usb/usb_msc.c **** 		/* Fix "writes aren't acknowledged" bug on Linux (PR #409) */
+ 599:../libopencm3/lib/usb/usb_msc.c **** 		if (false == trans->csw_valid) {
+ 1610              		.loc 1 599 21
+ 1611 0136 BB6A     		ldr	r3, [r7, #40]
+ 1612 0138 93F83832 		ldrb	r3, [r3, #568]	@ zero_extendqisi2
+ 1613              		.loc 1 599 13
+ 1614 013c 83F00103 		eor	r3, r3, #1
+ 1615 0140 DBB2     		uxtb	r3, r3
+ 1616              		.loc 1 599 6
+ 1617 0142 002B     		cmp	r3, #0
+ 1618 0144 08D0     		beq	.L60
+ 600:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 1619              		.loc 1 600 4
+ 1620 0146 0122     		movs	r2, #1
+ 1621 0148 B96A     		ldr	r1, [r7, #40]
+ 1622 014a F86A     		ldr	r0, [r7, #44]
+ 1623 014c FFF7FEFF 		bl	scsi_command(PLT)
+ 601:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = true;
+ 1624              		.loc 1 601 21
+ 1625 0150 BB6A     		ldr	r3, [r7, #40]
+ 1626 0152 0122     		movs	r2, #1
+ 1627 0154 83F83822 		strb	r2, [r3, #568]
+ 1628              	.L60:
+ 602:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 603:../libopencm3/lib/usb/usb_msc.c **** 		left = sizeof(struct usb_msc_csw) - trans->csw_sent;
+ 1629              		.loc 1 603 44
+ 1630 0158 BB6A     		ldr	r3, [r7, #40]
+ 1631 015a 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 1632              		.loc 1 603 37
+ 1633 015e C3F10D03 		rsb	r3, r3, #13
+ 1634              		.loc 1 603 8
+ 1635 0162 7B62     		str	r3, [r7, #36]
+ 604:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 1636              		.loc 1 604 6
+ 1637 0164 7B6A     		ldr	r3, [r7, #36]
+ 1638 0166 002B     		cmp	r3, #0
+ 1639 0168 40F3DC80 		ble	.L54
+ 605:../libopencm3/lib/usb/usb_msc.c **** 			max_len = MIN(ms->ep_out_size, left);
+ 1640              		.loc 1 605 14
+ 1641 016c FB6A     		ldr	r3, [r7, #44]
+ 1642 016e DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1643 0170 1A46     		mov	r2, r3
+ 1644              		.loc 1 605 12
+ 1645 0172 7B6A     		ldr	r3, [r7, #36]
+ 1646 0174 9342     		cmp	r3, r2
+ 1647 0176 A8BF     		it	ge
+ 1648 0178 1346     		movge	r3, r2
+ 1649 017a 3B62     		str	r3, [r7, #32]
+ 606:../libopencm3/lib/usb/usb_msc.c **** 			p = &trans->csw.buf[trans->csw_sent];
+ 1650              		.loc 1 606 29
+ 1651 017c BB6A     		ldr	r3, [r7, #40]
+ 1652 017e 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 1653              		.loc 1 606 6
+ 1654 0182 03F50E73 		add	r3, r3, #568
+ 1655 0186 BA6A     		ldr	r2, [r7, #40]
+ 1656 0188 1344     		add	r3, r3, r2
+ 1657 018a 0233     		adds	r3, r3, #2
+ 1658 018c FB61     		str	r3, [r7, #28]
+ 607:../libopencm3/lib/usb/usb_msc.c **** 			len = usbd_ep_write_packet(usbd_dev, ms->ep_in, p,
+ 1659              		.loc 1 607 10
+ 1660 018e FB6A     		ldr	r3, [r7, #44]
+ 1661 0190 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 1662 0192 3B6A     		ldr	r3, [r7, #32]
+ 1663 0194 9BB2     		uxth	r3, r3
+ 1664 0196 FA69     		ldr	r2, [r7, #28]
+ 1665 0198 7868     		ldr	r0, [r7, #4]
+ 1666 019a FFF7FEFF 		bl	usbd_ep_write_packet(PLT)
+ 1667 019e 0346     		mov	r3, r0
+ 1668              		.loc 1 607 8
+ 1669 01a0 BB61     		str	r3, [r7, #24]
+ 608:../libopencm3/lib/usb/usb_msc.c **** 						   max_len);
+ 609:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent += len;
+ 1670              		.loc 1 609 20
+ 1671 01a2 BB6A     		ldr	r3, [r7, #40]
+ 1672 01a4 93F83922 		ldrb	r2, [r3, #569]	@ zero_extendqisi2
+ 1673 01a8 BB69     		ldr	r3, [r7, #24]
+ 1674 01aa DBB2     		uxtb	r3, r3
+ 1675 01ac 1344     		add	r3, r3, r2
+ 1676 01ae DAB2     		uxtb	r2, r3
+ 1677 01b0 BB6A     		ldr	r3, [r7, #40]
+ 1678 01b2 83F83922 		strb	r2, [r3, #569]
+ 1679 01b6 B5E0     		b	.L54
+ 1680              	.L57:
+ 610:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 611:../libopencm3/lib/usb/usb_msc.c **** 
+ 612:../libopencm3/lib/usb/usb_msc.c **** 	} else if (trans->byte_count < trans->bytes_to_write) {
+ 1681              		.loc 1 612 18
+ 1682 01b8 BB6A     		ldr	r3, [r7, #40]
+ 1683 01ba 9A6A     		ldr	r2, [r3, #40]
+ 1684              		.loc 1 612 38
+ 1685 01bc BB6A     		ldr	r3, [r7, #40]
+ 1686 01be 5B6A     		ldr	r3, [r3, #36]
+ 1687              		.loc 1 612 12
+ 1688 01c0 9A42     		cmp	r2, r3
+ 1689 01c2 4DD2     		bcs	.L62
+ 613:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 1690              		.loc 1 613 16
+ 1691 01c4 BB6A     		ldr	r3, [r7, #40]
+ 1692 01c6 1B6B     		ldr	r3, [r3, #48]
+ 1693              		.loc 1 613 6
+ 1694 01c8 002B     		cmp	r3, #0
+ 1695 01ca 22D0     		beq	.L63
+ 614:../libopencm3/lib/usb/usb_msc.c **** 			if ((0 == trans->byte_count) && (NULL != ms->lock)) {
+ 1696              		.loc 1 614 19
+ 1697 01cc BB6A     		ldr	r3, [r7, #40]
+ 1698 01ce 9B6A     		ldr	r3, [r3, #40]
+ 1699              		.loc 1 614 7
+ 1700 01d0 002B     		cmp	r3, #0
+ 1701 01d2 06D1     		bne	.L64
+ 1702              		.loc 1 614 47 discriminator 1
+ 1703 01d4 FB6A     		ldr	r3, [r7, #44]
+ 1704 01d6 1B6A     		ldr	r3, [r3, #32]
+ 1705              		.loc 1 614 33 discriminator 1
+ 1706 01d8 002B     		cmp	r3, #0
+ 1707 01da 02D0     		beq	.L64
+ 615:../libopencm3/lib/usb/usb_msc.c **** 				(*ms->lock)();
+ 1708              		.loc 1 615 6
+ 1709 01dc FB6A     		ldr	r3, [r7, #44]
+ 1710 01de 1B6A     		ldr	r3, [r3, #32]
+ 1711 01e0 9847     		blx	r3
+ 1712              	.LVL3:
+ 1713              	.L64:
+ 616:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 617:../libopencm3/lib/usb/usb_msc.c **** 
+ 618:../libopencm3/lib/usb/usb_msc.c **** 			if (0 == (0x1ff & trans->byte_count)) {
+ 1714              		.loc 1 618 27
+ 1715 01e2 BB6A     		ldr	r3, [r7, #40]
+ 1716 01e4 9B6A     		ldr	r3, [r3, #40]
+ 1717              		.loc 1 618 20
+ 1718 01e6 C3F30803 		ubfx	r3, r3, #0, #9
+ 1719              		.loc 1 618 7
+ 1720 01ea 002B     		cmp	r3, #0
+ 1721 01ec 11D1     		bne	.L63
+ 1722              	.LBB11:
+ 619:../libopencm3/lib/usb/usb_msc.c **** 				uint32_t lba;
+ 620:../libopencm3/lib/usb/usb_msc.c **** 
+ 621:../libopencm3/lib/usb/usb_msc.c **** 				lba = trans->lba_start + trans->current_block;
+ 1723              		.loc 1 621 16
+ 1724 01ee BB6A     		ldr	r3, [r7, #40]
+ 1725 01f0 DA6A     		ldr	r2, [r3, #44]
+ 1726              		.loc 1 621 35
+ 1727 01f2 BB6A     		ldr	r3, [r7, #40]
+ 1728 01f4 5B6B     		ldr	r3, [r3, #52]
+ 1729              		.loc 1 621 9
+ 1730 01f6 1344     		add	r3, r3, r2
+ 1731 01f8 3B61     		str	r3, [r7, #16]
+ 622:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->read_block)(lba,
+ 1732              		.loc 1 622 15
+ 1733 01fa FB6A     		ldr	r3, [r7, #44]
+ 1734 01fc 9B69     		ldr	r3, [r3, #24]
+ 623:../libopencm3/lib/usb/usb_msc.c **** 							   trans->msd_buf)) {
+ 1735              		.loc 1 623 16
+ 1736 01fe BA6A     		ldr	r2, [r7, #40]
+ 1737 0200 3832     		adds	r2, r2, #56
+ 622:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->read_block)(lba,
+ 1738              		.loc 1 622 15
+ 1739 0202 1146     		mov	r1, r2
+ 1740 0204 3869     		ldr	r0, [r7, #16]
+ 1741 0206 9847     		blx	r3
+ 1742              	.LVL4:
+ 624:../libopencm3/lib/usb/usb_msc.c **** 					/* Error */
+ 625:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 626:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block++;
+ 1743              		.loc 1 626 10
+ 1744 0208 BB6A     		ldr	r3, [r7, #40]
+ 1745 020a 5B6B     		ldr	r3, [r3, #52]
+ 1746              		.loc 1 626 25
+ 1747 020c 5A1C     		adds	r2, r3, #1
+ 1748 020e BB6A     		ldr	r3, [r7, #40]
+ 1749 0210 5A63     		str	r2, [r3, #52]
+ 1750              	.L63:
+ 1751              	.LBE11:
+ 627:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 628:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 629:../libopencm3/lib/usb/usb_msc.c **** 
+ 630:../libopencm3/lib/usb/usb_msc.c **** 		left = trans->bytes_to_write - trans->byte_count;
+ 1752              		.loc 1 630 15
+ 1753 0212 BB6A     		ldr	r3, [r7, #40]
+ 1754 0214 5A6A     		ldr	r2, [r3, #36]
+ 1755              		.loc 1 630 39
+ 1756 0216 BB6A     		ldr	r3, [r7, #40]
+ 1757 0218 9B6A     		ldr	r3, [r3, #40]
+ 1758              		.loc 1 630 32
+ 1759 021a D31A     		subs	r3, r2, r3
+ 1760              		.loc 1 630 8
+ 1761 021c 7B62     		str	r3, [r7, #36]
+ 631:../libopencm3/lib/usb/usb_msc.c **** 		max_len = MIN(ms->ep_out_size, left);
+ 1762              		.loc 1 631 13
+ 1763 021e FB6A     		ldr	r3, [r7, #44]
+ 1764 0220 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1765 0222 1A46     		mov	r2, r3
+ 1766              		.loc 1 631 11
+ 1767 0224 7B6A     		ldr	r3, [r7, #36]
+ 1768 0226 9342     		cmp	r3, r2
+ 1769 0228 A8BF     		it	ge
+ 1770 022a 1346     		movge	r3, r2
+ 1771 022c 3B62     		str	r3, [r7, #32]
+ 632:../libopencm3/lib/usb/usb_msc.c **** 		p = &trans->msd_buf[0x1ff & trans->byte_count];
+ 1772              		.loc 1 632 36
+ 1773 022e BB6A     		ldr	r3, [r7, #40]
+ 1774 0230 9B6A     		ldr	r3, [r3, #40]
+ 1775              		.loc 1 632 29
+ 1776 0232 C3F30803 		ubfx	r3, r3, #0, #9
+ 1777              		.loc 1 632 5
+ 1778 0236 3833     		adds	r3, r3, #56
+ 1779 0238 BA6A     		ldr	r2, [r7, #40]
+ 1780 023a 1344     		add	r3, r3, r2
+ 1781 023c FB61     		str	r3, [r7, #28]
+ 633:../libopencm3/lib/usb/usb_msc.c **** 		len = usbd_ep_write_packet(usbd_dev, ms->ep_in, p, max_len);
+ 1782              		.loc 1 633 9
+ 1783 023e FB6A     		ldr	r3, [r7, #44]
+ 1784 0240 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 1785 0242 3B6A     		ldr	r3, [r7, #32]
+ 1786 0244 9BB2     		uxth	r3, r3
+ 1787 0246 FA69     		ldr	r2, [r7, #28]
+ 1788 0248 7868     		ldr	r0, [r7, #4]
+ 1789 024a FFF7FEFF 		bl	usbd_ep_write_packet(PLT)
+ 1790 024e 0346     		mov	r3, r0
+ 1791              		.loc 1 633 7
+ 1792 0250 BB61     		str	r3, [r7, #24]
+ 634:../libopencm3/lib/usb/usb_msc.c **** 		trans->byte_count += len;
+ 1793              		.loc 1 634 21
+ 1794 0252 BB6A     		ldr	r3, [r7, #40]
+ 1795 0254 9A6A     		ldr	r2, [r3, #40]
+ 1796 0256 BB69     		ldr	r3, [r7, #24]
+ 1797 0258 1A44     		add	r2, r2, r3
+ 1798 025a BB6A     		ldr	r3, [r7, #40]
+ 1799 025c 9A62     		str	r2, [r3, #40]
+ 1800 025e 61E0     		b	.L54
+ 1801              	.L62:
+ 635:../libopencm3/lib/usb/usb_msc.c **** 	} else {
+ 636:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 1802              		.loc 1 636 16
+ 1803 0260 BB6A     		ldr	r3, [r7, #40]
+ 1804 0262 1B6B     		ldr	r3, [r3, #48]
+ 1805              		.loc 1 636 6
+ 1806 0264 002B     		cmp	r3, #0
+ 1807 0266 1CD0     		beq	.L65
+ 637:../libopencm3/lib/usb/usb_msc.c **** 			if (trans->current_block == trans->block_count) {
+ 1808              		.loc 1 637 13
+ 1809 0268 BB6A     		ldr	r3, [r7, #40]
+ 1810 026a 5A6B     		ldr	r2, [r3, #52]
+ 1811              		.loc 1 637 37
+ 1812 026c BB6A     		ldr	r3, [r7, #40]
+ 1813 026e 1B6B     		ldr	r3, [r3, #48]
+ 1814              		.loc 1 637 7
+ 1815 0270 9A42     		cmp	r2, r3
+ 1816 0272 16D1     		bne	.L65
+ 1817              	.LBB12:
+ 638:../libopencm3/lib/usb/usb_msc.c **** 				uint32_t lba;
+ 639:../libopencm3/lib/usb/usb_msc.c **** 
+ 640:../libopencm3/lib/usb/usb_msc.c **** 				lba = trans->lba_start + trans->current_block;
+ 1818              		.loc 1 640 16
+ 1819 0274 BB6A     		ldr	r3, [r7, #40]
+ 1820 0276 DA6A     		ldr	r2, [r3, #44]
+ 1821              		.loc 1 640 35
+ 1822 0278 BB6A     		ldr	r3, [r7, #40]
+ 1823 027a 5B6B     		ldr	r3, [r3, #52]
+ 1824              		.loc 1 640 9
+ 1825 027c 1344     		add	r3, r3, r2
+ 1826 027e FB60     		str	r3, [r7, #12]
+ 641:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->write_block)(lba,
+ 1827              		.loc 1 641 15
+ 1828 0280 FB6A     		ldr	r3, [r7, #44]
+ 1829 0282 DB69     		ldr	r3, [r3, #28]
+ 642:../libopencm3/lib/usb/usb_msc.c **** 							    trans->msd_buf)) {
+ 1830              		.loc 1 642 17
+ 1831 0284 BA6A     		ldr	r2, [r7, #40]
+ 1832 0286 3832     		adds	r2, r2, #56
+ 641:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->write_block)(lba,
+ 1833              		.loc 1 641 15
+ 1834 0288 1146     		mov	r1, r2
+ 1835 028a F868     		ldr	r0, [r7, #12]
+ 1836 028c 9847     		blx	r3
+ 1837              	.LVL5:
+ 643:../libopencm3/lib/usb/usb_msc.c **** 					/* Error */
+ 644:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 645:../libopencm3/lib/usb/usb_msc.c **** 
+ 646:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block = 0;
+ 1838              		.loc 1 646 26
+ 1839 028e BB6A     		ldr	r3, [r7, #40]
+ 1840 0290 0022     		movs	r2, #0
+ 1841 0292 5A63     		str	r2, [r3, #52]
+ 647:../libopencm3/lib/usb/usb_msc.c **** 				if (NULL != ms->unlock) {
+ 1842              		.loc 1 647 19
+ 1843 0294 FB6A     		ldr	r3, [r7, #44]
+ 1844 0296 5B6A     		ldr	r3, [r3, #36]
+ 1845              		.loc 1 647 8
+ 1846 0298 002B     		cmp	r3, #0
+ 1847 029a 02D0     		beq	.L65
+ 648:../libopencm3/lib/usb/usb_msc.c **** 					(*ms->unlock)();
+ 1848              		.loc 1 648 7
+ 1849 029c FB6A     		ldr	r3, [r7, #44]
+ 1850 029e 5B6A     		ldr	r3, [r3, #36]
+ 1851 02a0 9847     		blx	r3
+ 1852              	.LVL6:
+ 1853              	.L65:
+ 1854              	.LBE12:
+ 649:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 650:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 651:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 652:../libopencm3/lib/usb/usb_msc.c **** 		if (false == trans->csw_valid) {
+ 1855              		.loc 1 652 21
+ 1856 02a2 BB6A     		ldr	r3, [r7, #40]
+ 1857 02a4 93F83832 		ldrb	r3, [r3, #568]	@ zero_extendqisi2
+ 1858              		.loc 1 652 13
+ 1859 02a8 83F00103 		eor	r3, r3, #1
+ 1860 02ac DBB2     		uxtb	r3, r3
+ 1861              		.loc 1 652 6
+ 1862 02ae 002B     		cmp	r3, #0
+ 1863 02b0 08D0     		beq	.L66
+ 653:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 1864              		.loc 1 653 4
+ 1865 02b2 0122     		movs	r2, #1
+ 1866 02b4 B96A     		ldr	r1, [r7, #40]
+ 1867 02b6 F86A     		ldr	r0, [r7, #44]
+ 1868 02b8 FFF7FEFF 		bl	scsi_command(PLT)
+ 654:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = true;
+ 1869              		.loc 1 654 21
+ 1870 02bc BB6A     		ldr	r3, [r7, #40]
+ 1871 02be 0122     		movs	r2, #1
+ 1872 02c0 83F83822 		strb	r2, [r3, #568]
+ 1873              	.L66:
+ 655:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 656:../libopencm3/lib/usb/usb_msc.c **** 
+ 657:../libopencm3/lib/usb/usb_msc.c **** 		left = sizeof(struct usb_msc_csw) - trans->csw_sent;
+ 1874              		.loc 1 657 44
+ 1875 02c4 BB6A     		ldr	r3, [r7, #40]
+ 1876 02c6 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 1877              		.loc 1 657 37
+ 1878 02ca C3F10D03 		rsb	r3, r3, #13
+ 1879              		.loc 1 657 8
+ 1880 02ce 7B62     		str	r3, [r7, #36]
+ 658:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 1881              		.loc 1 658 6
+ 1882 02d0 7B6A     		ldr	r3, [r7, #36]
+ 1883 02d2 002B     		cmp	r3, #0
+ 1884 02d4 26DD     		ble	.L54
+ 659:../libopencm3/lib/usb/usb_msc.c **** 			max_len = MIN(ms->ep_out_size, left);
+ 1885              		.loc 1 659 14
+ 1886 02d6 FB6A     		ldr	r3, [r7, #44]
+ 1887 02d8 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 1888 02da 1A46     		mov	r2, r3
+ 1889              		.loc 1 659 12
+ 1890 02dc 7B6A     		ldr	r3, [r7, #36]
+ 1891 02de 9342     		cmp	r3, r2
+ 1892 02e0 A8BF     		it	ge
+ 1893 02e2 1346     		movge	r3, r2
+ 1894 02e4 3B62     		str	r3, [r7, #32]
+ 660:../libopencm3/lib/usb/usb_msc.c **** 			p = &trans->csw.buf[trans->csw_sent];
+ 1895              		.loc 1 660 29
+ 1896 02e6 BB6A     		ldr	r3, [r7, #40]
+ 1897 02e8 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 1898              		.loc 1 660 6
+ 1899 02ec 03F50E73 		add	r3, r3, #568
+ 1900 02f0 BA6A     		ldr	r2, [r7, #40]
+ 1901 02f2 1344     		add	r3, r3, r2
+ 1902 02f4 0233     		adds	r3, r3, #2
+ 1903 02f6 FB61     		str	r3, [r7, #28]
+ 661:../libopencm3/lib/usb/usb_msc.c **** 			len = usbd_ep_write_packet(usbd_dev, ms->ep_in, p,
+ 1904              		.loc 1 661 10
+ 1905 02f8 FB6A     		ldr	r3, [r7, #44]
+ 1906 02fa 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 1907 02fc 3B6A     		ldr	r3, [r7, #32]
+ 1908 02fe 9BB2     		uxth	r3, r3
+ 1909 0300 FA69     		ldr	r2, [r7, #28]
+ 1910 0302 7868     		ldr	r0, [r7, #4]
+ 1911 0304 FFF7FEFF 		bl	usbd_ep_write_packet(PLT)
+ 1912 0308 0346     		mov	r3, r0
+ 1913              		.loc 1 661 8
+ 1914 030a BB61     		str	r3, [r7, #24]
+ 662:../libopencm3/lib/usb/usb_msc.c **** 						   max_len);
+ 663:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent += len;
+ 1915              		.loc 1 663 20
+ 1916 030c BB6A     		ldr	r3, [r7, #40]
+ 1917 030e 93F83922 		ldrb	r2, [r3, #569]	@ zero_extendqisi2
+ 1918 0312 BB69     		ldr	r3, [r7, #24]
+ 1919 0314 DBB2     		uxtb	r3, r3
+ 1920 0316 1344     		add	r3, r3, r2
+ 1921 0318 DAB2     		uxtb	r2, r3
+ 1922 031a BB6A     		ldr	r3, [r7, #40]
+ 1923 031c 83F83922 		strb	r2, [r3, #569]
+ 1924 0320 00E0     		b	.L54
+ 1925              	.L67:
+ 567:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 1926              		.loc 1 567 5
+ 1927 0322 00BF     		nop
+ 1928              	.L54:
+ 664:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 665:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 666:../libopencm3/lib/usb/usb_msc.c **** }
+ 1929              		.loc 1 666 1
+ 1930 0324 3037     		adds	r7, r7, #48
+ 1931              		.cfi_def_cfa_offset 8
+ 1932 0326 BD46     		mov	sp, r7
+ 1933              		.cfi_def_cfa_register 13
+ 1934              		@ sp needed
+ 1935 0328 80BD     		pop	{r7, pc}
+ 1936              	.L69:
+ 1937 032a 00BF     		.align	2
+ 1938              	.L68:
+ 1939 032c 1A030000 		.word	_mass_storage-(.LPIC2+4)
+ 1940              		.cfi_endproc
+ 1941              	.LFE13:
+ 1943              		.section	.text.msc_data_tx_cb,"ax",%progbits
+ 1944              		.align	1
+ 1945              		.syntax unified
+ 1946              		.thumb
+ 1947              		.thumb_func
+ 1948              		.fpu softvfp
+ 1950              	msc_data_tx_cb:
+ 1951              	.LFB14:
+ 667:../libopencm3/lib/usb/usb_msc.c **** 
+ 668:../libopencm3/lib/usb/usb_msc.c **** /** @brief Handle the USB 'IN' requests. */
+ 669:../libopencm3/lib/usb/usb_msc.c **** static void msc_data_tx_cb(usbd_device *usbd_dev, uint8_t ep)
+ 670:../libopencm3/lib/usb/usb_msc.c **** {
+ 1952              		.loc 1 670 1
+ 1953              		.cfi_startproc
+ 1954              		@ args = 0, pretend = 0, frame = 40
+ 1955              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1956 0000 80B5     		push	{r7, lr}
+ 1957              		.cfi_def_cfa_offset 8
+ 1958              		.cfi_offset 7, -8
+ 1959              		.cfi_offset 14, -4
+ 1960 0002 8AB0     		sub	sp, sp, #40
+ 1961              		.cfi_def_cfa_offset 48
+ 1962 0004 00AF     		add	r7, sp, #0
+ 1963              		.cfi_def_cfa_register 7
+ 1964 0006 7860     		str	r0, [r7, #4]
+ 1965 0008 0B46     		mov	r3, r1
+ 1966 000a FB70     		strb	r3, [r7, #3]
+ 671:../libopencm3/lib/usb/usb_msc.c **** 	usbd_mass_storage *ms;
+ 672:../libopencm3/lib/usb/usb_msc.c **** 	struct usb_msc_trans *trans;
+ 673:../libopencm3/lib/usb/usb_msc.c **** 	int len, max_len, left;
+ 674:../libopencm3/lib/usb/usb_msc.c **** 	void *p;
+ 675:../libopencm3/lib/usb/usb_msc.c **** 
+ 676:../libopencm3/lib/usb/usb_msc.c **** 	ms = &_mass_storage;
+ 1967              		.loc 1 676 5
+ 1968 000c 634B     		ldr	r3, .L78
+ 1969              	.LPIC3:
+ 1970 000e 7B44     		add	r3, pc
+ 1971 0010 7B62     		str	r3, [r7, #36]
+ 677:../libopencm3/lib/usb/usb_msc.c **** 	trans = &ms->trans;
+ 1972              		.loc 1 677 8
+ 1973 0012 7B6A     		ldr	r3, [r7, #36]
+ 1974 0014 2833     		adds	r3, r3, #40
+ 1975 0016 3B62     		str	r3, [r7, #32]
+ 678:../libopencm3/lib/usb/usb_msc.c **** 
+ 679:../libopencm3/lib/usb/usb_msc.c **** 	if (trans->byte_count < trans->bytes_to_write) {
+ 1976              		.loc 1 679 11
+ 1977 0018 3B6A     		ldr	r3, [r7, #32]
+ 1978 001a 9A6A     		ldr	r2, [r3, #40]
+ 1979              		.loc 1 679 31
+ 1980 001c 3B6A     		ldr	r3, [r7, #32]
+ 1981 001e 5B6A     		ldr	r3, [r3, #36]
+ 1982              		.loc 1 679 5
+ 1983 0020 9A42     		cmp	r2, r3
+ 1984 0022 41D2     		bcs	.L71
+ 680:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 1985              		.loc 1 680 16
+ 1986 0024 3B6A     		ldr	r3, [r7, #32]
+ 1987 0026 1B6B     		ldr	r3, [r3, #48]
+ 1988              		.loc 1 680 6
+ 1989 0028 002B     		cmp	r3, #0
+ 1990 002a 17D0     		beq	.L72
+ 681:../libopencm3/lib/usb/usb_msc.c **** 			if (0 == (0x1ff & trans->byte_count)) {
+ 1991              		.loc 1 681 27
+ 1992 002c 3B6A     		ldr	r3, [r7, #32]
+ 1993 002e 9B6A     		ldr	r3, [r3, #40]
+ 1994              		.loc 1 681 20
+ 1995 0030 C3F30803 		ubfx	r3, r3, #0, #9
+ 1996              		.loc 1 681 7
+ 1997 0034 002B     		cmp	r3, #0
+ 1998 0036 11D1     		bne	.L72
+ 1999              	.LBB13:
+ 682:../libopencm3/lib/usb/usb_msc.c **** 				uint32_t lba;
+ 683:../libopencm3/lib/usb/usb_msc.c **** 
+ 684:../libopencm3/lib/usb/usb_msc.c **** 				lba = trans->lba_start + trans->current_block;
+ 2000              		.loc 1 684 16
+ 2001 0038 3B6A     		ldr	r3, [r7, #32]
+ 2002 003a DA6A     		ldr	r2, [r3, #44]
+ 2003              		.loc 1 684 35
+ 2004 003c 3B6A     		ldr	r3, [r7, #32]
+ 2005 003e 5B6B     		ldr	r3, [r3, #52]
+ 2006              		.loc 1 684 9
+ 2007 0040 1344     		add	r3, r3, r2
+ 2008 0042 FB61     		str	r3, [r7, #28]
+ 685:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->read_block)(lba,
+ 2009              		.loc 1 685 15
+ 2010 0044 7B6A     		ldr	r3, [r7, #36]
+ 2011 0046 9B69     		ldr	r3, [r3, #24]
+ 686:../libopencm3/lib/usb/usb_msc.c **** 							   trans->msd_buf)) {
+ 2012              		.loc 1 686 16
+ 2013 0048 3A6A     		ldr	r2, [r7, #32]
+ 2014 004a 3832     		adds	r2, r2, #56
+ 685:../libopencm3/lib/usb/usb_msc.c **** 				if (0 != (*ms->read_block)(lba,
+ 2015              		.loc 1 685 15
+ 2016 004c 1146     		mov	r1, r2
+ 2017 004e F869     		ldr	r0, [r7, #28]
+ 2018 0050 9847     		blx	r3
+ 2019              	.LVL7:
+ 687:../libopencm3/lib/usb/usb_msc.c **** 					/* Error */
+ 688:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 689:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block++;
+ 2020              		.loc 1 689 10
+ 2021 0052 3B6A     		ldr	r3, [r7, #32]
+ 2022 0054 5B6B     		ldr	r3, [r3, #52]
+ 2023              		.loc 1 689 25
+ 2024 0056 5A1C     		adds	r2, r3, #1
+ 2025 0058 3B6A     		ldr	r3, [r7, #32]
+ 2026 005a 5A63     		str	r2, [r3, #52]
+ 2027              	.L72:
+ 2028              	.LBE13:
+ 690:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 691:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 692:../libopencm3/lib/usb/usb_msc.c **** 
+ 693:../libopencm3/lib/usb/usb_msc.c **** 		left = trans->bytes_to_write - trans->byte_count;
+ 2029              		.loc 1 693 15
+ 2030 005c 3B6A     		ldr	r3, [r7, #32]
+ 2031 005e 5A6A     		ldr	r2, [r3, #36]
+ 2032              		.loc 1 693 39
+ 2033 0060 3B6A     		ldr	r3, [r7, #32]
+ 2034 0062 9B6A     		ldr	r3, [r3, #40]
+ 2035              		.loc 1 693 32
+ 2036 0064 D31A     		subs	r3, r2, r3
+ 2037              		.loc 1 693 8
+ 2038 0066 BB61     		str	r3, [r7, #24]
+ 694:../libopencm3/lib/usb/usb_msc.c **** 		max_len = MIN(ms->ep_out_size, left);
+ 2039              		.loc 1 694 13
+ 2040 0068 7B6A     		ldr	r3, [r7, #36]
+ 2041 006a DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 2042 006c 1A46     		mov	r2, r3
+ 2043              		.loc 1 694 11
+ 2044 006e BB69     		ldr	r3, [r7, #24]
+ 2045 0070 9342     		cmp	r3, r2
+ 2046 0072 A8BF     		it	ge
+ 2047 0074 1346     		movge	r3, r2
+ 2048 0076 7B61     		str	r3, [r7, #20]
+ 695:../libopencm3/lib/usb/usb_msc.c **** 		p = &trans->msd_buf[0x1ff & trans->byte_count];
+ 2049              		.loc 1 695 36
+ 2050 0078 3B6A     		ldr	r3, [r7, #32]
+ 2051 007a 9B6A     		ldr	r3, [r3, #40]
+ 2052              		.loc 1 695 29
+ 2053 007c C3F30803 		ubfx	r3, r3, #0, #9
+ 2054              		.loc 1 695 5
+ 2055 0080 3833     		adds	r3, r3, #56
+ 2056 0082 3A6A     		ldr	r2, [r7, #32]
+ 2057 0084 1344     		add	r3, r3, r2
+ 2058 0086 3B61     		str	r3, [r7, #16]
+ 696:../libopencm3/lib/usb/usb_msc.c **** 		len = usbd_ep_write_packet(usbd_dev, ep, p, max_len);
+ 2059              		.loc 1 696 9
+ 2060 0088 7B69     		ldr	r3, [r7, #20]
+ 2061 008a 9BB2     		uxth	r3, r3
+ 2062 008c F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 2063 008e 3A69     		ldr	r2, [r7, #16]
+ 2064 0090 7868     		ldr	r0, [r7, #4]
+ 2065 0092 FFF7FEFF 		bl	usbd_ep_write_packet(PLT)
+ 2066 0096 0346     		mov	r3, r0
+ 2067              		.loc 1 696 7
+ 2068 0098 FB60     		str	r3, [r7, #12]
+ 697:../libopencm3/lib/usb/usb_msc.c **** 		trans->byte_count += len;
+ 2069              		.loc 1 697 21
+ 2070 009a 3B6A     		ldr	r3, [r7, #32]
+ 2071 009c 9A6A     		ldr	r2, [r3, #40]
+ 2072 009e FB68     		ldr	r3, [r7, #12]
+ 2073 00a0 1A44     		add	r2, r2, r3
+ 2074 00a2 3B6A     		ldr	r3, [r7, #32]
+ 2075 00a4 9A62     		str	r2, [r3, #40]
+ 698:../libopencm3/lib/usb/usb_msc.c **** 	} else {
+ 699:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < trans->block_count) {
+ 700:../libopencm3/lib/usb/usb_msc.c **** 			if (trans->current_block == trans->block_count) {
+ 701:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block = 0;
+ 702:../libopencm3/lib/usb/usb_msc.c **** 				if (NULL != ms->unlock) {
+ 703:../libopencm3/lib/usb/usb_msc.c **** 					(*ms->unlock)();
+ 704:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 705:../libopencm3/lib/usb/usb_msc.c **** 			}
+ 706:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 707:../libopencm3/lib/usb/usb_msc.c **** 		if (false == trans->csw_valid) {
+ 708:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 709:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = true;
+ 710:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 711:../libopencm3/lib/usb/usb_msc.c **** 
+ 712:../libopencm3/lib/usb/usb_msc.c **** 		left = sizeof(struct usb_msc_csw) - trans->csw_sent;
+ 713:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 714:../libopencm3/lib/usb/usb_msc.c **** 			max_len = MIN(ms->ep_out_size, left);
+ 715:../libopencm3/lib/usb/usb_msc.c **** 			p = &trans->csw.buf[trans->csw_sent];
+ 716:../libopencm3/lib/usb/usb_msc.c **** 			len = usbd_ep_write_packet(usbd_dev, ep, p, max_len);
+ 717:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent += len;
+ 718:../libopencm3/lib/usb/usb_msc.c **** 		} else if (sizeof(struct usb_msc_csw) == trans->csw_sent) {
+ 719:../libopencm3/lib/usb/usb_msc.c **** 			/* End of transaction */
+ 720:../libopencm3/lib/usb/usb_msc.c **** 			trans->lba_start = 0xffffffff;
+ 721:../libopencm3/lib/usb/usb_msc.c **** 			trans->block_count = 0;
+ 722:../libopencm3/lib/usb/usb_msc.c **** 			trans->current_block = 0;
+ 723:../libopencm3/lib/usb/usb_msc.c **** 			trans->cbw_cnt = 0;
+ 724:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_read = 0;
+ 725:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_write = 0;
+ 726:../libopencm3/lib/usb/usb_msc.c **** 			trans->byte_count = 0;
+ 727:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent = 0;
+ 728:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = false;
+ 729:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 730:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 731:../libopencm3/lib/usb/usb_msc.c **** }
+ 2076              		.loc 1 731 1
+ 2077 00a6 75E0     		b	.L77
+ 2078              	.L71:
+ 699:../libopencm3/lib/usb/usb_msc.c **** 			if (trans->current_block == trans->block_count) {
+ 2079              		.loc 1 699 16
+ 2080 00a8 3B6A     		ldr	r3, [r7, #32]
+ 2081 00aa 1B6B     		ldr	r3, [r3, #48]
+ 699:../libopencm3/lib/usb/usb_msc.c **** 			if (trans->current_block == trans->block_count) {
+ 2082              		.loc 1 699 6
+ 2083 00ac 002B     		cmp	r3, #0
+ 2084 00ae 0FD0     		beq	.L74
+ 700:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block = 0;
+ 2085              		.loc 1 700 13
+ 2086 00b0 3B6A     		ldr	r3, [r7, #32]
+ 2087 00b2 5A6B     		ldr	r2, [r3, #52]
+ 700:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block = 0;
+ 2088              		.loc 1 700 37
+ 2089 00b4 3B6A     		ldr	r3, [r7, #32]
+ 2090 00b6 1B6B     		ldr	r3, [r3, #48]
+ 700:../libopencm3/lib/usb/usb_msc.c **** 				trans->current_block = 0;
+ 2091              		.loc 1 700 7
+ 2092 00b8 9A42     		cmp	r2, r3
+ 2093 00ba 09D1     		bne	.L74
+ 701:../libopencm3/lib/usb/usb_msc.c **** 				if (NULL != ms->unlock) {
+ 2094              		.loc 1 701 26
+ 2095 00bc 3B6A     		ldr	r3, [r7, #32]
+ 2096 00be 0022     		movs	r2, #0
+ 2097 00c0 5A63     		str	r2, [r3, #52]
+ 702:../libopencm3/lib/usb/usb_msc.c **** 					(*ms->unlock)();
+ 2098              		.loc 1 702 19
+ 2099 00c2 7B6A     		ldr	r3, [r7, #36]
+ 2100 00c4 5B6A     		ldr	r3, [r3, #36]
+ 702:../libopencm3/lib/usb/usb_msc.c **** 					(*ms->unlock)();
+ 2101              		.loc 1 702 8
+ 2102 00c6 002B     		cmp	r3, #0
+ 2103 00c8 02D0     		beq	.L74
+ 703:../libopencm3/lib/usb/usb_msc.c **** 				}
+ 2104              		.loc 1 703 7
+ 2105 00ca 7B6A     		ldr	r3, [r7, #36]
+ 2106 00cc 5B6A     		ldr	r3, [r3, #36]
+ 2107 00ce 9847     		blx	r3
+ 2108              	.LVL8:
+ 2109              	.L74:
+ 707:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 2110              		.loc 1 707 21
+ 2111 00d0 3B6A     		ldr	r3, [r7, #32]
+ 2112 00d2 93F83832 		ldrb	r3, [r3, #568]	@ zero_extendqisi2
+ 707:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 2113              		.loc 1 707 13
+ 2114 00d6 83F00103 		eor	r3, r3, #1
+ 2115 00da DBB2     		uxtb	r3, r3
+ 707:../libopencm3/lib/usb/usb_msc.c **** 			scsi_command(ms, trans, EVENT_NEED_STATUS);
+ 2116              		.loc 1 707 6
+ 2117 00dc 002B     		cmp	r3, #0
+ 2118 00de 08D0     		beq	.L75
+ 708:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = true;
+ 2119              		.loc 1 708 4
+ 2120 00e0 0122     		movs	r2, #1
+ 2121 00e2 396A     		ldr	r1, [r7, #32]
+ 2122 00e4 786A     		ldr	r0, [r7, #36]
+ 2123 00e6 FFF7FEFF 		bl	scsi_command(PLT)
+ 709:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 2124              		.loc 1 709 21
+ 2125 00ea 3B6A     		ldr	r3, [r7, #32]
+ 2126 00ec 0122     		movs	r2, #1
+ 2127 00ee 83F83822 		strb	r2, [r3, #568]
+ 2128              	.L75:
+ 712:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 2129              		.loc 1 712 44
+ 2130 00f2 3B6A     		ldr	r3, [r7, #32]
+ 2131 00f4 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 712:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 2132              		.loc 1 712 37
+ 2133 00f8 C3F10D03 		rsb	r3, r3, #13
+ 712:../libopencm3/lib/usb/usb_msc.c **** 		if (0 < left) {
+ 2134              		.loc 1 712 8
+ 2135 00fc BB61     		str	r3, [r7, #24]
+ 713:../libopencm3/lib/usb/usb_msc.c **** 			max_len = MIN(ms->ep_out_size, left);
+ 2136              		.loc 1 713 6
+ 2137 00fe BB69     		ldr	r3, [r7, #24]
+ 2138 0100 002B     		cmp	r3, #0
+ 2139 0102 24DD     		ble	.L76
+ 714:../libopencm3/lib/usb/usb_msc.c **** 			p = &trans->csw.buf[trans->csw_sent];
+ 2140              		.loc 1 714 14
+ 2141 0104 7B6A     		ldr	r3, [r7, #36]
+ 2142 0106 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 2143 0108 1A46     		mov	r2, r3
+ 714:../libopencm3/lib/usb/usb_msc.c **** 			p = &trans->csw.buf[trans->csw_sent];
+ 2144              		.loc 1 714 12
+ 2145 010a BB69     		ldr	r3, [r7, #24]
+ 2146 010c 9342     		cmp	r3, r2
+ 2147 010e A8BF     		it	ge
+ 2148 0110 1346     		movge	r3, r2
+ 2149 0112 7B61     		str	r3, [r7, #20]
+ 715:../libopencm3/lib/usb/usb_msc.c **** 			len = usbd_ep_write_packet(usbd_dev, ep, p, max_len);
+ 2150              		.loc 1 715 29
+ 2151 0114 3B6A     		ldr	r3, [r7, #32]
+ 2152 0116 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 715:../libopencm3/lib/usb/usb_msc.c **** 			len = usbd_ep_write_packet(usbd_dev, ep, p, max_len);
+ 2153              		.loc 1 715 6
+ 2154 011a 03F50E73 		add	r3, r3, #568
+ 2155 011e 3A6A     		ldr	r2, [r7, #32]
+ 2156 0120 1344     		add	r3, r3, r2
+ 2157 0122 0233     		adds	r3, r3, #2
+ 2158 0124 3B61     		str	r3, [r7, #16]
+ 716:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent += len;
+ 2159              		.loc 1 716 10
+ 2160 0126 7B69     		ldr	r3, [r7, #20]
+ 2161 0128 9BB2     		uxth	r3, r3
+ 2162 012a F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 2163 012c 3A69     		ldr	r2, [r7, #16]
+ 2164 012e 7868     		ldr	r0, [r7, #4]
+ 2165 0130 FFF7FEFF 		bl	usbd_ep_write_packet(PLT)
+ 2166 0134 0346     		mov	r3, r0
+ 716:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent += len;
+ 2167              		.loc 1 716 8
+ 2168 0136 FB60     		str	r3, [r7, #12]
+ 717:../libopencm3/lib/usb/usb_msc.c **** 		} else if (sizeof(struct usb_msc_csw) == trans->csw_sent) {
+ 2169              		.loc 1 717 20
+ 2170 0138 3B6A     		ldr	r3, [r7, #32]
+ 2171 013a 93F83922 		ldrb	r2, [r3, #569]	@ zero_extendqisi2
+ 2172 013e FB68     		ldr	r3, [r7, #12]
+ 2173 0140 DBB2     		uxtb	r3, r3
+ 2174 0142 1344     		add	r3, r3, r2
+ 2175 0144 DAB2     		uxtb	r2, r3
+ 2176 0146 3B6A     		ldr	r3, [r7, #32]
+ 2177 0148 83F83922 		strb	r2, [r3, #569]
+ 2178              		.loc 1 731 1
+ 2179 014c 22E0     		b	.L77
+ 2180              	.L76:
+ 718:../libopencm3/lib/usb/usb_msc.c **** 			/* End of transaction */
+ 2181              		.loc 1 718 49
+ 2182 014e 3B6A     		ldr	r3, [r7, #32]
+ 2183 0150 93F83932 		ldrb	r3, [r3, #569]	@ zero_extendqisi2
+ 718:../libopencm3/lib/usb/usb_msc.c **** 			/* End of transaction */
+ 2184              		.loc 1 718 13
+ 2185 0154 0D2B     		cmp	r3, #13
+ 2186 0156 1DD1     		bne	.L77
+ 720:../libopencm3/lib/usb/usb_msc.c **** 			trans->block_count = 0;
+ 2187              		.loc 1 720 21
+ 2188 0158 3B6A     		ldr	r3, [r7, #32]
+ 2189 015a 4FF0FF32 		mov	r2, #-1
+ 2190 015e DA62     		str	r2, [r3, #44]
+ 721:../libopencm3/lib/usb/usb_msc.c **** 			trans->current_block = 0;
+ 2191              		.loc 1 721 23
+ 2192 0160 3B6A     		ldr	r3, [r7, #32]
+ 2193 0162 0022     		movs	r2, #0
+ 2194 0164 1A63     		str	r2, [r3, #48]
+ 722:../libopencm3/lib/usb/usb_msc.c **** 			trans->cbw_cnt = 0;
+ 2195              		.loc 1 722 25
+ 2196 0166 3B6A     		ldr	r3, [r7, #32]
+ 2197 0168 0022     		movs	r2, #0
+ 2198 016a 5A63     		str	r2, [r3, #52]
+ 723:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_read = 0;
+ 2199              		.loc 1 723 19
+ 2200 016c 3B6A     		ldr	r3, [r7, #32]
+ 2201 016e 0022     		movs	r2, #0
+ 2202 0170 1A70     		strb	r2, [r3]
+ 724:../libopencm3/lib/usb/usb_msc.c **** 			trans->bytes_to_write = 0;
+ 2203              		.loc 1 724 25
+ 2204 0172 3B6A     		ldr	r3, [r7, #32]
+ 2205 0174 0022     		movs	r2, #0
+ 2206 0176 1A62     		str	r2, [r3, #32]
+ 725:../libopencm3/lib/usb/usb_msc.c **** 			trans->byte_count = 0;
+ 2207              		.loc 1 725 26
+ 2208 0178 3B6A     		ldr	r3, [r7, #32]
+ 2209 017a 0022     		movs	r2, #0
+ 2210 017c 5A62     		str	r2, [r3, #36]
+ 726:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_sent = 0;
+ 2211              		.loc 1 726 22
+ 2212 017e 3B6A     		ldr	r3, [r7, #32]
+ 2213 0180 0022     		movs	r2, #0
+ 2214 0182 9A62     		str	r2, [r3, #40]
+ 727:../libopencm3/lib/usb/usb_msc.c **** 			trans->csw_valid = false;
+ 2215              		.loc 1 727 20
+ 2216 0184 3B6A     		ldr	r3, [r7, #32]
+ 2217 0186 0022     		movs	r2, #0
+ 2218 0188 83F83922 		strb	r2, [r3, #569]
+ 728:../libopencm3/lib/usb/usb_msc.c **** 		}
+ 2219              		.loc 1 728 21
+ 2220 018c 3B6A     		ldr	r3, [r7, #32]
+ 2221 018e 0022     		movs	r2, #0
+ 2222 0190 83F83822 		strb	r2, [r3, #568]
+ 2223              	.L77:
+ 2224              		.loc 1 731 1
+ 2225 0194 00BF     		nop
+ 2226 0196 2837     		adds	r7, r7, #40
+ 2227              		.cfi_def_cfa_offset 8
+ 2228 0198 BD46     		mov	sp, r7
+ 2229              		.cfi_def_cfa_register 13
+ 2230              		@ sp needed
+ 2231 019a 80BD     		pop	{r7, pc}
+ 2232              	.L79:
+ 2233              		.align	2
+ 2234              	.L78:
+ 2235 019c 8A010000 		.word	_mass_storage-(.LPIC3+4)
+ 2236              		.cfi_endproc
+ 2237              	.LFE14:
+ 2239              		.section	.text.msc_control_request,"ax",%progbits
+ 2240              		.align	1
+ 2241              		.syntax unified
+ 2242              		.thumb
+ 2243              		.thumb_func
+ 2244              		.fpu softvfp
+ 2246              	msc_control_request:
+ 2247              	.LFB15:
+ 732:../libopencm3/lib/usb/usb_msc.c **** 
+ 733:../libopencm3/lib/usb/usb_msc.c **** /** @brief Handle various control requests related to the msc storage
+ 734:../libopencm3/lib/usb/usb_msc.c ****  *	   interface.
+ 735:../libopencm3/lib/usb/usb_msc.c ****  */
+ 736:../libopencm3/lib/usb/usb_msc.c **** static enum usbd_request_return_codes
+ 737:../libopencm3/lib/usb/usb_msc.c **** msc_control_request(usbd_device *usbd_dev,
+ 738:../libopencm3/lib/usb/usb_msc.c **** 		    struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
+ 739:../libopencm3/lib/usb/usb_msc.c **** 		    usbd_control_complete_callback *complete)
+ 740:../libopencm3/lib/usb/usb_msc.c **** {
+ 2248              		.loc 1 740 1
+ 2249              		.cfi_startproc
+ 2250              		@ args = 4, pretend = 0, frame = 16
+ 2251              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2252              		@ link register save eliminated.
+ 2253 0000 80B4     		push	{r7}
+ 2254              		.cfi_def_cfa_offset 4
+ 2255              		.cfi_offset 7, -4
+ 2256 0002 85B0     		sub	sp, sp, #20
+ 2257              		.cfi_def_cfa_offset 24
+ 2258 0004 00AF     		add	r7, sp, #0
+ 2259              		.cfi_def_cfa_register 7
+ 2260 0006 F860     		str	r0, [r7, #12]
+ 2261 0008 B960     		str	r1, [r7, #8]
+ 2262 000a 7A60     		str	r2, [r7, #4]
+ 2263 000c 3B60     		str	r3, [r7]
+ 741:../libopencm3/lib/usb/usb_msc.c **** 	(void)complete;
+ 742:../libopencm3/lib/usb/usb_msc.c **** 	(void)usbd_dev;
+ 743:../libopencm3/lib/usb/usb_msc.c **** 
+ 744:../libopencm3/lib/usb/usb_msc.c **** 	switch (req->bRequest) {
+ 2264              		.loc 1 744 13
+ 2265 000e BB68     		ldr	r3, [r7, #8]
+ 2266 0010 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 2267              		.loc 1 744 2
+ 2268 0012 FE2B     		cmp	r3, #254
+ 2269 0014 03D0     		beq	.L81
+ 2270 0016 FF2B     		cmp	r3, #255
+ 2271 0018 0AD1     		bne	.L82
+ 745:../libopencm3/lib/usb/usb_msc.c **** 	case USB_MSC_REQ_BULK_ONLY_RESET:
+ 746:../libopencm3/lib/usb/usb_msc.c **** 		/* Do any special reset code here. */
+ 747:../libopencm3/lib/usb/usb_msc.c **** 		return USBD_REQ_HANDLED;
+ 2272              		.loc 1 747 10
+ 2273 001a 0123     		movs	r3, #1
+ 2274 001c 09E0     		b	.L83
+ 2275              	.L81:
+ 748:../libopencm3/lib/usb/usb_msc.c **** 	case USB_MSC_REQ_GET_MAX_LUN:
+ 749:../libopencm3/lib/usb/usb_msc.c **** 		/* Return the number of LUNs.  We use 0. */
+ 750:../libopencm3/lib/usb/usb_msc.c **** 		*buf[0] = 0;
+ 2276              		.loc 1 750 7
+ 2277 001e 7B68     		ldr	r3, [r7, #4]
+ 2278 0020 1B68     		ldr	r3, [r3]
+ 2279              		.loc 1 750 11
+ 2280 0022 0022     		movs	r2, #0
+ 2281 0024 1A70     		strb	r2, [r3]
+ 751:../libopencm3/lib/usb/usb_msc.c **** 		*len = 1;
+ 2282              		.loc 1 751 8
+ 2283 0026 3B68     		ldr	r3, [r7]
+ 2284 0028 0122     		movs	r2, #1
+ 2285 002a 1A80     		strh	r2, [r3]	@ movhi
+ 752:../libopencm3/lib/usb/usb_msc.c **** 		return USBD_REQ_HANDLED;
+ 2286              		.loc 1 752 10
+ 2287 002c 0123     		movs	r3, #1
+ 2288 002e 00E0     		b	.L83
+ 2289              	.L82:
+ 753:../libopencm3/lib/usb/usb_msc.c **** 	}
+ 754:../libopencm3/lib/usb/usb_msc.c **** 
+ 755:../libopencm3/lib/usb/usb_msc.c **** 	return USBD_REQ_NOTSUPP;
+ 2290              		.loc 1 755 9
+ 2291 0030 0023     		movs	r3, #0
+ 2292              	.L83:
+ 756:../libopencm3/lib/usb/usb_msc.c **** }
+ 2293              		.loc 1 756 1
+ 2294 0032 1846     		mov	r0, r3
+ 2295 0034 1437     		adds	r7, r7, #20
+ 2296              		.cfi_def_cfa_offset 4
+ 2297 0036 BD46     		mov	sp, r7
+ 2298              		.cfi_def_cfa_register 13
+ 2299              		@ sp needed
+ 2300 0038 80BC     		pop	{r7}
+ 2301              		.cfi_restore 7
+ 2302              		.cfi_def_cfa_offset 0
+ 2303 003a 7047     		bx	lr
+ 2304              		.cfi_endproc
+ 2305              	.LFE15:
+ 2307              		.section	.text.msc_set_config,"ax",%progbits
+ 2308              		.align	1
+ 2309              		.syntax unified
+ 2310              		.thumb
+ 2311              		.thumb_func
+ 2312              		.fpu softvfp
+ 2314              	msc_set_config:
+ 2315              	.LFB16:
+ 757:../libopencm3/lib/usb/usb_msc.c **** 
+ 758:../libopencm3/lib/usb/usb_msc.c **** /** @brief Setup the endpoints to be bulk & register the callbacks. */
+ 759:../libopencm3/lib/usb/usb_msc.c **** static void msc_set_config(usbd_device *usbd_dev, uint16_t wValue)
+ 760:../libopencm3/lib/usb/usb_msc.c **** {
+ 2316              		.loc 1 760 1
+ 2317              		.cfi_startproc
+ 2318              		@ args = 0, pretend = 0, frame = 16
+ 2319              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2320 0000 80B5     		push	{r7, lr}
+ 2321              		.cfi_def_cfa_offset 8
+ 2322              		.cfi_offset 7, -8
+ 2323              		.cfi_offset 14, -4
+ 2324 0002 86B0     		sub	sp, sp, #24
+ 2325              		.cfi_def_cfa_offset 32
+ 2326 0004 02AF     		add	r7, sp, #8
+ 2327              		.cfi_def_cfa 7, 24
+ 2328 0006 7860     		str	r0, [r7, #4]
+ 2329 0008 0B46     		mov	r3, r1
+ 2330 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 761:../libopencm3/lib/usb/usb_msc.c **** 	usbd_mass_storage *ms = &_mass_storage;
+ 2331              		.loc 1 761 21
+ 2332 000c 124B     		ldr	r3, .L85
+ 2333              	.LPIC4:
+ 2334 000e 7B44     		add	r3, pc
+ 2335 0010 FB60     		str	r3, [r7, #12]
+ 762:../libopencm3/lib/usb/usb_msc.c **** 
+ 763:../libopencm3/lib/usb/usb_msc.c **** 	(void)wValue;
+ 764:../libopencm3/lib/usb/usb_msc.c **** 
+ 765:../libopencm3/lib/usb/usb_msc.c **** 	usbd_ep_setup(usbd_dev, ms->ep_in, USB_ENDPOINT_ATTR_BULK,
+ 2336              		.loc 1 765 2
+ 2337 0012 FB68     		ldr	r3, [r7, #12]
+ 2338 0014 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 766:../libopencm3/lib/usb/usb_msc.c **** 		      ms->ep_in_size, msc_data_tx_cb);
+ 2339              		.loc 1 766 11
+ 2340 0016 FB68     		ldr	r3, [r7, #12]
+ 2341 0018 5B79     		ldrb	r3, [r3, #5]	@ zero_extendqisi2
+ 765:../libopencm3/lib/usb/usb_msc.c **** 		      ms->ep_in_size, msc_data_tx_cb);
+ 2342              		.loc 1 765 2
+ 2343 001a 9BB2     		uxth	r3, r3
+ 2344 001c 0F4A     		ldr	r2, .L85+4
+ 2345              	.LPIC5:
+ 2346 001e 7A44     		add	r2, pc
+ 2347 0020 0092     		str	r2, [sp]
+ 2348 0022 0222     		movs	r2, #2
+ 2349 0024 7868     		ldr	r0, [r7, #4]
+ 2350 0026 FFF7FEFF 		bl	usbd_ep_setup(PLT)
+ 767:../libopencm3/lib/usb/usb_msc.c **** 	usbd_ep_setup(usbd_dev, ms->ep_out, USB_ENDPOINT_ATTR_BULK,
+ 2351              		.loc 1 767 2
+ 2352 002a FB68     		ldr	r3, [r7, #12]
+ 2353 002c 9979     		ldrb	r1, [r3, #6]	@ zero_extendqisi2
+ 768:../libopencm3/lib/usb/usb_msc.c **** 		      ms->ep_out_size, msc_data_rx_cb);
+ 2354              		.loc 1 768 11
+ 2355 002e FB68     		ldr	r3, [r7, #12]
+ 2356 0030 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 767:../libopencm3/lib/usb/usb_msc.c **** 	usbd_ep_setup(usbd_dev, ms->ep_out, USB_ENDPOINT_ATTR_BULK,
+ 2357              		.loc 1 767 2
+ 2358 0032 9BB2     		uxth	r3, r3
+ 2359 0034 0A4A     		ldr	r2, .L85+8
+ 2360              	.LPIC6:
+ 2361 0036 7A44     		add	r2, pc
+ 2362 0038 0092     		str	r2, [sp]
+ 2363 003a 0222     		movs	r2, #2
+ 2364 003c 7868     		ldr	r0, [r7, #4]
+ 2365 003e FFF7FEFF 		bl	usbd_ep_setup(PLT)
+ 769:../libopencm3/lib/usb/usb_msc.c **** 
+ 770:../libopencm3/lib/usb/usb_msc.c **** 	usbd_register_control_callback(
+ 2366              		.loc 1 770 2
+ 2367 0042 084B     		ldr	r3, .L85+12
+ 2368              	.LPIC7:
+ 2369 0044 7B44     		add	r3, pc
+ 2370 0046 7F22     		movs	r2, #127
+ 2371 0048 2121     		movs	r1, #33
+ 2372 004a 7868     		ldr	r0, [r7, #4]
+ 2373 004c FFF7FEFF 		bl	usbd_register_control_callback(PLT)
+ 771:../libopencm3/lib/usb/usb_msc.c **** 				usbd_dev,
+ 772:../libopencm3/lib/usb/usb_msc.c **** 				USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
+ 773:../libopencm3/lib/usb/usb_msc.c **** 				USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+ 774:../libopencm3/lib/usb/usb_msc.c **** 				msc_control_request);
+ 775:../libopencm3/lib/usb/usb_msc.c **** }
+ 2374              		.loc 1 775 1
+ 2375 0050 00BF     		nop
+ 2376 0052 1037     		adds	r7, r7, #16
+ 2377              		.cfi_def_cfa_offset 8
+ 2378 0054 BD46     		mov	sp, r7
+ 2379              		.cfi_def_cfa_register 13
+ 2380              		@ sp needed
+ 2381 0056 80BD     		pop	{r7, pc}
+ 2382              	.L86:
+ 2383              		.align	2
+ 2384              	.L85:
+ 2385 0058 46000000 		.word	_mass_storage-(.LPIC4+4)
+ 2386 005c 3A000000 		.word	msc_data_tx_cb-(.LPIC5+4)
+ 2387 0060 26000000 		.word	msc_data_rx_cb-(.LPIC6+4)
+ 2388 0064 1C000000 		.word	msc_control_request-(.LPIC7+4)
+ 2389              		.cfi_endproc
+ 2390              	.LFE16:
+ 2392              		.section	.text.usb_msc_init,"ax",%progbits
+ 2393              		.align	1
+ 2394              		.global	usb_msc_init
+ 2395              		.syntax unified
+ 2396              		.thumb
+ 2397              		.thumb_func
+ 2398              		.fpu softvfp
+ 2400              	usb_msc_init:
+ 2401              	.LFB17:
+ 776:../libopencm3/lib/usb/usb_msc.c **** 
+ 777:../libopencm3/lib/usb/usb_msc.c **** /** @addtogroup usb_msc */
+ 778:../libopencm3/lib/usb/usb_msc.c **** /** @{ */
+ 779:../libopencm3/lib/usb/usb_msc.c **** 
+ 780:../libopencm3/lib/usb/usb_msc.c **** /** @brief Initializes the USB Mass Storage subsystem.
+ 781:../libopencm3/lib/usb/usb_msc.c **** 
+ 782:../libopencm3/lib/usb/usb_msc.c **** @note Currently you can only have this profile active.
+ 783:../libopencm3/lib/usb/usb_msc.c **** 
+ 784:../libopencm3/lib/usb/usb_msc.c **** @param[in] usbd_dev The USB device to associate the Mass Storage with.
+ 785:../libopencm3/lib/usb/usb_msc.c **** @param[in] ep_in The USB 'IN' endpoint.
+ 786:../libopencm3/lib/usb/usb_msc.c **** @param[in] ep_in_size The maximum endpoint size.  Valid values: 8, 16, 32 or 64
+ 787:../libopencm3/lib/usb/usb_msc.c **** @param[in] ep_out The USB 'OUT' endpoint.
+ 788:../libopencm3/lib/usb/usb_msc.c **** @param[in] ep_out_size The maximum endpoint size.  Valid values: 8, 16, 32 or 64
+ 789:../libopencm3/lib/usb/usb_msc.c **** @param[in] vendor_id The SCSI vendor ID to return.  Maximum used length is 8.
+ 790:../libopencm3/lib/usb/usb_msc.c **** @param[in] product_id The SCSI product ID to return.  Maximum used length is 16.
+ 791:../libopencm3/lib/usb/usb_msc.c **** @param[in] product_revision_level The SCSI product revision level to return.
+ 792:../libopencm3/lib/usb/usb_msc.c **** 		Maximum used length is 4.
+ 793:../libopencm3/lib/usb/usb_msc.c **** @param[in] block_count The number of 512-byte blocks available.
+ 794:../libopencm3/lib/usb/usb_msc.c **** @param[in] read_block The function called when the host requests to read a LBA
+ 795:../libopencm3/lib/usb/usb_msc.c **** 		block.  Must _NOT_ be NULL.
+ 796:../libopencm3/lib/usb/usb_msc.c **** @param[in] write_block The function called when the host requests to write a
+ 797:../libopencm3/lib/usb/usb_msc.c **** 		LBA block.  Must _NOT_ be NULL.
+ 798:../libopencm3/lib/usb/usb_msc.c **** 
+ 799:../libopencm3/lib/usb/usb_msc.c **** @return Pointer to the usbd_mass_storage struct.
+ 800:../libopencm3/lib/usb/usb_msc.c **** */
+ 801:../libopencm3/lib/usb/usb_msc.c **** usbd_mass_storage *usb_msc_init(usbd_device *usbd_dev,
+ 802:../libopencm3/lib/usb/usb_msc.c **** 				 uint8_t ep_in, uint8_t ep_in_size,
+ 803:../libopencm3/lib/usb/usb_msc.c **** 				 uint8_t ep_out, uint8_t ep_out_size,
+ 804:../libopencm3/lib/usb/usb_msc.c **** 				 const char *vendor_id,
+ 805:../libopencm3/lib/usb/usb_msc.c **** 				 const char *product_id,
+ 806:../libopencm3/lib/usb/usb_msc.c **** 				 const char *product_revision_level,
+ 807:../libopencm3/lib/usb/usb_msc.c **** 				 const uint32_t block_count,
+ 808:../libopencm3/lib/usb/usb_msc.c **** 				 int (*read_block)(uint32_t lba,
+ 809:../libopencm3/lib/usb/usb_msc.c **** 						   uint8_t *copy_to),
+ 810:../libopencm3/lib/usb/usb_msc.c **** 				 int (*write_block)(uint32_t lba,
+ 811:../libopencm3/lib/usb/usb_msc.c **** 						    const uint8_t *copy_from))
+ 812:../libopencm3/lib/usb/usb_msc.c **** {
+ 2402              		.loc 1 812 1
+ 2403              		.cfi_startproc
+ 2404              		@ args = 28, pretend = 0, frame = 8
+ 2405              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2406 0000 80B5     		push	{r7, lr}
+ 2407              		.cfi_def_cfa_offset 8
+ 2408              		.cfi_offset 7, -8
+ 2409              		.cfi_offset 14, -4
+ 2410 0002 82B0     		sub	sp, sp, #8
+ 2411              		.cfi_def_cfa_offset 16
+ 2412 0004 00AF     		add	r7, sp, #0
+ 2413              		.cfi_def_cfa_register 7
+ 2414 0006 7860     		str	r0, [r7, #4]
+ 2415 0008 0846     		mov	r0, r1
+ 2416 000a 1146     		mov	r1, r2
+ 2417 000c 1A46     		mov	r2, r3
+ 2418 000e 0346     		mov	r3, r0
+ 2419 0010 FB70     		strb	r3, [r7, #3]
+ 2420 0012 0B46     		mov	r3, r1
+ 2421 0014 BB70     		strb	r3, [r7, #2]
+ 2422 0016 1346     		mov	r3, r2
+ 2423 0018 7B70     		strb	r3, [r7, #1]
+ 813:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.usbd_dev = usbd_dev;
+ 2424              		.loc 1 813 25
+ 2425 001a 404B     		ldr	r3, .L89
+ 2426              	.LPIC8:
+ 2427 001c 7B44     		add	r3, pc
+ 2428 001e 1A46     		mov	r2, r3
+ 2429 0020 7B68     		ldr	r3, [r7, #4]
+ 2430 0022 1360     		str	r3, [r2]
+ 814:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.ep_in = ep_in;
+ 2431              		.loc 1 814 22
+ 2432 0024 3E4B     		ldr	r3, .L89+4
+ 2433              	.LPIC9:
+ 2434 0026 7B44     		add	r3, pc
+ 2435 0028 1A46     		mov	r2, r3
+ 2436 002a FB78     		ldrb	r3, [r7, #3]
+ 2437 002c 1371     		strb	r3, [r2, #4]
+ 815:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.ep_in_size = ep_in_size;
+ 2438              		.loc 1 815 27
+ 2439 002e 3D4B     		ldr	r3, .L89+8
+ 2440              	.LPIC10:
+ 2441 0030 7B44     		add	r3, pc
+ 2442 0032 1A46     		mov	r2, r3
+ 2443 0034 BB78     		ldrb	r3, [r7, #2]
+ 2444 0036 5371     		strb	r3, [r2, #5]
+ 816:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.ep_out = ep_out;
+ 2445              		.loc 1 816 23
+ 2446 0038 3B4B     		ldr	r3, .L89+12
+ 2447              	.LPIC11:
+ 2448 003a 7B44     		add	r3, pc
+ 2449 003c 1A46     		mov	r2, r3
+ 2450 003e 7B78     		ldrb	r3, [r7, #1]
+ 2451 0040 9371     		strb	r3, [r2, #6]
+ 817:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.ep_out_size = ep_out_size;
+ 2452              		.loc 1 817 28
+ 2453 0042 3A4B     		ldr	r3, .L89+16
+ 2454              	.LPIC12:
+ 2455 0044 7B44     		add	r3, pc
+ 2456 0046 1A46     		mov	r2, r3
+ 2457 0048 3B7C     		ldrb	r3, [r7, #16]
+ 2458 004a D371     		strb	r3, [r2, #7]
+ 818:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.vendor_id = vendor_id;
+ 2459              		.loc 1 818 26
+ 2460 004c 384B     		ldr	r3, .L89+20
+ 2461              	.LPIC13:
+ 2462 004e 7B44     		add	r3, pc
+ 2463 0050 1A46     		mov	r2, r3
+ 2464 0052 7B69     		ldr	r3, [r7, #20]
+ 2465 0054 9360     		str	r3, [r2, #8]
+ 819:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.product_id = product_id;
+ 2466              		.loc 1 819 27
+ 2467 0056 374B     		ldr	r3, .L89+24
+ 2468              	.LPIC14:
+ 2469 0058 7B44     		add	r3, pc
+ 2470 005a 1A46     		mov	r2, r3
+ 2471 005c BB69     		ldr	r3, [r7, #24]
+ 2472 005e D360     		str	r3, [r2, #12]
+ 820:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.product_revision_level = product_revision_level;
+ 2473              		.loc 1 820 39
+ 2474 0060 354B     		ldr	r3, .L89+28
+ 2475              	.LPIC15:
+ 2476 0062 7B44     		add	r3, pc
+ 2477 0064 1A46     		mov	r2, r3
+ 2478 0066 FB69     		ldr	r3, [r7, #28]
+ 2479 0068 1361     		str	r3, [r2, #16]
+ 821:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.block_count = block_count - 1;
+ 2480              		.loc 1 821 42
+ 2481 006a 3B6A     		ldr	r3, [r7, #32]
+ 2482 006c 013B     		subs	r3, r3, #1
+ 2483              		.loc 1 821 28
+ 2484 006e 334A     		ldr	r2, .L89+32
+ 2485              	.LPIC16:
+ 2486 0070 7A44     		add	r2, pc
+ 2487 0072 5361     		str	r3, [r2, #20]
+ 822:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.read_block = read_block;
+ 2488              		.loc 1 822 27
+ 2489 0074 324B     		ldr	r3, .L89+36
+ 2490              	.LPIC17:
+ 2491 0076 7B44     		add	r3, pc
+ 2492 0078 1A46     		mov	r2, r3
+ 2493 007a 7B6A     		ldr	r3, [r7, #36]
+ 2494 007c 9361     		str	r3, [r2, #24]
+ 823:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.write_block = write_block;
+ 2495              		.loc 1 823 28
+ 2496 007e 314B     		ldr	r3, .L89+40
+ 2497              	.LPIC18:
+ 2498 0080 7B44     		add	r3, pc
+ 2499 0082 1A46     		mov	r2, r3
+ 2500 0084 BB6A     		ldr	r3, [r7, #40]
+ 2501 0086 D361     		str	r3, [r2, #28]
+ 824:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.lock = NULL;
+ 2502              		.loc 1 824 21
+ 2503 0088 2F4B     		ldr	r3, .L89+44
+ 2504              	.LPIC19:
+ 2505 008a 7B44     		add	r3, pc
+ 2506 008c 1A46     		mov	r2, r3
+ 2507 008e 0023     		movs	r3, #0
+ 2508 0090 1362     		str	r3, [r2, #32]
+ 825:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.unlock = NULL;
+ 2509              		.loc 1 825 23
+ 2510 0092 2E4B     		ldr	r3, .L89+48
+ 2511              	.LPIC20:
+ 2512 0094 7B44     		add	r3, pc
+ 2513 0096 1A46     		mov	r2, r3
+ 2514 0098 0023     		movs	r3, #0
+ 2515 009a 5362     		str	r3, [r2, #36]
+ 826:../libopencm3/lib/usb/usb_msc.c **** 
+ 827:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.lba_start = 0xffffffff;
+ 2516              		.loc 1 827 32
+ 2517 009c 2C4B     		ldr	r3, .L89+52
+ 2518              	.LPIC21:
+ 2519 009e 7B44     		add	r3, pc
+ 2520 00a0 1A46     		mov	r2, r3
+ 2521 00a2 4FF0FF33 		mov	r3, #-1
+ 2522 00a6 5365     		str	r3, [r2, #84]
+ 828:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.block_count = 0;
+ 2523              		.loc 1 828 34
+ 2524 00a8 2A4B     		ldr	r3, .L89+56
+ 2525              	.LPIC22:
+ 2526 00aa 7B44     		add	r3, pc
+ 2527 00ac 1A46     		mov	r2, r3
+ 2528 00ae 0023     		movs	r3, #0
+ 2529 00b0 9365     		str	r3, [r2, #88]
+ 829:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.current_block = 0;
+ 2530              		.loc 1 829 36
+ 2531 00b2 294B     		ldr	r3, .L89+60
+ 2532              	.LPIC23:
+ 2533 00b4 7B44     		add	r3, pc
+ 2534 00b6 1A46     		mov	r2, r3
+ 2535 00b8 0023     		movs	r3, #0
+ 2536 00ba D365     		str	r3, [r2, #92]
+ 830:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.cbw_cnt = 0;
+ 2537              		.loc 1 830 30
+ 2538 00bc 274B     		ldr	r3, .L89+64
+ 2539              	.LPIC24:
+ 2540 00be 7B44     		add	r3, pc
+ 2541 00c0 0022     		movs	r2, #0
+ 2542 00c2 83F82820 		strb	r2, [r3, #40]
+ 831:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.bytes_to_read = 0;
+ 2543              		.loc 1 831 36
+ 2544 00c6 264B     		ldr	r3, .L89+68
+ 2545              	.LPIC25:
+ 2546 00c8 7B44     		add	r3, pc
+ 2547 00ca 1A46     		mov	r2, r3
+ 2548 00cc 0023     		movs	r3, #0
+ 2549 00ce 9364     		str	r3, [r2, #72]
+ 832:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.bytes_to_write = 0;
+ 2550              		.loc 1 832 37
+ 2551 00d0 244B     		ldr	r3, .L89+72
+ 2552              	.LPIC26:
+ 2553 00d2 7B44     		add	r3, pc
+ 2554 00d4 1A46     		mov	r2, r3
+ 2555 00d6 0023     		movs	r3, #0
+ 2556 00d8 D364     		str	r3, [r2, #76]
+ 833:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.byte_count = 0;
+ 2557              		.loc 1 833 33
+ 2558 00da 234B     		ldr	r3, .L89+76
+ 2559              	.LPIC27:
+ 2560 00dc 7B44     		add	r3, pc
+ 2561 00de 1A46     		mov	r2, r3
+ 2562 00e0 0023     		movs	r3, #0
+ 2563 00e2 1365     		str	r3, [r2, #80]
+ 834:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.csw_valid = false;
+ 2564              		.loc 1 834 32
+ 2565 00e4 214B     		ldr	r3, .L89+80
+ 2566              	.LPIC28:
+ 2567 00e6 7B44     		add	r3, pc
+ 2568 00e8 0022     		movs	r2, #0
+ 2569 00ea 83F86022 		strb	r2, [r3, #608]
+ 835:../libopencm3/lib/usb/usb_msc.c **** 	_mass_storage.trans.csw_sent = 0;
+ 2570              		.loc 1 835 31
+ 2571 00ee 204B     		ldr	r3, .L89+84
+ 2572              	.LPIC29:
+ 2573 00f0 7B44     		add	r3, pc
+ 2574 00f2 0022     		movs	r2, #0
+ 2575 00f4 83F86122 		strb	r2, [r3, #609]
+ 836:../libopencm3/lib/usb/usb_msc.c **** 
+ 837:../libopencm3/lib/usb/usb_msc.c **** 	set_sbc_status_good(&_mass_storage);
+ 2576              		.loc 1 837 2
+ 2577 00f8 1E4B     		ldr	r3, .L89+88
+ 2578              	.LPIC30:
+ 2579 00fa 7B44     		add	r3, pc
+ 2580 00fc 1846     		mov	r0, r3
+ 2581 00fe FFF7FEFF 		bl	set_sbc_status_good(PLT)
+ 838:../libopencm3/lib/usb/usb_msc.c **** 
+ 839:../libopencm3/lib/usb/usb_msc.c **** 	usbd_register_set_config_callback(usbd_dev, msc_set_config);
+ 2582              		.loc 1 839 2
+ 2583 0102 1D4B     		ldr	r3, .L89+92
+ 2584              	.LPIC31:
+ 2585 0104 7B44     		add	r3, pc
+ 2586 0106 1946     		mov	r1, r3
+ 2587 0108 7868     		ldr	r0, [r7, #4]
+ 2588 010a FFF7FEFF 		bl	usbd_register_set_config_callback(PLT)
+ 840:../libopencm3/lib/usb/usb_msc.c **** 
+ 841:../libopencm3/lib/usb/usb_msc.c **** 	return &_mass_storage;
+ 2589              		.loc 1 841 9
+ 2590 010e 1B4B     		ldr	r3, .L89+96
+ 2591              	.LPIC32:
+ 2592 0110 7B44     		add	r3, pc
+ 842:../libopencm3/lib/usb/usb_msc.c **** }
+ 2593              		.loc 1 842 1
+ 2594 0112 1846     		mov	r0, r3
+ 2595 0114 0837     		adds	r7, r7, #8
+ 2596              		.cfi_def_cfa_offset 8
+ 2597 0116 BD46     		mov	sp, r7
+ 2598              		.cfi_def_cfa_register 13
+ 2599              		@ sp needed
+ 2600 0118 80BD     		pop	{r7, pc}
+ 2601              	.L90:
+ 2602 011a 00BF     		.align	2
+ 2603              	.L89:
+ 2604 011c FC000000 		.word	_mass_storage-(.LPIC8+4)
+ 2605 0120 F6000000 		.word	_mass_storage-(.LPIC9+4)
+ 2606 0124 F0000000 		.word	_mass_storage-(.LPIC10+4)
+ 2607 0128 EA000000 		.word	_mass_storage-(.LPIC11+4)
+ 2608 012c E4000000 		.word	_mass_storage-(.LPIC12+4)
+ 2609 0130 DE000000 		.word	_mass_storage-(.LPIC13+4)
+ 2610 0134 D8000000 		.word	_mass_storage-(.LPIC14+4)
+ 2611 0138 D2000000 		.word	_mass_storage-(.LPIC15+4)
+ 2612 013c C8000000 		.word	_mass_storage-(.LPIC16+4)
+ 2613 0140 C6000000 		.word	_mass_storage-(.LPIC17+4)
+ 2614 0144 C0000000 		.word	_mass_storage-(.LPIC18+4)
+ 2615 0148 BA000000 		.word	_mass_storage-(.LPIC19+4)
+ 2616 014c B4000000 		.word	_mass_storage-(.LPIC20+4)
+ 2617 0150 AE000000 		.word	_mass_storage-(.LPIC21+4)
+ 2618 0154 A6000000 		.word	_mass_storage-(.LPIC22+4)
+ 2619 0158 A0000000 		.word	_mass_storage-(.LPIC23+4)
+ 2620 015c 9A000000 		.word	_mass_storage-(.LPIC24+4)
+ 2621 0160 94000000 		.word	_mass_storage-(.LPIC25+4)
+ 2622 0164 8E000000 		.word	_mass_storage-(.LPIC26+4)
+ 2623 0168 88000000 		.word	_mass_storage-(.LPIC27+4)
+ 2624 016c 82000000 		.word	_mass_storage-(.LPIC28+4)
+ 2625 0170 7C000000 		.word	_mass_storage-(.LPIC29+4)
+ 2626 0174 76000000 		.word	_mass_storage-(.LPIC30+4)
+ 2627 0178 70000000 		.word	msc_set_config-(.LPIC31+4)
+ 2628 017c 68000000 		.word	_mass_storage-(.LPIC32+4)
+ 2629              		.cfi_endproc
+ 2630              	.LFE17:
+ 2632              		.text
+ 2633              	.Letext0:
+ 2634              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 2635              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 2636              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 2637              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 2638              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 2639              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 2640              		.file 8 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/stdlib.h"
+ 2641              		.file 9 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbstd.h"
+ 2642              		.file 10 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbd.h"
+ 2643              		.file 11 "../libopencm3/lib/usb/usb_private.h"
+ 2644              		.file 12 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/msc.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usb_msc.c
+     /tmp/cc7DgbvZ.s:16     .bss._mass_storage:0000000000000000 $d
+     /tmp/cc7DgbvZ.s:19     .bss._mass_storage:0000000000000000 _mass_storage
+     /tmp/cc7DgbvZ.s:22     .rodata._spc3_inquiry_response:0000000000000000 $d
+     /tmp/cc7DgbvZ.s:25     .rodata._spc3_inquiry_response:0000000000000000 _spc3_inquiry_response
+     /tmp/cc7DgbvZ.s:63     .rodata._spc3_request_sense:0000000000000000 $d
+     /tmp/cc7DgbvZ.s:66     .rodata._spc3_request_sense:0000000000000000 _spc3_request_sense
+     /tmp/cc7DgbvZ.s:86     .text.set_sbc_status:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:93     .text.set_sbc_status:0000000000000000 set_sbc_status
+     /tmp/cc7DgbvZ.s:145    .text.set_sbc_status_good:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:151    .text.set_sbc_status_good:0000000000000000 set_sbc_status_good
+     /tmp/cc7DgbvZ.s:184    .text.get_cbw_buf:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:190    .text.get_cbw_buf:0000000000000000 get_cbw_buf
+     /tmp/cc7DgbvZ.s:223    .text.scsi_read_6:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:229    .text.scsi_read_6:0000000000000000 scsi_read_6
+     /tmp/cc7DgbvZ.s:309    .text.scsi_write_6:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:315    .text.scsi_write_6:0000000000000000 scsi_write_6
+     /tmp/cc7DgbvZ.s:401    .text.scsi_write_10:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:407    .text.scsi_write_10:0000000000000000 scsi_write_10
+     /tmp/cc7DgbvZ.s:508    .text.scsi_read_10:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:514    .text.scsi_read_10:0000000000000000 scsi_read_10
+     /tmp/cc7DgbvZ.s:614    .text.scsi_read_capacity:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:620    .text.scsi_read_capacity:0000000000000000 scsi_read_capacity
+     /tmp/cc7DgbvZ.s:712    .text.scsi_format_unit:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:718    .text.scsi_format_unit:0000000000000000 scsi_format_unit
+     /tmp/cc7DgbvZ.s:795    .text.scsi_request_sense:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:801    .text.scsi_request_sense:0000000000000000 scsi_request_sense
+     /tmp/cc7DgbvZ.s:890    .text.scsi_request_sense:0000000000000070 $d
+     /tmp/cc7DgbvZ.s:895    .text.scsi_mode_sense_6:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:901    .text.scsi_mode_sense_6:0000000000000000 scsi_mode_sense_6
+     /tmp/cc7DgbvZ.s:962    .text.scsi_inquiry:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:968    .text.scsi_inquiry:0000000000000000 scsi_inquiry
+     /tmp/cc7DgbvZ.s:1130   .text.scsi_inquiry:00000000000000fc $d
+     /tmp/cc7DgbvZ.s:1135   .text.scsi_command:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:1141   .text.scsi_command:0000000000000000 scsi_command
+     /tmp/cc7DgbvZ.s:1218   .text.scsi_command:0000000000000084 $d
+     /tmp/cc7DgbvZ.s:1261   .text.scsi_command:0000000000000130 $t
+     /tmp/cc7DgbvZ.s:1383   .text.msc_data_rx_cb:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:1389   .text.msc_data_rx_cb:0000000000000000 msc_data_rx_cb
+     /tmp/cc7DgbvZ.s:1939   .text.msc_data_rx_cb:000000000000032c $d
+     /tmp/cc7DgbvZ.s:1944   .text.msc_data_tx_cb:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:1950   .text.msc_data_tx_cb:0000000000000000 msc_data_tx_cb
+     /tmp/cc7DgbvZ.s:2235   .text.msc_data_tx_cb:000000000000019c $d
+     /tmp/cc7DgbvZ.s:2240   .text.msc_control_request:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:2246   .text.msc_control_request:0000000000000000 msc_control_request
+     /tmp/cc7DgbvZ.s:2308   .text.msc_set_config:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:2314   .text.msc_set_config:0000000000000000 msc_set_config
+     /tmp/cc7DgbvZ.s:2385   .text.msc_set_config:0000000000000058 $d
+     /tmp/cc7DgbvZ.s:2393   .text.usb_msc_init:0000000000000000 $t
+     /tmp/cc7DgbvZ.s:2400   .text.usb_msc_init:0000000000000000 usb_msc_init
+     /tmp/cc7DgbvZ.s:2604   .text.usb_msc_init:000000000000011c $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4.newlib.h.8.f6e543eac3f2f65163ba2ffe3b04987b
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stdlib.h.13.4ed386f5c1a80d71e72172885d946ef2
+                           .group:0000000000000000 wm4.stddef.h.187.e1c83cba2098ce92b68f6311de19e6b1
+                           .group:0000000000000000 wm4.stddef.h.39.57db33e786ccd422e31be63a26e19309
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.alloca.h.8.dfc0c703c47ec3e69746825b17d9e66d
+                           .group:0000000000000000 wm4.stdlib.h.56.f4862cfbf4363a1db01842d5bdf72c18
+                           .group:0000000000000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:0000000000000000 wm4.stddef.h.161.19e15733342b50ead2919490b095303e
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.usbstd.h.44.4afe4d1bc74038b0efb850274c9ca72f
+                           .group:0000000000000000 wm4.usbd.h.59.36297d267a452a295a2169d9133104f5
+                           .group:0000000000000000 wm4.msc.h.41.483b412c4db1d0ff8a618ca272a05a7a
+                           .group:0000000000000000 wm4.usb_private.h.39.0319c55b21f25116dad040a5212d0c5d
+
+UNDEFINED SYMBOLS
+memset
+strlen
+memcpy
+usbd_ep_read_packet
+usbd_ep_write_packet
+usbd_ep_setup
+usbd_register_control_callback
+usbd_register_set_config_callback

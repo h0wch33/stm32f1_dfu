@@ -1,0 +1,2533 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"i2c_common_v1.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.i2c_reset,"ax",%progbits
+  16              		.align	1
+  17              		.global	i2c_reset
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	i2c_reset:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/i2c_common_v1.c"
+   1:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @addtogroup i2c_file I2C peripheral API
+   2:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+   4:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @author @htmlonly &copy; @endhtmlonly 2010
+   5:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Thomas Otto <tommi@viadmin.org>
+   6:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @author @htmlonly &copy; @endhtmlonly 2012
+   7:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Ken Sarkies <ksarkies@internode.on.net>
+   8:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+   9:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Devices can have up to three I2C peripherals. The peripherals support SMBus and
+  10:../libopencm3/lib/stm32/common/i2c_common_v1.c **** PMBus variants.
+  11:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  12:../libopencm3/lib/stm32/common/i2c_common_v1.c **** A peripheral begins after reset in Slave mode. To become a Master a start
+  13:../libopencm3/lib/stm32/common/i2c_common_v1.c **** condition must be generated. The peripheral will remain in Master mode unless
+  14:../libopencm3/lib/stm32/common/i2c_common_v1.c **** a multimaster contention is lost or a stop condition is generated.
+  15:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  16:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @todo all sorts of lovely stuff like DMA, Interrupts, SMBus variant, Status
+  17:../libopencm3/lib/stm32/common/i2c_common_v1.c **** register access, Error conditions
+  18:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  19:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+  20:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*
+  21:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * This file is part of the libopencm3 project.
+  22:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  *
+  23:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
+  24:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  *
+  25:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * This library is free software: you can redistribute it and/or modify
+  26:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  27:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * the Free Software Foundation, either version 3 of the License, or
+  28:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * (at your option) any later version.
+  29:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  *
+  30:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * This library is distributed in the hope that it will be useful,
+  31:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  32:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  33:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * GNU Lesser General Public License for more details.
+  34:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  *
+  35:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * You should have received a copy of the GNU Lesser General Public License
+  36:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  37:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  */
+  38:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  39:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #include <libopencm3/stm32/i2c.h>
+  40:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #include <libopencm3/stm32/rcc.h>
+  41:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  42:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /**@{*/
+  43:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  44:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+  45:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Reset.
+  46:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  47:../libopencm3/lib/stm32/common/i2c_common_v1.c **** The I2C peripheral and all its associated configuration registers are placed in
+  48:../libopencm3/lib/stm32/common/i2c_common_v1.c **** the reset condition. The reset is effected via the RCC peripheral reset system.
+  49:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  50:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C peripheral identifier @ref i2c_reg_base.
+  51:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+  52:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  53:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_reset(uint32_t i2c)
+  54:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+  27              		.loc 1 54 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 82B0     		sub	sp, sp, #8
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  55:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	switch (i2c) {
+  40              		.loc 1 55 2
+  41 0008 7B68     		ldr	r3, [r7, #4]
+  42 000a 0B4A     		ldr	r2, .L6
+  43 000c 9342     		cmp	r3, r2
+  44 000e 04D0     		beq	.L2
+  45 0010 7B68     		ldr	r3, [r7, #4]
+  46 0012 0A4A     		ldr	r2, .L6+4
+  47 0014 9342     		cmp	r3, r2
+  48 0016 05D0     		beq	.L3
+  56:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case I2C1:
+  57:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		rcc_periph_reset_pulse(RST_I2C1);
+  58:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  59:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #if defined(I2C2_BASE)
+  60:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case I2C2:
+  61:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		rcc_periph_reset_pulse(RST_I2C2);
+  62:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  63:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #endif
+  64:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #if defined(I2C3_BASE)
+  65:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case I2C3:
+  66:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		rcc_periph_reset_pulse(RST_I2C3);
+  67:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  68:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #endif
+  69:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #if defined(I2C4_BASE)
+  70:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case I2C4:
+  71:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		rcc_periph_reset_pulse(RST_I2C4);
+  72:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  73:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #endif
+  74:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	default:
+  75:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  49              		.loc 1 75 3
+  50 0018 09E0     		b	.L5
+  51              	.L2:
+  57:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  52              		.loc 1 57 3
+  53 001a 40F21520 		movw	r0, #533
+  54 001e FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  58:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #if defined(I2C2_BASE)
+  55              		.loc 1 58 3
+  56 0022 04E0     		b	.L5
+  57              	.L3:
+  61:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+  58              		.loc 1 61 3
+  59 0024 40F21620 		movw	r0, #534
+  60 0028 FFF7FEFF 		bl	rcc_periph_reset_pulse(PLT)
+  62:../libopencm3/lib/stm32/common/i2c_common_v1.c **** #endif
+  61              		.loc 1 62 3
+  62 002c 00BF     		nop
+  63              	.L5:
+  76:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+  77:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+  64              		.loc 1 77 1
+  65 002e 00BF     		nop
+  66 0030 0837     		adds	r7, r7, #8
+  67              		.cfi_def_cfa_offset 8
+  68 0032 BD46     		mov	sp, r7
+  69              		.cfi_def_cfa_register 13
+  70              		@ sp needed
+  71 0034 80BD     		pop	{r7, pc}
+  72              	.L7:
+  73 0036 00BF     		.align	2
+  74              	.L6:
+  75 0038 00540040 		.word	1073763328
+  76 003c 00580040 		.word	1073764352
+  77              		.cfi_endproc
+  78              	.LFE0:
+  80              		.section	.text.i2c_peripheral_enable,"ax",%progbits
+  81              		.align	1
+  82              		.global	i2c_peripheral_enable
+  83              		.syntax unified
+  84              		.thumb
+  85              		.thumb_func
+  86              		.fpu softvfp
+  88              	i2c_peripheral_enable:
+  89              	.LFB1:
+  78:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  79:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+  80:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Peripheral Enable.
+  81:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  82:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+  83:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+  84:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  85:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_peripheral_enable(uint32_t i2c)
+  86:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+  90              		.loc 1 86 1
+  91              		.cfi_startproc
+  92              		@ args = 0, pretend = 0, frame = 8
+  93              		@ frame_needed = 1, uses_anonymous_args = 0
+  94              		@ link register save eliminated.
+  95 0000 80B4     		push	{r7}
+  96              		.cfi_def_cfa_offset 4
+  97              		.cfi_offset 7, -4
+  98 0002 83B0     		sub	sp, sp, #12
+  99              		.cfi_def_cfa_offset 16
+ 100 0004 00AF     		add	r7, sp, #0
+ 101              		.cfi_def_cfa_register 7
+ 102 0006 7860     		str	r0, [r7, #4]
+  87:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) |= I2C_CR1_PE;
+ 103              		.loc 1 87 15
+ 104 0008 7B68     		ldr	r3, [r7, #4]
+ 105 000a 1A68     		ldr	r2, [r3]
+ 106 000c 7B68     		ldr	r3, [r7, #4]
+ 107 000e 42F00102 		orr	r2, r2, #1
+ 108 0012 1A60     		str	r2, [r3]
+  88:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 109              		.loc 1 88 1
+ 110 0014 00BF     		nop
+ 111 0016 0C37     		adds	r7, r7, #12
+ 112              		.cfi_def_cfa_offset 4
+ 113 0018 BD46     		mov	sp, r7
+ 114              		.cfi_def_cfa_register 13
+ 115              		@ sp needed
+ 116 001a 80BC     		pop	{r7}
+ 117              		.cfi_restore 7
+ 118              		.cfi_def_cfa_offset 0
+ 119 001c 7047     		bx	lr
+ 120              		.cfi_endproc
+ 121              	.LFE1:
+ 123              		.section	.text.i2c_peripheral_disable,"ax",%progbits
+ 124              		.align	1
+ 125              		.global	i2c_peripheral_disable
+ 126              		.syntax unified
+ 127              		.thumb
+ 128              		.thumb_func
+ 129              		.fpu softvfp
+ 131              	i2c_peripheral_disable:
+ 132              	.LFB2:
+  89:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  90:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+  91:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Peripheral Disable.
+  92:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  93:../libopencm3/lib/stm32/common/i2c_common_v1.c **** This must not be reset while in Master mode until a communication has finished.
+  94:../libopencm3/lib/stm32/common/i2c_common_v1.c **** In Slave mode, the peripheral is disabled only after communication has ended.
+  95:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  96:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+  97:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+  98:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+  99:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_peripheral_disable(uint32_t i2c)
+ 100:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 133              		.loc 1 100 1
+ 134              		.cfi_startproc
+ 135              		@ args = 0, pretend = 0, frame = 8
+ 136              		@ frame_needed = 1, uses_anonymous_args = 0
+ 137              		@ link register save eliminated.
+ 138 0000 80B4     		push	{r7}
+ 139              		.cfi_def_cfa_offset 4
+ 140              		.cfi_offset 7, -4
+ 141 0002 83B0     		sub	sp, sp, #12
+ 142              		.cfi_def_cfa_offset 16
+ 143 0004 00AF     		add	r7, sp, #0
+ 144              		.cfi_def_cfa_register 7
+ 145 0006 7860     		str	r0, [r7, #4]
+ 101:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) &= ~I2C_CR1_PE;
+ 146              		.loc 1 101 15
+ 147 0008 7B68     		ldr	r3, [r7, #4]
+ 148 000a 1A68     		ldr	r2, [r3]
+ 149 000c 7B68     		ldr	r3, [r7, #4]
+ 150 000e 22F00102 		bic	r2, r2, #1
+ 151 0012 1A60     		str	r2, [r3]
+ 102:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 152              		.loc 1 102 1
+ 153 0014 00BF     		nop
+ 154 0016 0C37     		adds	r7, r7, #12
+ 155              		.cfi_def_cfa_offset 4
+ 156 0018 BD46     		mov	sp, r7
+ 157              		.cfi_def_cfa_register 13
+ 158              		@ sp needed
+ 159 001a 80BC     		pop	{r7}
+ 160              		.cfi_restore 7
+ 161              		.cfi_def_cfa_offset 0
+ 162 001c 7047     		bx	lr
+ 163              		.cfi_endproc
+ 164              	.LFE2:
+ 166              		.section	.text.i2c_send_start,"ax",%progbits
+ 167              		.align	1
+ 168              		.global	i2c_send_start
+ 169              		.syntax unified
+ 170              		.thumb
+ 171              		.thumb_func
+ 172              		.fpu softvfp
+ 174              	i2c_send_start:
+ 175              	.LFB3:
+ 103:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 104:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 105:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Send Start Condition.
+ 106:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 107:../libopencm3/lib/stm32/common/i2c_common_v1.c **** If in Master mode this will cause a restart condition to occur at the end of the
+ 108:../libopencm3/lib/stm32/common/i2c_common_v1.c **** current transmission. If in Slave mode, this will initiate a start condition
+ 109:../libopencm3/lib/stm32/common/i2c_common_v1.c **** when the current bus activity is completed.
+ 110:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 111:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 112:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 113:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 114:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_send_start(uint32_t i2c)
+ 115:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 176              		.loc 1 115 1
+ 177              		.cfi_startproc
+ 178              		@ args = 0, pretend = 0, frame = 8
+ 179              		@ frame_needed = 1, uses_anonymous_args = 0
+ 180              		@ link register save eliminated.
+ 181 0000 80B4     		push	{r7}
+ 182              		.cfi_def_cfa_offset 4
+ 183              		.cfi_offset 7, -4
+ 184 0002 83B0     		sub	sp, sp, #12
+ 185              		.cfi_def_cfa_offset 16
+ 186 0004 00AF     		add	r7, sp, #0
+ 187              		.cfi_def_cfa_register 7
+ 188 0006 7860     		str	r0, [r7, #4]
+ 116:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) |= I2C_CR1_START;
+ 189              		.loc 1 116 15
+ 190 0008 7B68     		ldr	r3, [r7, #4]
+ 191 000a 1A68     		ldr	r2, [r3]
+ 192 000c 7B68     		ldr	r3, [r7, #4]
+ 193 000e 42F48072 		orr	r2, r2, #256
+ 194 0012 1A60     		str	r2, [r3]
+ 117:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 195              		.loc 1 117 1
+ 196 0014 00BF     		nop
+ 197 0016 0C37     		adds	r7, r7, #12
+ 198              		.cfi_def_cfa_offset 4
+ 199 0018 BD46     		mov	sp, r7
+ 200              		.cfi_def_cfa_register 13
+ 201              		@ sp needed
+ 202 001a 80BC     		pop	{r7}
+ 203              		.cfi_restore 7
+ 204              		.cfi_def_cfa_offset 0
+ 205 001c 7047     		bx	lr
+ 206              		.cfi_endproc
+ 207              	.LFE3:
+ 209              		.section	.text.i2c_send_stop,"ax",%progbits
+ 210              		.align	1
+ 211              		.global	i2c_send_stop
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 215              		.fpu softvfp
+ 217              	i2c_send_stop:
+ 218              	.LFB4:
+ 118:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 119:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 120:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Send Stop Condition.
+ 121:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 122:../libopencm3/lib/stm32/common/i2c_common_v1.c **** After the current byte transfer this will initiate a stop condition if in Master
+ 123:../libopencm3/lib/stm32/common/i2c_common_v1.c **** mode, or simply release the bus if in Slave mode.
+ 124:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 125:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 126:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 127:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 128:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_send_stop(uint32_t i2c)
+ 129:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 219              		.loc 1 129 1
+ 220              		.cfi_startproc
+ 221              		@ args = 0, pretend = 0, frame = 8
+ 222              		@ frame_needed = 1, uses_anonymous_args = 0
+ 223              		@ link register save eliminated.
+ 224 0000 80B4     		push	{r7}
+ 225              		.cfi_def_cfa_offset 4
+ 226              		.cfi_offset 7, -4
+ 227 0002 83B0     		sub	sp, sp, #12
+ 228              		.cfi_def_cfa_offset 16
+ 229 0004 00AF     		add	r7, sp, #0
+ 230              		.cfi_def_cfa_register 7
+ 231 0006 7860     		str	r0, [r7, #4]
+ 130:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) |= I2C_CR1_STOP;
+ 232              		.loc 1 130 15
+ 233 0008 7B68     		ldr	r3, [r7, #4]
+ 234 000a 1A68     		ldr	r2, [r3]
+ 235 000c 7B68     		ldr	r3, [r7, #4]
+ 236 000e 42F40072 		orr	r2, r2, #512
+ 237 0012 1A60     		str	r2, [r3]
+ 131:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 238              		.loc 1 131 1
+ 239 0014 00BF     		nop
+ 240 0016 0C37     		adds	r7, r7, #12
+ 241              		.cfi_def_cfa_offset 4
+ 242 0018 BD46     		mov	sp, r7
+ 243              		.cfi_def_cfa_register 13
+ 244              		@ sp needed
+ 245 001a 80BC     		pop	{r7}
+ 246              		.cfi_restore 7
+ 247              		.cfi_def_cfa_offset 0
+ 248 001c 7047     		bx	lr
+ 249              		.cfi_endproc
+ 250              	.LFE4:
+ 252              		.section	.text.i2c_clear_stop,"ax",%progbits
+ 253              		.align	1
+ 254              		.global	i2c_clear_stop
+ 255              		.syntax unified
+ 256              		.thumb
+ 257              		.thumb_func
+ 258              		.fpu softvfp
+ 260              	i2c_clear_stop:
+ 261              	.LFB5:
+ 132:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 133:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 134:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Clear Stop Flag.
+ 135:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 136:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Clear the "Send Stop" flag in the I2C config register
+ 137:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 138:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 139:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 140:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_clear_stop(uint32_t i2c)
+ 141:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 262              		.loc 1 141 1
+ 263              		.cfi_startproc
+ 264              		@ args = 0, pretend = 0, frame = 8
+ 265              		@ frame_needed = 1, uses_anonymous_args = 0
+ 266              		@ link register save eliminated.
+ 267 0000 80B4     		push	{r7}
+ 268              		.cfi_def_cfa_offset 4
+ 269              		.cfi_offset 7, -4
+ 270 0002 83B0     		sub	sp, sp, #12
+ 271              		.cfi_def_cfa_offset 16
+ 272 0004 00AF     		add	r7, sp, #0
+ 273              		.cfi_def_cfa_register 7
+ 274 0006 7860     		str	r0, [r7, #4]
+ 142:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) &= ~I2C_CR1_STOP;
+ 275              		.loc 1 142 15
+ 276 0008 7B68     		ldr	r3, [r7, #4]
+ 277 000a 1A68     		ldr	r2, [r3]
+ 278 000c 7B68     		ldr	r3, [r7, #4]
+ 279 000e 22F40072 		bic	r2, r2, #512
+ 280 0012 1A60     		str	r2, [r3]
+ 143:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 281              		.loc 1 143 1
+ 282 0014 00BF     		nop
+ 283 0016 0C37     		adds	r7, r7, #12
+ 284              		.cfi_def_cfa_offset 4
+ 285 0018 BD46     		mov	sp, r7
+ 286              		.cfi_def_cfa_register 13
+ 287              		@ sp needed
+ 288 001a 80BC     		pop	{r7}
+ 289              		.cfi_restore 7
+ 290              		.cfi_def_cfa_offset 0
+ 291 001c 7047     		bx	lr
+ 292              		.cfi_endproc
+ 293              	.LFE5:
+ 295              		.section	.text.i2c_set_own_7bit_slave_address,"ax",%progbits
+ 296              		.align	1
+ 297              		.global	i2c_set_own_7bit_slave_address
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 301              		.fpu softvfp
+ 303              	i2c_set_own_7bit_slave_address:
+ 304              	.LFB6:
+ 144:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 145:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 146:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set the 7 bit Slave Address for the Peripheral.
+ 147:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 148:../libopencm3/lib/stm32/common/i2c_common_v1.c **** This sets an address for Slave mode operation, in 7 bit form.
+ 149:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 150:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 151:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] slave Unsigned int8. Slave address 0...127.
+ 152:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 153:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 154:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_own_7bit_slave_address(uint32_t i2c, uint8_t slave)
+ 155:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 305              		.loc 1 155 1
+ 306              		.cfi_startproc
+ 307              		@ args = 0, pretend = 0, frame = 16
+ 308              		@ frame_needed = 1, uses_anonymous_args = 0
+ 309              		@ link register save eliminated.
+ 310 0000 80B4     		push	{r7}
+ 311              		.cfi_def_cfa_offset 4
+ 312              		.cfi_offset 7, -4
+ 313 0002 85B0     		sub	sp, sp, #20
+ 314              		.cfi_def_cfa_offset 24
+ 315 0004 00AF     		add	r7, sp, #0
+ 316              		.cfi_def_cfa_register 7
+ 317 0006 7860     		str	r0, [r7, #4]
+ 318 0008 0B46     		mov	r3, r1
+ 319 000a FB70     		strb	r3, [r7, #3]
+ 156:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	uint16_t val = (uint16_t)(slave << 1);
+ 320              		.loc 1 156 17
+ 321 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 322 000e 9BB2     		uxth	r3, r3
+ 323              		.loc 1 156 11
+ 324 0010 5B00     		lsls	r3, r3, #1
+ 325 0012 FB81     		strh	r3, [r7, #14]	@ movhi
+ 157:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Datasheet: always keep 1 by software. */
+ 158:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	val |= (1 << 14);
+ 326              		.loc 1 158 6
+ 327 0014 FB89     		ldrh	r3, [r7, #14]	@ movhi
+ 328 0016 43F48043 		orr	r3, r3, #16384
+ 329 001a FB81     		strh	r3, [r7, #14]	@ movhi
+ 159:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_OAR1(i2c) = val;
+ 330              		.loc 1 159 2
+ 331 001c 7B68     		ldr	r3, [r7, #4]
+ 332 001e 0833     		adds	r3, r3, #8
+ 333 0020 1A46     		mov	r2, r3
+ 334              		.loc 1 159 16
+ 335 0022 FB89     		ldrh	r3, [r7, #14]
+ 336 0024 1360     		str	r3, [r2]
+ 160:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 337              		.loc 1 160 1
+ 338 0026 00BF     		nop
+ 339 0028 1437     		adds	r7, r7, #20
+ 340              		.cfi_def_cfa_offset 4
+ 341 002a BD46     		mov	sp, r7
+ 342              		.cfi_def_cfa_register 13
+ 343              		@ sp needed
+ 344 002c 80BC     		pop	{r7}
+ 345              		.cfi_restore 7
+ 346              		.cfi_def_cfa_offset 0
+ 347 002e 7047     		bx	lr
+ 348              		.cfi_endproc
+ 349              	.LFE6:
+ 351              		.section	.text.i2c_set_own_10bit_slave_address,"ax",%progbits
+ 352              		.align	1
+ 353              		.global	i2c_set_own_10bit_slave_address
+ 354              		.syntax unified
+ 355              		.thumb
+ 356              		.thumb_func
+ 357              		.fpu softvfp
+ 359              	i2c_set_own_10bit_slave_address:
+ 360              	.LFB7:
+ 161:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 162:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 163:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set the 10 bit Slave Address for the Peripheral.
+ 164:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 165:../libopencm3/lib/stm32/common/i2c_common_v1.c **** This sets an address for Slave mode operation, in 10 bit form.
+ 166:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 167:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @todo add "I2C_OAR1(i2c) |= (1 << 14);" as above
+ 168:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 169:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 170:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] slave Unsigned int16. Slave address 0...1023.
+ 171:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 172:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 173:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_own_10bit_slave_address(uint32_t i2c, uint16_t slave)
+ 174:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 361              		.loc 1 174 1
+ 362              		.cfi_startproc
+ 363              		@ args = 0, pretend = 0, frame = 8
+ 364              		@ frame_needed = 1, uses_anonymous_args = 0
+ 365              		@ link register save eliminated.
+ 366 0000 80B4     		push	{r7}
+ 367              		.cfi_def_cfa_offset 4
+ 368              		.cfi_offset 7, -4
+ 369 0002 83B0     		sub	sp, sp, #12
+ 370              		.cfi_def_cfa_offset 16
+ 371 0004 00AF     		add	r7, sp, #0
+ 372              		.cfi_def_cfa_register 7
+ 373 0006 7860     		str	r0, [r7, #4]
+ 374 0008 0B46     		mov	r3, r1
+ 375 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 175:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_OAR1(i2c) = (uint16_t)(I2C_OAR1_ADDMODE | slave);
+ 376              		.loc 1 175 18
+ 377 000c 7B88     		ldrh	r3, [r7, #2]	@ movhi
+ 378 000e 6FEA4343 		mvn	r3, r3, lsl #17
+ 379 0012 6FEA5343 		mvn	r3, r3, lsr #17
+ 380 0016 9AB2     		uxth	r2, r3
+ 381              		.loc 1 175 2
+ 382 0018 7B68     		ldr	r3, [r7, #4]
+ 383 001a 0833     		adds	r3, r3, #8
+ 384              		.loc 1 175 16
+ 385 001c 1A60     		str	r2, [r3]
+ 176:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 386              		.loc 1 176 1
+ 387 001e 00BF     		nop
+ 388 0020 0C37     		adds	r7, r7, #12
+ 389              		.cfi_def_cfa_offset 4
+ 390 0022 BD46     		mov	sp, r7
+ 391              		.cfi_def_cfa_register 13
+ 392              		@ sp needed
+ 393 0024 80BC     		pop	{r7}
+ 394              		.cfi_restore 7
+ 395              		.cfi_def_cfa_offset 0
+ 396 0026 7047     		bx	lr
+ 397              		.cfi_endproc
+ 398              	.LFE7:
+ 400              		.section	.text.i2c_set_own_7bit_slave_address_two,"ax",%progbits
+ 401              		.align	1
+ 402              		.global	i2c_set_own_7bit_slave_address_two
+ 403              		.syntax unified
+ 404              		.thumb
+ 405              		.thumb_func
+ 406              		.fpu softvfp
+ 408              	i2c_set_own_7bit_slave_address_two:
+ 409              	.LFB8:
+ 177:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 178:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 179:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set the secondary 7 bit Slave Address for the Peripheral.
+ 180:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 181:../libopencm3/lib/stm32/common/i2c_common_v1.c **** This sets a secondary address for Slave mode operation, in 7 bit form.
+ 182:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 183:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 184:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 185:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] slave Unsigned int8. Slave address 0...127.
+ 186:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 187:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 188:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_own_7bit_slave_address_two(uint32_t i2c, uint8_t slave)
+ 189:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 410              		.loc 1 189 1
+ 411              		.cfi_startproc
+ 412              		@ args = 0, pretend = 0, frame = 16
+ 413              		@ frame_needed = 1, uses_anonymous_args = 0
+ 414              		@ link register save eliminated.
+ 415 0000 80B4     		push	{r7}
+ 416              		.cfi_def_cfa_offset 4
+ 417              		.cfi_offset 7, -4
+ 418 0002 85B0     		sub	sp, sp, #20
+ 419              		.cfi_def_cfa_offset 24
+ 420 0004 00AF     		add	r7, sp, #0
+ 421              		.cfi_def_cfa_register 7
+ 422 0006 7860     		str	r0, [r7, #4]
+ 423 0008 0B46     		mov	r3, r1
+ 424 000a FB70     		strb	r3, [r7, #3]
+ 190:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	uint16_t val = (uint16_t)(slave << 1);
+ 425              		.loc 1 190 17
+ 426 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 427 000e 9BB2     		uxth	r3, r3
+ 428              		.loc 1 190 11
+ 429 0010 5B00     		lsls	r3, r3, #1
+ 430 0012 FB81     		strh	r3, [r7, #14]	@ movhi
+ 191:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_OAR2(i2c) = val;
+ 431              		.loc 1 191 2
+ 432 0014 7B68     		ldr	r3, [r7, #4]
+ 433 0016 0C33     		adds	r3, r3, #12
+ 434 0018 1A46     		mov	r2, r3
+ 435              		.loc 1 191 16
+ 436 001a FB89     		ldrh	r3, [r7, #14]
+ 437 001c 1360     		str	r3, [r2]
+ 192:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 438              		.loc 1 192 1
+ 439 001e 00BF     		nop
+ 440 0020 1437     		adds	r7, r7, #20
+ 441              		.cfi_def_cfa_offset 4
+ 442 0022 BD46     		mov	sp, r7
+ 443              		.cfi_def_cfa_register 13
+ 444              		@ sp needed
+ 445 0024 80BC     		pop	{r7}
+ 446              		.cfi_restore 7
+ 447              		.cfi_def_cfa_offset 0
+ 448 0026 7047     		bx	lr
+ 449              		.cfi_endproc
+ 450              	.LFE8:
+ 452              		.section	.text.i2c_enable_dual_addressing_mode,"ax",%progbits
+ 453              		.align	1
+ 454              		.global	i2c_enable_dual_addressing_mode
+ 455              		.syntax unified
+ 456              		.thumb
+ 457              		.thumb_func
+ 458              		.fpu softvfp
+ 460              	i2c_enable_dual_addressing_mode:
+ 461              	.LFB9:
+ 193:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 194:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 195:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Enable dual addressing mode for the Peripheral.
+ 196:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 197:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Both OAR1 and OAR2 are recognised in 7-bit addressing mode.
+ 198:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 199:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 200:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 201:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 202:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_enable_dual_addressing_mode(uint32_t i2c)
+ 203:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 462              		.loc 1 203 1
+ 463              		.cfi_startproc
+ 464              		@ args = 0, pretend = 0, frame = 8
+ 465              		@ frame_needed = 1, uses_anonymous_args = 0
+ 466              		@ link register save eliminated.
+ 467 0000 80B4     		push	{r7}
+ 468              		.cfi_def_cfa_offset 4
+ 469              		.cfi_offset 7, -4
+ 470 0002 83B0     		sub	sp, sp, #12
+ 471              		.cfi_def_cfa_offset 16
+ 472 0004 00AF     		add	r7, sp, #0
+ 473              		.cfi_def_cfa_register 7
+ 474 0006 7860     		str	r0, [r7, #4]
+ 204:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_OAR2(i2c) |= I2C_OAR2_ENDUAL;
+ 475              		.loc 1 204 16
+ 476 0008 7B68     		ldr	r3, [r7, #4]
+ 477 000a 0C33     		adds	r3, r3, #12
+ 478 000c 1B68     		ldr	r3, [r3]
+ 479 000e 7A68     		ldr	r2, [r7, #4]
+ 480 0010 0C32     		adds	r2, r2, #12
+ 481 0012 43F00103 		orr	r3, r3, #1
+ 482 0016 1360     		str	r3, [r2]
+ 205:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 483              		.loc 1 205 1
+ 484 0018 00BF     		nop
+ 485 001a 0C37     		adds	r7, r7, #12
+ 486              		.cfi_def_cfa_offset 4
+ 487 001c BD46     		mov	sp, r7
+ 488              		.cfi_def_cfa_register 13
+ 489              		@ sp needed
+ 490 001e 80BC     		pop	{r7}
+ 491              		.cfi_restore 7
+ 492              		.cfi_def_cfa_offset 0
+ 493 0020 7047     		bx	lr
+ 494              		.cfi_endproc
+ 495              	.LFE9:
+ 497              		.section	.text.i2c_disable_dual_addressing_mode,"ax",%progbits
+ 498              		.align	1
+ 499              		.global	i2c_disable_dual_addressing_mode
+ 500              		.syntax unified
+ 501              		.thumb
+ 502              		.thumb_func
+ 503              		.fpu softvfp
+ 505              	i2c_disable_dual_addressing_mode:
+ 506              	.LFB10:
+ 206:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 207:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 208:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Disable dual addressing mode for the Peripheral.
+ 209:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 210:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Only OAR1 is recognised in 7-bit addressing mode.
+ 211:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 212:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 213:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 214:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 215:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_disable_dual_addressing_mode(uint32_t i2c)
+ 216:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 507              		.loc 1 216 1
+ 508              		.cfi_startproc
+ 509              		@ args = 0, pretend = 0, frame = 8
+ 510              		@ frame_needed = 1, uses_anonymous_args = 0
+ 511              		@ link register save eliminated.
+ 512 0000 80B4     		push	{r7}
+ 513              		.cfi_def_cfa_offset 4
+ 514              		.cfi_offset 7, -4
+ 515 0002 83B0     		sub	sp, sp, #12
+ 516              		.cfi_def_cfa_offset 16
+ 517 0004 00AF     		add	r7, sp, #0
+ 518              		.cfi_def_cfa_register 7
+ 519 0006 7860     		str	r0, [r7, #4]
+ 217:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_OAR2(i2c) &= ~(I2C_OAR2_ENDUAL);
+ 520              		.loc 1 217 16
+ 521 0008 7B68     		ldr	r3, [r7, #4]
+ 522 000a 0C33     		adds	r3, r3, #12
+ 523 000c 1B68     		ldr	r3, [r3]
+ 524 000e 7A68     		ldr	r2, [r7, #4]
+ 525 0010 0C32     		adds	r2, r2, #12
+ 526 0012 23F00103 		bic	r3, r3, #1
+ 527 0016 1360     		str	r3, [r2]
+ 218:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 528              		.loc 1 218 1
+ 529 0018 00BF     		nop
+ 530 001a 0C37     		adds	r7, r7, #12
+ 531              		.cfi_def_cfa_offset 4
+ 532 001c BD46     		mov	sp, r7
+ 533              		.cfi_def_cfa_register 13
+ 534              		@ sp needed
+ 535 001e 80BC     		pop	{r7}
+ 536              		.cfi_restore 7
+ 537              		.cfi_def_cfa_offset 0
+ 538 0020 7047     		bx	lr
+ 539              		.cfi_endproc
+ 540              	.LFE10:
+ 542              		.section	.text.i2c_set_clock_frequency,"ax",%progbits
+ 543              		.align	1
+ 544              		.global	i2c_set_clock_frequency
+ 545              		.syntax unified
+ 546              		.thumb
+ 547              		.thumb_func
+ 548              		.fpu softvfp
+ 550              	i2c_set_clock_frequency:
+ 551              	.LFB11:
+ 219:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 220:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 221:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set Peripheral Clock Frequency.
+ 222:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 223:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Set the peripheral clock frequency: 2MHz to 36MHz (the APB frequency). Note
+ 224:../libopencm3/lib/stm32/common/i2c_common_v1.c **** that this is <b> not </b> the I2C bus clock. This is set in conjunction with
+ 225:../libopencm3/lib/stm32/common/i2c_common_v1.c **** the Clock Control register to generate the Master bus clock, see @ref
+ 226:../libopencm3/lib/stm32/common/i2c_common_v1.c **** i2c_set_ccr
+ 227:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 228:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c I2C register base address @ref i2c_reg_base
+ 229:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] freq Clock Frequency Setting in MHz, valid range depends on part,+
+ 230:../libopencm3/lib/stm32/common/i2c_common_v1.c ****   normally 2Mhz->Max APB speed.
+ 231:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 232:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 233:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_clock_frequency(uint32_t i2c, uint8_t freq)
+ 234:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 552              		.loc 1 234 1
+ 553              		.cfi_startproc
+ 554              		@ args = 0, pretend = 0, frame = 16
+ 555              		@ frame_needed = 1, uses_anonymous_args = 0
+ 556              		@ link register save eliminated.
+ 557 0000 80B4     		push	{r7}
+ 558              		.cfi_def_cfa_offset 4
+ 559              		.cfi_offset 7, -4
+ 560 0002 85B0     		sub	sp, sp, #20
+ 561              		.cfi_def_cfa_offset 24
+ 562 0004 00AF     		add	r7, sp, #0
+ 563              		.cfi_def_cfa_register 7
+ 564 0006 7860     		str	r0, [r7, #4]
+ 565 0008 0B46     		mov	r3, r1
+ 566 000a FB70     		strb	r3, [r7, #3]
+ 235:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	uint16_t reg16;
+ 236:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	reg16 = I2C_CR2(i2c) & 0xffc0; /* Clear bits [5:0]. */
+ 567              		.loc 1 236 10
+ 568 000c 7B68     		ldr	r3, [r7, #4]
+ 569 000e 0433     		adds	r3, r3, #4
+ 570 0010 1B68     		ldr	r3, [r3]
+ 571              		.loc 1 236 23
+ 572 0012 9BB2     		uxth	r3, r3
+ 573              		.loc 1 236 8
+ 574 0014 23F03F03 		bic	r3, r3, #63
+ 575 0018 FB81     		strh	r3, [r7, #14]	@ movhi
+ 237:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	reg16 |= freq;
+ 576              		.loc 1 237 8
+ 577 001a FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 578 001c 9AB2     		uxth	r2, r3
+ 579 001e FB89     		ldrh	r3, [r7, #14]	@ movhi
+ 580 0020 1343     		orrs	r3, r3, r2
+ 581 0022 FB81     		strh	r3, [r7, #14]	@ movhi
+ 238:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) = reg16;
+ 582              		.loc 1 238 2
+ 583 0024 7B68     		ldr	r3, [r7, #4]
+ 584 0026 0433     		adds	r3, r3, #4
+ 585 0028 1A46     		mov	r2, r3
+ 586              		.loc 1 238 15
+ 587 002a FB89     		ldrh	r3, [r7, #14]
+ 588 002c 1360     		str	r3, [r2]
+ 239:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 589              		.loc 1 239 1
+ 590 002e 00BF     		nop
+ 591 0030 1437     		adds	r7, r7, #20
+ 592              		.cfi_def_cfa_offset 4
+ 593 0032 BD46     		mov	sp, r7
+ 594              		.cfi_def_cfa_register 13
+ 595              		@ sp needed
+ 596 0034 80BC     		pop	{r7}
+ 597              		.cfi_restore 7
+ 598              		.cfi_def_cfa_offset 0
+ 599 0036 7047     		bx	lr
+ 600              		.cfi_endproc
+ 601              	.LFE11:
+ 603              		.section	.text.i2c_send_data,"ax",%progbits
+ 604              		.align	1
+ 605              		.global	i2c_send_data
+ 606              		.syntax unified
+ 607              		.thumb
+ 608              		.thumb_func
+ 609              		.fpu softvfp
+ 611              	i2c_send_data:
+ 612              	.LFB12:
+ 240:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 241:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 242:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Send Data.
+ 243:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 244:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 245:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] data Unsigned int8. Byte to send.
+ 246:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 247:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 248:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_send_data(uint32_t i2c, uint8_t data)
+ 249:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 613              		.loc 1 249 1
+ 614              		.cfi_startproc
+ 615              		@ args = 0, pretend = 0, frame = 8
+ 616              		@ frame_needed = 1, uses_anonymous_args = 0
+ 617              		@ link register save eliminated.
+ 618 0000 80B4     		push	{r7}
+ 619              		.cfi_def_cfa_offset 4
+ 620              		.cfi_offset 7, -4
+ 621 0002 83B0     		sub	sp, sp, #12
+ 622              		.cfi_def_cfa_offset 16
+ 623 0004 00AF     		add	r7, sp, #0
+ 624              		.cfi_def_cfa_register 7
+ 625 0006 7860     		str	r0, [r7, #4]
+ 626 0008 0B46     		mov	r3, r1
+ 627 000a FB70     		strb	r3, [r7, #3]
+ 250:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_DR(i2c) = data;
+ 628              		.loc 1 250 2
+ 629 000c 7B68     		ldr	r3, [r7, #4]
+ 630 000e 1033     		adds	r3, r3, #16
+ 631 0010 1A46     		mov	r2, r3
+ 632              		.loc 1 250 14
+ 633 0012 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 634 0014 1360     		str	r3, [r2]
+ 251:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 635              		.loc 1 251 1
+ 636 0016 00BF     		nop
+ 637 0018 0C37     		adds	r7, r7, #12
+ 638              		.cfi_def_cfa_offset 4
+ 639 001a BD46     		mov	sp, r7
+ 640              		.cfi_def_cfa_register 13
+ 641              		@ sp needed
+ 642 001c 80BC     		pop	{r7}
+ 643              		.cfi_restore 7
+ 644              		.cfi_def_cfa_offset 0
+ 645 001e 7047     		bx	lr
+ 646              		.cfi_endproc
+ 647              	.LFE12:
+ 649              		.section	.text.i2c_set_fast_mode,"ax",%progbits
+ 650              		.align	1
+ 651              		.global	i2c_set_fast_mode
+ 652              		.syntax unified
+ 653              		.thumb
+ 654              		.thumb_func
+ 655              		.fpu softvfp
+ 657              	i2c_set_fast_mode:
+ 658              	.LFB13:
+ 252:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 253:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 254:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set Fast Mode.
+ 255:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 256:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Set the clock frequency to the high clock rate mode (up to 400kHz). The actual
+ 257:../libopencm3/lib/stm32/common/i2c_common_v1.c **** clock frequency must be set with @ref i2c_set_clock_frequency
+ 258:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 259:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 260:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 261:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 262:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_fast_mode(uint32_t i2c)
+ 263:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 659              		.loc 1 263 1
+ 660              		.cfi_startproc
+ 661              		@ args = 0, pretend = 0, frame = 8
+ 662              		@ frame_needed = 1, uses_anonymous_args = 0
+ 663              		@ link register save eliminated.
+ 664 0000 80B4     		push	{r7}
+ 665              		.cfi_def_cfa_offset 4
+ 666              		.cfi_offset 7, -4
+ 667 0002 83B0     		sub	sp, sp, #12
+ 668              		.cfi_def_cfa_offset 16
+ 669 0004 00AF     		add	r7, sp, #0
+ 670              		.cfi_def_cfa_register 7
+ 671 0006 7860     		str	r0, [r7, #4]
+ 264:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CCR(i2c) |= I2C_CCR_FS;
+ 672              		.loc 1 264 15
+ 673 0008 7B68     		ldr	r3, [r7, #4]
+ 674 000a 1C33     		adds	r3, r3, #28
+ 675 000c 1B68     		ldr	r3, [r3]
+ 676 000e 7A68     		ldr	r2, [r7, #4]
+ 677 0010 1C32     		adds	r2, r2, #28
+ 678 0012 43F40043 		orr	r3, r3, #32768
+ 679 0016 1360     		str	r3, [r2]
+ 265:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 680              		.loc 1 265 1
+ 681 0018 00BF     		nop
+ 682 001a 0C37     		adds	r7, r7, #12
+ 683              		.cfi_def_cfa_offset 4
+ 684 001c BD46     		mov	sp, r7
+ 685              		.cfi_def_cfa_register 13
+ 686              		@ sp needed
+ 687 001e 80BC     		pop	{r7}
+ 688              		.cfi_restore 7
+ 689              		.cfi_def_cfa_offset 0
+ 690 0020 7047     		bx	lr
+ 691              		.cfi_endproc
+ 692              	.LFE13:
+ 694              		.section	.text.i2c_set_standard_mode,"ax",%progbits
+ 695              		.align	1
+ 696              		.global	i2c_set_standard_mode
+ 697              		.syntax unified
+ 698              		.thumb
+ 699              		.thumb_func
+ 700              		.fpu softvfp
+ 702              	i2c_set_standard_mode:
+ 703              	.LFB14:
+ 266:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 267:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 268:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set Standard Mode.
+ 269:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 270:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Set the clock frequency to the standard clock rate mode (up to 100kHz). The
+ 271:../libopencm3/lib/stm32/common/i2c_common_v1.c **** actual clock frequency must be set with @ref i2c_set_clock_frequency
+ 272:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 273:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 274:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 275:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 276:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_standard_mode(uint32_t i2c)
+ 277:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 704              		.loc 1 277 1
+ 705              		.cfi_startproc
+ 706              		@ args = 0, pretend = 0, frame = 8
+ 707              		@ frame_needed = 1, uses_anonymous_args = 0
+ 708              		@ link register save eliminated.
+ 709 0000 80B4     		push	{r7}
+ 710              		.cfi_def_cfa_offset 4
+ 711              		.cfi_offset 7, -4
+ 712 0002 83B0     		sub	sp, sp, #12
+ 713              		.cfi_def_cfa_offset 16
+ 714 0004 00AF     		add	r7, sp, #0
+ 715              		.cfi_def_cfa_register 7
+ 716 0006 7860     		str	r0, [r7, #4]
+ 278:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CCR(i2c) &= ~I2C_CCR_FS;
+ 717              		.loc 1 278 15
+ 718 0008 7B68     		ldr	r3, [r7, #4]
+ 719 000a 1C33     		adds	r3, r3, #28
+ 720 000c 1B68     		ldr	r3, [r3]
+ 721 000e 7A68     		ldr	r2, [r7, #4]
+ 722 0010 1C32     		adds	r2, r2, #28
+ 723 0012 23F40043 		bic	r3, r3, #32768
+ 724 0016 1360     		str	r3, [r2]
+ 279:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 725              		.loc 1 279 1
+ 726 0018 00BF     		nop
+ 727 001a 0C37     		adds	r7, r7, #12
+ 728              		.cfi_def_cfa_offset 4
+ 729 001c BD46     		mov	sp, r7
+ 730              		.cfi_def_cfa_register 13
+ 731              		@ sp needed
+ 732 001e 80BC     		pop	{r7}
+ 733              		.cfi_restore 7
+ 734              		.cfi_def_cfa_offset 0
+ 735 0020 7047     		bx	lr
+ 736              		.cfi_endproc
+ 737              	.LFE14:
+ 739              		.section	.text.i2c_set_ccr,"ax",%progbits
+ 740              		.align	1
+ 741              		.global	i2c_set_ccr
+ 742              		.syntax unified
+ 743              		.thumb
+ 744              		.thumb_func
+ 745              		.fpu softvfp
+ 747              	i2c_set_ccr:
+ 748              	.LFB15:
+ 280:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 281:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 282:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set Bus Clock Frequency.
+ 283:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 284:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Set the bus clock frequency. This is a 12 bit number (0...4095) calculated
+ 285:../libopencm3/lib/stm32/common/i2c_common_v1.c **** from the formulae given in the STM32F1 reference manual in the description
+ 286:../libopencm3/lib/stm32/common/i2c_common_v1.c **** of the CCR field. It is a divisor of the peripheral clock frequency
+ 287:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @ref i2c_set_clock_frequency modified by the fast mode setting
+ 288:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @ref i2c_set_fast_mode
+ 289:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 290:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @todo provide additional API assitance to set the clock, eg macros
+ 291:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 292:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 293:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] freq Unsigned int16. Bus Clock Frequency Setting 0...4095.
+ 294:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 295:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 296:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_ccr(uint32_t i2c, uint16_t freq)
+ 297:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 749              		.loc 1 297 1
+ 750              		.cfi_startproc
+ 751              		@ args = 0, pretend = 0, frame = 16
+ 752              		@ frame_needed = 1, uses_anonymous_args = 0
+ 753              		@ link register save eliminated.
+ 754 0000 80B4     		push	{r7}
+ 755              		.cfi_def_cfa_offset 4
+ 756              		.cfi_offset 7, -4
+ 757 0002 85B0     		sub	sp, sp, #20
+ 758              		.cfi_def_cfa_offset 24
+ 759 0004 00AF     		add	r7, sp, #0
+ 760              		.cfi_def_cfa_register 7
+ 761 0006 7860     		str	r0, [r7, #4]
+ 762 0008 0B46     		mov	r3, r1
+ 763 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 298:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	uint16_t reg16;
+ 299:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	reg16 = I2C_CCR(i2c) & 0xf000; /* Clear bits [11:0]. */
+ 764              		.loc 1 299 10
+ 765 000c 7B68     		ldr	r3, [r7, #4]
+ 766 000e 1C33     		adds	r3, r3, #28
+ 767 0010 1B68     		ldr	r3, [r3]
+ 768              		.loc 1 299 23
+ 769 0012 9BB2     		uxth	r3, r3
+ 770              		.loc 1 299 8
+ 771 0014 23F47F63 		bic	r3, r3, #4080
+ 772 0018 23F00F03 		bic	r3, r3, #15
+ 773 001c FB81     		strh	r3, [r7, #14]	@ movhi
+ 300:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	reg16 |= freq;
+ 774              		.loc 1 300 8
+ 775 001e FA89     		ldrh	r2, [r7, #14]	@ movhi
+ 776 0020 7B88     		ldrh	r3, [r7, #2]	@ movhi
+ 777 0022 1343     		orrs	r3, r3, r2
+ 778 0024 FB81     		strh	r3, [r7, #14]	@ movhi
+ 301:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CCR(i2c) = reg16;
+ 779              		.loc 1 301 2
+ 780 0026 7B68     		ldr	r3, [r7, #4]
+ 781 0028 1C33     		adds	r3, r3, #28
+ 782 002a 1A46     		mov	r2, r3
+ 783              		.loc 1 301 15
+ 784 002c FB89     		ldrh	r3, [r7, #14]
+ 785 002e 1360     		str	r3, [r2]
+ 302:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 786              		.loc 1 302 1
+ 787 0030 00BF     		nop
+ 788 0032 1437     		adds	r7, r7, #20
+ 789              		.cfi_def_cfa_offset 4
+ 790 0034 BD46     		mov	sp, r7
+ 791              		.cfi_def_cfa_register 13
+ 792              		@ sp needed
+ 793 0036 80BC     		pop	{r7}
+ 794              		.cfi_restore 7
+ 795              		.cfi_def_cfa_offset 0
+ 796 0038 7047     		bx	lr
+ 797              		.cfi_endproc
+ 798              	.LFE15:
+ 800              		.section	.text.i2c_set_trise,"ax",%progbits
+ 801              		.align	1
+ 802              		.global	i2c_set_trise
+ 803              		.syntax unified
+ 804              		.thumb
+ 805              		.thumb_func
+ 806              		.fpu softvfp
+ 808              	i2c_set_trise:
+ 809              	.LFB16:
+ 303:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 304:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 305:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set the Rise Time.
+ 306:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 307:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Set the maximum rise time on the bus according to the I2C specification, as 1
+ 308:../libopencm3/lib/stm32/common/i2c_common_v1.c **** more than the specified rise time in peripheral clock cycles. This is a 6 bit
+ 309:../libopencm3/lib/stm32/common/i2c_common_v1.c **** number.
+ 310:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 311:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @todo provide additional APIP assistance.
+ 312:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 313:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 314:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] trise Unsigned int16. Rise Time Setting 0...63.
+ 315:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 316:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 317:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_trise(uint32_t i2c, uint16_t trise)
+ 318:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 810              		.loc 1 318 1
+ 811              		.cfi_startproc
+ 812              		@ args = 0, pretend = 0, frame = 8
+ 813              		@ frame_needed = 1, uses_anonymous_args = 0
+ 814              		@ link register save eliminated.
+ 815 0000 80B4     		push	{r7}
+ 816              		.cfi_def_cfa_offset 4
+ 817              		.cfi_offset 7, -4
+ 818 0002 83B0     		sub	sp, sp, #12
+ 819              		.cfi_def_cfa_offset 16
+ 820 0004 00AF     		add	r7, sp, #0
+ 821              		.cfi_def_cfa_register 7
+ 822 0006 7860     		str	r0, [r7, #4]
+ 823 0008 0B46     		mov	r3, r1
+ 824 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 319:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_TRISE(i2c) = trise;
+ 825              		.loc 1 319 2
+ 826 000c 7B68     		ldr	r3, [r7, #4]
+ 827 000e 2033     		adds	r3, r3, #32
+ 828 0010 1A46     		mov	r2, r3
+ 829              		.loc 1 319 17
+ 830 0012 7B88     		ldrh	r3, [r7, #2]
+ 831 0014 1360     		str	r3, [r2]
+ 320:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 832              		.loc 1 320 1
+ 833 0016 00BF     		nop
+ 834 0018 0C37     		adds	r7, r7, #12
+ 835              		.cfi_def_cfa_offset 4
+ 836 001a BD46     		mov	sp, r7
+ 837              		.cfi_def_cfa_register 13
+ 838              		@ sp needed
+ 839 001c 80BC     		pop	{r7}
+ 840              		.cfi_restore 7
+ 841              		.cfi_def_cfa_offset 0
+ 842 001e 7047     		bx	lr
+ 843              		.cfi_endproc
+ 844              	.LFE16:
+ 846              		.section	.text.i2c_send_7bit_address,"ax",%progbits
+ 847              		.align	1
+ 848              		.global	i2c_send_7bit_address
+ 849              		.syntax unified
+ 850              		.thumb
+ 851              		.thumb_func
+ 852              		.fpu softvfp
+ 854              	i2c_send_7bit_address:
+ 855              	.LFB17:
+ 321:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 322:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 323:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Send the 7-bit Slave Address.
+ 324:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 325:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 326:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] slave Unsigned int16. Slave address 0...1023.
+ 327:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] readwrite Unsigned int8. Single bit to instruct slave to receive or
+ 328:../libopencm3/lib/stm32/common/i2c_common_v1.c **** send @ref i2c_rw.
+ 329:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 330:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 331:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_send_7bit_address(uint32_t i2c, uint8_t slave, uint8_t readwrite)
+ 332:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 856              		.loc 1 332 1
+ 857              		.cfi_startproc
+ 858              		@ args = 0, pretend = 0, frame = 8
+ 859              		@ frame_needed = 1, uses_anonymous_args = 0
+ 860              		@ link register save eliminated.
+ 861 0000 80B4     		push	{r7}
+ 862              		.cfi_def_cfa_offset 4
+ 863              		.cfi_offset 7, -4
+ 864 0002 83B0     		sub	sp, sp, #12
+ 865              		.cfi_def_cfa_offset 16
+ 866 0004 00AF     		add	r7, sp, #0
+ 867              		.cfi_def_cfa_register 7
+ 868 0006 7860     		str	r0, [r7, #4]
+ 869 0008 0B46     		mov	r3, r1
+ 870 000a FB70     		strb	r3, [r7, #3]
+ 871 000c 1346     		mov	r3, r2
+ 872 000e BB70     		strb	r3, [r7, #2]
+ 333:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_DR(i2c) = (uint8_t)((slave << 1) | readwrite);
+ 873              		.loc 1 333 33
+ 874 0010 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 875 0012 5B00     		lsls	r3, r3, #1
+ 876              		.loc 1 333 39
+ 877 0014 5AB2     		sxtb	r2, r3
+ 878 0016 97F90230 		ldrsb	r3, [r7, #2]
+ 879 001a 1343     		orrs	r3, r3, r2
+ 880 001c 5BB2     		sxtb	r3, r3
+ 881              		.loc 1 333 16
+ 882 001e DAB2     		uxtb	r2, r3
+ 883              		.loc 1 333 2
+ 884 0020 7B68     		ldr	r3, [r7, #4]
+ 885 0022 1033     		adds	r3, r3, #16
+ 886              		.loc 1 333 14
+ 887 0024 1A60     		str	r2, [r3]
+ 334:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 888              		.loc 1 334 1
+ 889 0026 00BF     		nop
+ 890 0028 0C37     		adds	r7, r7, #12
+ 891              		.cfi_def_cfa_offset 4
+ 892 002a BD46     		mov	sp, r7
+ 893              		.cfi_def_cfa_register 13
+ 894              		@ sp needed
+ 895 002c 80BC     		pop	{r7}
+ 896              		.cfi_restore 7
+ 897              		.cfi_def_cfa_offset 0
+ 898 002e 7047     		bx	lr
+ 899              		.cfi_endproc
+ 900              	.LFE17:
+ 902              		.section	.text.i2c_get_data,"ax",%progbits
+ 903              		.align	1
+ 904              		.global	i2c_get_data
+ 905              		.syntax unified
+ 906              		.thumb
+ 907              		.thumb_func
+ 908              		.fpu softvfp
+ 910              	i2c_get_data:
+ 911              	.LFB18:
+ 335:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 336:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 337:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Get Data.
+ 338:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 339:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 340:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 341:../libopencm3/lib/stm32/common/i2c_common_v1.c **** uint8_t i2c_get_data(uint32_t i2c)
+ 342:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 912              		.loc 1 342 1
+ 913              		.cfi_startproc
+ 914              		@ args = 0, pretend = 0, frame = 8
+ 915              		@ frame_needed = 1, uses_anonymous_args = 0
+ 916              		@ link register save eliminated.
+ 917 0000 80B4     		push	{r7}
+ 918              		.cfi_def_cfa_offset 4
+ 919              		.cfi_offset 7, -4
+ 920 0002 83B0     		sub	sp, sp, #12
+ 921              		.cfi_def_cfa_offset 16
+ 922 0004 00AF     		add	r7, sp, #0
+ 923              		.cfi_def_cfa_register 7
+ 924 0006 7860     		str	r0, [r7, #4]
+ 343:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	return I2C_DR(i2c) & 0xff;
+ 925              		.loc 1 343 9
+ 926 0008 7B68     		ldr	r3, [r7, #4]
+ 927 000a 1033     		adds	r3, r3, #16
+ 928 000c 1B68     		ldr	r3, [r3]
+ 929              		.loc 1 343 21
+ 930 000e DBB2     		uxtb	r3, r3
+ 344:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 931              		.loc 1 344 1
+ 932 0010 1846     		mov	r0, r3
+ 933 0012 0C37     		adds	r7, r7, #12
+ 934              		.cfi_def_cfa_offset 4
+ 935 0014 BD46     		mov	sp, r7
+ 936              		.cfi_def_cfa_register 13
+ 937              		@ sp needed
+ 938 0016 80BC     		pop	{r7}
+ 939              		.cfi_restore 7
+ 940              		.cfi_def_cfa_offset 0
+ 941 0018 7047     		bx	lr
+ 942              		.cfi_endproc
+ 943              	.LFE18:
+ 945              		.section	.text.i2c_enable_interrupt,"ax",%progbits
+ 946              		.align	1
+ 947              		.global	i2c_enable_interrupt
+ 948              		.syntax unified
+ 949              		.thumb
+ 950              		.thumb_func
+ 951              		.fpu softvfp
+ 953              	i2c_enable_interrupt:
+ 954              	.LFB19:
+ 345:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 346:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 347:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Enable Interrupt
+ 348:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 349:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 350:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] interrupt Unsigned int32. Interrupt to enable.
+ 351:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 352:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_enable_interrupt(uint32_t i2c, uint32_t interrupt)
+ 353:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 955              		.loc 1 353 1
+ 956              		.cfi_startproc
+ 957              		@ args = 0, pretend = 0, frame = 8
+ 958              		@ frame_needed = 1, uses_anonymous_args = 0
+ 959              		@ link register save eliminated.
+ 960 0000 80B4     		push	{r7}
+ 961              		.cfi_def_cfa_offset 4
+ 962              		.cfi_offset 7, -4
+ 963 0002 83B0     		sub	sp, sp, #12
+ 964              		.cfi_def_cfa_offset 16
+ 965 0004 00AF     		add	r7, sp, #0
+ 966              		.cfi_def_cfa_register 7
+ 967 0006 7860     		str	r0, [r7, #4]
+ 968 0008 3960     		str	r1, [r7]
+ 354:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) |= interrupt;
+ 969              		.loc 1 354 15
+ 970 000a 7B68     		ldr	r3, [r7, #4]
+ 971 000c 0433     		adds	r3, r3, #4
+ 972 000e 1A68     		ldr	r2, [r3]
+ 973 0010 7B68     		ldr	r3, [r7, #4]
+ 974 0012 0433     		adds	r3, r3, #4
+ 975 0014 1946     		mov	r1, r3
+ 976 0016 3B68     		ldr	r3, [r7]
+ 977 0018 1343     		orrs	r3, r3, r2
+ 978 001a 0B60     		str	r3, [r1]
+ 355:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 979              		.loc 1 355 1
+ 980 001c 00BF     		nop
+ 981 001e 0C37     		adds	r7, r7, #12
+ 982              		.cfi_def_cfa_offset 4
+ 983 0020 BD46     		mov	sp, r7
+ 984              		.cfi_def_cfa_register 13
+ 985              		@ sp needed
+ 986 0022 80BC     		pop	{r7}
+ 987              		.cfi_restore 7
+ 988              		.cfi_def_cfa_offset 0
+ 989 0024 7047     		bx	lr
+ 990              		.cfi_endproc
+ 991              	.LFE19:
+ 993              		.section	.text.i2c_disable_interrupt,"ax",%progbits
+ 994              		.align	1
+ 995              		.global	i2c_disable_interrupt
+ 996              		.syntax unified
+ 997              		.thumb
+ 998              		.thumb_func
+ 999              		.fpu softvfp
+ 1001              	i2c_disable_interrupt:
+ 1002              	.LFB20:
+ 356:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 357:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 358:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Disable Interrupt
+ 359:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 360:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 361:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] interrupt Unsigned int32. Interrupt to disable.
+ 362:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 363:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_disable_interrupt(uint32_t i2c, uint32_t interrupt)
+ 364:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1003              		.loc 1 364 1
+ 1004              		.cfi_startproc
+ 1005              		@ args = 0, pretend = 0, frame = 8
+ 1006              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1007              		@ link register save eliminated.
+ 1008 0000 80B4     		push	{r7}
+ 1009              		.cfi_def_cfa_offset 4
+ 1010              		.cfi_offset 7, -4
+ 1011 0002 83B0     		sub	sp, sp, #12
+ 1012              		.cfi_def_cfa_offset 16
+ 1013 0004 00AF     		add	r7, sp, #0
+ 1014              		.cfi_def_cfa_register 7
+ 1015 0006 7860     		str	r0, [r7, #4]
+ 1016 0008 3960     		str	r1, [r7]
+ 365:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) &= ~interrupt;
+ 1017              		.loc 1 365 15
+ 1018 000a 7B68     		ldr	r3, [r7, #4]
+ 1019 000c 0433     		adds	r3, r3, #4
+ 1020 000e 1A68     		ldr	r2, [r3]
+ 1021              		.loc 1 365 18
+ 1022 0010 3B68     		ldr	r3, [r7]
+ 1023 0012 DB43     		mvns	r3, r3
+ 1024              		.loc 1 365 15
+ 1025 0014 7968     		ldr	r1, [r7, #4]
+ 1026 0016 0431     		adds	r1, r1, #4
+ 1027 0018 1340     		ands	r3, r3, r2
+ 1028 001a 0B60     		str	r3, [r1]
+ 366:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1029              		.loc 1 366 1
+ 1030 001c 00BF     		nop
+ 1031 001e 0C37     		adds	r7, r7, #12
+ 1032              		.cfi_def_cfa_offset 4
+ 1033 0020 BD46     		mov	sp, r7
+ 1034              		.cfi_def_cfa_register 13
+ 1035              		@ sp needed
+ 1036 0022 80BC     		pop	{r7}
+ 1037              		.cfi_restore 7
+ 1038              		.cfi_def_cfa_offset 0
+ 1039 0024 7047     		bx	lr
+ 1040              		.cfi_endproc
+ 1041              	.LFE20:
+ 1043              		.section	.text.i2c_enable_ack,"ax",%progbits
+ 1044              		.align	1
+ 1045              		.global	i2c_enable_ack
+ 1046              		.syntax unified
+ 1047              		.thumb
+ 1048              		.thumb_func
+ 1049              		.fpu softvfp
+ 1051              	i2c_enable_ack:
+ 1052              	.LFB21:
+ 367:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 368:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 369:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Enable ACK
+ 370:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 371:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Enables acking of own 7/10 bit address
+ 372:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 373:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 374:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_enable_ack(uint32_t i2c)
+ 375:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1053              		.loc 1 375 1
+ 1054              		.cfi_startproc
+ 1055              		@ args = 0, pretend = 0, frame = 8
+ 1056              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1057              		@ link register save eliminated.
+ 1058 0000 80B4     		push	{r7}
+ 1059              		.cfi_def_cfa_offset 4
+ 1060              		.cfi_offset 7, -4
+ 1061 0002 83B0     		sub	sp, sp, #12
+ 1062              		.cfi_def_cfa_offset 16
+ 1063 0004 00AF     		add	r7, sp, #0
+ 1064              		.cfi_def_cfa_register 7
+ 1065 0006 7860     		str	r0, [r7, #4]
+ 376:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) |= I2C_CR1_ACK;
+ 1066              		.loc 1 376 15
+ 1067 0008 7B68     		ldr	r3, [r7, #4]
+ 1068 000a 1A68     		ldr	r2, [r3]
+ 1069 000c 7B68     		ldr	r3, [r7, #4]
+ 1070 000e 42F48062 		orr	r2, r2, #1024
+ 1071 0012 1A60     		str	r2, [r3]
+ 377:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1072              		.loc 1 377 1
+ 1073 0014 00BF     		nop
+ 1074 0016 0C37     		adds	r7, r7, #12
+ 1075              		.cfi_def_cfa_offset 4
+ 1076 0018 BD46     		mov	sp, r7
+ 1077              		.cfi_def_cfa_register 13
+ 1078              		@ sp needed
+ 1079 001a 80BC     		pop	{r7}
+ 1080              		.cfi_restore 7
+ 1081              		.cfi_def_cfa_offset 0
+ 1082 001c 7047     		bx	lr
+ 1083              		.cfi_endproc
+ 1084              	.LFE21:
+ 1086              		.section	.text.i2c_disable_ack,"ax",%progbits
+ 1087              		.align	1
+ 1088              		.global	i2c_disable_ack
+ 1089              		.syntax unified
+ 1090              		.thumb
+ 1091              		.thumb_func
+ 1092              		.fpu softvfp
+ 1094              	i2c_disable_ack:
+ 1095              	.LFB22:
+ 378:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 379:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 380:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Disable ACK
+ 381:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 382:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Disables acking of own 7/10 bit address
+ 383:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 384:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 385:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_disable_ack(uint32_t i2c)
+ 386:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1096              		.loc 1 386 1
+ 1097              		.cfi_startproc
+ 1098              		@ args = 0, pretend = 0, frame = 8
+ 1099              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1100              		@ link register save eliminated.
+ 1101 0000 80B4     		push	{r7}
+ 1102              		.cfi_def_cfa_offset 4
+ 1103              		.cfi_offset 7, -4
+ 1104 0002 83B0     		sub	sp, sp, #12
+ 1105              		.cfi_def_cfa_offset 16
+ 1106 0004 00AF     		add	r7, sp, #0
+ 1107              		.cfi_def_cfa_register 7
+ 1108 0006 7860     		str	r0, [r7, #4]
+ 387:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) &= ~I2C_CR1_ACK;
+ 1109              		.loc 1 387 15
+ 1110 0008 7B68     		ldr	r3, [r7, #4]
+ 1111 000a 1A68     		ldr	r2, [r3]
+ 1112 000c 7B68     		ldr	r3, [r7, #4]
+ 1113 000e 22F48062 		bic	r2, r2, #1024
+ 1114 0012 1A60     		str	r2, [r3]
+ 388:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1115              		.loc 1 388 1
+ 1116 0014 00BF     		nop
+ 1117 0016 0C37     		adds	r7, r7, #12
+ 1118              		.cfi_def_cfa_offset 4
+ 1119 0018 BD46     		mov	sp, r7
+ 1120              		.cfi_def_cfa_register 13
+ 1121              		@ sp needed
+ 1122 001a 80BC     		pop	{r7}
+ 1123              		.cfi_restore 7
+ 1124              		.cfi_def_cfa_offset 0
+ 1125 001c 7047     		bx	lr
+ 1126              		.cfi_endproc
+ 1127              	.LFE22:
+ 1129              		.section	.text.i2c_nack_next,"ax",%progbits
+ 1130              		.align	1
+ 1131              		.global	i2c_nack_next
+ 1132              		.syntax unified
+ 1133              		.thumb
+ 1134              		.thumb_func
+ 1135              		.fpu softvfp
+ 1137              	i2c_nack_next:
+ 1138              	.LFB23:
+ 389:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 390:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 391:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C NACK Next Byte
+ 392:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 393:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Causes the I2C controller to NACK the reception of the next byte
+ 394:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 395:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 396:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_nack_next(uint32_t i2c)
+ 397:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1139              		.loc 1 397 1
+ 1140              		.cfi_startproc
+ 1141              		@ args = 0, pretend = 0, frame = 8
+ 1142              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1143              		@ link register save eliminated.
+ 1144 0000 80B4     		push	{r7}
+ 1145              		.cfi_def_cfa_offset 4
+ 1146              		.cfi_offset 7, -4
+ 1147 0002 83B0     		sub	sp, sp, #12
+ 1148              		.cfi_def_cfa_offset 16
+ 1149 0004 00AF     		add	r7, sp, #0
+ 1150              		.cfi_def_cfa_register 7
+ 1151 0006 7860     		str	r0, [r7, #4]
+ 398:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) |= I2C_CR1_POS;
+ 1152              		.loc 1 398 15
+ 1153 0008 7B68     		ldr	r3, [r7, #4]
+ 1154 000a 1A68     		ldr	r2, [r3]
+ 1155 000c 7B68     		ldr	r3, [r7, #4]
+ 1156 000e 42F40062 		orr	r2, r2, #2048
+ 1157 0012 1A60     		str	r2, [r3]
+ 399:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1158              		.loc 1 399 1
+ 1159 0014 00BF     		nop
+ 1160 0016 0C37     		adds	r7, r7, #12
+ 1161              		.cfi_def_cfa_offset 4
+ 1162 0018 BD46     		mov	sp, r7
+ 1163              		.cfi_def_cfa_register 13
+ 1164              		@ sp needed
+ 1165 001a 80BC     		pop	{r7}
+ 1166              		.cfi_restore 7
+ 1167              		.cfi_def_cfa_offset 0
+ 1168 001c 7047     		bx	lr
+ 1169              		.cfi_endproc
+ 1170              	.LFE23:
+ 1172              		.section	.text.i2c_nack_current,"ax",%progbits
+ 1173              		.align	1
+ 1174              		.global	i2c_nack_current
+ 1175              		.syntax unified
+ 1176              		.thumb
+ 1177              		.thumb_func
+ 1178              		.fpu softvfp
+ 1180              	i2c_nack_current:
+ 1181              	.LFB24:
+ 400:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 401:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 402:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C NACK Next Byte
+ 403:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 404:../libopencm3/lib/stm32/common/i2c_common_v1.c **** Causes the I2C controller to NACK the reception of the current byte
+ 405:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 406:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 407:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 408:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_nack_current(uint32_t i2c)
+ 409:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1182              		.loc 1 409 1
+ 1183              		.cfi_startproc
+ 1184              		@ args = 0, pretend = 0, frame = 8
+ 1185              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1186              		@ link register save eliminated.
+ 1187 0000 80B4     		push	{r7}
+ 1188              		.cfi_def_cfa_offset 4
+ 1189              		.cfi_offset 7, -4
+ 1190 0002 83B0     		sub	sp, sp, #12
+ 1191              		.cfi_def_cfa_offset 16
+ 1192 0004 00AF     		add	r7, sp, #0
+ 1193              		.cfi_def_cfa_register 7
+ 1194 0006 7860     		str	r0, [r7, #4]
+ 410:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR1(i2c) &= ~I2C_CR1_POS;
+ 1195              		.loc 1 410 15
+ 1196 0008 7B68     		ldr	r3, [r7, #4]
+ 1197 000a 1A68     		ldr	r2, [r3]
+ 1198 000c 7B68     		ldr	r3, [r7, #4]
+ 1199 000e 22F40062 		bic	r2, r2, #2048
+ 1200 0012 1A60     		str	r2, [r3]
+ 411:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1201              		.loc 1 411 1
+ 1202 0014 00BF     		nop
+ 1203 0016 0C37     		adds	r7, r7, #12
+ 1204              		.cfi_def_cfa_offset 4
+ 1205 0018 BD46     		mov	sp, r7
+ 1206              		.cfi_def_cfa_register 13
+ 1207              		@ sp needed
+ 1208 001a 80BC     		pop	{r7}
+ 1209              		.cfi_restore 7
+ 1210              		.cfi_def_cfa_offset 0
+ 1211 001c 7047     		bx	lr
+ 1212              		.cfi_endproc
+ 1213              	.LFE24:
+ 1215              		.section	.text.i2c_set_dutycycle,"ax",%progbits
+ 1216              		.align	1
+ 1217              		.global	i2c_set_dutycycle
+ 1218              		.syntax unified
+ 1219              		.thumb
+ 1220              		.thumb_func
+ 1221              		.fpu softvfp
+ 1223              	i2c_set_dutycycle:
+ 1224              	.LFB25:
+ 412:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 413:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 414:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set clock duty cycle
+ 415:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 416:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 417:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] dutycycle Unsigned int32. I2C duty cycle @ref i2c_duty_cycle.
+ 418:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 419:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_dutycycle(uint32_t i2c, uint32_t dutycycle)
+ 420:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1225              		.loc 1 420 1
+ 1226              		.cfi_startproc
+ 1227              		@ args = 0, pretend = 0, frame = 8
+ 1228              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1229              		@ link register save eliminated.
+ 1230 0000 80B4     		push	{r7}
+ 1231              		.cfi_def_cfa_offset 4
+ 1232              		.cfi_offset 7, -4
+ 1233 0002 83B0     		sub	sp, sp, #12
+ 1234              		.cfi_def_cfa_offset 16
+ 1235 0004 00AF     		add	r7, sp, #0
+ 1236              		.cfi_def_cfa_register 7
+ 1237 0006 7860     		str	r0, [r7, #4]
+ 1238 0008 3960     		str	r1, [r7]
+ 421:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	if (dutycycle == I2C_CCR_DUTY_DIV2) {
+ 1239              		.loc 1 421 5
+ 1240 000a 3B68     		ldr	r3, [r7]
+ 1241 000c 002B     		cmp	r3, #0
+ 1242 000e 08D1     		bne	.L34
+ 422:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		I2C_CCR(i2c) &= ~I2C_CCR_DUTY;
+ 1243              		.loc 1 422 16
+ 1244 0010 7B68     		ldr	r3, [r7, #4]
+ 1245 0012 1C33     		adds	r3, r3, #28
+ 1246 0014 1B68     		ldr	r3, [r3]
+ 1247 0016 7A68     		ldr	r2, [r7, #4]
+ 1248 0018 1C32     		adds	r2, r2, #28
+ 1249 001a 23F48043 		bic	r3, r3, #16384
+ 1250 001e 1360     		str	r3, [r2]
+ 423:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	} else {
+ 424:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		I2C_CCR(i2c) |= I2C_CCR_DUTY;
+ 425:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 426:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1251              		.loc 1 426 1
+ 1252 0020 07E0     		b	.L36
+ 1253              	.L34:
+ 424:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 1254              		.loc 1 424 16
+ 1255 0022 7B68     		ldr	r3, [r7, #4]
+ 1256 0024 1C33     		adds	r3, r3, #28
+ 1257 0026 1B68     		ldr	r3, [r3]
+ 1258 0028 7A68     		ldr	r2, [r7, #4]
+ 1259 002a 1C32     		adds	r2, r2, #28
+ 1260 002c 43F48043 		orr	r3, r3, #16384
+ 1261 0030 1360     		str	r3, [r2]
+ 1262              	.L36:
+ 1263              		.loc 1 426 1
+ 1264 0032 00BF     		nop
+ 1265 0034 0C37     		adds	r7, r7, #12
+ 1266              		.cfi_def_cfa_offset 4
+ 1267 0036 BD46     		mov	sp, r7
+ 1268              		.cfi_def_cfa_register 13
+ 1269              		@ sp needed
+ 1270 0038 80BC     		pop	{r7}
+ 1271              		.cfi_restore 7
+ 1272              		.cfi_def_cfa_offset 0
+ 1273 003a 7047     		bx	lr
+ 1274              		.cfi_endproc
+ 1275              	.LFE25:
+ 1277              		.section	.text.i2c_enable_dma,"ax",%progbits
+ 1278              		.align	1
+ 1279              		.global	i2c_enable_dma
+ 1280              		.syntax unified
+ 1281              		.thumb
+ 1282              		.thumb_func
+ 1283              		.fpu softvfp
+ 1285              	i2c_enable_dma:
+ 1286              	.LFB26:
+ 427:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 428:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 429:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Enable DMA
+ 430:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 431:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 432:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 433:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_enable_dma(uint32_t i2c)
+ 434:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1287              		.loc 1 434 1
+ 1288              		.cfi_startproc
+ 1289              		@ args = 0, pretend = 0, frame = 8
+ 1290              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1291              		@ link register save eliminated.
+ 1292 0000 80B4     		push	{r7}
+ 1293              		.cfi_def_cfa_offset 4
+ 1294              		.cfi_offset 7, -4
+ 1295 0002 83B0     		sub	sp, sp, #12
+ 1296              		.cfi_def_cfa_offset 16
+ 1297 0004 00AF     		add	r7, sp, #0
+ 1298              		.cfi_def_cfa_register 7
+ 1299 0006 7860     		str	r0, [r7, #4]
+ 435:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) |= I2C_CR2_DMAEN;
+ 1300              		.loc 1 435 15
+ 1301 0008 7B68     		ldr	r3, [r7, #4]
+ 1302 000a 0433     		adds	r3, r3, #4
+ 1303 000c 1B68     		ldr	r3, [r3]
+ 1304 000e 7A68     		ldr	r2, [r7, #4]
+ 1305 0010 0432     		adds	r2, r2, #4
+ 1306 0012 43F40063 		orr	r3, r3, #2048
+ 1307 0016 1360     		str	r3, [r2]
+ 436:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1308              		.loc 1 436 1
+ 1309 0018 00BF     		nop
+ 1310 001a 0C37     		adds	r7, r7, #12
+ 1311              		.cfi_def_cfa_offset 4
+ 1312 001c BD46     		mov	sp, r7
+ 1313              		.cfi_def_cfa_register 13
+ 1314              		@ sp needed
+ 1315 001e 80BC     		pop	{r7}
+ 1316              		.cfi_restore 7
+ 1317              		.cfi_def_cfa_offset 0
+ 1318 0020 7047     		bx	lr
+ 1319              		.cfi_endproc
+ 1320              	.LFE26:
+ 1322              		.section	.text.i2c_disable_dma,"ax",%progbits
+ 1323              		.align	1
+ 1324              		.global	i2c_disable_dma
+ 1325              		.syntax unified
+ 1326              		.thumb
+ 1327              		.thumb_func
+ 1328              		.fpu softvfp
+ 1330              	i2c_disable_dma:
+ 1331              	.LFB27:
+ 437:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 438:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 439:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Disable DMA
+ 440:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 441:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 442:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 443:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_disable_dma(uint32_t i2c)
+ 444:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1332              		.loc 1 444 1
+ 1333              		.cfi_startproc
+ 1334              		@ args = 0, pretend = 0, frame = 8
+ 1335              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1336              		@ link register save eliminated.
+ 1337 0000 80B4     		push	{r7}
+ 1338              		.cfi_def_cfa_offset 4
+ 1339              		.cfi_offset 7, -4
+ 1340 0002 83B0     		sub	sp, sp, #12
+ 1341              		.cfi_def_cfa_offset 16
+ 1342 0004 00AF     		add	r7, sp, #0
+ 1343              		.cfi_def_cfa_register 7
+ 1344 0006 7860     		str	r0, [r7, #4]
+ 445:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) &= ~I2C_CR2_DMAEN;
+ 1345              		.loc 1 445 15
+ 1346 0008 7B68     		ldr	r3, [r7, #4]
+ 1347 000a 0433     		adds	r3, r3, #4
+ 1348 000c 1B68     		ldr	r3, [r3]
+ 1349 000e 7A68     		ldr	r2, [r7, #4]
+ 1350 0010 0432     		adds	r2, r2, #4
+ 1351 0012 23F40063 		bic	r3, r3, #2048
+ 1352 0016 1360     		str	r3, [r2]
+ 446:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1353              		.loc 1 446 1
+ 1354 0018 00BF     		nop
+ 1355 001a 0C37     		adds	r7, r7, #12
+ 1356              		.cfi_def_cfa_offset 4
+ 1357 001c BD46     		mov	sp, r7
+ 1358              		.cfi_def_cfa_register 13
+ 1359              		@ sp needed
+ 1360 001e 80BC     		pop	{r7}
+ 1361              		.cfi_restore 7
+ 1362              		.cfi_def_cfa_offset 0
+ 1363 0020 7047     		bx	lr
+ 1364              		.cfi_endproc
+ 1365              	.LFE27:
+ 1367              		.section	.text.i2c_set_dma_last_transfer,"ax",%progbits
+ 1368              		.align	1
+ 1369              		.global	i2c_set_dma_last_transfer
+ 1370              		.syntax unified
+ 1371              		.thumb
+ 1372              		.thumb_func
+ 1373              		.fpu softvfp
+ 1375              	i2c_set_dma_last_transfer:
+ 1376              	.LFB28:
+ 447:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 448:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 449:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Set DMA last transfer
+ 450:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 451:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 452:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 453:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_dma_last_transfer(uint32_t i2c)
+ 454:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1377              		.loc 1 454 1
+ 1378              		.cfi_startproc
+ 1379              		@ args = 0, pretend = 0, frame = 8
+ 1380              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1381              		@ link register save eliminated.
+ 1382 0000 80B4     		push	{r7}
+ 1383              		.cfi_def_cfa_offset 4
+ 1384              		.cfi_offset 7, -4
+ 1385 0002 83B0     		sub	sp, sp, #12
+ 1386              		.cfi_def_cfa_offset 16
+ 1387 0004 00AF     		add	r7, sp, #0
+ 1388              		.cfi_def_cfa_register 7
+ 1389 0006 7860     		str	r0, [r7, #4]
+ 455:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) |= I2C_CR2_LAST;
+ 1390              		.loc 1 455 15
+ 1391 0008 7B68     		ldr	r3, [r7, #4]
+ 1392 000a 0433     		adds	r3, r3, #4
+ 1393 000c 1B68     		ldr	r3, [r3]
+ 1394 000e 7A68     		ldr	r2, [r7, #4]
+ 1395 0010 0432     		adds	r2, r2, #4
+ 1396 0012 43F48053 		orr	r3, r3, #4096
+ 1397 0016 1360     		str	r3, [r2]
+ 456:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1398              		.loc 1 456 1
+ 1399 0018 00BF     		nop
+ 1400 001a 0C37     		adds	r7, r7, #12
+ 1401              		.cfi_def_cfa_offset 4
+ 1402 001c BD46     		mov	sp, r7
+ 1403              		.cfi_def_cfa_register 13
+ 1404              		@ sp needed
+ 1405 001e 80BC     		pop	{r7}
+ 1406              		.cfi_restore 7
+ 1407              		.cfi_def_cfa_offset 0
+ 1408 0020 7047     		bx	lr
+ 1409              		.cfi_endproc
+ 1410              	.LFE28:
+ 1412              		.section	.text.i2c_clear_dma_last_transfer,"ax",%progbits
+ 1413              		.align	1
+ 1414              		.global	i2c_clear_dma_last_transfer
+ 1415              		.syntax unified
+ 1416              		.thumb
+ 1417              		.thumb_func
+ 1418              		.fpu softvfp
+ 1420              	i2c_clear_dma_last_transfer:
+ 1421              	.LFB29:
+ 457:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 458:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 459:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /** @brief I2C Clear DMA last transfer
+ 460:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 461:../libopencm3/lib/stm32/common/i2c_common_v1.c **** @param[in] i2c Unsigned int32. I2C register base address @ref i2c_reg_base.
+ 462:../libopencm3/lib/stm32/common/i2c_common_v1.c **** */
+ 463:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_clear_dma_last_transfer(uint32_t i2c)
+ 464:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1422              		.loc 1 464 1
+ 1423              		.cfi_startproc
+ 1424              		@ args = 0, pretend = 0, frame = 8
+ 1425              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1426              		@ link register save eliminated.
+ 1427 0000 80B4     		push	{r7}
+ 1428              		.cfi_def_cfa_offset 4
+ 1429              		.cfi_offset 7, -4
+ 1430 0002 83B0     		sub	sp, sp, #12
+ 1431              		.cfi_def_cfa_offset 16
+ 1432 0004 00AF     		add	r7, sp, #0
+ 1433              		.cfi_def_cfa_register 7
+ 1434 0006 7860     		str	r0, [r7, #4]
+ 465:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	I2C_CR2(i2c) &= ~I2C_CR2_LAST;
+ 1435              		.loc 1 465 15
+ 1436 0008 7B68     		ldr	r3, [r7, #4]
+ 1437 000a 0433     		adds	r3, r3, #4
+ 1438 000c 1B68     		ldr	r3, [r3]
+ 1439 000e 7A68     		ldr	r2, [r7, #4]
+ 1440 0010 0432     		adds	r2, r2, #4
+ 1441 0012 23F48053 		bic	r3, r3, #4096
+ 1442 0016 1360     		str	r3, [r2]
+ 466:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1443              		.loc 1 466 1
+ 1444 0018 00BF     		nop
+ 1445 001a 0C37     		adds	r7, r7, #12
+ 1446              		.cfi_def_cfa_offset 4
+ 1447 001c BD46     		mov	sp, r7
+ 1448              		.cfi_def_cfa_register 13
+ 1449              		@ sp needed
+ 1450 001e 80BC     		pop	{r7}
+ 1451              		.cfi_restore 7
+ 1452              		.cfi_def_cfa_offset 0
+ 1453 0020 7047     		bx	lr
+ 1454              		.cfi_endproc
+ 1455              	.LFE29:
+ 1457              		.section	.text.i2c_write7_v1,"ax",%progbits
+ 1458              		.align	1
+ 1459              		.syntax unified
+ 1460              		.thumb
+ 1461              		.thumb_func
+ 1462              		.fpu softvfp
+ 1464              	i2c_write7_v1:
+ 1465              	.LFB30:
+ 467:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 468:../libopencm3/lib/stm32/common/i2c_common_v1.c **** static void i2c_write7_v1(uint32_t i2c, int addr, const uint8_t *data, size_t n)
+ 469:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1466              		.loc 1 469 1
+ 1467              		.cfi_startproc
+ 1468              		@ args = 0, pretend = 0, frame = 24
+ 1469              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1470 0000 80B5     		push	{r7, lr}
+ 1471              		.cfi_def_cfa_offset 8
+ 1472              		.cfi_offset 7, -8
+ 1473              		.cfi_offset 14, -4
+ 1474 0002 86B0     		sub	sp, sp, #24
+ 1475              		.cfi_def_cfa_offset 32
+ 1476 0004 00AF     		add	r7, sp, #0
+ 1477              		.cfi_def_cfa_register 7
+ 1478 0006 F860     		str	r0, [r7, #12]
+ 1479 0008 B960     		str	r1, [r7, #8]
+ 1480 000a 7A60     		str	r2, [r7, #4]
+ 1481 000c 3B60     		str	r3, [r7]
+ 470:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	while ((I2C_SR2(i2c) & I2C_SR2_BUSY)) {
+ 1482              		.loc 1 470 8
+ 1483 000e 00BF     		nop
+ 1484              	.L42:
+ 1485              		.loc 1 470 10 discriminator 1
+ 1486 0010 FB68     		ldr	r3, [r7, #12]
+ 1487 0012 1833     		adds	r3, r3, #24
+ 1488 0014 1B68     		ldr	r3, [r3]
+ 1489              		.loc 1 470 23 discriminator 1
+ 1490 0016 03F00203 		and	r3, r3, #2
+ 1491              		.loc 1 470 8 discriminator 1
+ 1492 001a 002B     		cmp	r3, #0
+ 1493 001c F8D1     		bne	.L42
+ 471:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 472:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 473:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_send_start(i2c);
+ 1494              		.loc 1 473 2
+ 1495 001e F868     		ldr	r0, [r7, #12]
+ 1496 0020 FFF7FEFF 		bl	i2c_send_start(PLT)
+ 474:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 475:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Wait for the end of the start condition, master mode selected, and BUSY bit set */
+ 476:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	while ( !( (I2C_SR1(i2c) & I2C_SR1_SB)
+ 1497              		.loc 1 476 8
+ 1498 0024 00BF     		nop
+ 1499              	.L43:
+ 1500              		.loc 1 476 14 discriminator 1
+ 1501 0026 FB68     		ldr	r3, [r7, #12]
+ 1502 0028 1433     		adds	r3, r3, #20
+ 1503 002a 1B68     		ldr	r3, [r3]
+ 1504              		.loc 1 476 27 discriminator 1
+ 1505 002c 03F00103 		and	r3, r3, #1
+ 1506              		.loc 1 476 8 discriminator 1
+ 1507 0030 002B     		cmp	r3, #0
+ 1508 0032 F8D0     		beq	.L43
+ 477:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_MSL)
+ 1509              		.loc 1 477 7
+ 1510 0034 FB68     		ldr	r3, [r7, #12]
+ 1511 0036 1833     		adds	r3, r3, #24
+ 1512 0038 1B68     		ldr	r3, [r3]
+ 1513              		.loc 1 477 20
+ 1514 003a 03F00103 		and	r3, r3, #1
+ 1515              		.loc 1 477 3
+ 1516 003e 002B     		cmp	r3, #0
+ 1517 0040 F1D0     		beq	.L43
+ 478:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_BUSY) ));
+ 1518              		.loc 1 478 7 discriminator 2
+ 1519 0042 FB68     		ldr	r3, [r7, #12]
+ 1520 0044 1833     		adds	r3, r3, #24
+ 1521 0046 1B68     		ldr	r3, [r3]
+ 1522              		.loc 1 478 20 discriminator 2
+ 1523 0048 03F00203 		and	r3, r3, #2
+ 476:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_MSL)
+ 1524              		.loc 1 476 10 discriminator 2
+ 1525 004c 002B     		cmp	r3, #0
+ 1526 004e EAD0     		beq	.L43
+ 479:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 480:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_send_7bit_address(i2c, addr, I2C_WRITE);
+ 1527              		.loc 1 480 2
+ 1528 0050 BB68     		ldr	r3, [r7, #8]
+ 1529 0052 DBB2     		uxtb	r3, r3
+ 1530 0054 0022     		movs	r2, #0
+ 1531 0056 1946     		mov	r1, r3
+ 1532 0058 F868     		ldr	r0, [r7, #12]
+ 1533 005a FFF7FEFF 		bl	i2c_send_7bit_address(PLT)
+ 481:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 482:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Waiting for address is transferred. */
+ 483:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	while (!(I2C_SR1(i2c) & I2C_SR1_ADDR));
+ 1534              		.loc 1 483 8
+ 1535 005e 00BF     		nop
+ 1536              	.L44:
+ 1537              		.loc 1 483 11 discriminator 1
+ 1538 0060 FB68     		ldr	r3, [r7, #12]
+ 1539 0062 1433     		adds	r3, r3, #20
+ 1540 0064 1B68     		ldr	r3, [r3]
+ 1541              		.loc 1 483 24 discriminator 1
+ 1542 0066 03F00203 		and	r3, r3, #2
+ 1543              		.loc 1 483 8 discriminator 1
+ 1544 006a 002B     		cmp	r3, #0
+ 1545 006c F8D0     		beq	.L44
+ 484:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 485:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Clearing ADDR condition sequence. */
+ 486:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	(void)I2C_SR2(i2c);
+ 1546              		.loc 1 486 8
+ 1547 006e FB68     		ldr	r3, [r7, #12]
+ 1548 0070 1833     		adds	r3, r3, #24
+ 1549              		.loc 1 486 2
+ 1550 0072 1B68     		ldr	r3, [r3]
+ 1551              	.LBB2:
+ 487:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 488:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	for (size_t i = 0; i < n; i++) {
+ 1552              		.loc 1 488 14
+ 1553 0074 0023     		movs	r3, #0
+ 1554 0076 7B61     		str	r3, [r7, #20]
+ 1555              		.loc 1 488 2
+ 1556 0078 12E0     		b	.L45
+ 1557              	.L47:
+ 489:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_send_data(i2c, data[i]);
+ 1558              		.loc 1 489 26
+ 1559 007a 7A68     		ldr	r2, [r7, #4]
+ 1560 007c 7B69     		ldr	r3, [r7, #20]
+ 1561 007e 1344     		add	r3, r3, r2
+ 1562              		.loc 1 489 3
+ 1563 0080 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1564 0082 1946     		mov	r1, r3
+ 1565 0084 F868     		ldr	r0, [r7, #12]
+ 1566 0086 FFF7FEFF 		bl	i2c_send_data(PLT)
+ 490:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		while (!(I2C_SR1(i2c) & (I2C_SR1_BTF)));
+ 1567              		.loc 1 490 9
+ 1568 008a 00BF     		nop
+ 1569              	.L46:
+ 1570              		.loc 1 490 12 discriminator 1
+ 1571 008c FB68     		ldr	r3, [r7, #12]
+ 1572 008e 1433     		adds	r3, r3, #20
+ 1573 0090 1B68     		ldr	r3, [r3]
+ 1574              		.loc 1 490 25 discriminator 1
+ 1575 0092 03F00403 		and	r3, r3, #4
+ 1576              		.loc 1 490 9 discriminator 1
+ 1577 0096 002B     		cmp	r3, #0
+ 1578 0098 F8D0     		beq	.L46
+ 488:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_send_data(i2c, data[i]);
+ 1579              		.loc 1 488 29 discriminator 2
+ 1580 009a 7B69     		ldr	r3, [r7, #20]
+ 1581 009c 0133     		adds	r3, r3, #1
+ 1582 009e 7B61     		str	r3, [r7, #20]
+ 1583              	.L45:
+ 488:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_send_data(i2c, data[i]);
+ 1584              		.loc 1 488 2 discriminator 1
+ 1585 00a0 7A69     		ldr	r2, [r7, #20]
+ 1586 00a2 3B68     		ldr	r3, [r7]
+ 1587 00a4 9A42     		cmp	r2, r3
+ 1588 00a6 E8D3     		bcc	.L47
+ 1589              	.LBE2:
+ 491:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 492:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1590              		.loc 1 492 1
+ 1591 00a8 00BF     		nop
+ 1592 00aa 1837     		adds	r7, r7, #24
+ 1593              		.cfi_def_cfa_offset 8
+ 1594 00ac BD46     		mov	sp, r7
+ 1595              		.cfi_def_cfa_register 13
+ 1596              		@ sp needed
+ 1597 00ae 80BD     		pop	{r7, pc}
+ 1598              		.cfi_endproc
+ 1599              	.LFE30:
+ 1601              		.section	.text.i2c_read7_v1,"ax",%progbits
+ 1602              		.align	1
+ 1603              		.syntax unified
+ 1604              		.thumb
+ 1605              		.thumb_func
+ 1606              		.fpu softvfp
+ 1608              	i2c_read7_v1:
+ 1609              	.LFB31:
+ 493:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 494:../libopencm3/lib/stm32/common/i2c_common_v1.c **** static void i2c_read7_v1(uint32_t i2c, int addr, uint8_t *res, size_t n)
+ 495:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1610              		.loc 1 495 1
+ 1611              		.cfi_startproc
+ 1612              		@ args = 0, pretend = 0, frame = 24
+ 1613              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1614 0000 90B5     		push	{r4, r7, lr}
+ 1615              		.cfi_def_cfa_offset 12
+ 1616              		.cfi_offset 4, -12
+ 1617              		.cfi_offset 7, -8
+ 1618              		.cfi_offset 14, -4
+ 1619 0002 87B0     		sub	sp, sp, #28
+ 1620              		.cfi_def_cfa_offset 40
+ 1621 0004 00AF     		add	r7, sp, #0
+ 1622              		.cfi_def_cfa_register 7
+ 1623 0006 F860     		str	r0, [r7, #12]
+ 1624 0008 B960     		str	r1, [r7, #8]
+ 1625 000a 7A60     		str	r2, [r7, #4]
+ 1626 000c 3B60     		str	r3, [r7]
+ 496:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_send_start(i2c);
+ 1627              		.loc 1 496 2
+ 1628 000e F868     		ldr	r0, [r7, #12]
+ 1629 0010 FFF7FEFF 		bl	i2c_send_start(PLT)
+ 497:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_enable_ack(i2c);
+ 1630              		.loc 1 497 2
+ 1631 0014 F868     		ldr	r0, [r7, #12]
+ 1632 0016 FFF7FEFF 		bl	i2c_enable_ack(PLT)
+ 498:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 499:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Wait for the end of the start condition, master mode selected, and BUSY bit set */
+ 500:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	while ( !( (I2C_SR1(i2c) & I2C_SR1_SB)
+ 1633              		.loc 1 500 8
+ 1634 001a 00BF     		nop
+ 1635              	.L49:
+ 1636              		.loc 1 500 14 discriminator 1
+ 1637 001c FB68     		ldr	r3, [r7, #12]
+ 1638 001e 1433     		adds	r3, r3, #20
+ 1639 0020 1B68     		ldr	r3, [r3]
+ 1640              		.loc 1 500 27 discriminator 1
+ 1641 0022 03F00103 		and	r3, r3, #1
+ 1642              		.loc 1 500 8 discriminator 1
+ 1643 0026 002B     		cmp	r3, #0
+ 1644 0028 F8D0     		beq	.L49
+ 501:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_MSL)
+ 1645              		.loc 1 501 7
+ 1646 002a FB68     		ldr	r3, [r7, #12]
+ 1647 002c 1833     		adds	r3, r3, #24
+ 1648 002e 1B68     		ldr	r3, [r3]
+ 1649              		.loc 1 501 20
+ 1650 0030 03F00103 		and	r3, r3, #1
+ 1651              		.loc 1 501 3
+ 1652 0034 002B     		cmp	r3, #0
+ 1653 0036 F1D0     		beq	.L49
+ 502:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_BUSY) ));
+ 1654              		.loc 1 502 7 discriminator 2
+ 1655 0038 FB68     		ldr	r3, [r7, #12]
+ 1656 003a 1833     		adds	r3, r3, #24
+ 1657 003c 1B68     		ldr	r3, [r3]
+ 1658              		.loc 1 502 20 discriminator 2
+ 1659 003e 03F00203 		and	r3, r3, #2
+ 500:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		&& (I2C_SR2(i2c) & I2C_SR2_MSL)
+ 1660              		.loc 1 500 10 discriminator 2
+ 1661 0042 002B     		cmp	r3, #0
+ 1662 0044 EAD0     		beq	.L49
+ 503:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 504:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_send_7bit_address(i2c, addr, I2C_READ);
+ 1663              		.loc 1 504 2
+ 1664 0046 BB68     		ldr	r3, [r7, #8]
+ 1665 0048 DBB2     		uxtb	r3, r3
+ 1666 004a 0122     		movs	r2, #1
+ 1667 004c 1946     		mov	r1, r3
+ 1668 004e F868     		ldr	r0, [r7, #12]
+ 1669 0050 FFF7FEFF 		bl	i2c_send_7bit_address(PLT)
+ 505:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 506:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Waiting for address is transferred. */
+ 507:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	while (!(I2C_SR1(i2c) & I2C_SR1_ADDR));
+ 1670              		.loc 1 507 8
+ 1671 0054 00BF     		nop
+ 1672              	.L50:
+ 1673              		.loc 1 507 11 discriminator 1
+ 1674 0056 FB68     		ldr	r3, [r7, #12]
+ 1675 0058 1433     		adds	r3, r3, #20
+ 1676 005a 1B68     		ldr	r3, [r3]
+ 1677              		.loc 1 507 24 discriminator 1
+ 1678 005c 03F00203 		and	r3, r3, #2
+ 1679              		.loc 1 507 8 discriminator 1
+ 1680 0060 002B     		cmp	r3, #0
+ 1681 0062 F8D0     		beq	.L50
+ 508:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	/* Clearing ADDR condition sequence. */
+ 509:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	(void)I2C_SR2(i2c);
+ 1682              		.loc 1 509 8
+ 1683 0064 FB68     		ldr	r3, [r7, #12]
+ 1684 0066 1833     		adds	r3, r3, #24
+ 1685              		.loc 1 509 2
+ 1686 0068 1B68     		ldr	r3, [r3]
+ 1687              	.LBB3:
+ 510:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 511:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	for (size_t i = 0; i < n; ++i) {
+ 1688              		.loc 1 511 14
+ 1689 006a 0023     		movs	r3, #0
+ 1690 006c 7B61     		str	r3, [r7, #20]
+ 1691              		.loc 1 511 2
+ 1692 006e 1AE0     		b	.L51
+ 1693              	.L54:
+ 512:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		if (i == n - 1) {
+ 1694              		.loc 1 512 14
+ 1695 0070 3B68     		ldr	r3, [r7]
+ 1696 0072 013B     		subs	r3, r3, #1
+ 1697              		.loc 1 512 6
+ 1698 0074 7A69     		ldr	r2, [r7, #20]
+ 1699 0076 9A42     		cmp	r2, r3
+ 1700 0078 02D1     		bne	.L56
+ 513:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 			i2c_disable_ack(i2c);
+ 1701              		.loc 1 513 4
+ 1702 007a F868     		ldr	r0, [r7, #12]
+ 1703 007c FFF7FEFF 		bl	i2c_disable_ack(PLT)
+ 1704              	.L56:
+ 514:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		}
+ 515:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		while (!(I2C_SR1(i2c) & I2C_SR1_RxNE));
+ 1705              		.loc 1 515 9
+ 1706 0080 00BF     		nop
+ 1707              	.L53:
+ 1708              		.loc 1 515 12 discriminator 1
+ 1709 0082 FB68     		ldr	r3, [r7, #12]
+ 1710 0084 1433     		adds	r3, r3, #20
+ 1711 0086 1B68     		ldr	r3, [r3]
+ 1712              		.loc 1 515 25 discriminator 1
+ 1713 0088 03F04003 		and	r3, r3, #64
+ 1714              		.loc 1 515 9 discriminator 1
+ 1715 008c 002B     		cmp	r3, #0
+ 1716 008e F8D0     		beq	.L53
+ 516:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		res[i] = i2c_get_data(i2c);
+ 1717              		.loc 1 516 6 discriminator 2
+ 1718 0090 7A68     		ldr	r2, [r7, #4]
+ 1719 0092 7B69     		ldr	r3, [r7, #20]
+ 1720 0094 D418     		adds	r4, r2, r3
+ 1721              		.loc 1 516 12 discriminator 2
+ 1722 0096 F868     		ldr	r0, [r7, #12]
+ 1723 0098 FFF7FEFF 		bl	i2c_get_data(PLT)
+ 1724 009c 0346     		mov	r3, r0
+ 1725              		.loc 1 516 10 discriminator 2
+ 1726 009e 2370     		strb	r3, [r4]
+ 511:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		if (i == n - 1) {
+ 1727              		.loc 1 511 28 discriminator 2
+ 1728 00a0 7B69     		ldr	r3, [r7, #20]
+ 1729 00a2 0133     		adds	r3, r3, #1
+ 1730 00a4 7B61     		str	r3, [r7, #20]
+ 1731              	.L51:
+ 511:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		if (i == n - 1) {
+ 1732              		.loc 1 511 2 discriminator 1
+ 1733 00a6 7A69     		ldr	r2, [r7, #20]
+ 1734 00a8 3B68     		ldr	r3, [r7]
+ 1735 00aa 9A42     		cmp	r2, r3
+ 1736 00ac E0D3     		bcc	.L54
+ 1737              	.LBE3:
+ 517:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 518:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_send_stop(i2c);
+ 1738              		.loc 1 518 2
+ 1739 00ae F868     		ldr	r0, [r7, #12]
+ 1740 00b0 FFF7FEFF 		bl	i2c_send_stop(PLT)
+ 519:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 520:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	return;
+ 1741              		.loc 1 520 2
+ 1742 00b4 00BF     		nop
+ 521:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1743              		.loc 1 521 1
+ 1744 00b6 1C37     		adds	r7, r7, #28
+ 1745              		.cfi_def_cfa_offset 12
+ 1746 00b8 BD46     		mov	sp, r7
+ 1747              		.cfi_def_cfa_register 13
+ 1748              		@ sp needed
+ 1749 00ba 90BD     		pop	{r4, r7, pc}
+ 1750              		.cfi_endproc
+ 1751              	.LFE31:
+ 1753              		.section	.text.i2c_transfer7,"ax",%progbits
+ 1754              		.align	1
+ 1755              		.global	i2c_transfer7
+ 1756              		.syntax unified
+ 1757              		.thumb
+ 1758              		.thumb_func
+ 1759              		.fpu softvfp
+ 1761              	i2c_transfer7:
+ 1762              	.LFB32:
+ 522:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 523:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /**
+ 524:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * Run a write/read transaction to a given 7bit i2c address
+ 525:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * If both write & read are provided, the read will use repeated start.
+ 526:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * Both write and read are optional
+ 527:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * There are likely still issues with repeated start/stop condtions!
+ 528:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param i2c peripheral of choice, eg I2C1
+ 529:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param addr 7 bit i2c device address
+ 530:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param w buffer of data to write
+ 531:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param wn length of w
+ 532:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param r destination buffer to read into
+ 533:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param rn number of bytes to read (r should be at least this long)
+ 534:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  */
+ 535:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_transfer7(uint32_t i2c, uint8_t addr, const uint8_t *w, size_t wn, uint8_t *r, size_t rn) 
+ 1763              		.loc 1 535 100
+ 1764              		.cfi_startproc
+ 1765              		@ args = 8, pretend = 0, frame = 16
+ 1766              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1767 0000 80B5     		push	{r7, lr}
+ 1768              		.cfi_def_cfa_offset 8
+ 1769              		.cfi_offset 7, -8
+ 1770              		.cfi_offset 14, -4
+ 1771 0002 84B0     		sub	sp, sp, #16
+ 1772              		.cfi_def_cfa_offset 24
+ 1773 0004 00AF     		add	r7, sp, #0
+ 1774              		.cfi_def_cfa_register 7
+ 1775 0006 F860     		str	r0, [r7, #12]
+ 1776 0008 7A60     		str	r2, [r7, #4]
+ 1777 000a 3B60     		str	r3, [r7]
+ 1778 000c 0B46     		mov	r3, r1
+ 1779 000e FB72     		strb	r3, [r7, #11]
+ 536:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	if (wn) {
+ 1780              		.loc 1 536 5
+ 1781 0010 3B68     		ldr	r3, [r7]
+ 1782 0012 002B     		cmp	r3, #0
+ 1783 0014 05D0     		beq	.L58
+ 537:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_write7_v1(i2c, addr, w, wn);
+ 1784              		.loc 1 537 3
+ 1785 0016 F97A     		ldrb	r1, [r7, #11]	@ zero_extendqisi2
+ 1786 0018 3B68     		ldr	r3, [r7]
+ 1787 001a 7A68     		ldr	r2, [r7, #4]
+ 1788 001c F868     		ldr	r0, [r7, #12]
+ 1789 001e FFF7FEFF 		bl	i2c_write7_v1(PLT)
+ 1790              	.L58:
+ 538:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 539:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	if (rn) {
+ 1791              		.loc 1 539 5
+ 1792 0022 FB69     		ldr	r3, [r7, #28]
+ 1793 0024 002B     		cmp	r3, #0
+ 1794 0026 06D0     		beq	.L59
+ 540:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_read7_v1(i2c, addr, r, rn);
+ 1795              		.loc 1 540 3
+ 1796 0028 F97A     		ldrb	r1, [r7, #11]	@ zero_extendqisi2
+ 1797 002a FB69     		ldr	r3, [r7, #28]
+ 1798 002c BA69     		ldr	r2, [r7, #24]
+ 1799 002e F868     		ldr	r0, [r7, #12]
+ 1800 0030 FFF7FEFF 		bl	i2c_read7_v1(PLT)
+ 541:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	} else {
+ 542:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_send_stop(i2c);
+ 543:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 544:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1801              		.loc 1 544 1
+ 1802 0034 02E0     		b	.L61
+ 1803              	.L59:
+ 542:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 1804              		.loc 1 542 3
+ 1805 0036 F868     		ldr	r0, [r7, #12]
+ 1806 0038 FFF7FEFF 		bl	i2c_send_stop(PLT)
+ 1807              	.L61:
+ 1808              		.loc 1 544 1
+ 1809 003c 00BF     		nop
+ 1810 003e 1037     		adds	r7, r7, #16
+ 1811              		.cfi_def_cfa_offset 8
+ 1812 0040 BD46     		mov	sp, r7
+ 1813              		.cfi_def_cfa_register 13
+ 1814              		@ sp needed
+ 1815 0042 80BD     		pop	{r7, pc}
+ 1816              		.cfi_endproc
+ 1817              	.LFE32:
+ 1819              		.section	.text.i2c_set_speed,"ax",%progbits
+ 1820              		.align	1
+ 1821              		.global	i2c_set_speed
+ 1822              		.syntax unified
+ 1823              		.thumb
+ 1824              		.thumb_func
+ 1825              		.fpu softvfp
+ 1827              	i2c_set_speed:
+ 1828              	.LFB33:
+ 545:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 
+ 546:../libopencm3/lib/stm32/common/i2c_common_v1.c **** /**
+ 547:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * Set the i2c communication speed.
+ 548:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param i2c peripheral, eg I2C1
+ 549:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param speed one of the listed speed modes @ref i2c_speeds
+ 550:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  * @param clock_megahz i2c peripheral clock speed in MHz. Usually, rcc_apb1_frequency / 1e6
+ 551:../libopencm3/lib/stm32/common/i2c_common_v1.c ****  */
+ 552:../libopencm3/lib/stm32/common/i2c_common_v1.c **** void i2c_set_speed(uint32_t i2c, enum i2c_speeds speed, uint32_t clock_megahz)
+ 553:../libopencm3/lib/stm32/common/i2c_common_v1.c **** {
+ 1829              		.loc 1 553 1
+ 1830              		.cfi_startproc
+ 1831              		@ args = 0, pretend = 0, frame = 16
+ 1832              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1833 0000 80B5     		push	{r7, lr}
+ 1834              		.cfi_def_cfa_offset 8
+ 1835              		.cfi_offset 7, -8
+ 1836              		.cfi_offset 14, -4
+ 1837 0002 84B0     		sub	sp, sp, #16
+ 1838              		.cfi_def_cfa_offset 24
+ 1839 0004 00AF     		add	r7, sp, #0
+ 1840              		.cfi_def_cfa_register 7
+ 1841 0006 F860     		str	r0, [r7, #12]
+ 1842 0008 0B46     		mov	r3, r1
+ 1843 000a 7A60     		str	r2, [r7, #4]
+ 1844 000c FB72     		strb	r3, [r7, #11]
+ 554:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	i2c_set_clock_frequency(i2c, clock_megahz);
+ 1845              		.loc 1 554 2
+ 1846 000e 7B68     		ldr	r3, [r7, #4]
+ 1847 0010 DBB2     		uxtb	r3, r3
+ 1848 0012 1946     		mov	r1, r3
+ 1849 0014 F868     		ldr	r0, [r7, #12]
+ 1850 0016 FFF7FEFF 		bl	i2c_set_clock_frequency(PLT)
+ 555:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	switch(speed) {
+ 1851              		.loc 1 555 2
+ 1852 001a FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1853 001c 012B     		cmp	r3, #1
+ 1854 001e 18D1     		bne	.L63
+ 556:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case i2c_speed_fm_400k:
+ 557:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_fast_mode(i2c);
+ 1855              		.loc 1 557 3
+ 1856 0020 F868     		ldr	r0, [r7, #12]
+ 1857 0022 FFF7FEFF 		bl	i2c_set_fast_mode(PLT)
+ 558:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_ccr(i2c, clock_megahz * 5 / 6);
+ 1858              		.loc 1 558 33
+ 1859 0026 7A68     		ldr	r2, [r7, #4]
+ 1860 0028 1346     		mov	r3, r2
+ 1861 002a 9B00     		lsls	r3, r3, #2
+ 1862 002c 1344     		add	r3, r3, r2
+ 1863              		.loc 1 558 37
+ 1864 002e 164A     		ldr	r2, .L65
+ 1865 0030 A2FB0323 		umull	r2, r3, r2, r3
+ 1866 0034 9B08     		lsrs	r3, r3, #2
+ 1867              		.loc 1 558 3
+ 1868 0036 9BB2     		uxth	r3, r3
+ 1869 0038 1946     		mov	r1, r3
+ 1870 003a F868     		ldr	r0, [r7, #12]
+ 1871 003c FFF7FEFF 		bl	i2c_set_ccr(PLT)
+ 559:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_trise(i2c, clock_megahz + 1);
+ 1872              		.loc 1 559 3
+ 1873 0040 7B68     		ldr	r3, [r7, #4]
+ 1874 0042 9BB2     		uxth	r3, r3
+ 1875 0044 0133     		adds	r3, r3, #1
+ 1876 0046 9BB2     		uxth	r3, r3
+ 1877 0048 1946     		mov	r1, r3
+ 1878 004a F868     		ldr	r0, [r7, #12]
+ 1879 004c FFF7FEFF 		bl	i2c_set_trise(PLT)
+ 560:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+ 1880              		.loc 1 560 3
+ 1881 0050 15E0     		b	.L64
+ 1882              	.L63:
+ 561:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	default:
+ 562:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		/* fall back to standard mode */
+ 563:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	case i2c_speed_sm_100k:
+ 564:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_standard_mode(i2c);
+ 1883              		.loc 1 564 3
+ 1884 0052 F868     		ldr	r0, [r7, #12]
+ 1885 0054 FFF7FEFF 		bl	i2c_set_standard_mode(PLT)
+ 565:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		/* x Mhz / (100kHz * 2) */
+ 566:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_ccr(i2c, clock_megahz * 5);
+ 1886              		.loc 1 566 3
+ 1887 0058 7B68     		ldr	r3, [r7, #4]
+ 1888 005a 9BB2     		uxth	r3, r3
+ 1889 005c 1A46     		mov	r2, r3	@ movhi
+ 1890 005e 9200     		lsls	r2, r2, #2
+ 1891 0060 1344     		add	r3, r3, r2
+ 1892 0062 9BB2     		uxth	r3, r3
+ 1893 0064 1946     		mov	r1, r3
+ 1894 0066 F868     		ldr	r0, [r7, #12]
+ 1895 0068 FFF7FEFF 		bl	i2c_set_ccr(PLT)
+ 567:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		/* Sm mode, (100kHz) freqMhz + 1 */
+ 568:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		i2c_set_trise(i2c, clock_megahz + 1);
+ 1896              		.loc 1 568 3
+ 1897 006c 7B68     		ldr	r3, [r7, #4]
+ 1898 006e 9BB2     		uxth	r3, r3
+ 1899 0070 0133     		adds	r3, r3, #1
+ 1900 0072 9BB2     		uxth	r3, r3
+ 1901 0074 1946     		mov	r1, r3
+ 1902 0076 F868     		ldr	r0, [r7, #12]
+ 1903 0078 FFF7FEFF 		bl	i2c_set_trise(PLT)
+ 569:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 		break;
+ 1904              		.loc 1 569 3
+ 1905 007c 00BF     		nop
+ 1906              	.L64:
+ 570:../libopencm3/lib/stm32/common/i2c_common_v1.c **** 	}
+ 571:../libopencm3/lib/stm32/common/i2c_common_v1.c **** }
+ 1907              		.loc 1 571 1
+ 1908 007e 00BF     		nop
+ 1909 0080 1037     		adds	r7, r7, #16
+ 1910              		.cfi_def_cfa_offset 8
+ 1911 0082 BD46     		mov	sp, r7
+ 1912              		.cfi_def_cfa_register 13
+ 1913              		@ sp needed
+ 1914 0084 80BD     		pop	{r7, pc}
+ 1915              	.L66:
+ 1916 0086 00BF     		.align	2
+ 1917              	.L65:
+ 1918 0088 ABAAAAAA 		.word	-1431655765
+ 1919              		.cfi_endproc
+ 1920              	.LFE33:
+ 1922              		.text
+ 1923              	.Letext0:
+ 1924              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1925              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1926              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 1927              		.file 5 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+ 1928              		.file 6 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/common/i2c_co
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 i2c_common_v1.c
+     /tmp/ccgrcxyq.s:16     .text.i2c_reset:0000000000000000 $t
+     /tmp/ccgrcxyq.s:24     .text.i2c_reset:0000000000000000 i2c_reset
+     /tmp/ccgrcxyq.s:75     .text.i2c_reset:0000000000000038 $d
+     /tmp/ccgrcxyq.s:81     .text.i2c_peripheral_enable:0000000000000000 $t
+     /tmp/ccgrcxyq.s:88     .text.i2c_peripheral_enable:0000000000000000 i2c_peripheral_enable
+     /tmp/ccgrcxyq.s:124    .text.i2c_peripheral_disable:0000000000000000 $t
+     /tmp/ccgrcxyq.s:131    .text.i2c_peripheral_disable:0000000000000000 i2c_peripheral_disable
+     /tmp/ccgrcxyq.s:167    .text.i2c_send_start:0000000000000000 $t
+     /tmp/ccgrcxyq.s:174    .text.i2c_send_start:0000000000000000 i2c_send_start
+     /tmp/ccgrcxyq.s:210    .text.i2c_send_stop:0000000000000000 $t
+     /tmp/ccgrcxyq.s:217    .text.i2c_send_stop:0000000000000000 i2c_send_stop
+     /tmp/ccgrcxyq.s:253    .text.i2c_clear_stop:0000000000000000 $t
+     /tmp/ccgrcxyq.s:260    .text.i2c_clear_stop:0000000000000000 i2c_clear_stop
+     /tmp/ccgrcxyq.s:296    .text.i2c_set_own_7bit_slave_address:0000000000000000 $t
+     /tmp/ccgrcxyq.s:303    .text.i2c_set_own_7bit_slave_address:0000000000000000 i2c_set_own_7bit_slave_address
+     /tmp/ccgrcxyq.s:352    .text.i2c_set_own_10bit_slave_address:0000000000000000 $t
+     /tmp/ccgrcxyq.s:359    .text.i2c_set_own_10bit_slave_address:0000000000000000 i2c_set_own_10bit_slave_address
+     /tmp/ccgrcxyq.s:401    .text.i2c_set_own_7bit_slave_address_two:0000000000000000 $t
+     /tmp/ccgrcxyq.s:408    .text.i2c_set_own_7bit_slave_address_two:0000000000000000 i2c_set_own_7bit_slave_address_two
+     /tmp/ccgrcxyq.s:453    .text.i2c_enable_dual_addressing_mode:0000000000000000 $t
+     /tmp/ccgrcxyq.s:460    .text.i2c_enable_dual_addressing_mode:0000000000000000 i2c_enable_dual_addressing_mode
+     /tmp/ccgrcxyq.s:498    .text.i2c_disable_dual_addressing_mode:0000000000000000 $t
+     /tmp/ccgrcxyq.s:505    .text.i2c_disable_dual_addressing_mode:0000000000000000 i2c_disable_dual_addressing_mode
+     /tmp/ccgrcxyq.s:543    .text.i2c_set_clock_frequency:0000000000000000 $t
+     /tmp/ccgrcxyq.s:550    .text.i2c_set_clock_frequency:0000000000000000 i2c_set_clock_frequency
+     /tmp/ccgrcxyq.s:604    .text.i2c_send_data:0000000000000000 $t
+     /tmp/ccgrcxyq.s:611    .text.i2c_send_data:0000000000000000 i2c_send_data
+     /tmp/ccgrcxyq.s:650    .text.i2c_set_fast_mode:0000000000000000 $t
+     /tmp/ccgrcxyq.s:657    .text.i2c_set_fast_mode:0000000000000000 i2c_set_fast_mode
+     /tmp/ccgrcxyq.s:695    .text.i2c_set_standard_mode:0000000000000000 $t
+     /tmp/ccgrcxyq.s:702    .text.i2c_set_standard_mode:0000000000000000 i2c_set_standard_mode
+     /tmp/ccgrcxyq.s:740    .text.i2c_set_ccr:0000000000000000 $t
+     /tmp/ccgrcxyq.s:747    .text.i2c_set_ccr:0000000000000000 i2c_set_ccr
+     /tmp/ccgrcxyq.s:801    .text.i2c_set_trise:0000000000000000 $t
+     /tmp/ccgrcxyq.s:808    .text.i2c_set_trise:0000000000000000 i2c_set_trise
+     /tmp/ccgrcxyq.s:847    .text.i2c_send_7bit_address:0000000000000000 $t
+     /tmp/ccgrcxyq.s:854    .text.i2c_send_7bit_address:0000000000000000 i2c_send_7bit_address
+     /tmp/ccgrcxyq.s:903    .text.i2c_get_data:0000000000000000 $t
+     /tmp/ccgrcxyq.s:910    .text.i2c_get_data:0000000000000000 i2c_get_data
+     /tmp/ccgrcxyq.s:946    .text.i2c_enable_interrupt:0000000000000000 $t
+     /tmp/ccgrcxyq.s:953    .text.i2c_enable_interrupt:0000000000000000 i2c_enable_interrupt
+     /tmp/ccgrcxyq.s:994    .text.i2c_disable_interrupt:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1001   .text.i2c_disable_interrupt:0000000000000000 i2c_disable_interrupt
+     /tmp/ccgrcxyq.s:1044   .text.i2c_enable_ack:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1051   .text.i2c_enable_ack:0000000000000000 i2c_enable_ack
+     /tmp/ccgrcxyq.s:1087   .text.i2c_disable_ack:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1094   .text.i2c_disable_ack:0000000000000000 i2c_disable_ack
+     /tmp/ccgrcxyq.s:1130   .text.i2c_nack_next:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1137   .text.i2c_nack_next:0000000000000000 i2c_nack_next
+     /tmp/ccgrcxyq.s:1173   .text.i2c_nack_current:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1180   .text.i2c_nack_current:0000000000000000 i2c_nack_current
+     /tmp/ccgrcxyq.s:1216   .text.i2c_set_dutycycle:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1223   .text.i2c_set_dutycycle:0000000000000000 i2c_set_dutycycle
+     /tmp/ccgrcxyq.s:1278   .text.i2c_enable_dma:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1285   .text.i2c_enable_dma:0000000000000000 i2c_enable_dma
+     /tmp/ccgrcxyq.s:1323   .text.i2c_disable_dma:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1330   .text.i2c_disable_dma:0000000000000000 i2c_disable_dma
+     /tmp/ccgrcxyq.s:1368   .text.i2c_set_dma_last_transfer:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1375   .text.i2c_set_dma_last_transfer:0000000000000000 i2c_set_dma_last_transfer
+     /tmp/ccgrcxyq.s:1413   .text.i2c_clear_dma_last_transfer:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1420   .text.i2c_clear_dma_last_transfer:0000000000000000 i2c_clear_dma_last_transfer
+     /tmp/ccgrcxyq.s:1458   .text.i2c_write7_v1:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1464   .text.i2c_write7_v1:0000000000000000 i2c_write7_v1
+     /tmp/ccgrcxyq.s:1602   .text.i2c_read7_v1:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1608   .text.i2c_read7_v1:0000000000000000 i2c_read7_v1
+     /tmp/ccgrcxyq.s:1754   .text.i2c_transfer7:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1761   .text.i2c_transfer7:0000000000000000 i2c_transfer7
+     /tmp/ccgrcxyq.s:1820   .text.i2c_set_speed:0000000000000000 $t
+     /tmp/ccgrcxyq.s:1827   .text.i2c_set_speed:0000000000000000 i2c_set_speed
+     /tmp/ccgrcxyq.s:1918   .text.i2c_set_speed:0000000000000088 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.stddef.h.39.a38874c8f8a57e66301090908ec2a69f
+                           .group:0000000000000000 wm4.i2c_common_v1.h.48.0be96f798d24cbd2dfff382ec81f38ae
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+
+UNDEFINED SYMBOLS
+rcc_periph_reset_pulse

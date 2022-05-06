@@ -1,0 +1,1646 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"usart_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.usart_set_baudrate,"ax",%progbits
+  16              		.align	1
+  17              		.global	usart_set_baudrate
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	usart_set_baudrate:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/usart_common_all.c"
+   1:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @addtogroup usart_file USART peripheral API
+   2:../libopencm3/lib/stm32/common/usart_common_all.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+   4:../libopencm3/lib/stm32/common/usart_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2009 Uwe Hermann <uwe@hermann-uwe.de>
+   5:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+   6:../libopencm3/lib/stm32/common/usart_common_all.c **** This library supports the USART/UART in the STM32F series
+   7:../libopencm3/lib/stm32/common/usart_common_all.c **** of ARM Cortex Microcontrollers by ST Microelectronics.
+   8:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+   9:../libopencm3/lib/stm32/common/usart_common_all.c **** Devices can have up to 3 USARTs and 2 UARTs.
+  10:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  11:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+  12:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  13:../libopencm3/lib/stm32/common/usart_common_all.c **** /*
+  14:../libopencm3/lib/stm32/common/usart_common_all.c ****  * This file is part of the libopencm3 project.
+  15:../libopencm3/lib/stm32/common/usart_common_all.c ****  *
+  16:../libopencm3/lib/stm32/common/usart_common_all.c ****  * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+  17:../libopencm3/lib/stm32/common/usart_common_all.c ****  *
+  18:../libopencm3/lib/stm32/common/usart_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  19:../libopencm3/lib/stm32/common/usart_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  20:../libopencm3/lib/stm32/common/usart_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  21:../libopencm3/lib/stm32/common/usart_common_all.c ****  * (at your option) any later version.
+  22:../libopencm3/lib/stm32/common/usart_common_all.c ****  *
+  23:../libopencm3/lib/stm32/common/usart_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  24:../libopencm3/lib/stm32/common/usart_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  25:../libopencm3/lib/stm32/common/usart_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  26:../libopencm3/lib/stm32/common/usart_common_all.c ****  * GNU Lesser General Public License for more details.
+  27:../libopencm3/lib/stm32/common/usart_common_all.c ****  *
+  28:../libopencm3/lib/stm32/common/usart_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  29:../libopencm3/lib/stm32/common/usart_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  30:../libopencm3/lib/stm32/common/usart_common_all.c ****  */
+  31:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  32:../libopencm3/lib/stm32/common/usart_common_all.c **** /**@{*/
+  33:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  34:../libopencm3/lib/stm32/common/usart_common_all.c **** #include <libopencm3/stm32/usart.h>
+  35:../libopencm3/lib/stm32/common/usart_common_all.c **** #include <libopencm3/stm32/rcc.h>
+  36:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  37:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+  38:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Baudrate.
+  39:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  40:../libopencm3/lib/stm32/common/usart_common_all.c **** The baud rate is computed from the APB high-speed prescaler clock (for
+  41:../libopencm3/lib/stm32/common/usart_common_all.c **** USART1/6) or the APB low-speed prescaler clock (for other USARTs). These values
+  42:../libopencm3/lib/stm32/common/usart_common_all.c **** must be correctly set before calling this function (refer to the
+  43:../libopencm3/lib/stm32/common/usart_common_all.c **** rcc_clock_setup-* functions in RCC).
+  44:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  45:../libopencm3/lib/stm32/common/usart_common_all.c **** Note: For LPUART, baudrates over 2**24 (~16.7 Mbaud) may overflow
+  46:../libopencm3/lib/stm32/common/usart_common_all.c **** the calculation and are therefore not supported by this function.
+  47:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  48:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+  49:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+  50:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] baud unsigned 32 bit. Baud rate specified in Hz.
+  51:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+  52:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  53:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_baudrate(uint32_t usart, uint32_t baud)
+  54:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+  27              		.loc 1 54 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 16
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 85B0     		sub	sp, sp, #20
+  36              		.cfi_def_cfa_offset 24
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 3960     		str	r1, [r7]
+  55:../libopencm3/lib/stm32/common/usart_common_all.c **** 	uint32_t clock = rcc_apb1_frequency;
+  41              		.loc 1 55 11
+  42 000a 104B     		ldr	r3, .L3+4
+  43 000c 59F80330 		ldr	r3, [r9, r3]
+  44 0010 1B68     		ldr	r3, [r3]
+  45 0012 FB60     		str	r3, [r7, #12]
+  56:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  57:../libopencm3/lib/stm32/common/usart_common_all.c **** #if defined USART1
+  58:../libopencm3/lib/stm32/common/usart_common_all.c **** 	if ((usart == USART1)
+  46              		.loc 1 58 5
+  47 0014 7B68     		ldr	r3, [r7, #4]
+  48 0016 0C4A     		ldr	r2, .L3
+  49 0018 9342     		cmp	r3, r2
+  50 001a 04D1     		bne	.L2
+  59:../libopencm3/lib/stm32/common/usart_common_all.c **** #if defined USART6
+  60:../libopencm3/lib/stm32/common/usart_common_all.c **** 		|| (usart == USART6)
+  61:../libopencm3/lib/stm32/common/usart_common_all.c **** #endif
+  62:../libopencm3/lib/stm32/common/usart_common_all.c **** 		) {
+  63:../libopencm3/lib/stm32/common/usart_common_all.c **** 		clock = rcc_apb2_frequency;
+  51              		.loc 1 63 9
+  52 001c 0C4B     		ldr	r3, .L3+8
+  53 001e 59F80330 		ldr	r3, [r9, r3]
+  54 0022 1B68     		ldr	r3, [r3]
+  55 0024 FB60     		str	r3, [r7, #12]
+  56              	.L2:
+  64:../libopencm3/lib/stm32/common/usart_common_all.c **** 	}
+  65:../libopencm3/lib/stm32/common/usart_common_all.c **** #endif
+  66:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  67:../libopencm3/lib/stm32/common/usart_common_all.c **** 	/*
+  68:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * Yes it is as simple as that. The reference manual is
+  69:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * talking about fractional calculation but it seems to be only
+  70:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * marketing babble to sound awesome. It is nothing else but a
+  71:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * simple divider to generate the correct baudrate.
+  72:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 *
+  73:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * Note: We round() the value rather than floor()ing it, for more
+  74:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 * accurate divisor selection.
+  75:../libopencm3/lib/stm32/common/usart_common_all.c **** 	 */
+  76:../libopencm3/lib/stm32/common/usart_common_all.c **** #ifdef LPUART1
+  77:../libopencm3/lib/stm32/common/usart_common_all.c **** 	if (usart == LPUART1) {
+  78:../libopencm3/lib/stm32/common/usart_common_all.c **** 		USART_BRR(usart) = (clock / baud) * 256
+  79:../libopencm3/lib/stm32/common/usart_common_all.c **** 			+ ((clock % baud) * 256 + baud / 2) / baud;
+  80:../libopencm3/lib/stm32/common/usart_common_all.c **** 		return;
+  81:../libopencm3/lib/stm32/common/usart_common_all.c **** 	}
+  82:../libopencm3/lib/stm32/common/usart_common_all.c **** #endif
+  83:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  84:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_BRR(usart) = (clock + baud / 2) / baud;
+  57              		.loc 1 84 35
+  58 0026 3B68     		ldr	r3, [r7]
+  59 0028 5A08     		lsrs	r2, r3, #1
+  60              		.loc 1 84 28
+  61 002a FB68     		ldr	r3, [r7, #12]
+  62 002c 1A44     		add	r2, r2, r3
+  63              		.loc 1 84 2
+  64 002e 7B68     		ldr	r3, [r7, #4]
+  65 0030 0833     		adds	r3, r3, #8
+  66 0032 1946     		mov	r1, r3
+  67              		.loc 1 84 40
+  68 0034 3B68     		ldr	r3, [r7]
+  69 0036 B2FBF3F3 		udiv	r3, r2, r3
+  70              		.loc 1 84 19
+  71 003a 0B60     		str	r3, [r1]
+  85:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+  72              		.loc 1 85 1
+  73 003c 00BF     		nop
+  74 003e 1437     		adds	r7, r7, #20
+  75              		.cfi_def_cfa_offset 4
+  76 0040 BD46     		mov	sp, r7
+  77              		.cfi_def_cfa_register 13
+  78              		@ sp needed
+  79 0042 80BC     		pop	{r7}
+  80              		.cfi_restore 7
+  81              		.cfi_def_cfa_offset 0
+  82 0044 7047     		bx	lr
+  83              	.L4:
+  84 0046 00BF     		.align	2
+  85              	.L3:
+  86 0048 00380140 		.word	1073821696
+  87 004c 00000000 		.word	rcc_apb1_frequency(GOT)
+  88 0050 00000000 		.word	rcc_apb2_frequency(GOT)
+  89              		.cfi_endproc
+  90              	.LFE0:
+  92              		.section	.text.usart_set_databits,"ax",%progbits
+  93              		.align	1
+  94              		.global	usart_set_databits
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  98              		.fpu softvfp
+ 100              	usart_set_databits:
+ 101              	.LFB1:
+  86:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  87:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+  88:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Word Length.
+  89:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  90:../libopencm3/lib/stm32/common/usart_common_all.c **** The word length is set to 8 or 9 bits. Note that the last bit will be a parity
+  91:../libopencm3/lib/stm32/common/usart_common_all.c **** bit if parity is enabled, in which case the data length will be 7 or 8 bits
+  92:../libopencm3/lib/stm32/common/usart_common_all.c **** respectively.
+  93:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  94:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+  95:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+  96:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] bits unsigned 32 bit. Word length in bits 8 or 9.
+  97:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+  98:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+  99:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_databits(uint32_t usart, uint32_t bits)
+ 100:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 102              		.loc 1 100 1
+ 103              		.cfi_startproc
+ 104              		@ args = 0, pretend = 0, frame = 8
+ 105              		@ frame_needed = 1, uses_anonymous_args = 0
+ 106              		@ link register save eliminated.
+ 107 0000 80B4     		push	{r7}
+ 108              		.cfi_def_cfa_offset 4
+ 109              		.cfi_offset 7, -4
+ 110 0002 83B0     		sub	sp, sp, #12
+ 111              		.cfi_def_cfa_offset 16
+ 112 0004 00AF     		add	r7, sp, #0
+ 113              		.cfi_def_cfa_register 7
+ 114 0006 7860     		str	r0, [r7, #4]
+ 115 0008 3960     		str	r1, [r7]
+ 101:../libopencm3/lib/stm32/common/usart_common_all.c **** 	if (bits == 8) {
+ 116              		.loc 1 101 5
+ 117 000a 3B68     		ldr	r3, [r7]
+ 118 000c 082B     		cmp	r3, #8
+ 119 000e 08D1     		bne	.L6
+ 102:../libopencm3/lib/stm32/common/usart_common_all.c **** 		USART_CR1(usart) &= ~USART_CR1_M; /* 8 data bits */
+ 120              		.loc 1 102 20
+ 121 0010 7B68     		ldr	r3, [r7, #4]
+ 122 0012 0C33     		adds	r3, r3, #12
+ 123 0014 1B68     		ldr	r3, [r3]
+ 124 0016 7A68     		ldr	r2, [r7, #4]
+ 125 0018 0C32     		adds	r2, r2, #12
+ 126 001a 23F48053 		bic	r3, r3, #4096
+ 127 001e 1360     		str	r3, [r2]
+ 103:../libopencm3/lib/stm32/common/usart_common_all.c **** 	} else {
+ 104:../libopencm3/lib/stm32/common/usart_common_all.c **** 		USART_CR1(usart) |= USART_CR1_M;  /* 9 data bits */
+ 105:../libopencm3/lib/stm32/common/usart_common_all.c **** 	}
+ 106:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 128              		.loc 1 106 1
+ 129 0020 07E0     		b	.L8
+ 130              	.L6:
+ 104:../libopencm3/lib/stm32/common/usart_common_all.c **** 	}
+ 131              		.loc 1 104 20
+ 132 0022 7B68     		ldr	r3, [r7, #4]
+ 133 0024 0C33     		adds	r3, r3, #12
+ 134 0026 1B68     		ldr	r3, [r3]
+ 135 0028 7A68     		ldr	r2, [r7, #4]
+ 136 002a 0C32     		adds	r2, r2, #12
+ 137 002c 43F48053 		orr	r3, r3, #4096
+ 138 0030 1360     		str	r3, [r2]
+ 139              	.L8:
+ 140              		.loc 1 106 1
+ 141 0032 00BF     		nop
+ 142 0034 0C37     		adds	r7, r7, #12
+ 143              		.cfi_def_cfa_offset 4
+ 144 0036 BD46     		mov	sp, r7
+ 145              		.cfi_def_cfa_register 13
+ 146              		@ sp needed
+ 147 0038 80BC     		pop	{r7}
+ 148              		.cfi_restore 7
+ 149              		.cfi_def_cfa_offset 0
+ 150 003a 7047     		bx	lr
+ 151              		.cfi_endproc
+ 152              	.LFE1:
+ 154              		.section	.text.usart_set_stopbits,"ax",%progbits
+ 155              		.align	1
+ 156              		.global	usart_set_stopbits
+ 157              		.syntax unified
+ 158              		.thumb
+ 159              		.thumb_func
+ 160              		.fpu softvfp
+ 162              	usart_set_stopbits:
+ 163              	.LFB2:
+ 107:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 108:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 109:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Stop Bit(s).
+ 110:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 111:../libopencm3/lib/stm32/common/usart_common_all.c **** The stop bits are specified as 0.5, 1, 1.5 or 2.
+ 112:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 113:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 114:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 115:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] stopbits unsigned 32 bit. Stop bits @ref usart_cr2_stopbits.
+ 116:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 117:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 118:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_stopbits(uint32_t usart, uint32_t stopbits)
+ 119:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 164              		.loc 1 119 1
+ 165              		.cfi_startproc
+ 166              		@ args = 0, pretend = 0, frame = 16
+ 167              		@ frame_needed = 1, uses_anonymous_args = 0
+ 168              		@ link register save eliminated.
+ 169 0000 80B4     		push	{r7}
+ 170              		.cfi_def_cfa_offset 4
+ 171              		.cfi_offset 7, -4
+ 172 0002 85B0     		sub	sp, sp, #20
+ 173              		.cfi_def_cfa_offset 24
+ 174 0004 00AF     		add	r7, sp, #0
+ 175              		.cfi_def_cfa_register 7
+ 176 0006 7860     		str	r0, [r7, #4]
+ 177 0008 3960     		str	r1, [r7]
+ 120:../libopencm3/lib/stm32/common/usart_common_all.c **** 	uint32_t reg32;
+ 121:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 122:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = USART_CR2(usart);
+ 178              		.loc 1 122 10
+ 179 000a 7B68     		ldr	r3, [r7, #4]
+ 180 000c 1033     		adds	r3, r3, #16
+ 181              		.loc 1 122 8
+ 182 000e 1B68     		ldr	r3, [r3]
+ 183 0010 FB60     		str	r3, [r7, #12]
+ 123:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = (reg32 & ~USART_CR2_STOPBITS_MASK) | stopbits;
+ 184              		.loc 1 123 17
+ 185 0012 FB68     		ldr	r3, [r7, #12]
+ 186 0014 23F44053 		bic	r3, r3, #12288
+ 187              		.loc 1 123 8
+ 188 0018 3A68     		ldr	r2, [r7]
+ 189 001a 1343     		orrs	r3, r3, r2
+ 190 001c FB60     		str	r3, [r7, #12]
+ 124:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR2(usart) = reg32;
+ 191              		.loc 1 124 2
+ 192 001e 7B68     		ldr	r3, [r7, #4]
+ 193 0020 1033     		adds	r3, r3, #16
+ 194 0022 1A46     		mov	r2, r3
+ 195              		.loc 1 124 19
+ 196 0024 FB68     		ldr	r3, [r7, #12]
+ 197 0026 1360     		str	r3, [r2]
+ 125:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 198              		.loc 1 125 1
+ 199 0028 00BF     		nop
+ 200 002a 1437     		adds	r7, r7, #20
+ 201              		.cfi_def_cfa_offset 4
+ 202 002c BD46     		mov	sp, r7
+ 203              		.cfi_def_cfa_register 13
+ 204              		@ sp needed
+ 205 002e 80BC     		pop	{r7}
+ 206              		.cfi_restore 7
+ 207              		.cfi_def_cfa_offset 0
+ 208 0030 7047     		bx	lr
+ 209              		.cfi_endproc
+ 210              	.LFE2:
+ 212              		.section	.text.usart_set_parity,"ax",%progbits
+ 213              		.align	1
+ 214              		.global	usart_set_parity
+ 215              		.syntax unified
+ 216              		.thumb
+ 217              		.thumb_func
+ 218              		.fpu softvfp
+ 220              	usart_set_parity:
+ 221              	.LFB3:
+ 126:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 127:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 128:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Parity.
+ 129:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 130:../libopencm3/lib/stm32/common/usart_common_all.c **** The parity bit can be selected as none, even or odd.
+ 131:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 132:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 133:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 134:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] parity unsigned 32 bit. Parity @ref usart_cr1_parity.
+ 135:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 136:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 137:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_parity(uint32_t usart, uint32_t parity)
+ 138:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 222              		.loc 1 138 1
+ 223              		.cfi_startproc
+ 224              		@ args = 0, pretend = 0, frame = 16
+ 225              		@ frame_needed = 1, uses_anonymous_args = 0
+ 226              		@ link register save eliminated.
+ 227 0000 80B4     		push	{r7}
+ 228              		.cfi_def_cfa_offset 4
+ 229              		.cfi_offset 7, -4
+ 230 0002 85B0     		sub	sp, sp, #20
+ 231              		.cfi_def_cfa_offset 24
+ 232 0004 00AF     		add	r7, sp, #0
+ 233              		.cfi_def_cfa_register 7
+ 234 0006 7860     		str	r0, [r7, #4]
+ 235 0008 3960     		str	r1, [r7]
+ 139:../libopencm3/lib/stm32/common/usart_common_all.c **** 	uint32_t reg32;
+ 140:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 141:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = USART_CR1(usart);
+ 236              		.loc 1 141 10
+ 237 000a 7B68     		ldr	r3, [r7, #4]
+ 238 000c 0C33     		adds	r3, r3, #12
+ 239              		.loc 1 141 8
+ 240 000e 1B68     		ldr	r3, [r3]
+ 241 0010 FB60     		str	r3, [r7, #12]
+ 142:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = (reg32 & ~USART_PARITY_MASK) | parity;
+ 242              		.loc 1 142 17
+ 243 0012 FB68     		ldr	r3, [r7, #12]
+ 244 0014 23F4C063 		bic	r3, r3, #1536
+ 245              		.loc 1 142 8
+ 246 0018 3A68     		ldr	r2, [r7]
+ 247 001a 1343     		orrs	r3, r3, r2
+ 248 001c FB60     		str	r3, [r7, #12]
+ 143:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) = reg32;
+ 249              		.loc 1 143 2
+ 250 001e 7B68     		ldr	r3, [r7, #4]
+ 251 0020 0C33     		adds	r3, r3, #12
+ 252 0022 1A46     		mov	r2, r3
+ 253              		.loc 1 143 19
+ 254 0024 FB68     		ldr	r3, [r7, #12]
+ 255 0026 1360     		str	r3, [r2]
+ 144:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 256              		.loc 1 144 1
+ 257 0028 00BF     		nop
+ 258 002a 1437     		adds	r7, r7, #20
+ 259              		.cfi_def_cfa_offset 4
+ 260 002c BD46     		mov	sp, r7
+ 261              		.cfi_def_cfa_register 13
+ 262              		@ sp needed
+ 263 002e 80BC     		pop	{r7}
+ 264              		.cfi_restore 7
+ 265              		.cfi_def_cfa_offset 0
+ 266 0030 7047     		bx	lr
+ 267              		.cfi_endproc
+ 268              	.LFE3:
+ 270              		.section	.text.usart_set_mode,"ax",%progbits
+ 271              		.align	1
+ 272              		.global	usart_set_mode
+ 273              		.syntax unified
+ 274              		.thumb
+ 275              		.thumb_func
+ 276              		.fpu softvfp
+ 278              	usart_set_mode:
+ 279              	.LFB4:
+ 145:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 146:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 147:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Rx/Tx Mode.
+ 148:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 149:../libopencm3/lib/stm32/common/usart_common_all.c **** The mode can be selected as Rx only, Tx only or Rx+Tx.
+ 150:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 151:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 152:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 153:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] mode unsigned 32 bit. Mode @ref usart_cr1_mode.
+ 154:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 155:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 156:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_mode(uint32_t usart, uint32_t mode)
+ 157:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 280              		.loc 1 157 1
+ 281              		.cfi_startproc
+ 282              		@ args = 0, pretend = 0, frame = 16
+ 283              		@ frame_needed = 1, uses_anonymous_args = 0
+ 284              		@ link register save eliminated.
+ 285 0000 80B4     		push	{r7}
+ 286              		.cfi_def_cfa_offset 4
+ 287              		.cfi_offset 7, -4
+ 288 0002 85B0     		sub	sp, sp, #20
+ 289              		.cfi_def_cfa_offset 24
+ 290 0004 00AF     		add	r7, sp, #0
+ 291              		.cfi_def_cfa_register 7
+ 292 0006 7860     		str	r0, [r7, #4]
+ 293 0008 3960     		str	r1, [r7]
+ 158:../libopencm3/lib/stm32/common/usart_common_all.c **** 	uint32_t reg32;
+ 159:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 160:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = USART_CR1(usart);
+ 294              		.loc 1 160 10
+ 295 000a 7B68     		ldr	r3, [r7, #4]
+ 296 000c 0C33     		adds	r3, r3, #12
+ 297              		.loc 1 160 8
+ 298 000e 1B68     		ldr	r3, [r3]
+ 299 0010 FB60     		str	r3, [r7, #12]
+ 161:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = (reg32 & ~USART_MODE_MASK) | mode;
+ 300              		.loc 1 161 17
+ 301 0012 FB68     		ldr	r3, [r7, #12]
+ 302 0014 23F00C03 		bic	r3, r3, #12
+ 303              		.loc 1 161 8
+ 304 0018 3A68     		ldr	r2, [r7]
+ 305 001a 1343     		orrs	r3, r3, r2
+ 306 001c FB60     		str	r3, [r7, #12]
+ 162:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) = reg32;
+ 307              		.loc 1 162 2
+ 308 001e 7B68     		ldr	r3, [r7, #4]
+ 309 0020 0C33     		adds	r3, r3, #12
+ 310 0022 1A46     		mov	r2, r3
+ 311              		.loc 1 162 19
+ 312 0024 FB68     		ldr	r3, [r7, #12]
+ 313 0026 1360     		str	r3, [r2]
+ 163:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 314              		.loc 1 163 1
+ 315 0028 00BF     		nop
+ 316 002a 1437     		adds	r7, r7, #20
+ 317              		.cfi_def_cfa_offset 4
+ 318 002c BD46     		mov	sp, r7
+ 319              		.cfi_def_cfa_register 13
+ 320              		@ sp needed
+ 321 002e 80BC     		pop	{r7}
+ 322              		.cfi_restore 7
+ 323              		.cfi_def_cfa_offset 0
+ 324 0030 7047     		bx	lr
+ 325              		.cfi_endproc
+ 326              	.LFE4:
+ 328              		.section	.text.usart_set_flow_control,"ax",%progbits
+ 329              		.align	1
+ 330              		.global	usart_set_flow_control
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 334              		.fpu softvfp
+ 336              	usart_set_flow_control:
+ 337              	.LFB5:
+ 164:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 165:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 166:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Set Hardware Flow Control.
+ 167:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 168:../libopencm3/lib/stm32/common/usart_common_all.c **** The flow control bit can be selected as none, RTS, CTS or RTS+CTS.
+ 169:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 170:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 171:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 172:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] flowcontrol unsigned 32 bit. Flowcontrol @ref usart_cr3_flowcontrol.
+ 173:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 174:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 175:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_set_flow_control(uint32_t usart, uint32_t flowcontrol)
+ 176:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 338              		.loc 1 176 1
+ 339              		.cfi_startproc
+ 340              		@ args = 0, pretend = 0, frame = 16
+ 341              		@ frame_needed = 1, uses_anonymous_args = 0
+ 342              		@ link register save eliminated.
+ 343 0000 80B4     		push	{r7}
+ 344              		.cfi_def_cfa_offset 4
+ 345              		.cfi_offset 7, -4
+ 346 0002 85B0     		sub	sp, sp, #20
+ 347              		.cfi_def_cfa_offset 24
+ 348 0004 00AF     		add	r7, sp, #0
+ 349              		.cfi_def_cfa_register 7
+ 350 0006 7860     		str	r0, [r7, #4]
+ 351 0008 3960     		str	r1, [r7]
+ 177:../libopencm3/lib/stm32/common/usart_common_all.c **** 	uint32_t reg32;
+ 178:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 179:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = USART_CR3(usart);
+ 352              		.loc 1 179 10
+ 353 000a 7B68     		ldr	r3, [r7, #4]
+ 354 000c 1433     		adds	r3, r3, #20
+ 355              		.loc 1 179 8
+ 356 000e 1B68     		ldr	r3, [r3]
+ 357 0010 FB60     		str	r3, [r7, #12]
+ 180:../libopencm3/lib/stm32/common/usart_common_all.c **** 	reg32 = (reg32 & ~USART_FLOWCONTROL_MASK) | flowcontrol;
+ 358              		.loc 1 180 17
+ 359 0012 FB68     		ldr	r3, [r7, #12]
+ 360 0014 23F44073 		bic	r3, r3, #768
+ 361              		.loc 1 180 8
+ 362 0018 3A68     		ldr	r2, [r7]
+ 363 001a 1343     		orrs	r3, r3, r2
+ 364 001c FB60     		str	r3, [r7, #12]
+ 181:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) = reg32;
+ 365              		.loc 1 181 2
+ 366 001e 7B68     		ldr	r3, [r7, #4]
+ 367 0020 1433     		adds	r3, r3, #20
+ 368 0022 1A46     		mov	r2, r3
+ 369              		.loc 1 181 19
+ 370 0024 FB68     		ldr	r3, [r7, #12]
+ 371 0026 1360     		str	r3, [r2]
+ 182:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 372              		.loc 1 182 1
+ 373 0028 00BF     		nop
+ 374 002a 1437     		adds	r7, r7, #20
+ 375              		.cfi_def_cfa_offset 4
+ 376 002c BD46     		mov	sp, r7
+ 377              		.cfi_def_cfa_register 13
+ 378              		@ sp needed
+ 379 002e 80BC     		pop	{r7}
+ 380              		.cfi_restore 7
+ 381              		.cfi_def_cfa_offset 0
+ 382 0030 7047     		bx	lr
+ 383              		.cfi_endproc
+ 384              	.LFE5:
+ 386              		.section	.text.usart_enable,"ax",%progbits
+ 387              		.align	1
+ 388              		.global	usart_enable
+ 389              		.syntax unified
+ 390              		.thumb
+ 391              		.thumb_func
+ 392              		.fpu softvfp
+ 394              	usart_enable:
+ 395              	.LFB6:
+ 183:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 184:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 185:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Enable.
+ 186:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 187:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 188:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 189:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 190:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 191:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable(uint32_t usart)
+ 192:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 396              		.loc 1 192 1
+ 397              		.cfi_startproc
+ 398              		@ args = 0, pretend = 0, frame = 8
+ 399              		@ frame_needed = 1, uses_anonymous_args = 0
+ 400              		@ link register save eliminated.
+ 401 0000 80B4     		push	{r7}
+ 402              		.cfi_def_cfa_offset 4
+ 403              		.cfi_offset 7, -4
+ 404 0002 83B0     		sub	sp, sp, #12
+ 405              		.cfi_def_cfa_offset 16
+ 406 0004 00AF     		add	r7, sp, #0
+ 407              		.cfi_def_cfa_register 7
+ 408 0006 7860     		str	r0, [r7, #4]
+ 193:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) |= USART_CR1_UE;
+ 409              		.loc 1 193 19
+ 410 0008 7B68     		ldr	r3, [r7, #4]
+ 411 000a 0C33     		adds	r3, r3, #12
+ 412 000c 1B68     		ldr	r3, [r3]
+ 413 000e 7A68     		ldr	r2, [r7, #4]
+ 414 0010 0C32     		adds	r2, r2, #12
+ 415 0012 43F40053 		orr	r3, r3, #8192
+ 416 0016 1360     		str	r3, [r2]
+ 194:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 417              		.loc 1 194 1
+ 418 0018 00BF     		nop
+ 419 001a 0C37     		adds	r7, r7, #12
+ 420              		.cfi_def_cfa_offset 4
+ 421 001c BD46     		mov	sp, r7
+ 422              		.cfi_def_cfa_register 13
+ 423              		@ sp needed
+ 424 001e 80BC     		pop	{r7}
+ 425              		.cfi_restore 7
+ 426              		.cfi_def_cfa_offset 0
+ 427 0020 7047     		bx	lr
+ 428              		.cfi_endproc
+ 429              	.LFE6:
+ 431              		.section	.text.usart_disable,"ax",%progbits
+ 432              		.align	1
+ 433              		.global	usart_disable
+ 434              		.syntax unified
+ 435              		.thumb
+ 436              		.thumb_func
+ 437              		.fpu softvfp
+ 439              	usart_disable:
+ 440              	.LFB7:
+ 195:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 196:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 197:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Disable.
+ 198:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 199:../libopencm3/lib/stm32/common/usart_common_all.c **** At the end of the current frame, the USART is disabled to reduce power.
+ 200:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 201:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 202:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 203:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 204:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 205:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable(uint32_t usart)
+ 206:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 441              		.loc 1 206 1
+ 442              		.cfi_startproc
+ 443              		@ args = 0, pretend = 0, frame = 8
+ 444              		@ frame_needed = 1, uses_anonymous_args = 0
+ 445              		@ link register save eliminated.
+ 446 0000 80B4     		push	{r7}
+ 447              		.cfi_def_cfa_offset 4
+ 448              		.cfi_offset 7, -4
+ 449 0002 83B0     		sub	sp, sp, #12
+ 450              		.cfi_def_cfa_offset 16
+ 451 0004 00AF     		add	r7, sp, #0
+ 452              		.cfi_def_cfa_register 7
+ 453 0006 7860     		str	r0, [r7, #4]
+ 207:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) &= ~USART_CR1_UE;
+ 454              		.loc 1 207 19
+ 455 0008 7B68     		ldr	r3, [r7, #4]
+ 456 000a 0C33     		adds	r3, r3, #12
+ 457 000c 1B68     		ldr	r3, [r3]
+ 458 000e 7A68     		ldr	r2, [r7, #4]
+ 459 0010 0C32     		adds	r2, r2, #12
+ 460 0012 23F40053 		bic	r3, r3, #8192
+ 461 0016 1360     		str	r3, [r2]
+ 208:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 462              		.loc 1 208 1
+ 463 0018 00BF     		nop
+ 464 001a 0C37     		adds	r7, r7, #12
+ 465              		.cfi_def_cfa_offset 4
+ 466 001c BD46     		mov	sp, r7
+ 467              		.cfi_def_cfa_register 13
+ 468              		@ sp needed
+ 469 001e 80BC     		pop	{r7}
+ 470              		.cfi_restore 7
+ 471              		.cfi_def_cfa_offset 0
+ 472 0020 7047     		bx	lr
+ 473              		.cfi_endproc
+ 474              	.LFE7:
+ 476              		.section	.text.usart_send_blocking,"ax",%progbits
+ 477              		.align	1
+ 478              		.global	usart_send_blocking
+ 479              		.syntax unified
+ 480              		.thumb
+ 481              		.thumb_func
+ 482              		.fpu softvfp
+ 484              	usart_send_blocking:
+ 485              	.LFB8:
+ 209:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 210:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 211:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Send Data Word with Blocking
+ 212:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 213:../libopencm3/lib/stm32/common/usart_common_all.c **** Blocks until the transmit data buffer becomes empty then writes the next data
+ 214:../libopencm3/lib/stm32/common/usart_common_all.c **** word for transmission.
+ 215:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 216:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 217:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 218:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] data unsigned 16 bit.
+ 219:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 220:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 221:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_send_blocking(uint32_t usart, uint16_t data)
+ 222:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 486              		.loc 1 222 1
+ 487              		.cfi_startproc
+ 488              		@ args = 0, pretend = 0, frame = 8
+ 489              		@ frame_needed = 1, uses_anonymous_args = 0
+ 490 0000 80B5     		push	{r7, lr}
+ 491              		.cfi_def_cfa_offset 8
+ 492              		.cfi_offset 7, -8
+ 493              		.cfi_offset 14, -4
+ 494 0002 82B0     		sub	sp, sp, #8
+ 495              		.cfi_def_cfa_offset 16
+ 496 0004 00AF     		add	r7, sp, #0
+ 497              		.cfi_def_cfa_register 7
+ 498 0006 7860     		str	r0, [r7, #4]
+ 499 0008 0B46     		mov	r3, r1
+ 500 000a 7B80     		strh	r3, [r7, #2]	@ movhi
+ 223:../libopencm3/lib/stm32/common/usart_common_all.c **** 	usart_wait_send_ready(usart);
+ 501              		.loc 1 223 2
+ 502 000c 7868     		ldr	r0, [r7, #4]
+ 503 000e FFF7FEFF 		bl	usart_wait_send_ready(PLT)
+ 224:../libopencm3/lib/stm32/common/usart_common_all.c **** 	usart_send(usart, data);
+ 504              		.loc 1 224 2
+ 505 0012 7B88     		ldrh	r3, [r7, #2]
+ 506 0014 1946     		mov	r1, r3
+ 507 0016 7868     		ldr	r0, [r7, #4]
+ 508 0018 FFF7FEFF 		bl	usart_send(PLT)
+ 225:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 509              		.loc 1 225 1
+ 510 001c 00BF     		nop
+ 511 001e 0837     		adds	r7, r7, #8
+ 512              		.cfi_def_cfa_offset 8
+ 513 0020 BD46     		mov	sp, r7
+ 514              		.cfi_def_cfa_register 13
+ 515              		@ sp needed
+ 516 0022 80BD     		pop	{r7, pc}
+ 517              		.cfi_endproc
+ 518              	.LFE8:
+ 520              		.section	.text.usart_recv_blocking,"ax",%progbits
+ 521              		.align	1
+ 522              		.global	usart_recv_blocking
+ 523              		.syntax unified
+ 524              		.thumb
+ 525              		.thumb_func
+ 526              		.fpu softvfp
+ 528              	usart_recv_blocking:
+ 529              	.LFB9:
+ 226:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 227:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 228:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Read a Received Data Word with Blocking.
+ 229:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 230:../libopencm3/lib/stm32/common/usart_common_all.c **** Wait until a data word has been received then return the word.
+ 231:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 232:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 233:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 234:../libopencm3/lib/stm32/common/usart_common_all.c **** @returns unsigned 16 bit data word.
+ 235:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 236:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 237:../libopencm3/lib/stm32/common/usart_common_all.c **** uint16_t usart_recv_blocking(uint32_t usart)
+ 238:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 530              		.loc 1 238 1
+ 531              		.cfi_startproc
+ 532              		@ args = 0, pretend = 0, frame = 8
+ 533              		@ frame_needed = 1, uses_anonymous_args = 0
+ 534 0000 80B5     		push	{r7, lr}
+ 535              		.cfi_def_cfa_offset 8
+ 536              		.cfi_offset 7, -8
+ 537              		.cfi_offset 14, -4
+ 538 0002 82B0     		sub	sp, sp, #8
+ 539              		.cfi_def_cfa_offset 16
+ 540 0004 00AF     		add	r7, sp, #0
+ 541              		.cfi_def_cfa_register 7
+ 542 0006 7860     		str	r0, [r7, #4]
+ 239:../libopencm3/lib/stm32/common/usart_common_all.c **** 	usart_wait_recv_ready(usart);
+ 543              		.loc 1 239 2
+ 544 0008 7868     		ldr	r0, [r7, #4]
+ 545 000a FFF7FEFF 		bl	usart_wait_recv_ready(PLT)
+ 240:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 241:../libopencm3/lib/stm32/common/usart_common_all.c **** 	return usart_recv(usart);
+ 546              		.loc 1 241 9
+ 547 000e 7868     		ldr	r0, [r7, #4]
+ 548 0010 FFF7FEFF 		bl	usart_recv(PLT)
+ 549 0014 0346     		mov	r3, r0
+ 242:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 550              		.loc 1 242 1
+ 551 0016 1846     		mov	r0, r3
+ 552 0018 0837     		adds	r7, r7, #8
+ 553              		.cfi_def_cfa_offset 8
+ 554 001a BD46     		mov	sp, r7
+ 555              		.cfi_def_cfa_register 13
+ 556              		@ sp needed
+ 557 001c 80BD     		pop	{r7, pc}
+ 558              		.cfi_endproc
+ 559              	.LFE9:
+ 561              		.section	.text.usart_enable_rx_dma,"ax",%progbits
+ 562              		.align	1
+ 563              		.global	usart_enable_rx_dma
+ 564              		.syntax unified
+ 565              		.thumb
+ 566              		.thumb_func
+ 567              		.fpu softvfp
+ 569              	usart_enable_rx_dma:
+ 570              	.LFB10:
+ 243:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 244:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 245:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Receiver DMA Enable.
+ 246:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 247:../libopencm3/lib/stm32/common/usart_common_all.c **** DMA is available on:
+ 248:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART1 Rx DMA1 channel 5.
+ 249:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART2 Rx DMA1 channel 6.
+ 250:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART3 Rx DMA1 channel 3.
+ 251:../libopencm3/lib/stm32/common/usart_common_all.c **** @li UART4 Rx DMA2 channel 3.
+ 252:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 253:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 254:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 255:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 256:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 257:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_rx_dma(uint32_t usart)
+ 258:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 571              		.loc 1 258 1
+ 572              		.cfi_startproc
+ 573              		@ args = 0, pretend = 0, frame = 8
+ 574              		@ frame_needed = 1, uses_anonymous_args = 0
+ 575              		@ link register save eliminated.
+ 576 0000 80B4     		push	{r7}
+ 577              		.cfi_def_cfa_offset 4
+ 578              		.cfi_offset 7, -4
+ 579 0002 83B0     		sub	sp, sp, #12
+ 580              		.cfi_def_cfa_offset 16
+ 581 0004 00AF     		add	r7, sp, #0
+ 582              		.cfi_def_cfa_register 7
+ 583 0006 7860     		str	r0, [r7, #4]
+ 259:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) |= USART_CR3_DMAR;
+ 584              		.loc 1 259 19
+ 585 0008 7B68     		ldr	r3, [r7, #4]
+ 586 000a 1433     		adds	r3, r3, #20
+ 587 000c 1B68     		ldr	r3, [r3]
+ 588 000e 7A68     		ldr	r2, [r7, #4]
+ 589 0010 1432     		adds	r2, r2, #20
+ 590 0012 43F04003 		orr	r3, r3, #64
+ 591 0016 1360     		str	r3, [r2]
+ 260:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 592              		.loc 1 260 1
+ 593 0018 00BF     		nop
+ 594 001a 0C37     		adds	r7, r7, #12
+ 595              		.cfi_def_cfa_offset 4
+ 596 001c BD46     		mov	sp, r7
+ 597              		.cfi_def_cfa_register 13
+ 598              		@ sp needed
+ 599 001e 80BC     		pop	{r7}
+ 600              		.cfi_restore 7
+ 601              		.cfi_def_cfa_offset 0
+ 602 0020 7047     		bx	lr
+ 603              		.cfi_endproc
+ 604              	.LFE10:
+ 606              		.section	.text.usart_disable_rx_dma,"ax",%progbits
+ 607              		.align	1
+ 608              		.global	usart_disable_rx_dma
+ 609              		.syntax unified
+ 610              		.thumb
+ 611              		.thumb_func
+ 612              		.fpu softvfp
+ 614              	usart_disable_rx_dma:
+ 615              	.LFB11:
+ 261:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 262:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 263:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Receiver DMA Disable.
+ 264:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 265:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 266:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 267:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 268:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 269:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_rx_dma(uint32_t usart)
+ 270:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 616              		.loc 1 270 1
+ 617              		.cfi_startproc
+ 618              		@ args = 0, pretend = 0, frame = 8
+ 619              		@ frame_needed = 1, uses_anonymous_args = 0
+ 620              		@ link register save eliminated.
+ 621 0000 80B4     		push	{r7}
+ 622              		.cfi_def_cfa_offset 4
+ 623              		.cfi_offset 7, -4
+ 624 0002 83B0     		sub	sp, sp, #12
+ 625              		.cfi_def_cfa_offset 16
+ 626 0004 00AF     		add	r7, sp, #0
+ 627              		.cfi_def_cfa_register 7
+ 628 0006 7860     		str	r0, [r7, #4]
+ 271:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) &= ~USART_CR3_DMAR;
+ 629              		.loc 1 271 19
+ 630 0008 7B68     		ldr	r3, [r7, #4]
+ 631 000a 1433     		adds	r3, r3, #20
+ 632 000c 1B68     		ldr	r3, [r3]
+ 633 000e 7A68     		ldr	r2, [r7, #4]
+ 634 0010 1432     		adds	r2, r2, #20
+ 635 0012 23F04003 		bic	r3, r3, #64
+ 636 0016 1360     		str	r3, [r2]
+ 272:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 637              		.loc 1 272 1
+ 638 0018 00BF     		nop
+ 639 001a 0C37     		adds	r7, r7, #12
+ 640              		.cfi_def_cfa_offset 4
+ 641 001c BD46     		mov	sp, r7
+ 642              		.cfi_def_cfa_register 13
+ 643              		@ sp needed
+ 644 001e 80BC     		pop	{r7}
+ 645              		.cfi_restore 7
+ 646              		.cfi_def_cfa_offset 0
+ 647 0020 7047     		bx	lr
+ 648              		.cfi_endproc
+ 649              	.LFE11:
+ 651              		.section	.text.usart_enable_tx_dma,"ax",%progbits
+ 652              		.align	1
+ 653              		.global	usart_enable_tx_dma
+ 654              		.syntax unified
+ 655              		.thumb
+ 656              		.thumb_func
+ 657              		.fpu softvfp
+ 659              	usart_enable_tx_dma:
+ 660              	.LFB12:
+ 273:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 274:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 275:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Transmitter DMA Enable.
+ 276:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 277:../libopencm3/lib/stm32/common/usart_common_all.c **** DMA is available on:
+ 278:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART1 Tx DMA1 channel 4.
+ 279:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART2 Tx DMA1 channel 7.
+ 280:../libopencm3/lib/stm32/common/usart_common_all.c **** @li USART3 Tx DMA1 channel 2.
+ 281:../libopencm3/lib/stm32/common/usart_common_all.c **** @li UART4 Tx DMA2 channel 5.
+ 282:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 283:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 284:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 285:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 286:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 287:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_tx_dma(uint32_t usart)
+ 288:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 661              		.loc 1 288 1
+ 662              		.cfi_startproc
+ 663              		@ args = 0, pretend = 0, frame = 8
+ 664              		@ frame_needed = 1, uses_anonymous_args = 0
+ 665              		@ link register save eliminated.
+ 666 0000 80B4     		push	{r7}
+ 667              		.cfi_def_cfa_offset 4
+ 668              		.cfi_offset 7, -4
+ 669 0002 83B0     		sub	sp, sp, #12
+ 670              		.cfi_def_cfa_offset 16
+ 671 0004 00AF     		add	r7, sp, #0
+ 672              		.cfi_def_cfa_register 7
+ 673 0006 7860     		str	r0, [r7, #4]
+ 289:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) |= USART_CR3_DMAT;
+ 674              		.loc 1 289 19
+ 675 0008 7B68     		ldr	r3, [r7, #4]
+ 676 000a 1433     		adds	r3, r3, #20
+ 677 000c 1B68     		ldr	r3, [r3]
+ 678 000e 7A68     		ldr	r2, [r7, #4]
+ 679 0010 1432     		adds	r2, r2, #20
+ 680 0012 43F08003 		orr	r3, r3, #128
+ 681 0016 1360     		str	r3, [r2]
+ 290:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 682              		.loc 1 290 1
+ 683 0018 00BF     		nop
+ 684 001a 0C37     		adds	r7, r7, #12
+ 685              		.cfi_def_cfa_offset 4
+ 686 001c BD46     		mov	sp, r7
+ 687              		.cfi_def_cfa_register 13
+ 688              		@ sp needed
+ 689 001e 80BC     		pop	{r7}
+ 690              		.cfi_restore 7
+ 691              		.cfi_def_cfa_offset 0
+ 692 0020 7047     		bx	lr
+ 693              		.cfi_endproc
+ 694              	.LFE12:
+ 696              		.section	.text.usart_disable_tx_dma,"ax",%progbits
+ 697              		.align	1
+ 698              		.global	usart_disable_tx_dma
+ 699              		.syntax unified
+ 700              		.thumb
+ 701              		.thumb_func
+ 702              		.fpu softvfp
+ 704              	usart_disable_tx_dma:
+ 705              	.LFB13:
+ 291:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 292:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 293:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Transmitter DMA Disable.
+ 294:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 295:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 296:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 297:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 298:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 299:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_tx_dma(uint32_t usart)
+ 300:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 706              		.loc 1 300 1
+ 707              		.cfi_startproc
+ 708              		@ args = 0, pretend = 0, frame = 8
+ 709              		@ frame_needed = 1, uses_anonymous_args = 0
+ 710              		@ link register save eliminated.
+ 711 0000 80B4     		push	{r7}
+ 712              		.cfi_def_cfa_offset 4
+ 713              		.cfi_offset 7, -4
+ 714 0002 83B0     		sub	sp, sp, #12
+ 715              		.cfi_def_cfa_offset 16
+ 716 0004 00AF     		add	r7, sp, #0
+ 717              		.cfi_def_cfa_register 7
+ 718 0006 7860     		str	r0, [r7, #4]
+ 301:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) &= ~USART_CR3_DMAT;
+ 719              		.loc 1 301 19
+ 720 0008 7B68     		ldr	r3, [r7, #4]
+ 721 000a 1433     		adds	r3, r3, #20
+ 722 000c 1B68     		ldr	r3, [r3]
+ 723 000e 7A68     		ldr	r2, [r7, #4]
+ 724 0010 1432     		adds	r2, r2, #20
+ 725 0012 23F08003 		bic	r3, r3, #128
+ 726 0016 1360     		str	r3, [r2]
+ 302:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 727              		.loc 1 302 1
+ 728 0018 00BF     		nop
+ 729 001a 0C37     		adds	r7, r7, #12
+ 730              		.cfi_def_cfa_offset 4
+ 731 001c BD46     		mov	sp, r7
+ 732              		.cfi_def_cfa_register 13
+ 733              		@ sp needed
+ 734 001e 80BC     		pop	{r7}
+ 735              		.cfi_restore 7
+ 736              		.cfi_def_cfa_offset 0
+ 737 0020 7047     		bx	lr
+ 738              		.cfi_endproc
+ 739              	.LFE13:
+ 741              		.section	.text.usart_enable_rx_interrupt,"ax",%progbits
+ 742              		.align	1
+ 743              		.global	usart_enable_rx_interrupt
+ 744              		.syntax unified
+ 745              		.thumb
+ 746              		.thumb_func
+ 747              		.fpu softvfp
+ 749              	usart_enable_rx_interrupt:
+ 750              	.LFB14:
+ 303:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 304:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 305:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Receiver Interrupt Enable.
+ 306:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 307:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 308:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 309:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 310:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 311:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_rx_interrupt(uint32_t usart)
+ 312:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 751              		.loc 1 312 1
+ 752              		.cfi_startproc
+ 753              		@ args = 0, pretend = 0, frame = 8
+ 754              		@ frame_needed = 1, uses_anonymous_args = 0
+ 755              		@ link register save eliminated.
+ 756 0000 80B4     		push	{r7}
+ 757              		.cfi_def_cfa_offset 4
+ 758              		.cfi_offset 7, -4
+ 759 0002 83B0     		sub	sp, sp, #12
+ 760              		.cfi_def_cfa_offset 16
+ 761 0004 00AF     		add	r7, sp, #0
+ 762              		.cfi_def_cfa_register 7
+ 763 0006 7860     		str	r0, [r7, #4]
+ 313:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) |= USART_CR1_RXNEIE;
+ 764              		.loc 1 313 19
+ 765 0008 7B68     		ldr	r3, [r7, #4]
+ 766 000a 0C33     		adds	r3, r3, #12
+ 767 000c 1B68     		ldr	r3, [r3]
+ 768 000e 7A68     		ldr	r2, [r7, #4]
+ 769 0010 0C32     		adds	r2, r2, #12
+ 770 0012 43F02003 		orr	r3, r3, #32
+ 771 0016 1360     		str	r3, [r2]
+ 314:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 772              		.loc 1 314 1
+ 773 0018 00BF     		nop
+ 774 001a 0C37     		adds	r7, r7, #12
+ 775              		.cfi_def_cfa_offset 4
+ 776 001c BD46     		mov	sp, r7
+ 777              		.cfi_def_cfa_register 13
+ 778              		@ sp needed
+ 779 001e 80BC     		pop	{r7}
+ 780              		.cfi_restore 7
+ 781              		.cfi_def_cfa_offset 0
+ 782 0020 7047     		bx	lr
+ 783              		.cfi_endproc
+ 784              	.LFE14:
+ 786              		.section	.text.usart_disable_rx_interrupt,"ax",%progbits
+ 787              		.align	1
+ 788              		.global	usart_disable_rx_interrupt
+ 789              		.syntax unified
+ 790              		.thumb
+ 791              		.thumb_func
+ 792              		.fpu softvfp
+ 794              	usart_disable_rx_interrupt:
+ 795              	.LFB15:
+ 315:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 316:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 317:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 318:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Receiver Interrupt Disable.
+ 319:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 320:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 321:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 322:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 323:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 324:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_rx_interrupt(uint32_t usart)
+ 325:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 796              		.loc 1 325 1
+ 797              		.cfi_startproc
+ 798              		@ args = 0, pretend = 0, frame = 8
+ 799              		@ frame_needed = 1, uses_anonymous_args = 0
+ 800              		@ link register save eliminated.
+ 801 0000 80B4     		push	{r7}
+ 802              		.cfi_def_cfa_offset 4
+ 803              		.cfi_offset 7, -4
+ 804 0002 83B0     		sub	sp, sp, #12
+ 805              		.cfi_def_cfa_offset 16
+ 806 0004 00AF     		add	r7, sp, #0
+ 807              		.cfi_def_cfa_register 7
+ 808 0006 7860     		str	r0, [r7, #4]
+ 326:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) &= ~USART_CR1_RXNEIE;
+ 809              		.loc 1 326 19
+ 810 0008 7B68     		ldr	r3, [r7, #4]
+ 811 000a 0C33     		adds	r3, r3, #12
+ 812 000c 1B68     		ldr	r3, [r3]
+ 813 000e 7A68     		ldr	r2, [r7, #4]
+ 814 0010 0C32     		adds	r2, r2, #12
+ 815 0012 23F02003 		bic	r3, r3, #32
+ 816 0016 1360     		str	r3, [r2]
+ 327:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 817              		.loc 1 327 1
+ 818 0018 00BF     		nop
+ 819 001a 0C37     		adds	r7, r7, #12
+ 820              		.cfi_def_cfa_offset 4
+ 821 001c BD46     		mov	sp, r7
+ 822              		.cfi_def_cfa_register 13
+ 823              		@ sp needed
+ 824 001e 80BC     		pop	{r7}
+ 825              		.cfi_restore 7
+ 826              		.cfi_def_cfa_offset 0
+ 827 0020 7047     		bx	lr
+ 828              		.cfi_endproc
+ 829              	.LFE15:
+ 831              		.section	.text.usart_enable_tx_interrupt,"ax",%progbits
+ 832              		.align	1
+ 833              		.global	usart_enable_tx_interrupt
+ 834              		.syntax unified
+ 835              		.thumb
+ 836              		.thumb_func
+ 837              		.fpu softvfp
+ 839              	usart_enable_tx_interrupt:
+ 840              	.LFB16:
+ 328:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 329:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 330:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Transmitter Interrupt Enable.
+ 331:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 332:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 333:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 334:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 335:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 336:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_tx_interrupt(uint32_t usart)
+ 337:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 841              		.loc 1 337 1
+ 842              		.cfi_startproc
+ 843              		@ args = 0, pretend = 0, frame = 8
+ 844              		@ frame_needed = 1, uses_anonymous_args = 0
+ 845              		@ link register save eliminated.
+ 846 0000 80B4     		push	{r7}
+ 847              		.cfi_def_cfa_offset 4
+ 848              		.cfi_offset 7, -4
+ 849 0002 83B0     		sub	sp, sp, #12
+ 850              		.cfi_def_cfa_offset 16
+ 851 0004 00AF     		add	r7, sp, #0
+ 852              		.cfi_def_cfa_register 7
+ 853 0006 7860     		str	r0, [r7, #4]
+ 338:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) |= USART_CR1_TXEIE;
+ 854              		.loc 1 338 19
+ 855 0008 7B68     		ldr	r3, [r7, #4]
+ 856 000a 0C33     		adds	r3, r3, #12
+ 857 000c 1B68     		ldr	r3, [r3]
+ 858 000e 7A68     		ldr	r2, [r7, #4]
+ 859 0010 0C32     		adds	r2, r2, #12
+ 860 0012 43F08003 		orr	r3, r3, #128
+ 861 0016 1360     		str	r3, [r2]
+ 339:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 862              		.loc 1 339 1
+ 863 0018 00BF     		nop
+ 864 001a 0C37     		adds	r7, r7, #12
+ 865              		.cfi_def_cfa_offset 4
+ 866 001c BD46     		mov	sp, r7
+ 867              		.cfi_def_cfa_register 13
+ 868              		@ sp needed
+ 869 001e 80BC     		pop	{r7}
+ 870              		.cfi_restore 7
+ 871              		.cfi_def_cfa_offset 0
+ 872 0020 7047     		bx	lr
+ 873              		.cfi_endproc
+ 874              	.LFE16:
+ 876              		.section	.text.usart_disable_tx_interrupt,"ax",%progbits
+ 877              		.align	1
+ 878              		.global	usart_disable_tx_interrupt
+ 879              		.syntax unified
+ 880              		.thumb
+ 881              		.thumb_func
+ 882              		.fpu softvfp
+ 884              	usart_disable_tx_interrupt:
+ 885              	.LFB17:
+ 340:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 341:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 342:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Transmitter Interrupt Disable.
+ 343:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 344:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 345:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 346:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 347:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 348:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_tx_interrupt(uint32_t usart)
+ 349:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 886              		.loc 1 349 1
+ 887              		.cfi_startproc
+ 888              		@ args = 0, pretend = 0, frame = 8
+ 889              		@ frame_needed = 1, uses_anonymous_args = 0
+ 890              		@ link register save eliminated.
+ 891 0000 80B4     		push	{r7}
+ 892              		.cfi_def_cfa_offset 4
+ 893              		.cfi_offset 7, -4
+ 894 0002 83B0     		sub	sp, sp, #12
+ 895              		.cfi_def_cfa_offset 16
+ 896 0004 00AF     		add	r7, sp, #0
+ 897              		.cfi_def_cfa_register 7
+ 898 0006 7860     		str	r0, [r7, #4]
+ 350:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) &= ~USART_CR1_TXEIE;
+ 899              		.loc 1 350 19
+ 900 0008 7B68     		ldr	r3, [r7, #4]
+ 901 000a 0C33     		adds	r3, r3, #12
+ 902 000c 1B68     		ldr	r3, [r3]
+ 903 000e 7A68     		ldr	r2, [r7, #4]
+ 904 0010 0C32     		adds	r2, r2, #12
+ 905 0012 23F08003 		bic	r3, r3, #128
+ 906 0016 1360     		str	r3, [r2]
+ 351:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 907              		.loc 1 351 1
+ 908 0018 00BF     		nop
+ 909 001a 0C37     		adds	r7, r7, #12
+ 910              		.cfi_def_cfa_offset 4
+ 911 001c BD46     		mov	sp, r7
+ 912              		.cfi_def_cfa_register 13
+ 913              		@ sp needed
+ 914 001e 80BC     		pop	{r7}
+ 915              		.cfi_restore 7
+ 916              		.cfi_def_cfa_offset 0
+ 917 0020 7047     		bx	lr
+ 918              		.cfi_endproc
+ 919              	.LFE17:
+ 921              		.section	.text.usart_enable_tx_complete_interrupt,"ax",%progbits
+ 922              		.align	1
+ 923              		.global	usart_enable_tx_complete_interrupt
+ 924              		.syntax unified
+ 925              		.thumb
+ 926              		.thumb_func
+ 927              		.fpu softvfp
+ 929              	usart_enable_tx_complete_interrupt:
+ 930              	.LFB18:
+ 352:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 353:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 354:../libopencm3/lib/stm32/common/usart_common_all.c **** /**
+ 355:../libopencm3/lib/stm32/common/usart_common_all.c ****  * @brief USART Transmission Complete Interrupt Enable
+ 356:../libopencm3/lib/stm32/common/usart_common_all.c ****  * 
+ 357:../libopencm3/lib/stm32/common/usart_common_all.c ****  * @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 358:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 359:../libopencm3/lib/stm32/common/usart_common_all.c ****  */
+ 360:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 361:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_tx_complete_interrupt(uint32_t usart)
+ 362:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 931              		.loc 1 362 1
+ 932              		.cfi_startproc
+ 933              		@ args = 0, pretend = 0, frame = 8
+ 934              		@ frame_needed = 1, uses_anonymous_args = 0
+ 935              		@ link register save eliminated.
+ 936 0000 80B4     		push	{r7}
+ 937              		.cfi_def_cfa_offset 4
+ 938              		.cfi_offset 7, -4
+ 939 0002 83B0     		sub	sp, sp, #12
+ 940              		.cfi_def_cfa_offset 16
+ 941 0004 00AF     		add	r7, sp, #0
+ 942              		.cfi_def_cfa_register 7
+ 943 0006 7860     		str	r0, [r7, #4]
+ 363:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) |= USART_CR1_TCIE;
+ 944              		.loc 1 363 19
+ 945 0008 7B68     		ldr	r3, [r7, #4]
+ 946 000a 0C33     		adds	r3, r3, #12
+ 947 000c 1B68     		ldr	r3, [r3]
+ 948 000e 7A68     		ldr	r2, [r7, #4]
+ 949 0010 0C32     		adds	r2, r2, #12
+ 950 0012 43F04003 		orr	r3, r3, #64
+ 951 0016 1360     		str	r3, [r2]
+ 364:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 952              		.loc 1 364 1
+ 953 0018 00BF     		nop
+ 954 001a 0C37     		adds	r7, r7, #12
+ 955              		.cfi_def_cfa_offset 4
+ 956 001c BD46     		mov	sp, r7
+ 957              		.cfi_def_cfa_register 13
+ 958              		@ sp needed
+ 959 001e 80BC     		pop	{r7}
+ 960              		.cfi_restore 7
+ 961              		.cfi_def_cfa_offset 0
+ 962 0020 7047     		bx	lr
+ 963              		.cfi_endproc
+ 964              	.LFE18:
+ 966              		.section	.text.usart_disable_tx_complete_interrupt,"ax",%progbits
+ 967              		.align	1
+ 968              		.global	usart_disable_tx_complete_interrupt
+ 969              		.syntax unified
+ 970              		.thumb
+ 971              		.thumb_func
+ 972              		.fpu softvfp
+ 974              	usart_disable_tx_complete_interrupt:
+ 975              	.LFB19:
+ 365:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 366:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 367:../libopencm3/lib/stm32/common/usart_common_all.c **** /**
+ 368:../libopencm3/lib/stm32/common/usart_common_all.c ****  * @brief USART Transmission Complete Interrupt Disable
+ 369:../libopencm3/lib/stm32/common/usart_common_all.c ****  * 
+ 370:../libopencm3/lib/stm32/common/usart_common_all.c ****  * @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 371:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 372:../libopencm3/lib/stm32/common/usart_common_all.c ****  */
+ 373:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 374:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_tx_complete_interrupt(uint32_t usart)
+ 375:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 976              		.loc 1 375 1
+ 977              		.cfi_startproc
+ 978              		@ args = 0, pretend = 0, frame = 8
+ 979              		@ frame_needed = 1, uses_anonymous_args = 0
+ 980              		@ link register save eliminated.
+ 981 0000 80B4     		push	{r7}
+ 982              		.cfi_def_cfa_offset 4
+ 983              		.cfi_offset 7, -4
+ 984 0002 83B0     		sub	sp, sp, #12
+ 985              		.cfi_def_cfa_offset 16
+ 986 0004 00AF     		add	r7, sp, #0
+ 987              		.cfi_def_cfa_register 7
+ 988 0006 7860     		str	r0, [r7, #4]
+ 376:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) &= ~USART_CR1_TCIE;
+ 989              		.loc 1 376 19
+ 990 0008 7B68     		ldr	r3, [r7, #4]
+ 991 000a 0C33     		adds	r3, r3, #12
+ 992 000c 1B68     		ldr	r3, [r3]
+ 993 000e 7A68     		ldr	r2, [r7, #4]
+ 994 0010 0C32     		adds	r2, r2, #12
+ 995 0012 23F04003 		bic	r3, r3, #64
+ 996 0016 1360     		str	r3, [r2]
+ 377:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 997              		.loc 1 377 1
+ 998 0018 00BF     		nop
+ 999 001a 0C37     		adds	r7, r7, #12
+ 1000              		.cfi_def_cfa_offset 4
+ 1001 001c BD46     		mov	sp, r7
+ 1002              		.cfi_def_cfa_register 13
+ 1003              		@ sp needed
+ 1004 001e 80BC     		pop	{r7}
+ 1005              		.cfi_restore 7
+ 1006              		.cfi_def_cfa_offset 0
+ 1007 0020 7047     		bx	lr
+ 1008              		.cfi_endproc
+ 1009              	.LFE19:
+ 1011              		.section	.text.usart_enable_idle_interrupt,"ax",%progbits
+ 1012              		.align	1
+ 1013              		.global	usart_enable_idle_interrupt
+ 1014              		.syntax unified
+ 1015              		.thumb
+ 1016              		.thumb_func
+ 1017              		.fpu softvfp
+ 1019              	usart_enable_idle_interrupt:
+ 1020              	.LFB20:
+ 378:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 379:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Idle Interrupt Enable.
+ 380:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 381:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 382:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 383:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 384:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 385:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_idle_interrupt(uint32_t usart)
+ 386:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 1021              		.loc 1 386 1
+ 1022              		.cfi_startproc
+ 1023              		@ args = 0, pretend = 0, frame = 8
+ 1024              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1025              		@ link register save eliminated.
+ 1026 0000 80B4     		push	{r7}
+ 1027              		.cfi_def_cfa_offset 4
+ 1028              		.cfi_offset 7, -4
+ 1029 0002 83B0     		sub	sp, sp, #12
+ 1030              		.cfi_def_cfa_offset 16
+ 1031 0004 00AF     		add	r7, sp, #0
+ 1032              		.cfi_def_cfa_register 7
+ 1033 0006 7860     		str	r0, [r7, #4]
+ 387:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) |= USART_CR1_IDLEIE;
+ 1034              		.loc 1 387 19
+ 1035 0008 7B68     		ldr	r3, [r7, #4]
+ 1036 000a 0C33     		adds	r3, r3, #12
+ 1037 000c 1B68     		ldr	r3, [r3]
+ 1038 000e 7A68     		ldr	r2, [r7, #4]
+ 1039 0010 0C32     		adds	r2, r2, #12
+ 1040 0012 43F01003 		orr	r3, r3, #16
+ 1041 0016 1360     		str	r3, [r2]
+ 388:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 1042              		.loc 1 388 1
+ 1043 0018 00BF     		nop
+ 1044 001a 0C37     		adds	r7, r7, #12
+ 1045              		.cfi_def_cfa_offset 4
+ 1046 001c BD46     		mov	sp, r7
+ 1047              		.cfi_def_cfa_register 13
+ 1048              		@ sp needed
+ 1049 001e 80BC     		pop	{r7}
+ 1050              		.cfi_restore 7
+ 1051              		.cfi_def_cfa_offset 0
+ 1052 0020 7047     		bx	lr
+ 1053              		.cfi_endproc
+ 1054              	.LFE20:
+ 1056              		.section	.text.usart_disable_idle_interrupt,"ax",%progbits
+ 1057              		.align	1
+ 1058              		.global	usart_disable_idle_interrupt
+ 1059              		.syntax unified
+ 1060              		.thumb
+ 1061              		.thumb_func
+ 1062              		.fpu softvfp
+ 1064              	usart_disable_idle_interrupt:
+ 1065              	.LFB21:
+ 389:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 390:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 391:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Idle Interrupt Disable.
+ 392:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 393:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 394:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 395:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 396:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 397:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_idle_interrupt(uint32_t usart)
+ 398:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 1066              		.loc 1 398 1
+ 1067              		.cfi_startproc
+ 1068              		@ args = 0, pretend = 0, frame = 8
+ 1069              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1070              		@ link register save eliminated.
+ 1071 0000 80B4     		push	{r7}
+ 1072              		.cfi_def_cfa_offset 4
+ 1073              		.cfi_offset 7, -4
+ 1074 0002 83B0     		sub	sp, sp, #12
+ 1075              		.cfi_def_cfa_offset 16
+ 1076 0004 00AF     		add	r7, sp, #0
+ 1077              		.cfi_def_cfa_register 7
+ 1078 0006 7860     		str	r0, [r7, #4]
+ 399:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR1(usart) &= ~USART_CR1_IDLEIE;
+ 1079              		.loc 1 399 19
+ 1080 0008 7B68     		ldr	r3, [r7, #4]
+ 1081 000a 0C33     		adds	r3, r3, #12
+ 1082 000c 1B68     		ldr	r3, [r3]
+ 1083 000e 7A68     		ldr	r2, [r7, #4]
+ 1084 0010 0C32     		adds	r2, r2, #12
+ 1085 0012 23F01003 		bic	r3, r3, #16
+ 1086 0016 1360     		str	r3, [r2]
+ 400:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 1087              		.loc 1 400 1
+ 1088 0018 00BF     		nop
+ 1089 001a 0C37     		adds	r7, r7, #12
+ 1090              		.cfi_def_cfa_offset 4
+ 1091 001c BD46     		mov	sp, r7
+ 1092              		.cfi_def_cfa_register 13
+ 1093              		@ sp needed
+ 1094 001e 80BC     		pop	{r7}
+ 1095              		.cfi_restore 7
+ 1096              		.cfi_def_cfa_offset 0
+ 1097 0020 7047     		bx	lr
+ 1098              		.cfi_endproc
+ 1099              	.LFE21:
+ 1101              		.section	.text.usart_enable_error_interrupt,"ax",%progbits
+ 1102              		.align	1
+ 1103              		.global	usart_enable_error_interrupt
+ 1104              		.syntax unified
+ 1105              		.thumb
+ 1106              		.thumb_func
+ 1107              		.fpu softvfp
+ 1109              	usart_enable_error_interrupt:
+ 1110              	.LFB22:
+ 401:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 402:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 403:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Error Interrupt Enable.
+ 404:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 405:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 406:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 407:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 408:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 409:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_enable_error_interrupt(uint32_t usart)
+ 410:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 1111              		.loc 1 410 1
+ 1112              		.cfi_startproc
+ 1113              		@ args = 0, pretend = 0, frame = 8
+ 1114              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1115              		@ link register save eliminated.
+ 1116 0000 80B4     		push	{r7}
+ 1117              		.cfi_def_cfa_offset 4
+ 1118              		.cfi_offset 7, -4
+ 1119 0002 83B0     		sub	sp, sp, #12
+ 1120              		.cfi_def_cfa_offset 16
+ 1121 0004 00AF     		add	r7, sp, #0
+ 1122              		.cfi_def_cfa_register 7
+ 1123 0006 7860     		str	r0, [r7, #4]
+ 411:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) |= USART_CR3_EIE;
+ 1124              		.loc 1 411 19
+ 1125 0008 7B68     		ldr	r3, [r7, #4]
+ 1126 000a 1433     		adds	r3, r3, #20
+ 1127 000c 1B68     		ldr	r3, [r3]
+ 1128 000e 7A68     		ldr	r2, [r7, #4]
+ 1129 0010 1432     		adds	r2, r2, #20
+ 1130 0012 43F00103 		orr	r3, r3, #1
+ 1131 0016 1360     		str	r3, [r2]
+ 412:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 1132              		.loc 1 412 1
+ 1133 0018 00BF     		nop
+ 1134 001a 0C37     		adds	r7, r7, #12
+ 1135              		.cfi_def_cfa_offset 4
+ 1136 001c BD46     		mov	sp, r7
+ 1137              		.cfi_def_cfa_register 13
+ 1138              		@ sp needed
+ 1139 001e 80BC     		pop	{r7}
+ 1140              		.cfi_restore 7
+ 1141              		.cfi_def_cfa_offset 0
+ 1142 0020 7047     		bx	lr
+ 1143              		.cfi_endproc
+ 1144              	.LFE22:
+ 1146              		.section	.text.usart_disable_error_interrupt,"ax",%progbits
+ 1147              		.align	1
+ 1148              		.global	usart_disable_error_interrupt
+ 1149              		.syntax unified
+ 1150              		.thumb
+ 1151              		.thumb_func
+ 1152              		.fpu softvfp
+ 1154              	usart_disable_error_interrupt:
+ 1155              	.LFB23:
+ 413:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 414:../libopencm3/lib/stm32/common/usart_common_all.c **** /*---------------------------------------------------------------------------*/
+ 415:../libopencm3/lib/stm32/common/usart_common_all.c **** /** @brief USART Error Interrupt Disable.
+ 416:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 417:../libopencm3/lib/stm32/common/usart_common_all.c **** @param[in] usart unsigned 32 bit. USART block register address base @ref
+ 418:../libopencm3/lib/stm32/common/usart_common_all.c **** usart_reg_base
+ 419:../libopencm3/lib/stm32/common/usart_common_all.c **** */
+ 420:../libopencm3/lib/stm32/common/usart_common_all.c **** 
+ 421:../libopencm3/lib/stm32/common/usart_common_all.c **** void usart_disable_error_interrupt(uint32_t usart)
+ 422:../libopencm3/lib/stm32/common/usart_common_all.c **** {
+ 1156              		.loc 1 422 1
+ 1157              		.cfi_startproc
+ 1158              		@ args = 0, pretend = 0, frame = 8
+ 1159              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1160              		@ link register save eliminated.
+ 1161 0000 80B4     		push	{r7}
+ 1162              		.cfi_def_cfa_offset 4
+ 1163              		.cfi_offset 7, -4
+ 1164 0002 83B0     		sub	sp, sp, #12
+ 1165              		.cfi_def_cfa_offset 16
+ 1166 0004 00AF     		add	r7, sp, #0
+ 1167              		.cfi_def_cfa_register 7
+ 1168 0006 7860     		str	r0, [r7, #4]
+ 423:../libopencm3/lib/stm32/common/usart_common_all.c **** 	USART_CR3(usart) &= ~USART_CR3_EIE;
+ 1169              		.loc 1 423 19
+ 1170 0008 7B68     		ldr	r3, [r7, #4]
+ 1171 000a 1433     		adds	r3, r3, #20
+ 1172 000c 1B68     		ldr	r3, [r3]
+ 1173 000e 7A68     		ldr	r2, [r7, #4]
+ 1174 0010 1432     		adds	r2, r2, #20
+ 1175 0012 23F00103 		bic	r3, r3, #1
+ 1176 0016 1360     		str	r3, [r2]
+ 424:../libopencm3/lib/stm32/common/usart_common_all.c **** }
+ 1177              		.loc 1 424 1
+ 1178 0018 00BF     		nop
+ 1179 001a 0C37     		adds	r7, r7, #12
+ 1180              		.cfi_def_cfa_offset 4
+ 1181 001c BD46     		mov	sp, r7
+ 1182              		.cfi_def_cfa_register 13
+ 1183              		@ sp needed
+ 1184 001e 80BC     		pop	{r7}
+ 1185              		.cfi_restore 7
+ 1186              		.cfi_def_cfa_offset 0
+ 1187 0020 7047     		bx	lr
+ 1188              		.cfi_endproc
+ 1189              	.LFE23:
+ 1191              		.text
+ 1192              	.Letext0:
+ 1193              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1194              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1195              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usart_common_all.c
+     /tmp/ccCBKmxv.s:16     .text.usart_set_baudrate:0000000000000000 $t
+     /tmp/ccCBKmxv.s:24     .text.usart_set_baudrate:0000000000000000 usart_set_baudrate
+     /tmp/ccCBKmxv.s:86     .text.usart_set_baudrate:0000000000000048 $d
+     /tmp/ccCBKmxv.s:93     .text.usart_set_databits:0000000000000000 $t
+     /tmp/ccCBKmxv.s:100    .text.usart_set_databits:0000000000000000 usart_set_databits
+     /tmp/ccCBKmxv.s:155    .text.usart_set_stopbits:0000000000000000 $t
+     /tmp/ccCBKmxv.s:162    .text.usart_set_stopbits:0000000000000000 usart_set_stopbits
+     /tmp/ccCBKmxv.s:213    .text.usart_set_parity:0000000000000000 $t
+     /tmp/ccCBKmxv.s:220    .text.usart_set_parity:0000000000000000 usart_set_parity
+     /tmp/ccCBKmxv.s:271    .text.usart_set_mode:0000000000000000 $t
+     /tmp/ccCBKmxv.s:278    .text.usart_set_mode:0000000000000000 usart_set_mode
+     /tmp/ccCBKmxv.s:329    .text.usart_set_flow_control:0000000000000000 $t
+     /tmp/ccCBKmxv.s:336    .text.usart_set_flow_control:0000000000000000 usart_set_flow_control
+     /tmp/ccCBKmxv.s:387    .text.usart_enable:0000000000000000 $t
+     /tmp/ccCBKmxv.s:394    .text.usart_enable:0000000000000000 usart_enable
+     /tmp/ccCBKmxv.s:432    .text.usart_disable:0000000000000000 $t
+     /tmp/ccCBKmxv.s:439    .text.usart_disable:0000000000000000 usart_disable
+     /tmp/ccCBKmxv.s:477    .text.usart_send_blocking:0000000000000000 $t
+     /tmp/ccCBKmxv.s:484    .text.usart_send_blocking:0000000000000000 usart_send_blocking
+     /tmp/ccCBKmxv.s:521    .text.usart_recv_blocking:0000000000000000 $t
+     /tmp/ccCBKmxv.s:528    .text.usart_recv_blocking:0000000000000000 usart_recv_blocking
+     /tmp/ccCBKmxv.s:562    .text.usart_enable_rx_dma:0000000000000000 $t
+     /tmp/ccCBKmxv.s:569    .text.usart_enable_rx_dma:0000000000000000 usart_enable_rx_dma
+     /tmp/ccCBKmxv.s:607    .text.usart_disable_rx_dma:0000000000000000 $t
+     /tmp/ccCBKmxv.s:614    .text.usart_disable_rx_dma:0000000000000000 usart_disable_rx_dma
+     /tmp/ccCBKmxv.s:652    .text.usart_enable_tx_dma:0000000000000000 $t
+     /tmp/ccCBKmxv.s:659    .text.usart_enable_tx_dma:0000000000000000 usart_enable_tx_dma
+     /tmp/ccCBKmxv.s:697    .text.usart_disable_tx_dma:0000000000000000 $t
+     /tmp/ccCBKmxv.s:704    .text.usart_disable_tx_dma:0000000000000000 usart_disable_tx_dma
+     /tmp/ccCBKmxv.s:742    .text.usart_enable_rx_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:749    .text.usart_enable_rx_interrupt:0000000000000000 usart_enable_rx_interrupt
+     /tmp/ccCBKmxv.s:787    .text.usart_disable_rx_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:794    .text.usart_disable_rx_interrupt:0000000000000000 usart_disable_rx_interrupt
+     /tmp/ccCBKmxv.s:832    .text.usart_enable_tx_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:839    .text.usart_enable_tx_interrupt:0000000000000000 usart_enable_tx_interrupt
+     /tmp/ccCBKmxv.s:877    .text.usart_disable_tx_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:884    .text.usart_disable_tx_interrupt:0000000000000000 usart_disable_tx_interrupt
+     /tmp/ccCBKmxv.s:922    .text.usart_enable_tx_complete_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:929    .text.usart_enable_tx_complete_interrupt:0000000000000000 usart_enable_tx_complete_interrupt
+     /tmp/ccCBKmxv.s:967    .text.usart_disable_tx_complete_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:974    .text.usart_disable_tx_complete_interrupt:0000000000000000 usart_disable_tx_complete_interrupt
+     /tmp/ccCBKmxv.s:1012   .text.usart_enable_idle_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:1019   .text.usart_enable_idle_interrupt:0000000000000000 usart_enable_idle_interrupt
+     /tmp/ccCBKmxv.s:1057   .text.usart_disable_idle_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:1064   .text.usart_disable_idle_interrupt:0000000000000000 usart_disable_idle_interrupt
+     /tmp/ccCBKmxv.s:1102   .text.usart_enable_error_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:1109   .text.usart_enable_error_interrupt:0000000000000000 usart_enable_error_interrupt
+     /tmp/ccCBKmxv.s:1147   .text.usart_disable_error_interrupt:0000000000000000 $t
+     /tmp/ccCBKmxv.s:1154   .text.usart_disable_error_interrupt:0000000000000000 usart_disable_error_interrupt
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.usart_common_all.h.35.bd3c3b47d5858b45f68435b934dd532e
+                           .group:0000000000000000 wm4.usart_common_f124.h.45.60f715901cfdf01238dfa491e64ed995
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+
+UNDEFINED SYMBOLS
+rcc_apb1_frequency
+rcc_apb2_frequency
+usart_wait_send_ready
+usart_send
+usart_wait_recv_ready
+usart_recv

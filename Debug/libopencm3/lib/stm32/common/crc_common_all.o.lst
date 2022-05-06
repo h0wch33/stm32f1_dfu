@@ -1,0 +1,257 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"crc_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.crc_reset,"ax",%progbits
+  16              		.align	1
+  17              		.global	crc_reset
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	crc_reset:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/crc_common_all.c"
+   1:../libopencm3/lib/stm32/common/crc_common_all.c **** /** @addtogroup crc_file CRC peripheral API
+   2:../libopencm3/lib/stm32/common/crc_common_all.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+   4:../libopencm3/lib/stm32/common/crc_common_all.c **** @author @htmlonly &copy; @endhtmlonly 2012 Karl Palsson <karlp@remake.is>
+   5:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+   6:../libopencm3/lib/stm32/common/crc_common_all.c **** */
+   7:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+   8:../libopencm3/lib/stm32/common/crc_common_all.c **** /*
+   9:../libopencm3/lib/stm32/common/crc_common_all.c ****  * This file is part of the libopencm3 project.
+  10:../libopencm3/lib/stm32/common/crc_common_all.c ****  *
+  11:../libopencm3/lib/stm32/common/crc_common_all.c ****  * Copyright (C) 2012 Karl Palsson <karlp@remake.is>
+  12:../libopencm3/lib/stm32/common/crc_common_all.c ****  *
+  13:../libopencm3/lib/stm32/common/crc_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  14:../libopencm3/lib/stm32/common/crc_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  15:../libopencm3/lib/stm32/common/crc_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  16:../libopencm3/lib/stm32/common/crc_common_all.c ****  * (at your option) any later version.
+  17:../libopencm3/lib/stm32/common/crc_common_all.c ****  *
+  18:../libopencm3/lib/stm32/common/crc_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  19:../libopencm3/lib/stm32/common/crc_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  20:../libopencm3/lib/stm32/common/crc_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  21:../libopencm3/lib/stm32/common/crc_common_all.c ****  * GNU Lesser General Public License for more details.
+  22:../libopencm3/lib/stm32/common/crc_common_all.c ****  *
+  23:../libopencm3/lib/stm32/common/crc_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  24:../libopencm3/lib/stm32/common/crc_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  25:../libopencm3/lib/stm32/common/crc_common_all.c ****  */
+  26:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  27:../libopencm3/lib/stm32/common/crc_common_all.c **** #include <libopencm3/stm32/crc.h>
+  28:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  29:../libopencm3/lib/stm32/common/crc_common_all.c **** /**@{*/
+  30:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  31:../libopencm3/lib/stm32/common/crc_common_all.c **** void crc_reset(void)
+  32:../libopencm3/lib/stm32/common/crc_common_all.c **** {
+  27              		.loc 1 32 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  33:../libopencm3/lib/stm32/common/crc_common_all.c **** 	CRC_CR |= CRC_CR_RESET;
+  37              		.loc 1 33 9
+  38 0004 044B     		ldr	r3, .L2
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 034A     		ldr	r2, .L2
+  41 000a 43F00103 		orr	r3, r3, #1
+  42 000e 1360     		str	r3, [r2]
+  34:../libopencm3/lib/stm32/common/crc_common_all.c **** }
+  43              		.loc 1 34 1
+  44 0010 00BF     		nop
+  45 0012 BD46     		mov	sp, r7
+  46              		.cfi_def_cfa_register 13
+  47              		@ sp needed
+  48 0014 80BC     		pop	{r7}
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 0016 7047     		bx	lr
+  52              	.L3:
+  53              		.align	2
+  54              	.L2:
+  55 0018 08300240 		.word	1073885192
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.section	.text.crc_calculate,"ax",%progbits
+  60              		.align	1
+  61              		.global	crc_calculate
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu softvfp
+  67              	crc_calculate:
+  68              	.LFB1:
+  35:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  36:../libopencm3/lib/stm32/common/crc_common_all.c **** uint32_t crc_calculate(uint32_t data)
+  37:../libopencm3/lib/stm32/common/crc_common_all.c **** {
+  69              		.loc 1 37 1
+  70              		.cfi_startproc
+  71              		@ args = 0, pretend = 0, frame = 8
+  72              		@ frame_needed = 1, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 80B4     		push	{r7}
+  75              		.cfi_def_cfa_offset 4
+  76              		.cfi_offset 7, -4
+  77 0002 83B0     		sub	sp, sp, #12
+  78              		.cfi_def_cfa_offset 16
+  79 0004 00AF     		add	r7, sp, #0
+  80              		.cfi_def_cfa_register 7
+  81 0006 7860     		str	r0, [r7, #4]
+  38:../libopencm3/lib/stm32/common/crc_common_all.c **** 	CRC_DR = data;
+  82              		.loc 1 38 2
+  83 0008 044A     		ldr	r2, .L6
+  84              		.loc 1 38 9
+  85 000a 7B68     		ldr	r3, [r7, #4]
+  86 000c 1360     		str	r3, [r2]
+  39:../libopencm3/lib/stm32/common/crc_common_all.c **** 	/* Data sheet says this blocks until it's ready.... */
+  40:../libopencm3/lib/stm32/common/crc_common_all.c **** 	return CRC_DR;
+  87              		.loc 1 40 9
+  88 000e 034B     		ldr	r3, .L6
+  89 0010 1B68     		ldr	r3, [r3]
+  41:../libopencm3/lib/stm32/common/crc_common_all.c **** }
+  90              		.loc 1 41 1
+  91 0012 1846     		mov	r0, r3
+  92 0014 0C37     		adds	r7, r7, #12
+  93              		.cfi_def_cfa_offset 4
+  94 0016 BD46     		mov	sp, r7
+  95              		.cfi_def_cfa_register 13
+  96              		@ sp needed
+  97 0018 80BC     		pop	{r7}
+  98              		.cfi_restore 7
+  99              		.cfi_def_cfa_offset 0
+ 100 001a 7047     		bx	lr
+ 101              	.L7:
+ 102              		.align	2
+ 103              	.L6:
+ 104 001c 00300240 		.word	1073885184
+ 105              		.cfi_endproc
+ 106              	.LFE1:
+ 108              		.section	.text.crc_calculate_block,"ax",%progbits
+ 109              		.align	1
+ 110              		.global	crc_calculate_block
+ 111              		.syntax unified
+ 112              		.thumb
+ 113              		.thumb_func
+ 114              		.fpu softvfp
+ 116              	crc_calculate_block:
+ 117              	.LFB2:
+  42:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  43:../libopencm3/lib/stm32/common/crc_common_all.c **** uint32_t crc_calculate_block(uint32_t *datap, int size)
+  44:../libopencm3/lib/stm32/common/crc_common_all.c **** {
+ 118              		.loc 1 44 1
+ 119              		.cfi_startproc
+ 120              		@ args = 0, pretend = 0, frame = 16
+ 121              		@ frame_needed = 1, uses_anonymous_args = 0
+ 122              		@ link register save eliminated.
+ 123 0000 80B4     		push	{r7}
+ 124              		.cfi_def_cfa_offset 4
+ 125              		.cfi_offset 7, -4
+ 126 0002 85B0     		sub	sp, sp, #20
+ 127              		.cfi_def_cfa_offset 24
+ 128 0004 00AF     		add	r7, sp, #0
+ 129              		.cfi_def_cfa_register 7
+ 130 0006 7860     		str	r0, [r7, #4]
+ 131 0008 3960     		str	r1, [r7]
+  45:../libopencm3/lib/stm32/common/crc_common_all.c **** 	int i;
+  46:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  47:../libopencm3/lib/stm32/common/crc_common_all.c **** 	for (i = 0; i < size; i++) {
+ 132              		.loc 1 47 9
+ 133 000a 0023     		movs	r3, #0
+ 134 000c FB60     		str	r3, [r7, #12]
+ 135              		.loc 1 47 2
+ 136 000e 09E0     		b	.L9
+ 137              	.L10:
+  48:../libopencm3/lib/stm32/common/crc_common_all.c **** 		CRC_DR = datap[i];
+ 138              		.loc 1 48 17 discriminator 3
+ 139 0010 FB68     		ldr	r3, [r7, #12]
+ 140 0012 9B00     		lsls	r3, r3, #2
+ 141 0014 7A68     		ldr	r2, [r7, #4]
+ 142 0016 1344     		add	r3, r3, r2
+ 143              		.loc 1 48 3 discriminator 3
+ 144 0018 084A     		ldr	r2, .L12
+ 145              		.loc 1 48 17 discriminator 3
+ 146 001a 1B68     		ldr	r3, [r3]
+ 147              		.loc 1 48 10 discriminator 3
+ 148 001c 1360     		str	r3, [r2]
+  47:../libopencm3/lib/stm32/common/crc_common_all.c **** 		CRC_DR = datap[i];
+ 149              		.loc 1 47 25 discriminator 3
+ 150 001e FB68     		ldr	r3, [r7, #12]
+ 151 0020 0133     		adds	r3, r3, #1
+ 152 0022 FB60     		str	r3, [r7, #12]
+ 153              	.L9:
+  47:../libopencm3/lib/stm32/common/crc_common_all.c **** 		CRC_DR = datap[i];
+ 154              		.loc 1 47 2 discriminator 1
+ 155 0024 FA68     		ldr	r2, [r7, #12]
+ 156 0026 3B68     		ldr	r3, [r7]
+ 157 0028 9A42     		cmp	r2, r3
+ 158 002a F1DB     		blt	.L10
+  49:../libopencm3/lib/stm32/common/crc_common_all.c **** 	}
+  50:../libopencm3/lib/stm32/common/crc_common_all.c **** 
+  51:../libopencm3/lib/stm32/common/crc_common_all.c **** 	return CRC_DR;
+ 159              		.loc 1 51 9
+ 160 002c 034B     		ldr	r3, .L12
+ 161 002e 1B68     		ldr	r3, [r3]
+  52:../libopencm3/lib/stm32/common/crc_common_all.c **** }
+ 162              		.loc 1 52 1
+ 163 0030 1846     		mov	r0, r3
+ 164 0032 1437     		adds	r7, r7, #20
+ 165              		.cfi_def_cfa_offset 4
+ 166 0034 BD46     		mov	sp, r7
+ 167              		.cfi_def_cfa_register 13
+ 168              		@ sp needed
+ 169 0036 80BC     		pop	{r7}
+ 170              		.cfi_restore 7
+ 171              		.cfi_def_cfa_offset 0
+ 172 0038 7047     		bx	lr
+ 173              	.L13:
+ 174 003a 00BF     		.align	2
+ 175              	.L12:
+ 176 003c 00300240 		.word	1073885184
+ 177              		.cfi_endproc
+ 178              	.LFE2:
+ 180              		.text
+ 181              	.Letext0:
+ 182              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 183              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 crc_common_all.c
+     /tmp/ccdUYf5q.s:16     .text.crc_reset:0000000000000000 $t
+     /tmp/ccdUYf5q.s:24     .text.crc_reset:0000000000000000 crc_reset
+     /tmp/ccdUYf5q.s:55     .text.crc_reset:0000000000000018 $d
+     /tmp/ccdUYf5q.s:60     .text.crc_calculate:0000000000000000 $t
+     /tmp/ccdUYf5q.s:67     .text.crc_calculate:0000000000000000 crc_calculate
+     /tmp/ccdUYf5q.s:104    .text.crc_calculate:000000000000001c $d
+     /tmp/ccdUYf5q.s:109    .text.crc_calculate_block:0000000000000000 $t
+     /tmp/ccdUYf5q.s:116    .text.crc_calculate_block:0000000000000000 crc_calculate_block
+     /tmp/ccdUYf5q.s:176    .text.crc_calculate_block:000000000000003c $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.crc_common_all.h.44.a16a7109a0040c8bc1b72d650e686fb8
+
+NO UNDEFINED SYMBOLS

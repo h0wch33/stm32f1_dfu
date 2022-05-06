@@ -1,0 +1,123 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"assert.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.cm3_assert_failed,"ax",%progbits
+  16              		.align	1
+  17              		.weak	cm3_assert_failed
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	cm3_assert_failed:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/cm3/assert.c"
+   1:../libopencm3/lib/cm3/assert.c **** /*
+   2:../libopencm3/lib/cm3/assert.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/cm3/assert.c ****  *
+   4:../libopencm3/lib/cm3/assert.c ****  * Copyright (C) 2012 Tomaz Solc <tomaz.solc@tablix.org>
+   5:../libopencm3/lib/cm3/assert.c ****  *
+   6:../libopencm3/lib/cm3/assert.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../libopencm3/lib/cm3/assert.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../libopencm3/lib/cm3/assert.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../libopencm3/lib/cm3/assert.c ****  * (at your option) any later version.
+  10:../libopencm3/lib/cm3/assert.c ****  *
+  11:../libopencm3/lib/cm3/assert.c ****  * This library is distributed in the hope that it will be useful,
+  12:../libopencm3/lib/cm3/assert.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../libopencm3/lib/cm3/assert.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../libopencm3/lib/cm3/assert.c ****  * GNU Lesser General Public License for more details.
+  15:../libopencm3/lib/cm3/assert.c ****  *
+  16:../libopencm3/lib/cm3/assert.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../libopencm3/lib/cm3/assert.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../libopencm3/lib/cm3/assert.c ****  */
+  19:../libopencm3/lib/cm3/assert.c **** 
+  20:../libopencm3/lib/cm3/assert.c **** #include <libopencm3/cm3/assert.h>
+  21:../libopencm3/lib/cm3/assert.c **** 
+  22:../libopencm3/lib/cm3/assert.c **** void __attribute__((weak)) cm3_assert_failed(void)
+  23:../libopencm3/lib/cm3/assert.c **** {
+  27              		.loc 1 23 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  37              	.L2:
+  24:../libopencm3/lib/cm3/assert.c **** 	while (1);
+  38              		.loc 1 24 8 discriminator 1
+  39 0004 FEE7     		b	.L2
+  40              		.cfi_endproc
+  41              	.LFE0:
+  43              		.section	.text.cm3_assert_failed_verbose,"ax",%progbits
+  44              		.align	1
+  45              		.weak	cm3_assert_failed_verbose
+  46              		.syntax unified
+  47              		.thumb
+  48              		.thumb_func
+  49              		.fpu softvfp
+  51              	cm3_assert_failed_verbose:
+  52              	.LFB1:
+  25:../libopencm3/lib/cm3/assert.c **** }
+  26:../libopencm3/lib/cm3/assert.c **** 
+  27:../libopencm3/lib/cm3/assert.c **** void __attribute__((weak)) cm3_assert_failed_verbose(
+  28:../libopencm3/lib/cm3/assert.c **** 		const char *file __attribute__((unused)),
+  29:../libopencm3/lib/cm3/assert.c **** 		int line __attribute__((unused)),
+  30:../libopencm3/lib/cm3/assert.c **** 		const char *func __attribute__((unused)),
+  31:../libopencm3/lib/cm3/assert.c **** 		const char *assert_expr __attribute__((unused)))
+  32:../libopencm3/lib/cm3/assert.c **** {
+  53              		.loc 1 32 1
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 16
+  56              		@ frame_needed = 1, uses_anonymous_args = 0
+  57 0000 80B5     		push	{r7, lr}
+  58              		.cfi_def_cfa_offset 8
+  59              		.cfi_offset 7, -8
+  60              		.cfi_offset 14, -4
+  61 0002 84B0     		sub	sp, sp, #16
+  62              		.cfi_def_cfa_offset 24
+  63 0004 00AF     		add	r7, sp, #0
+  64              		.cfi_def_cfa_register 7
+  65 0006 F860     		str	r0, [r7, #12]
+  66 0008 B960     		str	r1, [r7, #8]
+  67 000a 7A60     		str	r2, [r7, #4]
+  68 000c 3B60     		str	r3, [r7]
+  33:../libopencm3/lib/cm3/assert.c **** 	cm3_assert_failed();
+  69              		.loc 1 33 2
+  70 000e FFF7FEFF 		bl	cm3_assert_failed(PLT)
+  71              		.cfi_endproc
+  72              	.LFE1:
+  74              		.text
+  75              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 assert.c
+     /tmp/ccs07Rhe.s:16     .text.cm3_assert_failed:0000000000000000 $t
+     /tmp/ccs07Rhe.s:24     .text.cm3_assert_failed:0000000000000000 cm3_assert_failed
+     /tmp/ccs07Rhe.s:44     .text.cm3_assert_failed_verbose:0000000000000000 $t
+     /tmp/ccs07Rhe.s:51     .text.cm3_assert_failed_verbose:0000000000000000 cm3_assert_failed_verbose
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.assert.h.53.565a4ee64503b1a51b0509de816d9092
+
+NO UNDEFINED SYMBOLS

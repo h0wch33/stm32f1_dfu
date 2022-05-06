@@ -1,0 +1,812 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"systick.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.systick_set_reload,"ax",%progbits
+  16              		.align	1
+  17              		.global	systick_set_reload
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	systick_set_reload:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/cm3/systick.c"
+   1:../libopencm3/lib/cm3/systick.c **** /*
+   2:../libopencm3/lib/cm3/systick.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/cm3/systick.c ****  *
+   4:../libopencm3/lib/cm3/systick.c ****  * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
+   5:../libopencm3/lib/cm3/systick.c ****  * Copyright (C) 2012 Benjamin Vernoux <titanmkd@gmail.com>
+   6:../libopencm3/lib/cm3/systick.c ****  *
+   7:../libopencm3/lib/cm3/systick.c ****  * This library is free software: you can redistribute it and/or modify
+   8:../libopencm3/lib/cm3/systick.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   9:../libopencm3/lib/cm3/systick.c ****  * the Free Software Foundation, either version 3 of the License, or
+  10:../libopencm3/lib/cm3/systick.c ****  * (at your option) any later version.
+  11:../libopencm3/lib/cm3/systick.c ****  *
+  12:../libopencm3/lib/cm3/systick.c ****  * This library is distributed in the hope that it will be useful,
+  13:../libopencm3/lib/cm3/systick.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  14:../libopencm3/lib/cm3/systick.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  15:../libopencm3/lib/cm3/systick.c ****  * GNU Lesser General Public License for more details.
+  16:../libopencm3/lib/cm3/systick.c ****  *
+  17:../libopencm3/lib/cm3/systick.c ****  * You should have received a copy of the GNU Lesser General Public License
+  18:../libopencm3/lib/cm3/systick.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  19:../libopencm3/lib/cm3/systick.c ****  */
+  20:../libopencm3/lib/cm3/systick.c **** /** @defgroup CM3_systick_file SysTick
+  21:../libopencm3/lib/cm3/systick.c ****  *
+  22:../libopencm3/lib/cm3/systick.c ****  * @ingroup CM3_files
+  23:../libopencm3/lib/cm3/systick.c ****  *
+  24:../libopencm3/lib/cm3/systick.c ****  * @brief <b>libopencm3 Cortex System Tick Timer</b>
+  25:../libopencm3/lib/cm3/systick.c ****  *
+  26:../libopencm3/lib/cm3/systick.c ****  * @version 1.0.0
+  27:../libopencm3/lib/cm3/systick.c ****  *
+  28:../libopencm3/lib/cm3/systick.c ****  * @author @htmlonly &copy; @endhtmlonly 2010 Thomas Otto <tommi@viadmin.org>
+  29:../libopencm3/lib/cm3/systick.c ****  *
+  30:../libopencm3/lib/cm3/systick.c ****  * @date 19 August 2012
+  31:../libopencm3/lib/cm3/systick.c ****  *
+  32:../libopencm3/lib/cm3/systick.c ****  * This library supports the System Tick timer in ARM Cortex Microcontrollers.
+  33:../libopencm3/lib/cm3/systick.c ****  *
+  34:../libopencm3/lib/cm3/systick.c ****  * The System Tick timer is part of the ARM Cortex core. It is a 24 bit
+  35:../libopencm3/lib/cm3/systick.c ****  * down counter that can be configured with an automatical reload value.
+  36:../libopencm3/lib/cm3/systick.c ****  *
+  37:../libopencm3/lib/cm3/systick.c ****  * LGPL License Terms @ref lgpl_license
+  38:../libopencm3/lib/cm3/systick.c ****  */
+  39:../libopencm3/lib/cm3/systick.c **** 
+  40:../libopencm3/lib/cm3/systick.c **** /**@{*/
+  41:../libopencm3/lib/cm3/systick.c **** #include <libopencm3/cm3/systick.h>
+  42:../libopencm3/lib/cm3/systick.c **** 
+  43:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+  44:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Set the Automatic Reload Value.
+  45:../libopencm3/lib/cm3/systick.c ****  *
+  46:../libopencm3/lib/cm3/systick.c ****  * The counter is set to the reload value when the counter starts and after it
+  47:../libopencm3/lib/cm3/systick.c ****  * reaches zero.
+  48:../libopencm3/lib/cm3/systick.c ****  *
+  49:../libopencm3/lib/cm3/systick.c ****  * @note The systick counter value might be undefined upon startup. To get
+  50:../libopencm3/lib/cm3/systick.c ****  * predictable behavior, it is a good idea to set or clear the counter after
+  51:../libopencm3/lib/cm3/systick.c ****  * set reload. @sa systick_clear
+  52:../libopencm3/lib/cm3/systick.c ****  *
+  53:../libopencm3/lib/cm3/systick.c ****  * @param[in] value uint32_t. 24 bit reload value.
+  54:../libopencm3/lib/cm3/systick.c ****  */
+  55:../libopencm3/lib/cm3/systick.c **** 
+  56:../libopencm3/lib/cm3/systick.c **** void systick_set_reload(uint32_t value)
+  57:../libopencm3/lib/cm3/systick.c **** {
+  27              		.loc 1 57 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  58:../libopencm3/lib/cm3/systick.c **** 	STK_RVR = (value & STK_RVR_RELOAD);
+  40              		.loc 1 58 2
+  41 0008 044A     		ldr	r2, .L2
+  42              		.loc 1 58 19
+  43 000a 7B68     		ldr	r3, [r7, #4]
+  44 000c 23F07F43 		bic	r3, r3, #-16777216
+  45              		.loc 1 58 10
+  46 0010 1360     		str	r3, [r2]
+  59:../libopencm3/lib/cm3/systick.c **** }
+  47              		.loc 1 59 1
+  48 0012 00BF     		nop
+  49 0014 0C37     		adds	r7, r7, #12
+  50              		.cfi_def_cfa_offset 4
+  51 0016 BD46     		mov	sp, r7
+  52              		.cfi_def_cfa_register 13
+  53              		@ sp needed
+  54 0018 80BC     		pop	{r7}
+  55              		.cfi_restore 7
+  56              		.cfi_def_cfa_offset 0
+  57 001a 7047     		bx	lr
+  58              	.L3:
+  59              		.align	2
+  60              	.L2:
+  61 001c 14E000E0 		.word	-536813548
+  62              		.cfi_endproc
+  63              	.LFE0:
+  65              		.section	.text.systick_get_reload,"ax",%progbits
+  66              		.align	1
+  67              		.global	systick_get_reload
+  68              		.syntax unified
+  69              		.thumb
+  70              		.thumb_func
+  71              		.fpu softvfp
+  73              	systick_get_reload:
+  74              	.LFB1:
+  60:../libopencm3/lib/cm3/systick.c **** 
+  61:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+  62:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Read the Automatic Reload Value.
+  63:../libopencm3/lib/cm3/systick.c ****  *
+  64:../libopencm3/lib/cm3/systick.c ****  * @returns 24 bit reload value as uint32_t.
+  65:../libopencm3/lib/cm3/systick.c ****  */
+  66:../libopencm3/lib/cm3/systick.c **** 
+  67:../libopencm3/lib/cm3/systick.c **** uint32_t systick_get_reload(void)
+  68:../libopencm3/lib/cm3/systick.c **** {
+  75              		.loc 1 68 1
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 1, uses_anonymous_args = 0
+  79              		@ link register save eliminated.
+  80 0000 80B4     		push	{r7}
+  81              		.cfi_def_cfa_offset 4
+  82              		.cfi_offset 7, -4
+  83 0002 00AF     		add	r7, sp, #0
+  84              		.cfi_def_cfa_register 7
+  69:../libopencm3/lib/cm3/systick.c **** 	return STK_RVR & STK_RVR_RELOAD;
+  85              		.loc 1 69 17
+  86 0004 034B     		ldr	r3, .L6
+  87 0006 1B68     		ldr	r3, [r3]
+  88 0008 23F07F43 		bic	r3, r3, #-16777216
+  70:../libopencm3/lib/cm3/systick.c **** }
+  89              		.loc 1 70 1
+  90 000c 1846     		mov	r0, r3
+  91 000e BD46     		mov	sp, r7
+  92              		.cfi_def_cfa_register 13
+  93              		@ sp needed
+  94 0010 80BC     		pop	{r7}
+  95              		.cfi_restore 7
+  96              		.cfi_def_cfa_offset 0
+  97 0012 7047     		bx	lr
+  98              	.L7:
+  99              		.align	2
+ 100              	.L6:
+ 101 0014 14E000E0 		.word	-536813548
+ 102              		.cfi_endproc
+ 103              	.LFE1:
+ 105              		.section	.text.systick_set_frequency,"ax",%progbits
+ 106              		.align	1
+ 107              		.global	systick_set_frequency
+ 108              		.syntax unified
+ 109              		.thumb
+ 110              		.thumb_func
+ 111              		.fpu softvfp
+ 113              	systick_set_frequency:
+ 114              	.LFB2:
+  71:../libopencm3/lib/cm3/systick.c **** 
+  72:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Set clock and frequency of overflow
+  73:../libopencm3/lib/cm3/systick.c ****  *
+  74:../libopencm3/lib/cm3/systick.c ****  * This function sets the systick to AHB clock source, and the prescaler to
+  75:../libopencm3/lib/cm3/systick.c ****  * generate interrupts with the desired frequency. The function fails, if
+  76:../libopencm3/lib/cm3/systick.c ****  * the frequency is too low.
+  77:../libopencm3/lib/cm3/systick.c ****  *
+  78:../libopencm3/lib/cm3/systick.c ****  * @param[in] freq uint32_t The desired frequency in Hz
+  79:../libopencm3/lib/cm3/systick.c ****  * @param[in] ahb uint32_t The current AHB frequency in Hz
+  80:../libopencm3/lib/cm3/systick.c ****  * @returns true, if success, false if the desired frequency cannot be set.
+  81:../libopencm3/lib/cm3/systick.c ****  */
+  82:../libopencm3/lib/cm3/systick.c **** bool systick_set_frequency(uint32_t freq, uint32_t ahb)
+  83:../libopencm3/lib/cm3/systick.c **** {
+ 115              		.loc 1 83 1
+ 116              		.cfi_startproc
+ 117              		@ args = 0, pretend = 0, frame = 16
+ 118              		@ frame_needed = 1, uses_anonymous_args = 0
+ 119 0000 80B5     		push	{r7, lr}
+ 120              		.cfi_def_cfa_offset 8
+ 121              		.cfi_offset 7, -8
+ 122              		.cfi_offset 14, -4
+ 123 0002 84B0     		sub	sp, sp, #16
+ 124              		.cfi_def_cfa_offset 24
+ 125 0004 00AF     		add	r7, sp, #0
+ 126              		.cfi_def_cfa_register 7
+ 127 0006 7860     		str	r0, [r7, #4]
+ 128 0008 3960     		str	r1, [r7]
+  84:../libopencm3/lib/cm3/systick.c **** 	uint32_t ratio = ahb / freq;
+ 129              		.loc 1 84 11
+ 130 000a 3A68     		ldr	r2, [r7]
+ 131 000c 7B68     		ldr	r3, [r7, #4]
+ 132 000e B2FBF3F3 		udiv	r3, r2, r3
+ 133 0012 FB60     		str	r3, [r7, #12]
+  85:../libopencm3/lib/cm3/systick.c **** 
+  86:../libopencm3/lib/cm3/systick.c **** #if defined(__ARM_ARCH_6M__)
+  87:../libopencm3/lib/cm3/systick.c **** 	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+  88:../libopencm3/lib/cm3/systick.c **** #else
+  89:../libopencm3/lib/cm3/systick.c **** 	if (ratio >= (STK_RVR_RELOAD * 8)) {
+ 134              		.loc 1 89 5
+ 135 0014 FB68     		ldr	r3, [r7, #12]
+ 136 0016 0E4A     		ldr	r2, .L13
+ 137 0018 9342     		cmp	r3, r2
+ 138 001a 01D9     		bls	.L9
+  90:../libopencm3/lib/cm3/systick.c **** 		/* This frequency is too slow */
+  91:../libopencm3/lib/cm3/systick.c **** 		return false;
+ 139              		.loc 1 91 10
+ 140 001c 0023     		movs	r3, #0
+ 141 001e 13E0     		b	.L10
+ 142              	.L9:
+  92:../libopencm3/lib/cm3/systick.c **** 	} else if (ratio >= STK_RVR_RELOAD) {
+ 143              		.loc 1 92 12
+ 144 0020 FB68     		ldr	r3, [r7, #12]
+ 145 0022 0C4A     		ldr	r2, .L13+4
+ 146 0024 9342     		cmp	r3, r2
+ 147 0026 06D9     		bls	.L11
+  93:../libopencm3/lib/cm3/systick.c **** 		ratio /= 8;
+ 148              		.loc 1 93 9
+ 149 0028 FB68     		ldr	r3, [r7, #12]
+ 150 002a DB08     		lsrs	r3, r3, #3
+ 151 002c FB60     		str	r3, [r7, #12]
+  94:../libopencm3/lib/cm3/systick.c **** 		systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
+ 152              		.loc 1 94 3
+ 153 002e 0020     		movs	r0, #0
+ 154 0030 FFF7FEFF 		bl	systick_set_clocksource(PLT)
+ 155 0034 02E0     		b	.L12
+ 156              	.L11:
+  95:../libopencm3/lib/cm3/systick.c **** 	} else {
+  96:../libopencm3/lib/cm3/systick.c **** 		systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+ 157              		.loc 1 96 3
+ 158 0036 0420     		movs	r0, #4
+ 159 0038 FFF7FEFF 		bl	systick_set_clocksource(PLT)
+ 160              	.L12:
+  97:../libopencm3/lib/cm3/systick.c **** 	}
+  98:../libopencm3/lib/cm3/systick.c **** #endif
+  99:../libopencm3/lib/cm3/systick.c **** 	systick_set_reload(ratio - 1);
+ 161              		.loc 1 99 2
+ 162 003c FB68     		ldr	r3, [r7, #12]
+ 163 003e 013B     		subs	r3, r3, #1
+ 164 0040 1846     		mov	r0, r3
+ 165 0042 FFF7FEFF 		bl	systick_set_reload(PLT)
+ 100:../libopencm3/lib/cm3/systick.c **** 	return true;
+ 166              		.loc 1 100 9
+ 167 0046 0123     		movs	r3, #1
+ 168              	.L10:
+ 101:../libopencm3/lib/cm3/systick.c **** }
+ 169              		.loc 1 101 1
+ 170 0048 1846     		mov	r0, r3
+ 171 004a 1037     		adds	r7, r7, #16
+ 172              		.cfi_def_cfa_offset 8
+ 173 004c BD46     		mov	sp, r7
+ 174              		.cfi_def_cfa_register 13
+ 175              		@ sp needed
+ 176 004e 80BD     		pop	{r7, pc}
+ 177              	.L14:
+ 178              		.align	2
+ 179              	.L13:
+ 180 0050 F7FFFF07 		.word	134217719
+ 181 0054 FEFFFF00 		.word	16777214
+ 182              		.cfi_endproc
+ 183              	.LFE2:
+ 185              		.section	.text.systick_get_value,"ax",%progbits
+ 186              		.align	1
+ 187              		.global	systick_get_value
+ 188              		.syntax unified
+ 189              		.thumb
+ 190              		.thumb_func
+ 191              		.fpu softvfp
+ 193              	systick_get_value:
+ 194              	.LFB3:
+ 102:../libopencm3/lib/cm3/systick.c **** 
+ 103:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 104:../libopencm3/lib/cm3/systick.c **** /** @brief Get the current SysTick counter value.
+ 105:../libopencm3/lib/cm3/systick.c ****  *
+ 106:../libopencm3/lib/cm3/systick.c ****  * @returns 24 bit current value as uint32_t.
+ 107:../libopencm3/lib/cm3/systick.c ****  */
+ 108:../libopencm3/lib/cm3/systick.c **** 
+ 109:../libopencm3/lib/cm3/systick.c **** uint32_t systick_get_value(void)
+ 110:../libopencm3/lib/cm3/systick.c **** {
+ 195              		.loc 1 110 1
+ 196              		.cfi_startproc
+ 197              		@ args = 0, pretend = 0, frame = 0
+ 198              		@ frame_needed = 1, uses_anonymous_args = 0
+ 199              		@ link register save eliminated.
+ 200 0000 80B4     		push	{r7}
+ 201              		.cfi_def_cfa_offset 4
+ 202              		.cfi_offset 7, -4
+ 203 0002 00AF     		add	r7, sp, #0
+ 204              		.cfi_def_cfa_register 7
+ 111:../libopencm3/lib/cm3/systick.c **** 	return STK_CVR & STK_CVR_CURRENT;
+ 205              		.loc 1 111 17
+ 206 0004 034B     		ldr	r3, .L17
+ 207 0006 1B68     		ldr	r3, [r3]
+ 208 0008 23F07F43 		bic	r3, r3, #-16777216
+ 112:../libopencm3/lib/cm3/systick.c **** }
+ 209              		.loc 1 112 1
+ 210 000c 1846     		mov	r0, r3
+ 211 000e BD46     		mov	sp, r7
+ 212              		.cfi_def_cfa_register 13
+ 213              		@ sp needed
+ 214 0010 80BC     		pop	{r7}
+ 215              		.cfi_restore 7
+ 216              		.cfi_def_cfa_offset 0
+ 217 0012 7047     		bx	lr
+ 218              	.L18:
+ 219              		.align	2
+ 220              	.L17:
+ 221 0014 18E000E0 		.word	-536813544
+ 222              		.cfi_endproc
+ 223              	.LFE3:
+ 225              		.section	.text.systick_set_clocksource,"ax",%progbits
+ 226              		.align	1
+ 227              		.global	systick_set_clocksource
+ 228              		.syntax unified
+ 229              		.thumb
+ 230              		.thumb_func
+ 231              		.fpu softvfp
+ 233              	systick_set_clocksource:
+ 234              	.LFB4:
+ 113:../libopencm3/lib/cm3/systick.c **** 
+ 114:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 115:../libopencm3/lib/cm3/systick.c **** /** @brief Set the SysTick Clock Source.
+ 116:../libopencm3/lib/cm3/systick.c ****  *
+ 117:../libopencm3/lib/cm3/systick.c ****  * The clock source can be either the AHB clock or the same clock divided by 8.
+ 118:../libopencm3/lib/cm3/systick.c ****  *
+ 119:../libopencm3/lib/cm3/systick.c ****  * @param[in] clocksource uint8_t. Clock source from @ref systick_clksource.
+ 120:../libopencm3/lib/cm3/systick.c ****  */
+ 121:../libopencm3/lib/cm3/systick.c **** 
+ 122:../libopencm3/lib/cm3/systick.c **** void systick_set_clocksource(uint8_t clocksource)
+ 123:../libopencm3/lib/cm3/systick.c **** {
+ 235              		.loc 1 123 1
+ 236              		.cfi_startproc
+ 237              		@ args = 0, pretend = 0, frame = 8
+ 238              		@ frame_needed = 1, uses_anonymous_args = 0
+ 239              		@ link register save eliminated.
+ 240 0000 80B4     		push	{r7}
+ 241              		.cfi_def_cfa_offset 4
+ 242              		.cfi_offset 7, -4
+ 243 0002 83B0     		sub	sp, sp, #12
+ 244              		.cfi_def_cfa_offset 16
+ 245 0004 00AF     		add	r7, sp, #0
+ 246              		.cfi_def_cfa_register 7
+ 247 0006 0346     		mov	r3, r0
+ 248 0008 FB71     		strb	r3, [r7, #7]
+ 124:../libopencm3/lib/cm3/systick.c **** 	STK_CSR = (STK_CSR & ~STK_CSR_CLKSOURCE) |
+ 249              		.loc 1 124 13
+ 250 000a 074B     		ldr	r3, .L20
+ 251 000c 1B68     		ldr	r3, [r3]
+ 252              		.loc 1 124 21
+ 253 000e 23F00402 		bic	r2, r3, #4
+ 125:../libopencm3/lib/cm3/systick.c **** 		  (clocksource & STK_CSR_CLKSOURCE);
+ 254              		.loc 1 125 18
+ 255 0012 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 256 0014 03F00403 		and	r3, r3, #4
+ 124:../libopencm3/lib/cm3/systick.c **** 	STK_CSR = (STK_CSR & ~STK_CSR_CLKSOURCE) |
+ 257              		.loc 1 124 2
+ 258 0018 0349     		ldr	r1, .L20
+ 124:../libopencm3/lib/cm3/systick.c **** 	STK_CSR = (STK_CSR & ~STK_CSR_CLKSOURCE) |
+ 259              		.loc 1 124 43
+ 260 001a 1343     		orrs	r3, r3, r2
+ 124:../libopencm3/lib/cm3/systick.c **** 	STK_CSR = (STK_CSR & ~STK_CSR_CLKSOURCE) |
+ 261              		.loc 1 124 10
+ 262 001c 0B60     		str	r3, [r1]
+ 126:../libopencm3/lib/cm3/systick.c **** }
+ 263              		.loc 1 126 1
+ 264 001e 00BF     		nop
+ 265 0020 0C37     		adds	r7, r7, #12
+ 266              		.cfi_def_cfa_offset 4
+ 267 0022 BD46     		mov	sp, r7
+ 268              		.cfi_def_cfa_register 13
+ 269              		@ sp needed
+ 270 0024 80BC     		pop	{r7}
+ 271              		.cfi_restore 7
+ 272              		.cfi_def_cfa_offset 0
+ 273 0026 7047     		bx	lr
+ 274              	.L21:
+ 275              		.align	2
+ 276              	.L20:
+ 277 0028 10E000E0 		.word	-536813552
+ 278              		.cfi_endproc
+ 279              	.LFE4:
+ 281              		.section	.text.systick_interrupt_enable,"ax",%progbits
+ 282              		.align	1
+ 283              		.global	systick_interrupt_enable
+ 284              		.syntax unified
+ 285              		.thumb
+ 286              		.thumb_func
+ 287              		.fpu softvfp
+ 289              	systick_interrupt_enable:
+ 290              	.LFB5:
+ 127:../libopencm3/lib/cm3/systick.c **** 
+ 128:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 129:../libopencm3/lib/cm3/systick.c **** /** @brief Enable SysTick Interrupt.
+ 130:../libopencm3/lib/cm3/systick.c ****  *
+ 131:../libopencm3/lib/cm3/systick.c ****  */
+ 132:../libopencm3/lib/cm3/systick.c **** 
+ 133:../libopencm3/lib/cm3/systick.c **** void systick_interrupt_enable(void)
+ 134:../libopencm3/lib/cm3/systick.c **** {
+ 291              		.loc 1 134 1
+ 292              		.cfi_startproc
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 1, uses_anonymous_args = 0
+ 295              		@ link register save eliminated.
+ 296 0000 80B4     		push	{r7}
+ 297              		.cfi_def_cfa_offset 4
+ 298              		.cfi_offset 7, -4
+ 299 0002 00AF     		add	r7, sp, #0
+ 300              		.cfi_def_cfa_register 7
+ 135:../libopencm3/lib/cm3/systick.c **** 	STK_CSR |= STK_CSR_TICKINT;
+ 301              		.loc 1 135 10
+ 302 0004 044B     		ldr	r3, .L23
+ 303 0006 1B68     		ldr	r3, [r3]
+ 304 0008 034A     		ldr	r2, .L23
+ 305 000a 43F00203 		orr	r3, r3, #2
+ 306 000e 1360     		str	r3, [r2]
+ 136:../libopencm3/lib/cm3/systick.c **** }
+ 307              		.loc 1 136 1
+ 308 0010 00BF     		nop
+ 309 0012 BD46     		mov	sp, r7
+ 310              		.cfi_def_cfa_register 13
+ 311              		@ sp needed
+ 312 0014 80BC     		pop	{r7}
+ 313              		.cfi_restore 7
+ 314              		.cfi_def_cfa_offset 0
+ 315 0016 7047     		bx	lr
+ 316              	.L24:
+ 317              		.align	2
+ 318              	.L23:
+ 319 0018 10E000E0 		.word	-536813552
+ 320              		.cfi_endproc
+ 321              	.LFE5:
+ 323              		.section	.text.systick_interrupt_disable,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	systick_interrupt_disable
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 329              		.fpu softvfp
+ 331              	systick_interrupt_disable:
+ 332              	.LFB6:
+ 137:../libopencm3/lib/cm3/systick.c **** 
+ 138:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 139:../libopencm3/lib/cm3/systick.c **** /** @brief Disable SysTick Interrupt.
+ 140:../libopencm3/lib/cm3/systick.c ****  *
+ 141:../libopencm3/lib/cm3/systick.c ****  */
+ 142:../libopencm3/lib/cm3/systick.c **** 
+ 143:../libopencm3/lib/cm3/systick.c **** void systick_interrupt_disable(void)
+ 144:../libopencm3/lib/cm3/systick.c **** {
+ 333              		.loc 1 144 1
+ 334              		.cfi_startproc
+ 335              		@ args = 0, pretend = 0, frame = 0
+ 336              		@ frame_needed = 1, uses_anonymous_args = 0
+ 337              		@ link register save eliminated.
+ 338 0000 80B4     		push	{r7}
+ 339              		.cfi_def_cfa_offset 4
+ 340              		.cfi_offset 7, -4
+ 341 0002 00AF     		add	r7, sp, #0
+ 342              		.cfi_def_cfa_register 7
+ 145:../libopencm3/lib/cm3/systick.c **** 	STK_CSR &= ~STK_CSR_TICKINT;
+ 343              		.loc 1 145 10
+ 344 0004 044B     		ldr	r3, .L26
+ 345 0006 1B68     		ldr	r3, [r3]
+ 346 0008 034A     		ldr	r2, .L26
+ 347 000a 23F00203 		bic	r3, r3, #2
+ 348 000e 1360     		str	r3, [r2]
+ 146:../libopencm3/lib/cm3/systick.c **** }
+ 349              		.loc 1 146 1
+ 350 0010 00BF     		nop
+ 351 0012 BD46     		mov	sp, r7
+ 352              		.cfi_def_cfa_register 13
+ 353              		@ sp needed
+ 354 0014 80BC     		pop	{r7}
+ 355              		.cfi_restore 7
+ 356              		.cfi_def_cfa_offset 0
+ 357 0016 7047     		bx	lr
+ 358              	.L27:
+ 359              		.align	2
+ 360              	.L26:
+ 361 0018 10E000E0 		.word	-536813552
+ 362              		.cfi_endproc
+ 363              	.LFE6:
+ 365              		.section	.text.systick_counter_enable,"ax",%progbits
+ 366              		.align	1
+ 367              		.global	systick_counter_enable
+ 368              		.syntax unified
+ 369              		.thumb
+ 370              		.thumb_func
+ 371              		.fpu softvfp
+ 373              	systick_counter_enable:
+ 374              	.LFB7:
+ 147:../libopencm3/lib/cm3/systick.c **** 
+ 148:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 149:../libopencm3/lib/cm3/systick.c **** /** @brief Enable SysTick Counter.
+ 150:../libopencm3/lib/cm3/systick.c ****  *
+ 151:../libopencm3/lib/cm3/systick.c ****  */
+ 152:../libopencm3/lib/cm3/systick.c **** 
+ 153:../libopencm3/lib/cm3/systick.c **** void systick_counter_enable(void)
+ 154:../libopencm3/lib/cm3/systick.c **** {
+ 375              		.loc 1 154 1
+ 376              		.cfi_startproc
+ 377              		@ args = 0, pretend = 0, frame = 0
+ 378              		@ frame_needed = 1, uses_anonymous_args = 0
+ 379              		@ link register save eliminated.
+ 380 0000 80B4     		push	{r7}
+ 381              		.cfi_def_cfa_offset 4
+ 382              		.cfi_offset 7, -4
+ 383 0002 00AF     		add	r7, sp, #0
+ 384              		.cfi_def_cfa_register 7
+ 155:../libopencm3/lib/cm3/systick.c **** 	STK_CSR |= STK_CSR_ENABLE;
+ 385              		.loc 1 155 10
+ 386 0004 044B     		ldr	r3, .L29
+ 387 0006 1B68     		ldr	r3, [r3]
+ 388 0008 034A     		ldr	r2, .L29
+ 389 000a 43F00103 		orr	r3, r3, #1
+ 390 000e 1360     		str	r3, [r2]
+ 156:../libopencm3/lib/cm3/systick.c **** }
+ 391              		.loc 1 156 1
+ 392 0010 00BF     		nop
+ 393 0012 BD46     		mov	sp, r7
+ 394              		.cfi_def_cfa_register 13
+ 395              		@ sp needed
+ 396 0014 80BC     		pop	{r7}
+ 397              		.cfi_restore 7
+ 398              		.cfi_def_cfa_offset 0
+ 399 0016 7047     		bx	lr
+ 400              	.L30:
+ 401              		.align	2
+ 402              	.L29:
+ 403 0018 10E000E0 		.word	-536813552
+ 404              		.cfi_endproc
+ 405              	.LFE7:
+ 407              		.section	.text.systick_counter_disable,"ax",%progbits
+ 408              		.align	1
+ 409              		.global	systick_counter_disable
+ 410              		.syntax unified
+ 411              		.thumb
+ 412              		.thumb_func
+ 413              		.fpu softvfp
+ 415              	systick_counter_disable:
+ 416              	.LFB8:
+ 157:../libopencm3/lib/cm3/systick.c **** 
+ 158:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 159:../libopencm3/lib/cm3/systick.c **** /** @brief Disable SysTick Counter.
+ 160:../libopencm3/lib/cm3/systick.c ****  *
+ 161:../libopencm3/lib/cm3/systick.c ****  */
+ 162:../libopencm3/lib/cm3/systick.c **** 
+ 163:../libopencm3/lib/cm3/systick.c **** void systick_counter_disable(void)
+ 164:../libopencm3/lib/cm3/systick.c **** {
+ 417              		.loc 1 164 1
+ 418              		.cfi_startproc
+ 419              		@ args = 0, pretend = 0, frame = 0
+ 420              		@ frame_needed = 1, uses_anonymous_args = 0
+ 421              		@ link register save eliminated.
+ 422 0000 80B4     		push	{r7}
+ 423              		.cfi_def_cfa_offset 4
+ 424              		.cfi_offset 7, -4
+ 425 0002 00AF     		add	r7, sp, #0
+ 426              		.cfi_def_cfa_register 7
+ 165:../libopencm3/lib/cm3/systick.c **** 	STK_CSR &= ~STK_CSR_ENABLE;
+ 427              		.loc 1 165 10
+ 428 0004 044B     		ldr	r3, .L32
+ 429 0006 1B68     		ldr	r3, [r3]
+ 430 0008 034A     		ldr	r2, .L32
+ 431 000a 23F00103 		bic	r3, r3, #1
+ 432 000e 1360     		str	r3, [r2]
+ 166:../libopencm3/lib/cm3/systick.c **** }
+ 433              		.loc 1 166 1
+ 434 0010 00BF     		nop
+ 435 0012 BD46     		mov	sp, r7
+ 436              		.cfi_def_cfa_register 13
+ 437              		@ sp needed
+ 438 0014 80BC     		pop	{r7}
+ 439              		.cfi_restore 7
+ 440              		.cfi_def_cfa_offset 0
+ 441 0016 7047     		bx	lr
+ 442              	.L33:
+ 443              		.align	2
+ 444              	.L32:
+ 445 0018 10E000E0 		.word	-536813552
+ 446              		.cfi_endproc
+ 447              	.LFE8:
+ 449              		.section	.text.systick_get_countflag,"ax",%progbits
+ 450              		.align	1
+ 451              		.global	systick_get_countflag
+ 452              		.syntax unified
+ 453              		.thumb
+ 454              		.thumb_func
+ 455              		.fpu softvfp
+ 457              	systick_get_countflag:
+ 458              	.LFB9:
+ 167:../libopencm3/lib/cm3/systick.c **** 
+ 168:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 169:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Read the Counter Flag.
+ 170:../libopencm3/lib/cm3/systick.c ****  *
+ 171:../libopencm3/lib/cm3/systick.c ****  * The count flag is set when the timer count becomes zero, and is cleared when
+ 172:../libopencm3/lib/cm3/systick.c ****  * the flag is read.
+ 173:../libopencm3/lib/cm3/systick.c ****  *
+ 174:../libopencm3/lib/cm3/systick.c ****  * @returns Boolean if flag set.
+ 175:../libopencm3/lib/cm3/systick.c ****  */
+ 176:../libopencm3/lib/cm3/systick.c **** 
+ 177:../libopencm3/lib/cm3/systick.c **** uint8_t systick_get_countflag(void)
+ 178:../libopencm3/lib/cm3/systick.c **** {
+ 459              		.loc 1 178 1
+ 460              		.cfi_startproc
+ 461              		@ args = 0, pretend = 0, frame = 0
+ 462              		@ frame_needed = 1, uses_anonymous_args = 0
+ 463              		@ link register save eliminated.
+ 464 0000 80B4     		push	{r7}
+ 465              		.cfi_def_cfa_offset 4
+ 466              		.cfi_offset 7, -4
+ 467 0002 00AF     		add	r7, sp, #0
+ 468              		.cfi_def_cfa_register 7
+ 179:../libopencm3/lib/cm3/systick.c **** 	return (STK_CSR & STK_CSR_COUNTFLAG) ? 1 : 0;
+ 469              		.loc 1 179 10
+ 470 0004 064B     		ldr	r3, .L36
+ 471 0006 1B68     		ldr	r3, [r3]
+ 472              		.loc 1 179 18
+ 473 0008 03F48033 		and	r3, r3, #65536
+ 474              		.loc 1 179 43
+ 475 000c 002B     		cmp	r3, #0
+ 476 000e 14BF     		ite	ne
+ 477 0010 0123     		movne	r3, #1
+ 478 0012 0023     		moveq	r3, #0
+ 479 0014 DBB2     		uxtb	r3, r3
+ 180:../libopencm3/lib/cm3/systick.c **** }
+ 480              		.loc 1 180 1
+ 481 0016 1846     		mov	r0, r3
+ 482 0018 BD46     		mov	sp, r7
+ 483              		.cfi_def_cfa_register 13
+ 484              		@ sp needed
+ 485 001a 80BC     		pop	{r7}
+ 486              		.cfi_restore 7
+ 487              		.cfi_def_cfa_offset 0
+ 488 001c 7047     		bx	lr
+ 489              	.L37:
+ 490 001e 00BF     		.align	2
+ 491              	.L36:
+ 492 0020 10E000E0 		.word	-536813552
+ 493              		.cfi_endproc
+ 494              	.LFE9:
+ 496              		.section	.text.systick_clear,"ax",%progbits
+ 497              		.align	1
+ 498              		.global	systick_clear
+ 499              		.syntax unified
+ 500              		.thumb
+ 501              		.thumb_func
+ 502              		.fpu softvfp
+ 504              	systick_clear:
+ 505              	.LFB10:
+ 181:../libopencm3/lib/cm3/systick.c **** 
+ 182:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 183:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Clear counter Value.
+ 184:../libopencm3/lib/cm3/systick.c ****  *
+ 185:../libopencm3/lib/cm3/systick.c ****  * The counter value is cleared. Useful for well defined startup.
+ 186:../libopencm3/lib/cm3/systick.c ****  */
+ 187:../libopencm3/lib/cm3/systick.c **** 
+ 188:../libopencm3/lib/cm3/systick.c **** void systick_clear(void)
+ 189:../libopencm3/lib/cm3/systick.c **** {
+ 506              		.loc 1 189 1
+ 507              		.cfi_startproc
+ 508              		@ args = 0, pretend = 0, frame = 0
+ 509              		@ frame_needed = 1, uses_anonymous_args = 0
+ 510              		@ link register save eliminated.
+ 511 0000 80B4     		push	{r7}
+ 512              		.cfi_def_cfa_offset 4
+ 513              		.cfi_offset 7, -4
+ 514 0002 00AF     		add	r7, sp, #0
+ 515              		.cfi_def_cfa_register 7
+ 190:../libopencm3/lib/cm3/systick.c **** 	STK_CVR = 0;
+ 516              		.loc 1 190 2
+ 517 0004 034B     		ldr	r3, .L39
+ 518              		.loc 1 190 10
+ 519 0006 0022     		movs	r2, #0
+ 520 0008 1A60     		str	r2, [r3]
+ 191:../libopencm3/lib/cm3/systick.c **** }
+ 521              		.loc 1 191 1
+ 522 000a 00BF     		nop
+ 523 000c BD46     		mov	sp, r7
+ 524              		.cfi_def_cfa_register 13
+ 525              		@ sp needed
+ 526 000e 80BC     		pop	{r7}
+ 527              		.cfi_restore 7
+ 528              		.cfi_def_cfa_offset 0
+ 529 0010 7047     		bx	lr
+ 530              	.L40:
+ 531 0012 00BF     		.align	2
+ 532              	.L39:
+ 533 0014 18E000E0 		.word	-536813544
+ 534              		.cfi_endproc
+ 535              	.LFE10:
+ 537              		.section	.text.systick_get_calib,"ax",%progbits
+ 538              		.align	1
+ 539              		.global	systick_get_calib
+ 540              		.syntax unified
+ 541              		.thumb
+ 542              		.thumb_func
+ 543              		.fpu softvfp
+ 545              	systick_get_calib:
+ 546              	.LFB11:
+ 192:../libopencm3/lib/cm3/systick.c **** 
+ 193:../libopencm3/lib/cm3/systick.c **** /*---------------------------------------------------------------------------*/
+ 194:../libopencm3/lib/cm3/systick.c **** /** @brief SysTick Get Calibration Value
+ 195:../libopencm3/lib/cm3/systick.c ****  *
+ 196:../libopencm3/lib/cm3/systick.c ****  * @returns Current calibration value
+ 197:../libopencm3/lib/cm3/systick.c ****  */
+ 198:../libopencm3/lib/cm3/systick.c **** uint32_t systick_get_calib(void)
+ 199:../libopencm3/lib/cm3/systick.c **** {
+ 547              		.loc 1 199 1
+ 548              		.cfi_startproc
+ 549              		@ args = 0, pretend = 0, frame = 0
+ 550              		@ frame_needed = 1, uses_anonymous_args = 0
+ 551              		@ link register save eliminated.
+ 552 0000 80B4     		push	{r7}
+ 553              		.cfi_def_cfa_offset 4
+ 554              		.cfi_offset 7, -4
+ 555 0002 00AF     		add	r7, sp, #0
+ 556              		.cfi_def_cfa_register 7
+ 200:../libopencm3/lib/cm3/systick.c **** 	return STK_CALIB & STK_CALIB_TENMS;
+ 557              		.loc 1 200 19
+ 558 0004 034B     		ldr	r3, .L43
+ 559 0006 1B68     		ldr	r3, [r3]
+ 560 0008 23F07F43 		bic	r3, r3, #-16777216
+ 201:../libopencm3/lib/cm3/systick.c **** }
+ 561              		.loc 1 201 1
+ 562 000c 1846     		mov	r0, r3
+ 563 000e BD46     		mov	sp, r7
+ 564              		.cfi_def_cfa_register 13
+ 565              		@ sp needed
+ 566 0010 80BC     		pop	{r7}
+ 567              		.cfi_restore 7
+ 568              		.cfi_def_cfa_offset 0
+ 569 0012 7047     		bx	lr
+ 570              	.L44:
+ 571              		.align	2
+ 572              	.L43:
+ 573 0014 1CE000E0 		.word	-536813540
+ 574              		.cfi_endproc
+ 575              	.LFE11:
+ 577              		.text
+ 578              	.Letext0:
+ 579              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 580              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 systick.c
+     /tmp/ccterR21.s:16     .text.systick_set_reload:0000000000000000 $t
+     /tmp/ccterR21.s:24     .text.systick_set_reload:0000000000000000 systick_set_reload
+     /tmp/ccterR21.s:61     .text.systick_set_reload:000000000000001c $d
+     /tmp/ccterR21.s:66     .text.systick_get_reload:0000000000000000 $t
+     /tmp/ccterR21.s:73     .text.systick_get_reload:0000000000000000 systick_get_reload
+     /tmp/ccterR21.s:101    .text.systick_get_reload:0000000000000014 $d
+     /tmp/ccterR21.s:106    .text.systick_set_frequency:0000000000000000 $t
+     /tmp/ccterR21.s:113    .text.systick_set_frequency:0000000000000000 systick_set_frequency
+     /tmp/ccterR21.s:233    .text.systick_set_clocksource:0000000000000000 systick_set_clocksource
+     /tmp/ccterR21.s:180    .text.systick_set_frequency:0000000000000050 $d
+     /tmp/ccterR21.s:186    .text.systick_get_value:0000000000000000 $t
+     /tmp/ccterR21.s:193    .text.systick_get_value:0000000000000000 systick_get_value
+     /tmp/ccterR21.s:221    .text.systick_get_value:0000000000000014 $d
+     /tmp/ccterR21.s:226    .text.systick_set_clocksource:0000000000000000 $t
+     /tmp/ccterR21.s:277    .text.systick_set_clocksource:0000000000000028 $d
+     /tmp/ccterR21.s:282    .text.systick_interrupt_enable:0000000000000000 $t
+     /tmp/ccterR21.s:289    .text.systick_interrupt_enable:0000000000000000 systick_interrupt_enable
+     /tmp/ccterR21.s:319    .text.systick_interrupt_enable:0000000000000018 $d
+     /tmp/ccterR21.s:324    .text.systick_interrupt_disable:0000000000000000 $t
+     /tmp/ccterR21.s:331    .text.systick_interrupt_disable:0000000000000000 systick_interrupt_disable
+     /tmp/ccterR21.s:361    .text.systick_interrupt_disable:0000000000000018 $d
+     /tmp/ccterR21.s:366    .text.systick_counter_enable:0000000000000000 $t
+     /tmp/ccterR21.s:373    .text.systick_counter_enable:0000000000000000 systick_counter_enable
+     /tmp/ccterR21.s:403    .text.systick_counter_enable:0000000000000018 $d
+     /tmp/ccterR21.s:408    .text.systick_counter_disable:0000000000000000 $t
+     /tmp/ccterR21.s:415    .text.systick_counter_disable:0000000000000000 systick_counter_disable
+     /tmp/ccterR21.s:445    .text.systick_counter_disable:0000000000000018 $d
+     /tmp/ccterR21.s:450    .text.systick_get_countflag:0000000000000000 $t
+     /tmp/ccterR21.s:457    .text.systick_get_countflag:0000000000000000 systick_get_countflag
+     /tmp/ccterR21.s:492    .text.systick_get_countflag:0000000000000020 $d
+     /tmp/ccterR21.s:497    .text.systick_clear:0000000000000000 $t
+     /tmp/ccterR21.s:504    .text.systick_clear:0000000000000000 systick_clear
+     /tmp/ccterR21.s:533    .text.systick_clear:0000000000000014 $d
+     /tmp/ccterR21.s:538    .text.systick_get_calib:0000000000000000 $t
+     /tmp/ccterR21.s:545    .text.systick_get_calib:0000000000000000 systick_get_calib
+     /tmp/ccterR21.s:573    .text.systick_get_calib:0000000000000014 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.systick.h.66.a0d8623c49f4fef53c41766352c1eb40
+
+NO UNDEFINED SYMBOLS

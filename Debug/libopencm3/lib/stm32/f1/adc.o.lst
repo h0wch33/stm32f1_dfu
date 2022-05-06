@@ -1,0 +1,1465 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"adc.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.adc_power_on,"ax",%progbits
+  16              		.align	1
+  17              		.global	adc_power_on
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	adc_power_on:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/f1/adc.c"
+   1:../libopencm3/lib/stm32/f1/adc.c **** /** @addtogroup adc_file ADC peripheral API
+   2:../libopencm3/lib/stm32/f1/adc.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/f1/adc.c **** 
+   4:../libopencm3/lib/stm32/f1/adc.c **** @version 1.0.0
+   5:../libopencm3/lib/stm32/f1/adc.c **** 
+   6:../libopencm3/lib/stm32/f1/adc.c **** @author @htmlonly &copy; @endhtmlonly 2009
+   7:../libopencm3/lib/stm32/f1/adc.c **** Edward Cheeseman <evbuilder@users.sourceforge.net>
+   8:../libopencm3/lib/stm32/f1/adc.c **** @author @htmlonly &copy; @endhtmlonly 2012
+   9:../libopencm3/lib/stm32/f1/adc.c **** Ken Sarkies <ksarkies@internode.on.net>
+  10:../libopencm3/lib/stm32/f1/adc.c **** 
+  11:../libopencm3/lib/stm32/f1/adc.c **** @date 18 August 2012
+  12:../libopencm3/lib/stm32/f1/adc.c **** 
+  13:../libopencm3/lib/stm32/f1/adc.c **** This library supports the A/D Converter Control System in the STM32F1xx series
+  14:../libopencm3/lib/stm32/f1/adc.c **** of ARM Cortex Microcontrollers by ST Microelectronics.
+  15:../libopencm3/lib/stm32/f1/adc.c **** 
+  16:../libopencm3/lib/stm32/f1/adc.c **** Devices can have up to three A/D converters each with their own set of
+  17:../libopencm3/lib/stm32/f1/adc.c **** registers.  However all the A/D converters share a common clock which is
+  18:../libopencm3/lib/stm32/f1/adc.c **** prescaled from the APB2 clock by default by a minimum factor of 2 to a maximum
+  19:../libopencm3/lib/stm32/f1/adc.c **** of 8.
+  20:../libopencm3/lib/stm32/f1/adc.c **** 
+  21:../libopencm3/lib/stm32/f1/adc.c **** Each A/D converter has up to 18 channels:
+  22:../libopencm3/lib/stm32/f1/adc.c **** @li On ADC1 the analog channels 16 and 17 are internally connected to the
+  23:../libopencm3/lib/stm32/f1/adc.c **** temperature
+  24:../libopencm3/lib/stm32/f1/adc.c **** sensor and V<sub>REFINT</sub>, respectively.
+  25:../libopencm3/lib/stm32/f1/adc.c **** @li On ADC2 the analog channels 16 and 17 are internally connected to
+  26:../libopencm3/lib/stm32/f1/adc.c **** V<sub>SS</sub>.
+  27:../libopencm3/lib/stm32/f1/adc.c **** @li On ADC3 the analog channels 9, 14, 15, 16 and 17 are internally connected
+  28:../libopencm3/lib/stm32/f1/adc.c **** to V<sub>SS</sub>.
+  29:../libopencm3/lib/stm32/f1/adc.c **** 
+  30:../libopencm3/lib/stm32/f1/adc.c **** The conversions can occur as a one-off conversion whereby the process stops
+  31:../libopencm3/lib/stm32/f1/adc.c **** once conversion is complete. The conversions can also be continuous wherein a
+  32:../libopencm3/lib/stm32/f1/adc.c **** new conversion starts immediately the previous conversion has ended.
+  33:../libopencm3/lib/stm32/f1/adc.c **** 
+  34:../libopencm3/lib/stm32/f1/adc.c **** Conversion can occur as a single channel conversion or a scan of a group of
+  35:../libopencm3/lib/stm32/f1/adc.c **** channels in either continuous or one-off mode. If more than one channel is
+  36:../libopencm3/lib/stm32/f1/adc.c **** converted in a scan group, DMA must be used to transfer the data as there is
+  37:../libopencm3/lib/stm32/f1/adc.c **** only one result register available. An interrupt can be set to occur at the end
+  38:../libopencm3/lib/stm32/f1/adc.c **** of conversion, which occurs after all channels have been scanned.
+  39:../libopencm3/lib/stm32/f1/adc.c **** 
+  40:../libopencm3/lib/stm32/f1/adc.c **** A discontinuous mode allows a subgroup of group of a channels to be converted
+  41:../libopencm3/lib/stm32/f1/adc.c **** in bursts of a given length.
+  42:../libopencm3/lib/stm32/f1/adc.c **** 
+  43:../libopencm3/lib/stm32/f1/adc.c **** Injected conversions allow a second group of channels to be converted
+  44:../libopencm3/lib/stm32/f1/adc.c **** separately from the regular group. An interrupt can be set to occur at the end
+  45:../libopencm3/lib/stm32/f1/adc.c **** of conversion, which occurs after all channels have been scanned.
+  46:../libopencm3/lib/stm32/f1/adc.c **** 
+  47:../libopencm3/lib/stm32/f1/adc.c **** @section adc_api_ex Basic ADC Handling API.
+  48:../libopencm3/lib/stm32/f1/adc.c **** 
+  49:../libopencm3/lib/stm32/f1/adc.c **** Example 1: Simple single channel conversion polled. Enable the peripheral clock
+  50:../libopencm3/lib/stm32/f1/adc.c **** and ADC, reset ADC and set the prescaler divider. Set dual mode to independent
+  51:../libopencm3/lib/stm32/f1/adc.c **** (default). Enable triggering for a software trigger.
+  52:../libopencm3/lib/stm32/f1/adc.c **** 
+  53:../libopencm3/lib/stm32/f1/adc.c **** @code
+  54:../libopencm3/lib/stm32/f1/adc.c **** 	rcc_periph_clock_enable(RCC_ADC1);
+  55:../libopencm3/lib/stm32/f1/adc.c **** 	adc_power_off(ADC1);
+  56:../libopencm3/lib/stm32/f1/adc.c **** 	rcc_periph_reset_pulse(RST_ADC1);
+  57:../libopencm3/lib/stm32/f1/adc.c **** 	rcc_set_adcpre(RCC_CFGR_ADCPRE_PCLK2_DIV2);
+  58:../libopencm3/lib/stm32/f1/adc.c **** 	adc_set_dual_mode(ADC_CR1_DUALMOD_IND);
+  59:../libopencm3/lib/stm32/f1/adc.c **** 	adc_disable_scan_mode(ADC1);
+  60:../libopencm3/lib/stm32/f1/adc.c **** 	adc_set_single_conversion_mode(ADC1);
+  61:../libopencm3/lib/stm32/f1/adc.c **** 	adc_set_sample_time(ADC1, ADC_CHANNEL0, ADC_SMPR_SMP_1DOT5CYC);
+  62:../libopencm3/lib/stm32/f1/adc.c **** 	adc_enable_external_trigger_regular(ADC1, ADC_CR2_EXTSEL_SWSTART);
+  63:../libopencm3/lib/stm32/f1/adc.c **** 	adc_power_on(ADC1);
+  64:../libopencm3/lib/stm32/f1/adc.c **** 	adc_reset_calibration(ADC1);
+  65:../libopencm3/lib/stm32/f1/adc.c **** 	adc_calibrate(ADC1);
+  66:../libopencm3/lib/stm32/f1/adc.c **** 	adc_start_conversion_regular(ADC1);
+  67:../libopencm3/lib/stm32/f1/adc.c **** 	while (! adc_eoc(ADC1));
+  68:../libopencm3/lib/stm32/f1/adc.c **** 	reg16 = adc_read_regular(ADC1);
+  69:../libopencm3/lib/stm32/f1/adc.c **** @endcode
+  70:../libopencm3/lib/stm32/f1/adc.c **** 
+  71:../libopencm3/lib/stm32/f1/adc.c **** LGPL License Terms @ref lgpl_license
+  72:../libopencm3/lib/stm32/f1/adc.c ****  */
+  73:../libopencm3/lib/stm32/f1/adc.c **** /*
+  74:../libopencm3/lib/stm32/f1/adc.c ****  * This file is part of the libopencm3 project.
+  75:../libopencm3/lib/stm32/f1/adc.c ****  *
+  76:../libopencm3/lib/stm32/f1/adc.c ****  * Copyright (C) 2009 Edward Cheeseman <evbuilder@users.sourceforge.net>
+  77:../libopencm3/lib/stm32/f1/adc.c ****  *
+  78:../libopencm3/lib/stm32/f1/adc.c ****  * This library is free software: you can redistribute it and/or modify
+  79:../libopencm3/lib/stm32/f1/adc.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  80:../libopencm3/lib/stm32/f1/adc.c ****  * the Free Software Foundation, either version 3 of the License, or
+  81:../libopencm3/lib/stm32/f1/adc.c ****  * (at your option) any later version.
+  82:../libopencm3/lib/stm32/f1/adc.c ****  *
+  83:../libopencm3/lib/stm32/f1/adc.c ****  * This library is distributed in the hope that it will be useful,
+  84:../libopencm3/lib/stm32/f1/adc.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  85:../libopencm3/lib/stm32/f1/adc.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  86:../libopencm3/lib/stm32/f1/adc.c ****  * GNU Lesser General Public License for more details.
+  87:../libopencm3/lib/stm32/f1/adc.c ****  *
+  88:../libopencm3/lib/stm32/f1/adc.c ****  * You should have received a copy of the GNU Lesser General Public License
+  89:../libopencm3/lib/stm32/f1/adc.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  90:../libopencm3/lib/stm32/f1/adc.c ****  */
+  91:../libopencm3/lib/stm32/f1/adc.c **** 
+  92:../libopencm3/lib/stm32/f1/adc.c **** /**@{*/
+  93:../libopencm3/lib/stm32/f1/adc.c **** 
+  94:../libopencm3/lib/stm32/f1/adc.c **** #include <libopencm3/stm32/adc.h>
+  95:../libopencm3/lib/stm32/f1/adc.c **** 
+  96:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+  97:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Power On
+  98:../libopencm3/lib/stm32/f1/adc.c **** 
+  99:../libopencm3/lib/stm32/f1/adc.c **** If the ADC is in power-down mode then it is powered up. The application needs
+ 100:../libopencm3/lib/stm32/f1/adc.c **** to wait a time of about 3 microseconds for stabilization before using the ADC.
+ 101:../libopencm3/lib/stm32/f1/adc.c **** If the ADC is already on this function call has no effect.
+ 102:../libopencm3/lib/stm32/f1/adc.c ****  * NOTE Common with F37x
+ 103:../libopencm3/lib/stm32/f1/adc.c **** 
+ 104:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref adc_reg_base
+ 105:../libopencm3/lib/stm32/f1/adc.c **** */
+ 106:../libopencm3/lib/stm32/f1/adc.c **** 
+ 107:../libopencm3/lib/stm32/f1/adc.c **** void adc_power_on(uint32_t adc)
+ 108:../libopencm3/lib/stm32/f1/adc.c **** {
+  27              		.loc 1 108 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+ 109:../libopencm3/lib/stm32/f1/adc.c **** 	if (!(ADC_CR2(adc) & ADC_CR2_ADON)) {
+  40              		.loc 1 109 8
+  41 0008 7B68     		ldr	r3, [r7, #4]
+  42 000a 0833     		adds	r3, r3, #8
+  43 000c 1B68     		ldr	r3, [r3]
+  44              		.loc 1 109 21
+  45 000e 03F00103 		and	r3, r3, #1
+  46              		.loc 1 109 5
+  47 0012 002B     		cmp	r3, #0
+  48 0014 07D1     		bne	.L3
+ 110:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_CR2(adc) |= ADC_CR2_ADON;
+  49              		.loc 1 110 16
+  50 0016 7B68     		ldr	r3, [r7, #4]
+  51 0018 0833     		adds	r3, r3, #8
+  52 001a 1B68     		ldr	r3, [r3]
+  53 001c 7A68     		ldr	r2, [r7, #4]
+  54 001e 0832     		adds	r2, r2, #8
+  55 0020 43F00103 		orr	r3, r3, #1
+  56 0024 1360     		str	r3, [r2]
+  57              	.L3:
+ 111:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 112:../libopencm3/lib/stm32/f1/adc.c **** }
+  58              		.loc 1 112 1
+  59 0026 00BF     		nop
+  60 0028 0C37     		adds	r7, r7, #12
+  61              		.cfi_def_cfa_offset 4
+  62 002a BD46     		mov	sp, r7
+  63              		.cfi_def_cfa_register 13
+  64              		@ sp needed
+  65 002c 80BC     		pop	{r7}
+  66              		.cfi_restore 7
+  67              		.cfi_def_cfa_offset 0
+  68 002e 7047     		bx	lr
+  69              		.cfi_endproc
+  70              	.LFE0:
+  72              		.section	.text.adc_start_conversion_direct,"ax",%progbits
+  73              		.align	1
+  74              		.global	adc_start_conversion_direct
+  75              		.syntax unified
+  76              		.thumb
+  77              		.thumb_func
+  78              		.fpu softvfp
+  80              	adc_start_conversion_direct:
+  81              	.LFB1:
+ 113:../libopencm3/lib/stm32/f1/adc.c **** 
+ 114:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 115:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Start a Conversion Without Trigger
+ 116:../libopencm3/lib/stm32/f1/adc.c **** 
+ 117:../libopencm3/lib/stm32/f1/adc.c **** This initiates a conversion by software without a trigger. The ADC needs to be
+ 118:../libopencm3/lib/stm32/f1/adc.c **** powered on before this is called, otherwise this function has no effect.
+ 119:../libopencm3/lib/stm32/f1/adc.c **** 
+ 120:../libopencm3/lib/stm32/f1/adc.c **** Note that this is not available in other STM32F families. To ensure code
+ 121:../libopencm3/lib/stm32/f1/adc.c **** compatibility, enable triggering and use a software trigger source @see
+ 122:../libopencm3/lib/stm32/f1/adc.c **** adc_start_conversion_regular.
+ 123:../libopencm3/lib/stm32/f1/adc.c **** 
+ 124:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref adc_reg_base
+ 125:../libopencm3/lib/stm32/f1/adc.c **** */
+ 126:../libopencm3/lib/stm32/f1/adc.c **** 
+ 127:../libopencm3/lib/stm32/f1/adc.c **** void adc_start_conversion_direct(uint32_t adc)
+ 128:../libopencm3/lib/stm32/f1/adc.c **** {
+  82              		.loc 1 128 1
+  83              		.cfi_startproc
+  84              		@ args = 0, pretend = 0, frame = 8
+  85              		@ frame_needed = 1, uses_anonymous_args = 0
+  86              		@ link register save eliminated.
+  87 0000 80B4     		push	{r7}
+  88              		.cfi_def_cfa_offset 4
+  89              		.cfi_offset 7, -4
+  90 0002 83B0     		sub	sp, sp, #12
+  91              		.cfi_def_cfa_offset 16
+  92 0004 00AF     		add	r7, sp, #0
+  93              		.cfi_def_cfa_register 7
+  94 0006 7860     		str	r0, [r7, #4]
+ 129:../libopencm3/lib/stm32/f1/adc.c **** 	if (ADC_CR2(adc) & ADC_CR2_ADON) {
+  95              		.loc 1 129 6
+  96 0008 7B68     		ldr	r3, [r7, #4]
+  97 000a 0833     		adds	r3, r3, #8
+  98 000c 1B68     		ldr	r3, [r3]
+  99              		.loc 1 129 19
+ 100 000e 03F00103 		and	r3, r3, #1
+ 101              		.loc 1 129 5
+ 102 0012 002B     		cmp	r3, #0
+ 103 0014 07D0     		beq	.L6
+ 130:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_CR2(adc) |= ADC_CR2_ADON;
+ 104              		.loc 1 130 16
+ 105 0016 7B68     		ldr	r3, [r7, #4]
+ 106 0018 0833     		adds	r3, r3, #8
+ 107 001a 1B68     		ldr	r3, [r3]
+ 108 001c 7A68     		ldr	r2, [r7, #4]
+ 109 001e 0832     		adds	r2, r2, #8
+ 110 0020 43F00103 		orr	r3, r3, #1
+ 111 0024 1360     		str	r3, [r2]
+ 112              	.L6:
+ 131:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 132:../libopencm3/lib/stm32/f1/adc.c **** }
+ 113              		.loc 1 132 1
+ 114 0026 00BF     		nop
+ 115 0028 0C37     		adds	r7, r7, #12
+ 116              		.cfi_def_cfa_offset 4
+ 117 002a BD46     		mov	sp, r7
+ 118              		.cfi_def_cfa_register 13
+ 119              		@ sp needed
+ 120 002c 80BC     		pop	{r7}
+ 121              		.cfi_restore 7
+ 122              		.cfi_def_cfa_offset 0
+ 123 002e 7047     		bx	lr
+ 124              		.cfi_endproc
+ 125              	.LFE1:
+ 127              		.section	.text.adc_set_dual_mode,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	adc_set_dual_mode
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 133              		.fpu softvfp
+ 135              	adc_set_dual_mode:
+ 136              	.LFB2:
+ 133:../libopencm3/lib/stm32/f1/adc.c **** 
+ 134:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 135:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Set Dual A/D Mode
+ 136:../libopencm3/lib/stm32/f1/adc.c **** 
+ 137:../libopencm3/lib/stm32/f1/adc.c **** The dual mode uses ADC1 as master and ADC2 in a slave arrangement. This setting
+ 138:../libopencm3/lib/stm32/f1/adc.c **** is applied to ADC1 only. Start of conversion when triggered can cause
+ 139:../libopencm3/lib/stm32/f1/adc.c **** simultaneous conversion with ADC2, or alternate conversion. Regular and
+ 140:../libopencm3/lib/stm32/f1/adc.c **** injected conversions can be configured, each one being separately simultaneous
+ 141:../libopencm3/lib/stm32/f1/adc.c **** or alternate.
+ 142:../libopencm3/lib/stm32/f1/adc.c **** 
+ 143:../libopencm3/lib/stm32/f1/adc.c **** Fast interleaved mode starts ADC1 immediately on trigger, and ADC2 seven clock
+ 144:../libopencm3/lib/stm32/f1/adc.c **** cycles later.
+ 145:../libopencm3/lib/stm32/f1/adc.c **** 
+ 146:../libopencm3/lib/stm32/f1/adc.c **** Slow interleaved mode starts ADC1 immediately on trigger, and ADC2 fourteen
+ 147:../libopencm3/lib/stm32/f1/adc.c **** clock cycles later, followed by ADC1 fourteen cycles later again. This can only
+ 148:../libopencm3/lib/stm32/f1/adc.c **** be used on a single channel.
+ 149:../libopencm3/lib/stm32/f1/adc.c **** 
+ 150:../libopencm3/lib/stm32/f1/adc.c **** Alternate trigger mode must occur on an injected channel group, and alternates
+ 151:../libopencm3/lib/stm32/f1/adc.c **** between the ADCs on each trigger.
+ 152:../libopencm3/lib/stm32/f1/adc.c **** 
+ 153:../libopencm3/lib/stm32/f1/adc.c **** Note that sampling must not overlap between ADCs on the same channel.
+ 154:../libopencm3/lib/stm32/f1/adc.c **** 
+ 155:../libopencm3/lib/stm32/f1/adc.c **** Dual A/D converter modes possible:
+ 156:../libopencm3/lib/stm32/f1/adc.c **** 
+ 157:../libopencm3/lib/stm32/f1/adc.c **** @li IND: Independent mode.
+ 158:../libopencm3/lib/stm32/f1/adc.c **** @li CRSISM: Combined regular simultaneous + injected simultaneous mode.
+ 159:../libopencm3/lib/stm32/f1/adc.c **** @li CRSATM: Combined regular simultaneous + alternate trigger mode.
+ 160:../libopencm3/lib/stm32/f1/adc.c **** @li CISFIM: Combined injected simultaneous + fast interleaved mode.
+ 161:../libopencm3/lib/stm32/f1/adc.c **** @li CISSIM: Combined injected simultaneous + slow interleaved mode.
+ 162:../libopencm3/lib/stm32/f1/adc.c **** @li ISM: Injected simultaneous mode only.
+ 163:../libopencm3/lib/stm32/f1/adc.c **** @li RSM: Regular simultaneous mode only.
+ 164:../libopencm3/lib/stm32/f1/adc.c **** @li FIM: Fast interleaved mode only.
+ 165:../libopencm3/lib/stm32/f1/adc.c **** @li SIM: Slow interleaved mode only.
+ 166:../libopencm3/lib/stm32/f1/adc.c **** @li ATM: Alternate trigger mode only.
+ 167:../libopencm3/lib/stm32/f1/adc.c **** 
+ 168:../libopencm3/lib/stm32/f1/adc.c **** @param[in] mode Unsigned int32. Dual mode selection from @ref adc_cr1_dualmod
+ 169:../libopencm3/lib/stm32/f1/adc.c **** */
+ 170:../libopencm3/lib/stm32/f1/adc.c **** 
+ 171:../libopencm3/lib/stm32/f1/adc.c **** void adc_set_dual_mode(uint32_t mode)
+ 172:../libopencm3/lib/stm32/f1/adc.c **** {
+ 137              		.loc 1 172 1
+ 138              		.cfi_startproc
+ 139              		@ args = 0, pretend = 0, frame = 8
+ 140              		@ frame_needed = 1, uses_anonymous_args = 0
+ 141              		@ link register save eliminated.
+ 142 0000 80B4     		push	{r7}
+ 143              		.cfi_def_cfa_offset 4
+ 144              		.cfi_offset 7, -4
+ 145 0002 83B0     		sub	sp, sp, #12
+ 146              		.cfi_def_cfa_offset 16
+ 147 0004 00AF     		add	r7, sp, #0
+ 148              		.cfi_def_cfa_register 7
+ 149 0006 7860     		str	r0, [r7, #4]
+ 173:../libopencm3/lib/stm32/f1/adc.c **** 	ADC1_CR1 |= mode;
+ 150              		.loc 1 173 11
+ 151 0008 054B     		ldr	r3, .L8
+ 152 000a 1A68     		ldr	r2, [r3]
+ 153 000c 0449     		ldr	r1, .L8
+ 154 000e 7B68     		ldr	r3, [r7, #4]
+ 155 0010 1343     		orrs	r3, r3, r2
+ 156 0012 0B60     		str	r3, [r1]
+ 174:../libopencm3/lib/stm32/f1/adc.c **** }
+ 157              		.loc 1 174 1
+ 158 0014 00BF     		nop
+ 159 0016 0C37     		adds	r7, r7, #12
+ 160              		.cfi_def_cfa_offset 4
+ 161 0018 BD46     		mov	sp, r7
+ 162              		.cfi_def_cfa_register 13
+ 163              		@ sp needed
+ 164 001a 80BC     		pop	{r7}
+ 165              		.cfi_restore 7
+ 166              		.cfi_def_cfa_offset 0
+ 167 001c 7047     		bx	lr
+ 168              	.L9:
+ 169 001e 00BF     		.align	2
+ 170              	.L8:
+ 171 0020 04240140 		.word	1073816580
+ 172              		.cfi_endproc
+ 173              	.LFE2:
+ 175              		.section	.text.adc_enable_temperature_sensor,"ax",%progbits
+ 176              		.align	1
+ 177              		.global	adc_enable_temperature_sensor
+ 178              		.syntax unified
+ 179              		.thumb
+ 180              		.thumb_func
+ 181              		.fpu softvfp
+ 183              	adc_enable_temperature_sensor:
+ 184              	.LFB3:
+ 175:../libopencm3/lib/stm32/f1/adc.c **** 
+ 176:../libopencm3/lib/stm32/f1/adc.c **** 
+ 177:../libopencm3/lib/stm32/f1/adc.c **** 
+ 178:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 179:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Enable The Temperature Sensor
+ 180:../libopencm3/lib/stm32/f1/adc.c **** 
+ 181:../libopencm3/lib/stm32/f1/adc.c **** This enables both the sensor and the reference voltage measurements on channels
+ 182:../libopencm3/lib/stm32/f1/adc.c **** 16 and 17.
+ 183:../libopencm3/lib/stm32/f1/adc.c **** 
+ 184:../libopencm3/lib/stm32/f1/adc.c **** */
+ 185:../libopencm3/lib/stm32/f1/adc.c **** 
+ 186:../libopencm3/lib/stm32/f1/adc.c **** void adc_enable_temperature_sensor()
+ 187:../libopencm3/lib/stm32/f1/adc.c **** {
+ 185              		.loc 1 187 1
+ 186              		.cfi_startproc
+ 187              		@ args = 0, pretend = 0, frame = 0
+ 188              		@ frame_needed = 1, uses_anonymous_args = 0
+ 189              		@ link register save eliminated.
+ 190 0000 80B4     		push	{r7}
+ 191              		.cfi_def_cfa_offset 4
+ 192              		.cfi_offset 7, -4
+ 193 0002 00AF     		add	r7, sp, #0
+ 194              		.cfi_def_cfa_register 7
+ 188:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(ADC1) |= ADC_CR2_TSVREFE;
+ 195              		.loc 1 188 16
+ 196 0004 044B     		ldr	r3, .L11
+ 197 0006 1B68     		ldr	r3, [r3]
+ 198 0008 034A     		ldr	r2, .L11
+ 199 000a 43F40003 		orr	r3, r3, #8388608
+ 200 000e 1360     		str	r3, [r2]
+ 189:../libopencm3/lib/stm32/f1/adc.c **** }
+ 201              		.loc 1 189 1
+ 202 0010 00BF     		nop
+ 203 0012 BD46     		mov	sp, r7
+ 204              		.cfi_def_cfa_register 13
+ 205              		@ sp needed
+ 206 0014 80BC     		pop	{r7}
+ 207              		.cfi_restore 7
+ 208              		.cfi_def_cfa_offset 0
+ 209 0016 7047     		bx	lr
+ 210              	.L12:
+ 211              		.align	2
+ 212              	.L11:
+ 213 0018 08240140 		.word	1073816584
+ 214              		.cfi_endproc
+ 215              	.LFE3:
+ 217              		.section	.text.adc_disable_temperature_sensor,"ax",%progbits
+ 218              		.align	1
+ 219              		.global	adc_disable_temperature_sensor
+ 220              		.syntax unified
+ 221              		.thumb
+ 222              		.thumb_func
+ 223              		.fpu softvfp
+ 225              	adc_disable_temperature_sensor:
+ 226              	.LFB4:
+ 190:../libopencm3/lib/stm32/f1/adc.c **** 
+ 191:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 192:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Disable The Temperature Sensor
+ 193:../libopencm3/lib/stm32/f1/adc.c **** 
+ 194:../libopencm3/lib/stm32/f1/adc.c **** Disabling this will reduce power consumption from the sensor and the reference
+ 195:../libopencm3/lib/stm32/f1/adc.c **** voltage measurements.
+ 196:../libopencm3/lib/stm32/f1/adc.c **** */
+ 197:../libopencm3/lib/stm32/f1/adc.c **** 
+ 198:../libopencm3/lib/stm32/f1/adc.c **** void adc_disable_temperature_sensor()
+ 199:../libopencm3/lib/stm32/f1/adc.c **** {
+ 227              		.loc 1 199 1
+ 228              		.cfi_startproc
+ 229              		@ args = 0, pretend = 0, frame = 0
+ 230              		@ frame_needed = 1, uses_anonymous_args = 0
+ 231              		@ link register save eliminated.
+ 232 0000 80B4     		push	{r7}
+ 233              		.cfi_def_cfa_offset 4
+ 234              		.cfi_offset 7, -4
+ 235 0002 00AF     		add	r7, sp, #0
+ 236              		.cfi_def_cfa_register 7
+ 200:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(ADC1) &= ~ADC_CR2_TSVREFE;
+ 237              		.loc 1 200 16
+ 238 0004 044B     		ldr	r3, .L14
+ 239 0006 1B68     		ldr	r3, [r3]
+ 240 0008 034A     		ldr	r2, .L14
+ 241 000a 23F40003 		bic	r3, r3, #8388608
+ 242 000e 1360     		str	r3, [r2]
+ 201:../libopencm3/lib/stm32/f1/adc.c **** }
+ 243              		.loc 1 201 1
+ 244 0010 00BF     		nop
+ 245 0012 BD46     		mov	sp, r7
+ 246              		.cfi_def_cfa_register 13
+ 247              		@ sp needed
+ 248 0014 80BC     		pop	{r7}
+ 249              		.cfi_restore 7
+ 250              		.cfi_def_cfa_offset 0
+ 251 0016 7047     		bx	lr
+ 252              	.L15:
+ 253              		.align	2
+ 254              	.L14:
+ 255 0018 08240140 		.word	1073816584
+ 256              		.cfi_endproc
+ 257              	.LFE4:
+ 259              		.section	.text.adc_enable_external_trigger_regular,"ax",%progbits
+ 260              		.align	1
+ 261              		.global	adc_enable_external_trigger_regular
+ 262              		.syntax unified
+ 263              		.thumb
+ 264              		.thumb_func
+ 265              		.fpu softvfp
+ 267              	adc_enable_external_trigger_regular:
+ 268              	.LFB5:
+ 202:../libopencm3/lib/stm32/f1/adc.c **** 
+ 203:../libopencm3/lib/stm32/f1/adc.c **** 
+ 204:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 205:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Enable an External Trigger for Regular Channels
+ 206:../libopencm3/lib/stm32/f1/adc.c **** 
+ 207:../libopencm3/lib/stm32/f1/adc.c **** This enables an external trigger for set of defined regular channels.
+ 208:../libopencm3/lib/stm32/f1/adc.c **** 
+ 209:../libopencm3/lib/stm32/f1/adc.c **** For ADC1 and ADC2
+ 210:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC1 event
+ 211:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC2 event
+ 212:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC3 event
+ 213:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 2 CC2 event
+ 214:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 3 TRGO event
+ 215:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 4 CC4 event
+ 216:../libopencm3/lib/stm32/f1/adc.c **** @li EXTI (TIM8_TRGO is also possible on some devices, see datasheet)
+ 217:../libopencm3/lib/stm32/f1/adc.c **** @li Software Start
+ 218:../libopencm3/lib/stm32/f1/adc.c **** 
+ 219:../libopencm3/lib/stm32/f1/adc.c **** For ADC3
+ 220:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 3 CC1 event
+ 221:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 2 CC3 event
+ 222:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC3 event
+ 223:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 8 CC1 event
+ 224:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 8 TRGO event
+ 225:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 5 CC1 event
+ 226:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 5 CC3 event
+ 227:../libopencm3/lib/stm32/f1/adc.c **** @li Software Start
+ 228:../libopencm3/lib/stm32/f1/adc.c **** 
+ 229:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 230:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 231:../libopencm3/lib/stm32/f1/adc.c **** @param[in] trigger Unsigned int8. Trigger identifier @ref adc_trigger_regular_12
+ 232:../libopencm3/lib/stm32/f1/adc.c **** for ADC1 and ADC2, or @ref adc_trigger_regular_3 for ADC3.
+ 233:../libopencm3/lib/stm32/f1/adc.c **** */
+ 234:../libopencm3/lib/stm32/f1/adc.c **** 
+ 235:../libopencm3/lib/stm32/f1/adc.c **** void adc_enable_external_trigger_regular(uint32_t adc, uint32_t trigger)
+ 236:../libopencm3/lib/stm32/f1/adc.c **** {
+ 269              		.loc 1 236 1
+ 270              		.cfi_startproc
+ 271              		@ args = 0, pretend = 0, frame = 16
+ 272              		@ frame_needed = 1, uses_anonymous_args = 0
+ 273              		@ link register save eliminated.
+ 274 0000 80B4     		push	{r7}
+ 275              		.cfi_def_cfa_offset 4
+ 276              		.cfi_offset 7, -4
+ 277 0002 85B0     		sub	sp, sp, #20
+ 278              		.cfi_def_cfa_offset 24
+ 279 0004 00AF     		add	r7, sp, #0
+ 280              		.cfi_def_cfa_register 7
+ 281 0006 7860     		str	r0, [r7, #4]
+ 282 0008 3960     		str	r1, [r7]
+ 237:../libopencm3/lib/stm32/f1/adc.c **** 	uint32_t reg32;
+ 238:../libopencm3/lib/stm32/f1/adc.c **** 
+ 239:../libopencm3/lib/stm32/f1/adc.c **** 	reg32 = (ADC_CR2(adc) & ~(ADC_CR2_EXTSEL_MASK));
+ 283              		.loc 1 239 11
+ 284 000a 7B68     		ldr	r3, [r7, #4]
+ 285 000c 0833     		adds	r3, r3, #8
+ 286 000e 1B68     		ldr	r3, [r3]
+ 287              		.loc 1 239 8
+ 288 0010 23F46023 		bic	r3, r3, #917504
+ 289 0014 FB60     		str	r3, [r7, #12]
+ 240:../libopencm3/lib/stm32/f1/adc.c **** 	reg32 |= (trigger);
+ 290              		.loc 1 240 8
+ 291 0016 FA68     		ldr	r2, [r7, #12]
+ 292 0018 3B68     		ldr	r3, [r7]
+ 293 001a 1343     		orrs	r3, r3, r2
+ 294 001c FB60     		str	r3, [r7, #12]
+ 241:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) = reg32;
+ 295              		.loc 1 241 2
+ 296 001e 7B68     		ldr	r3, [r7, #4]
+ 297 0020 0833     		adds	r3, r3, #8
+ 298 0022 1A46     		mov	r2, r3
+ 299              		.loc 1 241 15
+ 300 0024 FB68     		ldr	r3, [r7, #12]
+ 301 0026 1360     		str	r3, [r2]
+ 242:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) |= ADC_CR2_EXTTRIG;
+ 302              		.loc 1 242 15
+ 303 0028 7B68     		ldr	r3, [r7, #4]
+ 304 002a 0833     		adds	r3, r3, #8
+ 305 002c 1B68     		ldr	r3, [r3]
+ 306 002e 7A68     		ldr	r2, [r7, #4]
+ 307 0030 0832     		adds	r2, r2, #8
+ 308 0032 43F48013 		orr	r3, r3, #1048576
+ 309 0036 1360     		str	r3, [r2]
+ 243:../libopencm3/lib/stm32/f1/adc.c **** }
+ 310              		.loc 1 243 1
+ 311 0038 00BF     		nop
+ 312 003a 1437     		adds	r7, r7, #20
+ 313              		.cfi_def_cfa_offset 4
+ 314 003c BD46     		mov	sp, r7
+ 315              		.cfi_def_cfa_register 13
+ 316              		@ sp needed
+ 317 003e 80BC     		pop	{r7}
+ 318              		.cfi_restore 7
+ 319              		.cfi_def_cfa_offset 0
+ 320 0040 7047     		bx	lr
+ 321              		.cfi_endproc
+ 322              	.LFE5:
+ 324              		.section	.text.adc_disable_external_trigger_regular,"ax",%progbits
+ 325              		.align	1
+ 326              		.global	adc_disable_external_trigger_regular
+ 327              		.syntax unified
+ 328              		.thumb
+ 329              		.thumb_func
+ 330              		.fpu softvfp
+ 332              	adc_disable_external_trigger_regular:
+ 333              	.LFB6:
+ 244:../libopencm3/lib/stm32/f1/adc.c **** 
+ 245:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 246:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Disable an External Trigger for Regular Channels
+ 247:../libopencm3/lib/stm32/f1/adc.c **** 
+ 248:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 249:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 250:../libopencm3/lib/stm32/f1/adc.c **** */
+ 251:../libopencm3/lib/stm32/f1/adc.c **** 
+ 252:../libopencm3/lib/stm32/f1/adc.c **** void adc_disable_external_trigger_regular(uint32_t adc)
+ 253:../libopencm3/lib/stm32/f1/adc.c **** {
+ 334              		.loc 1 253 1
+ 335              		.cfi_startproc
+ 336              		@ args = 0, pretend = 0, frame = 8
+ 337              		@ frame_needed = 1, uses_anonymous_args = 0
+ 338              		@ link register save eliminated.
+ 339 0000 80B4     		push	{r7}
+ 340              		.cfi_def_cfa_offset 4
+ 341              		.cfi_offset 7, -4
+ 342 0002 83B0     		sub	sp, sp, #12
+ 343              		.cfi_def_cfa_offset 16
+ 344 0004 00AF     		add	r7, sp, #0
+ 345              		.cfi_def_cfa_register 7
+ 346 0006 7860     		str	r0, [r7, #4]
+ 254:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) &= ~ADC_CR2_EXTTRIG;
+ 347              		.loc 1 254 15
+ 348 0008 7B68     		ldr	r3, [r7, #4]
+ 349 000a 0833     		adds	r3, r3, #8
+ 350 000c 1B68     		ldr	r3, [r3]
+ 351 000e 7A68     		ldr	r2, [r7, #4]
+ 352 0010 0832     		adds	r2, r2, #8
+ 353 0012 23F48013 		bic	r3, r3, #1048576
+ 354 0016 1360     		str	r3, [r2]
+ 255:../libopencm3/lib/stm32/f1/adc.c **** }
+ 355              		.loc 1 255 1
+ 356 0018 00BF     		nop
+ 357 001a 0C37     		adds	r7, r7, #12
+ 358              		.cfi_def_cfa_offset 4
+ 359 001c BD46     		mov	sp, r7
+ 360              		.cfi_def_cfa_register 13
+ 361              		@ sp needed
+ 362 001e 80BC     		pop	{r7}
+ 363              		.cfi_restore 7
+ 364              		.cfi_def_cfa_offset 0
+ 365 0020 7047     		bx	lr
+ 366              		.cfi_endproc
+ 367              	.LFE6:
+ 369              		.section	.text.adc_enable_external_trigger_injected,"ax",%progbits
+ 370              		.align	1
+ 371              		.global	adc_enable_external_trigger_injected
+ 372              		.syntax unified
+ 373              		.thumb
+ 374              		.thumb_func
+ 375              		.fpu softvfp
+ 377              	adc_enable_external_trigger_injected:
+ 378              	.LFB7:
+ 256:../libopencm3/lib/stm32/f1/adc.c **** 
+ 257:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 258:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Enable an External Trigger for Injected Channels
+ 259:../libopencm3/lib/stm32/f1/adc.c **** 
+ 260:../libopencm3/lib/stm32/f1/adc.c **** This enables an external trigger for set of defined injected channels.
+ 261:../libopencm3/lib/stm32/f1/adc.c **** 
+ 262:../libopencm3/lib/stm32/f1/adc.c **** For ADC1 and ADC2
+ 263:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 TRGO event
+ 264:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC4 event
+ 265:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 2 TRGO event
+ 266:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 2 CC1 event
+ 267:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 3 CC4 event
+ 268:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 4 TRGO event
+ 269:../libopencm3/lib/stm32/f1/adc.c **** @li EXTI (TIM8 CC4 is also possible on some devices, see datasheet)
+ 270:../libopencm3/lib/stm32/f1/adc.c **** @li Software Start
+ 271:../libopencm3/lib/stm32/f1/adc.c **** 
+ 272:../libopencm3/lib/stm32/f1/adc.c **** For ADC3
+ 273:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 TRGO event
+ 274:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 1 CC4 event
+ 275:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 4 CC3 event
+ 276:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 8 CC2 event
+ 277:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 8 CC4 event
+ 278:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 5 TRGO event
+ 279:../libopencm3/lib/stm32/f1/adc.c **** @li Timer 5 CC4 event
+ 280:../libopencm3/lib/stm32/f1/adc.c **** @li Software Start
+ 281:../libopencm3/lib/stm32/f1/adc.c **** 
+ 282:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 283:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 284:../libopencm3/lib/stm32/f1/adc.c **** @param[in] trigger Unsigned int8. Trigger identifier @ref
+ 285:../libopencm3/lib/stm32/f1/adc.c **** adc_trigger_injected_12 for ADC1 and ADC2, or @ref adc_trigger_injected_3 for
+ 286:../libopencm3/lib/stm32/f1/adc.c **** ADC3.
+ 287:../libopencm3/lib/stm32/f1/adc.c **** */
+ 288:../libopencm3/lib/stm32/f1/adc.c **** void adc_enable_external_trigger_injected(uint32_t adc, uint32_t trigger)
+ 289:../libopencm3/lib/stm32/f1/adc.c **** {
+ 379              		.loc 1 289 1
+ 380              		.cfi_startproc
+ 381              		@ args = 0, pretend = 0, frame = 16
+ 382              		@ frame_needed = 1, uses_anonymous_args = 0
+ 383              		@ link register save eliminated.
+ 384 0000 80B4     		push	{r7}
+ 385              		.cfi_def_cfa_offset 4
+ 386              		.cfi_offset 7, -4
+ 387 0002 85B0     		sub	sp, sp, #20
+ 388              		.cfi_def_cfa_offset 24
+ 389 0004 00AF     		add	r7, sp, #0
+ 390              		.cfi_def_cfa_register 7
+ 391 0006 7860     		str	r0, [r7, #4]
+ 392 0008 3960     		str	r1, [r7]
+ 290:../libopencm3/lib/stm32/f1/adc.c **** 	uint32_t reg32;
+ 291:../libopencm3/lib/stm32/f1/adc.c **** 
+ 292:../libopencm3/lib/stm32/f1/adc.c **** 	reg32 = (ADC_CR2(adc) & ~(ADC_CR2_JEXTSEL_MASK)); /* Clear bits [12:14]
+ 393              		.loc 1 292 11
+ 394 000a 7B68     		ldr	r3, [r7, #4]
+ 395 000c 0833     		adds	r3, r3, #8
+ 396 000e 1B68     		ldr	r3, [r3]
+ 397              		.loc 1 292 8
+ 398 0010 23F4E043 		bic	r3, r3, #28672
+ 399 0014 FB60     		str	r3, [r7, #12]
+ 293:../libopencm3/lib/stm32/f1/adc.c **** 							   */
+ 294:../libopencm3/lib/stm32/f1/adc.c **** 	reg32 |= (trigger);
+ 400              		.loc 1 294 8
+ 401 0016 FA68     		ldr	r2, [r7, #12]
+ 402 0018 3B68     		ldr	r3, [r7]
+ 403 001a 1343     		orrs	r3, r3, r2
+ 404 001c FB60     		str	r3, [r7, #12]
+ 295:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) = reg32;
+ 405              		.loc 1 295 2
+ 406 001e 7B68     		ldr	r3, [r7, #4]
+ 407 0020 0833     		adds	r3, r3, #8
+ 408 0022 1A46     		mov	r2, r3
+ 409              		.loc 1 295 15
+ 410 0024 FB68     		ldr	r3, [r7, #12]
+ 411 0026 1360     		str	r3, [r2]
+ 296:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) |= ADC_CR2_JEXTTRIG;
+ 412              		.loc 1 296 15
+ 413 0028 7B68     		ldr	r3, [r7, #4]
+ 414 002a 0833     		adds	r3, r3, #8
+ 415 002c 1B68     		ldr	r3, [r3]
+ 416 002e 7A68     		ldr	r2, [r7, #4]
+ 417 0030 0832     		adds	r2, r2, #8
+ 418 0032 43F40043 		orr	r3, r3, #32768
+ 419 0036 1360     		str	r3, [r2]
+ 297:../libopencm3/lib/stm32/f1/adc.c **** }
+ 420              		.loc 1 297 1
+ 421 0038 00BF     		nop
+ 422 003a 1437     		adds	r7, r7, #20
+ 423              		.cfi_def_cfa_offset 4
+ 424 003c BD46     		mov	sp, r7
+ 425              		.cfi_def_cfa_register 13
+ 426              		@ sp needed
+ 427 003e 80BC     		pop	{r7}
+ 428              		.cfi_restore 7
+ 429              		.cfi_def_cfa_offset 0
+ 430 0040 7047     		bx	lr
+ 431              		.cfi_endproc
+ 432              	.LFE7:
+ 434              		.section	.text.adc_disable_external_trigger_injected,"ax",%progbits
+ 435              		.align	1
+ 436              		.global	adc_disable_external_trigger_injected
+ 437              		.syntax unified
+ 438              		.thumb
+ 439              		.thumb_func
+ 440              		.fpu softvfp
+ 442              	adc_disable_external_trigger_injected:
+ 443              	.LFB8:
+ 298:../libopencm3/lib/stm32/f1/adc.c **** 
+ 299:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 300:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Disable an External Trigger for Injected Channels
+ 301:../libopencm3/lib/stm32/f1/adc.c **** 
+ 302:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 303:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 304:../libopencm3/lib/stm32/f1/adc.c **** */
+ 305:../libopencm3/lib/stm32/f1/adc.c **** 
+ 306:../libopencm3/lib/stm32/f1/adc.c **** void adc_disable_external_trigger_injected(uint32_t adc)
+ 307:../libopencm3/lib/stm32/f1/adc.c **** {
+ 444              		.loc 1 307 1
+ 445              		.cfi_startproc
+ 446              		@ args = 0, pretend = 0, frame = 8
+ 447              		@ frame_needed = 1, uses_anonymous_args = 0
+ 448              		@ link register save eliminated.
+ 449 0000 80B4     		push	{r7}
+ 450              		.cfi_def_cfa_offset 4
+ 451              		.cfi_offset 7, -4
+ 452 0002 83B0     		sub	sp, sp, #12
+ 453              		.cfi_def_cfa_offset 16
+ 454 0004 00AF     		add	r7, sp, #0
+ 455              		.cfi_def_cfa_register 7
+ 456 0006 7860     		str	r0, [r7, #4]
+ 308:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) &= ~ADC_CR2_JEXTTRIG;
+ 457              		.loc 1 308 15
+ 458 0008 7B68     		ldr	r3, [r7, #4]
+ 459 000a 0833     		adds	r3, r3, #8
+ 460 000c 1B68     		ldr	r3, [r3]
+ 461 000e 7A68     		ldr	r2, [r7, #4]
+ 462 0010 0832     		adds	r2, r2, #8
+ 463 0012 23F40043 		bic	r3, r3, #32768
+ 464 0016 1360     		str	r3, [r2]
+ 309:../libopencm3/lib/stm32/f1/adc.c **** }
+ 465              		.loc 1 309 1
+ 466 0018 00BF     		nop
+ 467 001a 0C37     		adds	r7, r7, #12
+ 468              		.cfi_def_cfa_offset 4
+ 469 001c BD46     		mov	sp, r7
+ 470              		.cfi_def_cfa_register 13
+ 471              		@ sp needed
+ 472 001e 80BC     		pop	{r7}
+ 473              		.cfi_restore 7
+ 474              		.cfi_def_cfa_offset 0
+ 475 0020 7047     		bx	lr
+ 476              		.cfi_endproc
+ 477              	.LFE8:
+ 479              		.section	.text.adc_reset_calibration,"ax",%progbits
+ 480              		.align	1
+ 481              		.global	adc_reset_calibration
+ 482              		.syntax unified
+ 483              		.thumb
+ 484              		.thumb_func
+ 485              		.fpu softvfp
+ 487              	adc_reset_calibration:
+ 488              	.LFB9:
+ 310:../libopencm3/lib/stm32/f1/adc.c **** 
+ 311:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 312:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Initialize Calibration Registers
+ 313:../libopencm3/lib/stm32/f1/adc.c **** 
+ 314:../libopencm3/lib/stm32/f1/adc.c **** This resets the calibration registers. It is not clear if this is required to be
+ 315:../libopencm3/lib/stm32/f1/adc.c **** done before every calibration operation.
+ 316:../libopencm3/lib/stm32/f1/adc.c **** 
+ 317:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 318:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 319:../libopencm3/lib/stm32/f1/adc.c **** */
+ 320:../libopencm3/lib/stm32/f1/adc.c **** 
+ 321:../libopencm3/lib/stm32/f1/adc.c **** void adc_reset_calibration(uint32_t adc)
+ 322:../libopencm3/lib/stm32/f1/adc.c **** {
+ 489              		.loc 1 322 1
+ 490              		.cfi_startproc
+ 491              		@ args = 0, pretend = 0, frame = 8
+ 492              		@ frame_needed = 1, uses_anonymous_args = 0
+ 493              		@ link register save eliminated.
+ 494 0000 80B4     		push	{r7}
+ 495              		.cfi_def_cfa_offset 4
+ 496              		.cfi_offset 7, -4
+ 497 0002 83B0     		sub	sp, sp, #12
+ 498              		.cfi_def_cfa_offset 16
+ 499 0004 00AF     		add	r7, sp, #0
+ 500              		.cfi_def_cfa_register 7
+ 501 0006 7860     		str	r0, [r7, #4]
+ 323:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) |= ADC_CR2_RSTCAL;
+ 502              		.loc 1 323 15
+ 503 0008 7B68     		ldr	r3, [r7, #4]
+ 504 000a 0833     		adds	r3, r3, #8
+ 505 000c 1B68     		ldr	r3, [r3]
+ 506 000e 7A68     		ldr	r2, [r7, #4]
+ 507 0010 0832     		adds	r2, r2, #8
+ 508 0012 43F00803 		orr	r3, r3, #8
+ 509 0016 1360     		str	r3, [r2]
+ 324:../libopencm3/lib/stm32/f1/adc.c **** 	while (ADC_CR2(adc) & ADC_CR2_RSTCAL);
+ 510              		.loc 1 324 8
+ 511 0018 00BF     		nop
+ 512              	.L21:
+ 513              		.loc 1 324 9 discriminator 1
+ 514 001a 7B68     		ldr	r3, [r7, #4]
+ 515 001c 0833     		adds	r3, r3, #8
+ 516 001e 1B68     		ldr	r3, [r3]
+ 517              		.loc 1 324 22 discriminator 1
+ 518 0020 03F00803 		and	r3, r3, #8
+ 519              		.loc 1 324 8 discriminator 1
+ 520 0024 002B     		cmp	r3, #0
+ 521 0026 F8D1     		bne	.L21
+ 325:../libopencm3/lib/stm32/f1/adc.c **** }
+ 522              		.loc 1 325 1
+ 523 0028 00BF     		nop
+ 524 002a 0C37     		adds	r7, r7, #12
+ 525              		.cfi_def_cfa_offset 4
+ 526 002c BD46     		mov	sp, r7
+ 527              		.cfi_def_cfa_register 13
+ 528              		@ sp needed
+ 529 002e 80BC     		pop	{r7}
+ 530              		.cfi_restore 7
+ 531              		.cfi_def_cfa_offset 0
+ 532 0030 7047     		bx	lr
+ 533              		.cfi_endproc
+ 534              	.LFE9:
+ 536              		.section	.text.adc_calibration,"ax",%progbits
+ 537              		.align	1
+ 538              		.global	adc_calibration
+ 539              		.syntax unified
+ 540              		.thumb
+ 541              		.thumb_func
+ 542              		.fpu softvfp
+ 544              	adc_calibration:
+ 545              	.LFB10:
+ 326:../libopencm3/lib/stm32/f1/adc.c **** 
+ 327:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 328:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Calibration
+ 329:../libopencm3/lib/stm32/f1/adc.c **** @deprecated replaced by adc_calibrate/_async/_is_calibrating
+ 330:../libopencm3/lib/stm32/f1/adc.c **** The calibration data for the ADC is recomputed. The hardware clears the
+ 331:../libopencm3/lib/stm32/f1/adc.c **** calibration status flag when calibration is complete. This function does not
+ 332:../libopencm3/lib/stm32/f1/adc.c **** return until this happens and the ADC is ready for use.
+ 333:../libopencm3/lib/stm32/f1/adc.c **** 
+ 334:../libopencm3/lib/stm32/f1/adc.c **** The ADC must have been powered down for at least 2 ADC clock cycles, then
+ 335:../libopencm3/lib/stm32/f1/adc.c **** powered on.  before calibration starts
+ 336:../libopencm3/lib/stm32/f1/adc.c **** 
+ 337:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 338:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 339:../libopencm3/lib/stm32/f1/adc.c **** */
+ 340:../libopencm3/lib/stm32/f1/adc.c **** 
+ 341:../libopencm3/lib/stm32/f1/adc.c **** void adc_calibration(uint32_t adc)
+ 342:../libopencm3/lib/stm32/f1/adc.c **** {
+ 546              		.loc 1 342 1
+ 547              		.cfi_startproc
+ 548              		@ args = 0, pretend = 0, frame = 8
+ 549              		@ frame_needed = 1, uses_anonymous_args = 0
+ 550              		@ link register save eliminated.
+ 551 0000 80B4     		push	{r7}
+ 552              		.cfi_def_cfa_offset 4
+ 553              		.cfi_offset 7, -4
+ 554 0002 83B0     		sub	sp, sp, #12
+ 555              		.cfi_def_cfa_offset 16
+ 556 0004 00AF     		add	r7, sp, #0
+ 557              		.cfi_def_cfa_register 7
+ 558 0006 7860     		str	r0, [r7, #4]
+ 343:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) |= ADC_CR2_CAL;
+ 559              		.loc 1 343 15
+ 560 0008 7B68     		ldr	r3, [r7, #4]
+ 561 000a 0833     		adds	r3, r3, #8
+ 562 000c 1B68     		ldr	r3, [r3]
+ 563 000e 7A68     		ldr	r2, [r7, #4]
+ 564 0010 0832     		adds	r2, r2, #8
+ 565 0012 43F00403 		orr	r3, r3, #4
+ 566 0016 1360     		str	r3, [r2]
+ 344:../libopencm3/lib/stm32/f1/adc.c **** 	while (ADC_CR2(adc) & ADC_CR2_CAL);
+ 567              		.loc 1 344 8
+ 568 0018 00BF     		nop
+ 569              	.L23:
+ 570              		.loc 1 344 9 discriminator 1
+ 571 001a 7B68     		ldr	r3, [r7, #4]
+ 572 001c 0833     		adds	r3, r3, #8
+ 573 001e 1B68     		ldr	r3, [r3]
+ 574              		.loc 1 344 22 discriminator 1
+ 575 0020 03F00403 		and	r3, r3, #4
+ 576              		.loc 1 344 8 discriminator 1
+ 577 0024 002B     		cmp	r3, #0
+ 578 0026 F8D1     		bne	.L23
+ 345:../libopencm3/lib/stm32/f1/adc.c **** }
+ 579              		.loc 1 345 1
+ 580 0028 00BF     		nop
+ 581 002a 0C37     		adds	r7, r7, #12
+ 582              		.cfi_def_cfa_offset 4
+ 583 002c BD46     		mov	sp, r7
+ 584              		.cfi_def_cfa_register 13
+ 585              		@ sp needed
+ 586 002e 80BC     		pop	{r7}
+ 587              		.cfi_restore 7
+ 588              		.cfi_def_cfa_offset 0
+ 589 0030 7047     		bx	lr
+ 590              		.cfi_endproc
+ 591              	.LFE10:
+ 593              		.section	.text.adc_calibrate_async,"ax",%progbits
+ 594              		.align	1
+ 595              		.global	adc_calibrate_async
+ 596              		.syntax unified
+ 597              		.thumb
+ 598              		.thumb_func
+ 599              		.fpu softvfp
+ 601              	adc_calibrate_async:
+ 602              	.LFB11:
+ 346:../libopencm3/lib/stm32/f1/adc.c **** 
+ 347:../libopencm3/lib/stm32/f1/adc.c **** /**
+ 348:../libopencm3/lib/stm32/f1/adc.c ****  * Start the ADC calibration and immediately return.
+ 349:../libopencm3/lib/stm32/f1/adc.c ****  * @sa adc_calibrate
+ 350:../libopencm3/lib/stm32/f1/adc.c ****  * @sa adc_is_calibrate
+ 351:../libopencm3/lib/stm32/f1/adc.c ****  * @param adc ADC Block register address base @ref adc_reg_base
+ 352:../libopencm3/lib/stm32/f1/adc.c ****  */
+ 353:../libopencm3/lib/stm32/f1/adc.c **** void adc_calibrate_async(uint32_t adc)
+ 354:../libopencm3/lib/stm32/f1/adc.c **** {
+ 603              		.loc 1 354 1
+ 604              		.cfi_startproc
+ 605              		@ args = 0, pretend = 0, frame = 8
+ 606              		@ frame_needed = 1, uses_anonymous_args = 0
+ 607              		@ link register save eliminated.
+ 608 0000 80B4     		push	{r7}
+ 609              		.cfi_def_cfa_offset 4
+ 610              		.cfi_offset 7, -4
+ 611 0002 83B0     		sub	sp, sp, #12
+ 612              		.cfi_def_cfa_offset 16
+ 613 0004 00AF     		add	r7, sp, #0
+ 614              		.cfi_def_cfa_register 7
+ 615 0006 7860     		str	r0, [r7, #4]
+ 355:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_CR2(adc) |= ADC_CR2_CAL;
+ 616              		.loc 1 355 15
+ 617 0008 7B68     		ldr	r3, [r7, #4]
+ 618 000a 0833     		adds	r3, r3, #8
+ 619 000c 1B68     		ldr	r3, [r3]
+ 620 000e 7A68     		ldr	r2, [r7, #4]
+ 621 0010 0832     		adds	r2, r2, #8
+ 622 0012 43F00403 		orr	r3, r3, #4
+ 623 0016 1360     		str	r3, [r2]
+ 356:../libopencm3/lib/stm32/f1/adc.c **** }
+ 624              		.loc 1 356 1
+ 625 0018 00BF     		nop
+ 626 001a 0C37     		adds	r7, r7, #12
+ 627              		.cfi_def_cfa_offset 4
+ 628 001c BD46     		mov	sp, r7
+ 629              		.cfi_def_cfa_register 13
+ 630              		@ sp needed
+ 631 001e 80BC     		pop	{r7}
+ 632              		.cfi_restore 7
+ 633              		.cfi_def_cfa_offset 0
+ 634 0020 7047     		bx	lr
+ 635              		.cfi_endproc
+ 636              	.LFE11:
+ 638              		.section	.text.adc_is_calibrating,"ax",%progbits
+ 639              		.align	1
+ 640              		.global	adc_is_calibrating
+ 641              		.syntax unified
+ 642              		.thumb
+ 643              		.thumb_func
+ 644              		.fpu softvfp
+ 646              	adc_is_calibrating:
+ 647              	.LFB12:
+ 357:../libopencm3/lib/stm32/f1/adc.c **** 
+ 358:../libopencm3/lib/stm32/f1/adc.c **** /**
+ 359:../libopencm3/lib/stm32/f1/adc.c ****  * Is the ADC Calibrating?
+ 360:../libopencm3/lib/stm32/f1/adc.c ****  * @param adc ADC Block register address base @ref adc_reg_base
+ 361:../libopencm3/lib/stm32/f1/adc.c ****  * @return true if the adc is currently calibrating
+ 362:../libopencm3/lib/stm32/f1/adc.c ****  */
+ 363:../libopencm3/lib/stm32/f1/adc.c **** bool adc_is_calibrating(uint32_t adc)
+ 364:../libopencm3/lib/stm32/f1/adc.c **** {
+ 648              		.loc 1 364 1
+ 649              		.cfi_startproc
+ 650              		@ args = 0, pretend = 0, frame = 8
+ 651              		@ frame_needed = 1, uses_anonymous_args = 0
+ 652              		@ link register save eliminated.
+ 653 0000 80B4     		push	{r7}
+ 654              		.cfi_def_cfa_offset 4
+ 655              		.cfi_offset 7, -4
+ 656 0002 83B0     		sub	sp, sp, #12
+ 657              		.cfi_def_cfa_offset 16
+ 658 0004 00AF     		add	r7, sp, #0
+ 659              		.cfi_def_cfa_register 7
+ 660 0006 7860     		str	r0, [r7, #4]
+ 365:../libopencm3/lib/stm32/f1/adc.c **** 	return (ADC_CR2(adc) & ADC_CR2_CAL);
+ 661              		.loc 1 365 10
+ 662 0008 7B68     		ldr	r3, [r7, #4]
+ 663 000a 0833     		adds	r3, r3, #8
+ 664 000c 1B68     		ldr	r3, [r3]
+ 665              		.loc 1 365 23
+ 666 000e 03F00403 		and	r3, r3, #4
+ 667 0012 002B     		cmp	r3, #0
+ 668 0014 14BF     		ite	ne
+ 669 0016 0123     		movne	r3, #1
+ 670 0018 0023     		moveq	r3, #0
+ 671 001a DBB2     		uxtb	r3, r3
+ 366:../libopencm3/lib/stm32/f1/adc.c **** }
+ 672              		.loc 1 366 1
+ 673 001c 1846     		mov	r0, r3
+ 674 001e 0C37     		adds	r7, r7, #12
+ 675              		.cfi_def_cfa_offset 4
+ 676 0020 BD46     		mov	sp, r7
+ 677              		.cfi_def_cfa_register 13
+ 678              		@ sp needed
+ 679 0022 80BC     		pop	{r7}
+ 680              		.cfi_restore 7
+ 681              		.cfi_def_cfa_offset 0
+ 682 0024 7047     		bx	lr
+ 683              		.cfi_endproc
+ 684              	.LFE12:
+ 686              		.section	.text.adc_calibrate,"ax",%progbits
+ 687              		.align	1
+ 688              		.global	adc_calibrate
+ 689              		.syntax unified
+ 690              		.thumb
+ 691              		.thumb_func
+ 692              		.fpu softvfp
+ 694              	adc_calibrate:
+ 695              	.LFB13:
+ 367:../libopencm3/lib/stm32/f1/adc.c **** 
+ 368:../libopencm3/lib/stm32/f1/adc.c **** /**
+ 369:../libopencm3/lib/stm32/f1/adc.c ****  * Start ADC calibration and wait for it to finish.
+ 370:../libopencm3/lib/stm32/f1/adc.c ****  * The ADC must have been powered down for at least 2 ADC clock cycles, then
+ 371:../libopencm3/lib/stm32/f1/adc.c ****  * powered on before calibration starts
+ 372:../libopencm3/lib/stm32/f1/adc.c ****  * @param adc ADC Block register address base @ref adc_reg_base
+ 373:../libopencm3/lib/stm32/f1/adc.c ****  */
+ 374:../libopencm3/lib/stm32/f1/adc.c **** void adc_calibrate(uint32_t adc)
+ 375:../libopencm3/lib/stm32/f1/adc.c **** {
+ 696              		.loc 1 375 1
+ 697              		.cfi_startproc
+ 698              		@ args = 0, pretend = 0, frame = 8
+ 699              		@ frame_needed = 1, uses_anonymous_args = 0
+ 700 0000 80B5     		push	{r7, lr}
+ 701              		.cfi_def_cfa_offset 8
+ 702              		.cfi_offset 7, -8
+ 703              		.cfi_offset 14, -4
+ 704 0002 82B0     		sub	sp, sp, #8
+ 705              		.cfi_def_cfa_offset 16
+ 706 0004 00AF     		add	r7, sp, #0
+ 707              		.cfi_def_cfa_register 7
+ 708 0006 7860     		str	r0, [r7, #4]
+ 376:../libopencm3/lib/stm32/f1/adc.c **** 	adc_calibrate_async(adc);
+ 709              		.loc 1 376 2
+ 710 0008 7868     		ldr	r0, [r7, #4]
+ 711 000a FFF7FEFF 		bl	adc_calibrate_async(PLT)
+ 377:../libopencm3/lib/stm32/f1/adc.c **** 	while (adc_is_calibrating(adc));
+ 712              		.loc 1 377 8
+ 713 000e 00BF     		nop
+ 714              	.L28:
+ 715              		.loc 1 377 9 discriminator 1
+ 716 0010 7868     		ldr	r0, [r7, #4]
+ 717 0012 FFF7FEFF 		bl	adc_is_calibrating(PLT)
+ 718 0016 0346     		mov	r3, r0
+ 719              		.loc 1 377 8 discriminator 1
+ 720 0018 002B     		cmp	r3, #0
+ 721 001a F9D1     		bne	.L28
+ 378:../libopencm3/lib/stm32/f1/adc.c **** }
+ 722              		.loc 1 378 1
+ 723 001c 00BF     		nop
+ 724 001e 0837     		adds	r7, r7, #8
+ 725              		.cfi_def_cfa_offset 8
+ 726 0020 BD46     		mov	sp, r7
+ 727              		.cfi_def_cfa_register 13
+ 728              		@ sp needed
+ 729 0022 80BD     		pop	{r7, pc}
+ 730              		.cfi_endproc
+ 731              	.LFE13:
+ 733              		.section	.text.adc_set_sample_time,"ax",%progbits
+ 734              		.align	1
+ 735              		.global	adc_set_sample_time
+ 736              		.syntax unified
+ 737              		.thumb
+ 738              		.thumb_func
+ 739              		.fpu softvfp
+ 741              	adc_set_sample_time:
+ 742              	.LFB14:
+ 379:../libopencm3/lib/stm32/f1/adc.c **** 
+ 380:../libopencm3/lib/stm32/f1/adc.c **** 
+ 381:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 382:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Set the Sample Time for a Single Channel
+ 383:../libopencm3/lib/stm32/f1/adc.c **** 
+ 384:../libopencm3/lib/stm32/f1/adc.c **** The sampling time can be selected in ADC clock cycles from 1.5 to 239.5.
+ 385:../libopencm3/lib/stm32/f1/adc.c **** 
+ 386:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 387:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 388:../libopencm3/lib/stm32/f1/adc.c **** @param[in] channel Unsigned int8. ADC Channel integer 0..18 or from @ref
+ 389:../libopencm3/lib/stm32/f1/adc.c **** adc_channel.
+ 390:../libopencm3/lib/stm32/f1/adc.c **** @param[in] time Unsigned int8. Sampling time selection from @ref adc_sample_rg.
+ 391:../libopencm3/lib/stm32/f1/adc.c ****  *  * NOTE Common with f2 and f37x and f4
+ 392:../libopencm3/lib/stm32/f1/adc.c **** */
+ 393:../libopencm3/lib/stm32/f1/adc.c **** 
+ 394:../libopencm3/lib/stm32/f1/adc.c **** void adc_set_sample_time(uint32_t adc, uint8_t channel, uint8_t time)
+ 395:../libopencm3/lib/stm32/f1/adc.c **** {
+ 743              		.loc 1 395 1
+ 744              		.cfi_startproc
+ 745              		@ args = 0, pretend = 0, frame = 16
+ 746              		@ frame_needed = 1, uses_anonymous_args = 0
+ 747              		@ link register save eliminated.
+ 748 0000 80B4     		push	{r7}
+ 749              		.cfi_def_cfa_offset 4
+ 750              		.cfi_offset 7, -4
+ 751 0002 85B0     		sub	sp, sp, #20
+ 752              		.cfi_def_cfa_offset 24
+ 753 0004 00AF     		add	r7, sp, #0
+ 754              		.cfi_def_cfa_register 7
+ 755 0006 7860     		str	r0, [r7, #4]
+ 756 0008 0B46     		mov	r3, r1
+ 757 000a FB70     		strb	r3, [r7, #3]
+ 758 000c 1346     		mov	r3, r2
+ 759 000e BB70     		strb	r3, [r7, #2]
+ 396:../libopencm3/lib/stm32/f1/adc.c **** 	uint32_t reg32;
+ 397:../libopencm3/lib/stm32/f1/adc.c **** 
+ 398:../libopencm3/lib/stm32/f1/adc.c **** 	if (channel < 10) {
+ 760              		.loc 1 398 5
+ 761 0010 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 762 0012 092B     		cmp	r3, #9
+ 763 0014 20D8     		bhi	.L30
+ 399:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 = ADC_SMPR2(adc);
+ 764              		.loc 1 399 11
+ 765 0016 7B68     		ldr	r3, [r7, #4]
+ 766 0018 1033     		adds	r3, r3, #16
+ 767              		.loc 1 399 9
+ 768 001a 1B68     		ldr	r3, [r3]
+ 769 001c FB60     		str	r3, [r7, #12]
+ 400:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 &= ~(0x7 << (channel * 3));
+ 770              		.loc 1 400 30
+ 771 001e FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 772 0020 1346     		mov	r3, r2
+ 773 0022 5B00     		lsls	r3, r3, #1
+ 774 0024 1344     		add	r3, r3, r2
+ 775              		.loc 1 400 18
+ 776 0026 0722     		movs	r2, #7
+ 777 0028 02FA03F3 		lsl	r3, r2, r3
+ 778              		.loc 1 400 12
+ 779 002c DB43     		mvns	r3, r3
+ 780 002e 1A46     		mov	r2, r3
+ 781              		.loc 1 400 9
+ 782 0030 FB68     		ldr	r3, [r7, #12]
+ 783 0032 1340     		ands	r3, r3, r2
+ 784 0034 FB60     		str	r3, [r7, #12]
+ 401:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << (channel * 3));
+ 785              		.loc 1 401 18
+ 786 0036 B978     		ldrb	r1, [r7, #2]	@ zero_extendqisi2
+ 787              		.loc 1 401 30
+ 788 0038 FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 789 003a 1346     		mov	r3, r2
+ 790 003c 5B00     		lsls	r3, r3, #1
+ 791 003e 1344     		add	r3, r3, r2
+ 792              		.loc 1 401 18
+ 793 0040 01FA03F3 		lsl	r3, r1, r3
+ 794 0044 1A46     		mov	r2, r3
+ 795              		.loc 1 401 9
+ 796 0046 FB68     		ldr	r3, [r7, #12]
+ 797 0048 1343     		orrs	r3, r3, r2
+ 798 004a FB60     		str	r3, [r7, #12]
+ 402:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR2(adc) = reg32;
+ 799              		.loc 1 402 3
+ 800 004c 7B68     		ldr	r3, [r7, #4]
+ 801 004e 1033     		adds	r3, r3, #16
+ 802 0050 1A46     		mov	r2, r3
+ 803              		.loc 1 402 18
+ 804 0052 FB68     		ldr	r3, [r7, #12]
+ 805 0054 1360     		str	r3, [r2]
+ 403:../libopencm3/lib/stm32/f1/adc.c **** 	} else {
+ 404:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 = ADC_SMPR1(adc);
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 &= ~(0x7 << ((channel - 10) * 3));
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 407:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 408:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 409:../libopencm3/lib/stm32/f1/adc.c **** }
+ 806              		.loc 1 409 1
+ 807 0056 23E0     		b	.L32
+ 808              	.L30:
+ 404:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 &= ~(0x7 << ((channel - 10) * 3));
+ 809              		.loc 1 404 11
+ 810 0058 7B68     		ldr	r3, [r7, #4]
+ 811 005a 0C33     		adds	r3, r3, #12
+ 404:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 &= ~(0x7 << ((channel - 10) * 3));
+ 812              		.loc 1 404 9
+ 813 005c 1B68     		ldr	r3, [r3]
+ 814 005e FB60     		str	r3, [r7, #12]
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 815              		.loc 1 405 31
+ 816 0060 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 817 0062 A3F10A02 		sub	r2, r3, #10
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 818              		.loc 1 405 37
+ 819 0066 1346     		mov	r3, r2
+ 820 0068 5B00     		lsls	r3, r3, #1
+ 821 006a 1344     		add	r3, r3, r2
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 822              		.loc 1 405 18
+ 823 006c 0722     		movs	r2, #7
+ 824 006e 02FA03F3 		lsl	r3, r2, r3
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 825              		.loc 1 405 12
+ 826 0072 DB43     		mvns	r3, r3
+ 827 0074 1A46     		mov	r2, r3
+ 405:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((channel - 10) * 3));
+ 828              		.loc 1 405 9
+ 829 0076 FB68     		ldr	r3, [r7, #12]
+ 830 0078 1340     		ands	r3, r3, r2
+ 831 007a FB60     		str	r3, [r7, #12]
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 832              		.loc 1 406 18
+ 833 007c B978     		ldrb	r1, [r7, #2]	@ zero_extendqisi2
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 834              		.loc 1 406 31
+ 835 007e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 836 0080 A3F10A02 		sub	r2, r3, #10
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 837              		.loc 1 406 37
+ 838 0084 1346     		mov	r3, r2
+ 839 0086 5B00     		lsls	r3, r3, #1
+ 840 0088 1344     		add	r3, r3, r2
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 841              		.loc 1 406 18
+ 842 008a 01FA03F3 		lsl	r3, r1, r3
+ 843 008e 1A46     		mov	r2, r3
+ 406:../libopencm3/lib/stm32/f1/adc.c **** 		ADC_SMPR1(adc) = reg32;
+ 844              		.loc 1 406 9
+ 845 0090 FB68     		ldr	r3, [r7, #12]
+ 846 0092 1343     		orrs	r3, r3, r2
+ 847 0094 FB60     		str	r3, [r7, #12]
+ 407:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 848              		.loc 1 407 3
+ 849 0096 7B68     		ldr	r3, [r7, #4]
+ 850 0098 0C33     		adds	r3, r3, #12
+ 851 009a 1A46     		mov	r2, r3
+ 407:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 852              		.loc 1 407 18
+ 853 009c FB68     		ldr	r3, [r7, #12]
+ 854 009e 1360     		str	r3, [r2]
+ 855              	.L32:
+ 856              		.loc 1 409 1
+ 857 00a0 00BF     		nop
+ 858 00a2 1437     		adds	r7, r7, #20
+ 859              		.cfi_def_cfa_offset 4
+ 860 00a4 BD46     		mov	sp, r7
+ 861              		.cfi_def_cfa_register 13
+ 862              		@ sp needed
+ 863 00a6 80BC     		pop	{r7}
+ 864              		.cfi_restore 7
+ 865              		.cfi_def_cfa_offset 0
+ 866 00a8 7047     		bx	lr
+ 867              		.cfi_endproc
+ 868              	.LFE14:
+ 870              		.section	.text.adc_set_sample_time_on_all_channels,"ax",%progbits
+ 871              		.align	1
+ 872              		.global	adc_set_sample_time_on_all_channels
+ 873              		.syntax unified
+ 874              		.thumb
+ 875              		.thumb_func
+ 876              		.fpu softvfp
+ 878              	adc_set_sample_time_on_all_channels:
+ 879              	.LFB15:
+ 410:../libopencm3/lib/stm32/f1/adc.c **** 
+ 411:../libopencm3/lib/stm32/f1/adc.c **** /*---------------------------------------------------------------------------*/
+ 412:../libopencm3/lib/stm32/f1/adc.c **** /** @brief ADC Set the Sample Time for All Channels
+ 413:../libopencm3/lib/stm32/f1/adc.c **** 
+ 414:../libopencm3/lib/stm32/f1/adc.c **** The sampling time can be selected in ADC clock cycles from 1.5 to 239.5, same
+ 415:../libopencm3/lib/stm32/f1/adc.c **** for all channels.
+ 416:../libopencm3/lib/stm32/f1/adc.c **** 
+ 417:../libopencm3/lib/stm32/f1/adc.c **** @param[in] adc Unsigned int32. ADC block register address base @ref
+ 418:../libopencm3/lib/stm32/f1/adc.c **** adc_reg_base.
+ 419:../libopencm3/lib/stm32/f1/adc.c **** @param[in] time Unsigned int8. Sampling time selection from @ref adc_sample_rg.
+ 420:../libopencm3/lib/stm32/f1/adc.c ****  *  * NOTE Common with f2 and f37x and f4
+ 421:../libopencm3/lib/stm32/f1/adc.c **** */
+ 422:../libopencm3/lib/stm32/f1/adc.c **** 
+ 423:../libopencm3/lib/stm32/f1/adc.c **** void adc_set_sample_time_on_all_channels(uint32_t adc, uint8_t time)
+ 424:../libopencm3/lib/stm32/f1/adc.c **** {
+ 880              		.loc 1 424 1
+ 881              		.cfi_startproc
+ 882              		@ args = 0, pretend = 0, frame = 16
+ 883              		@ frame_needed = 1, uses_anonymous_args = 0
+ 884              		@ link register save eliminated.
+ 885 0000 80B4     		push	{r7}
+ 886              		.cfi_def_cfa_offset 4
+ 887              		.cfi_offset 7, -4
+ 888 0002 85B0     		sub	sp, sp, #20
+ 889              		.cfi_def_cfa_offset 24
+ 890 0004 00AF     		add	r7, sp, #0
+ 891              		.cfi_def_cfa_register 7
+ 892 0006 7860     		str	r0, [r7, #4]
+ 893 0008 0B46     		mov	r3, r1
+ 894 000a FB70     		strb	r3, [r7, #3]
+ 425:../libopencm3/lib/stm32/f1/adc.c **** 	uint8_t i;
+ 426:../libopencm3/lib/stm32/f1/adc.c **** 	uint32_t reg32 = 0;
+ 895              		.loc 1 426 11
+ 896 000c 0023     		movs	r3, #0
+ 897 000e BB60     		str	r3, [r7, #8]
+ 427:../libopencm3/lib/stm32/f1/adc.c **** 
+ 428:../libopencm3/lib/stm32/f1/adc.c **** 	for (i = 0; i <= 9; i++) {
+ 898              		.loc 1 428 9
+ 899 0010 0023     		movs	r3, #0
+ 900 0012 FB73     		strb	r3, [r7, #15]
+ 901              		.loc 1 428 2
+ 902 0014 0DE0     		b	.L34
+ 903              	.L35:
+ 429:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << (i * 3));
+ 904              		.loc 1 429 18 discriminator 3
+ 905 0016 F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 906              		.loc 1 429 24 discriminator 3
+ 907 0018 FA7B     		ldrb	r2, [r7, #15]	@ zero_extendqisi2
+ 908 001a 1346     		mov	r3, r2
+ 909 001c 5B00     		lsls	r3, r3, #1
+ 910 001e 1344     		add	r3, r3, r2
+ 911              		.loc 1 429 18 discriminator 3
+ 912 0020 01FA03F3 		lsl	r3, r1, r3
+ 913 0024 1A46     		mov	r2, r3
+ 914              		.loc 1 429 9 discriminator 3
+ 915 0026 BB68     		ldr	r3, [r7, #8]
+ 916 0028 1343     		orrs	r3, r3, r2
+ 917 002a BB60     		str	r3, [r7, #8]
+ 428:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << (i * 3));
+ 918              		.loc 1 428 23 discriminator 3
+ 919 002c FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 920 002e 0133     		adds	r3, r3, #1
+ 921 0030 FB73     		strb	r3, [r7, #15]
+ 922              	.L34:
+ 428:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << (i * 3));
+ 923              		.loc 1 428 2 discriminator 1
+ 924 0032 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 925 0034 092B     		cmp	r3, #9
+ 926 0036 EED9     		bls	.L35
+ 430:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 431:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_SMPR2(adc) = reg32;
+ 927              		.loc 1 431 2
+ 928 0038 7B68     		ldr	r3, [r7, #4]
+ 929 003a 1033     		adds	r3, r3, #16
+ 930 003c 1A46     		mov	r2, r3
+ 931              		.loc 1 431 17
+ 932 003e BB68     		ldr	r3, [r7, #8]
+ 933 0040 1360     		str	r3, [r2]
+ 432:../libopencm3/lib/stm32/f1/adc.c **** 
+ 433:../libopencm3/lib/stm32/f1/adc.c **** 	for (i = 10; i <= 17; i++) {
+ 934              		.loc 1 433 9
+ 935 0042 0A23     		movs	r3, #10
+ 936 0044 FB73     		strb	r3, [r7, #15]
+ 937              		.loc 1 433 2
+ 938 0046 0FE0     		b	.L36
+ 939              	.L37:
+ 434:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((i - 10) * 3));
+ 940              		.loc 1 434 18 discriminator 3
+ 941 0048 F978     		ldrb	r1, [r7, #3]	@ zero_extendqisi2
+ 942              		.loc 1 434 25 discriminator 3
+ 943 004a FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 944 004c A3F10A02 		sub	r2, r3, #10
+ 945              		.loc 1 434 31 discriminator 3
+ 946 0050 1346     		mov	r3, r2
+ 947 0052 5B00     		lsls	r3, r3, #1
+ 948 0054 1344     		add	r3, r3, r2
+ 949              		.loc 1 434 18 discriminator 3
+ 950 0056 01FA03F3 		lsl	r3, r1, r3
+ 951 005a 1A46     		mov	r2, r3
+ 952              		.loc 1 434 9 discriminator 3
+ 953 005c BB68     		ldr	r3, [r7, #8]
+ 954 005e 1343     		orrs	r3, r3, r2
+ 955 0060 BB60     		str	r3, [r7, #8]
+ 433:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((i - 10) * 3));
+ 956              		.loc 1 433 25 discriminator 3
+ 957 0062 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 958 0064 0133     		adds	r3, r3, #1
+ 959 0066 FB73     		strb	r3, [r7, #15]
+ 960              	.L36:
+ 433:../libopencm3/lib/stm32/f1/adc.c **** 		reg32 |= (time << ((i - 10) * 3));
+ 961              		.loc 1 433 2 discriminator 1
+ 962 0068 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 963 006a 112B     		cmp	r3, #17
+ 964 006c ECD9     		bls	.L37
+ 435:../libopencm3/lib/stm32/f1/adc.c **** 	}
+ 436:../libopencm3/lib/stm32/f1/adc.c **** 	ADC_SMPR1(adc) = reg32;
+ 965              		.loc 1 436 2
+ 966 006e 7B68     		ldr	r3, [r7, #4]
+ 967 0070 0C33     		adds	r3, r3, #12
+ 968 0072 1A46     		mov	r2, r3
+ 969              		.loc 1 436 17
+ 970 0074 BB68     		ldr	r3, [r7, #8]
+ 971 0076 1360     		str	r3, [r2]
+ 437:../libopencm3/lib/stm32/f1/adc.c **** }
+ 972              		.loc 1 437 1
+ 973 0078 00BF     		nop
+ 974 007a 1437     		adds	r7, r7, #20
+ 975              		.cfi_def_cfa_offset 4
+ 976 007c BD46     		mov	sp, r7
+ 977              		.cfi_def_cfa_register 13
+ 978              		@ sp needed
+ 979 007e 80BC     		pop	{r7}
+ 980              		.cfi_restore 7
+ 981              		.cfi_def_cfa_offset 0
+ 982 0080 7047     		bx	lr
+ 983              		.cfi_endproc
+ 984              	.LFE15:
+ 986              		.text
+ 987              	.Letext0:
+ 988              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 989              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 adc.c
+     /tmp/ccpRwqBy.s:16     .text.adc_power_on:0000000000000000 $t
+     /tmp/ccpRwqBy.s:24     .text.adc_power_on:0000000000000000 adc_power_on
+     /tmp/ccpRwqBy.s:73     .text.adc_start_conversion_direct:0000000000000000 $t
+     /tmp/ccpRwqBy.s:80     .text.adc_start_conversion_direct:0000000000000000 adc_start_conversion_direct
+     /tmp/ccpRwqBy.s:128    .text.adc_set_dual_mode:0000000000000000 $t
+     /tmp/ccpRwqBy.s:135    .text.adc_set_dual_mode:0000000000000000 adc_set_dual_mode
+     /tmp/ccpRwqBy.s:171    .text.adc_set_dual_mode:0000000000000020 $d
+     /tmp/ccpRwqBy.s:176    .text.adc_enable_temperature_sensor:0000000000000000 $t
+     /tmp/ccpRwqBy.s:183    .text.adc_enable_temperature_sensor:0000000000000000 adc_enable_temperature_sensor
+     /tmp/ccpRwqBy.s:213    .text.adc_enable_temperature_sensor:0000000000000018 $d
+     /tmp/ccpRwqBy.s:218    .text.adc_disable_temperature_sensor:0000000000000000 $t
+     /tmp/ccpRwqBy.s:225    .text.adc_disable_temperature_sensor:0000000000000000 adc_disable_temperature_sensor
+     /tmp/ccpRwqBy.s:255    .text.adc_disable_temperature_sensor:0000000000000018 $d
+     /tmp/ccpRwqBy.s:260    .text.adc_enable_external_trigger_regular:0000000000000000 $t
+     /tmp/ccpRwqBy.s:267    .text.adc_enable_external_trigger_regular:0000000000000000 adc_enable_external_trigger_regular
+     /tmp/ccpRwqBy.s:325    .text.adc_disable_external_trigger_regular:0000000000000000 $t
+     /tmp/ccpRwqBy.s:332    .text.adc_disable_external_trigger_regular:0000000000000000 adc_disable_external_trigger_regular
+     /tmp/ccpRwqBy.s:370    .text.adc_enable_external_trigger_injected:0000000000000000 $t
+     /tmp/ccpRwqBy.s:377    .text.adc_enable_external_trigger_injected:0000000000000000 adc_enable_external_trigger_injected
+     /tmp/ccpRwqBy.s:435    .text.adc_disable_external_trigger_injected:0000000000000000 $t
+     /tmp/ccpRwqBy.s:442    .text.adc_disable_external_trigger_injected:0000000000000000 adc_disable_external_trigger_injected
+     /tmp/ccpRwqBy.s:480    .text.adc_reset_calibration:0000000000000000 $t
+     /tmp/ccpRwqBy.s:487    .text.adc_reset_calibration:0000000000000000 adc_reset_calibration
+     /tmp/ccpRwqBy.s:537    .text.adc_calibration:0000000000000000 $t
+     /tmp/ccpRwqBy.s:544    .text.adc_calibration:0000000000000000 adc_calibration
+     /tmp/ccpRwqBy.s:594    .text.adc_calibrate_async:0000000000000000 $t
+     /tmp/ccpRwqBy.s:601    .text.adc_calibrate_async:0000000000000000 adc_calibrate_async
+     /tmp/ccpRwqBy.s:639    .text.adc_is_calibrating:0000000000000000 $t
+     /tmp/ccpRwqBy.s:646    .text.adc_is_calibrating:0000000000000000 adc_is_calibrating
+     /tmp/ccpRwqBy.s:687    .text.adc_calibrate:0000000000000000 $t
+     /tmp/ccpRwqBy.s:694    .text.adc_calibrate:0000000000000000 adc_calibrate
+     /tmp/ccpRwqBy.s:734    .text.adc_set_sample_time:0000000000000000 $t
+     /tmp/ccpRwqBy.s:741    .text.adc_set_sample_time:0000000000000000 adc_set_sample_time
+     /tmp/ccpRwqBy.s:871    .text.adc_set_sample_time_on_all_channels:0000000000000000 $t
+     /tmp/ccpRwqBy.s:878    .text.adc_set_sample_time_on_all_channels:0000000000000000 adc_set_sample_time_on_all_channels
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.adc_common_v1.h.36.478c16e506f4ae2ee70d3093793a5fdc
+                           .group:0000000000000000 wm4.adc.h.46.ba94c8e39099e458713b7646d4b6c65e
+
+NO UNDEFINED SYMBOLS

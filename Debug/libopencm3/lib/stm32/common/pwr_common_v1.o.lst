@@ -1,0 +1,913 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"pwr_common_v1.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.pwr_disable_backup_domain_write_protect,"ax",%progbits
+  16              		.align	1
+  17              		.global	pwr_disable_backup_domain_write_protect
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	pwr_disable_backup_domain_write_protect:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/pwr_common_v1.c"
+   1:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @addtogroup pwr_file PWR peripheral API
+   2:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+   4:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @author @htmlonly &copy; @endhtmlonly 2012
+   5:../libopencm3/lib/stm32/common/pwr_common_v1.c **** Ken Sarkies <ksarkies@internode.on.net>
+   6:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+   7:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+   8:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*
+   9:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * This file is part of the libopencm3 project.
+  10:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  *
+  11:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * Copyright (C) 2012 Ken Sarkies <ksarkies@internode.on.net>
+  12:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  *
+  13:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * This library is free software: you can redistribute it and/or modify
+  14:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  15:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * the Free Software Foundation, either version 3 of the License, or
+  16:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * (at your option) any later version.
+  17:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  *
+  18:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * This library is distributed in the hope that it will be useful,
+  19:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  20:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  21:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * GNU Lesser General Public License for more details.
+  22:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  *
+  23:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * You should have received a copy of the GNU Lesser General Public License
+  24:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  25:../libopencm3/lib/stm32/common/pwr_common_v1.c ****  */
+  26:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  27:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /**@{*/
+  28:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  29:../libopencm3/lib/stm32/common/pwr_common_v1.c **** #include <libopencm3/stm32/pwr.h>
+  30:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  31:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  32:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Disable Backup Domain Write Protection.
+  33:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  34:../libopencm3/lib/stm32/common/pwr_common_v1.c **** This allows backup domain registers to be changed. These registers are write
+  35:../libopencm3/lib/stm32/common/pwr_common_v1.c **** protected after a reset.
+  36:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  37:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  38:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_disable_backup_domain_write_protect(void)
+  39:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+  27              		.loc 1 39 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  40:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= PWR_CR_DBP;
+  37              		.loc 1 40 9
+  38 0004 044B     		ldr	r3, .L2
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 034A     		ldr	r2, .L2
+  41 000a 43F48073 		orr	r3, r3, #256
+  42 000e 1360     		str	r3, [r2]
+  41:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+  43              		.loc 1 41 1
+  44 0010 00BF     		nop
+  45 0012 BD46     		mov	sp, r7
+  46              		.cfi_def_cfa_register 13
+  47              		@ sp needed
+  48 0014 80BC     		pop	{r7}
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 0016 7047     		bx	lr
+  52              	.L3:
+  53              		.align	2
+  54              	.L2:
+  55 0018 00700040 		.word	1073770496
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.section	.text.pwr_enable_backup_domain_write_protect,"ax",%progbits
+  60              		.align	1
+  61              		.global	pwr_enable_backup_domain_write_protect
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu softvfp
+  67              	pwr_enable_backup_domain_write_protect:
+  68              	.LFB1:
+  42:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  43:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  44:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Re-enable Backup Domain Write Protection.
+  45:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  46:../libopencm3/lib/stm32/common/pwr_common_v1.c **** This protects backup domain registers from inadvertent change.
+  47:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  48:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  49:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_enable_backup_domain_write_protect(void)
+  50:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+  69              		.loc 1 50 1
+  70              		.cfi_startproc
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 1, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 80B4     		push	{r7}
+  75              		.cfi_def_cfa_offset 4
+  76              		.cfi_offset 7, -4
+  77 0002 00AF     		add	r7, sp, #0
+  78              		.cfi_def_cfa_register 7
+  51:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR &= ~PWR_CR_DBP;
+  79              		.loc 1 51 9
+  80 0004 044B     		ldr	r3, .L5
+  81 0006 1B68     		ldr	r3, [r3]
+  82 0008 034A     		ldr	r2, .L5
+  83 000a 23F48073 		bic	r3, r3, #256
+  84 000e 1360     		str	r3, [r2]
+  52:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+  85              		.loc 1 52 1
+  86 0010 00BF     		nop
+  87 0012 BD46     		mov	sp, r7
+  88              		.cfi_def_cfa_register 13
+  89              		@ sp needed
+  90 0014 80BC     		pop	{r7}
+  91              		.cfi_restore 7
+  92              		.cfi_def_cfa_offset 0
+  93 0016 7047     		bx	lr
+  94              	.L6:
+  95              		.align	2
+  96              	.L5:
+  97 0018 00700040 		.word	1073770496
+  98              		.cfi_endproc
+  99              	.LFE1:
+ 101              		.section	.text.pwr_enable_power_voltage_detect,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	pwr_enable_power_voltage_detect
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu softvfp
+ 109              	pwr_enable_power_voltage_detect:
+ 110              	.LFB2:
+  53:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  54:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  55:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Enable Power Voltage Detector.
+  56:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  57:../libopencm3/lib/stm32/common/pwr_common_v1.c **** This provides voltage level threshold detection. The result of detection is
+  58:../libopencm3/lib/stm32/common/pwr_common_v1.c **** provided in the power voltage detector output flag (see @ref pwr_voltage_high)
+  59:../libopencm3/lib/stm32/common/pwr_common_v1.c **** or by setting the EXTI16 interrupt (see datasheet for configuration details).
+  60:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  61:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @param[in] pvd_level uint32_t. Taken from @ref pwr_pls.
+  62:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  63:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  64:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_enable_power_voltage_detect(uint32_t pvd_level)
+  65:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 111              		.loc 1 65 1
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 8
+ 114              		@ frame_needed = 1, uses_anonymous_args = 0
+ 115              		@ link register save eliminated.
+ 116 0000 80B4     		push	{r7}
+ 117              		.cfi_def_cfa_offset 4
+ 118              		.cfi_offset 7, -4
+ 119 0002 83B0     		sub	sp, sp, #12
+ 120              		.cfi_def_cfa_offset 16
+ 121 0004 00AF     		add	r7, sp, #0
+ 122              		.cfi_def_cfa_register 7
+ 123 0006 7860     		str	r0, [r7, #4]
+  66:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR &= ~PWR_CR_PLS_MASK;
+ 124              		.loc 1 66 9
+ 125 0008 094B     		ldr	r3, .L8
+ 126 000a 1B68     		ldr	r3, [r3]
+ 127 000c 084A     		ldr	r2, .L8
+ 128 000e 23F0E003 		bic	r3, r3, #224
+ 129 0012 1360     		str	r3, [r2]
+  67:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= (PWR_CR_PVDE | pvd_level);
+ 130              		.loc 1 67 9
+ 131 0014 064B     		ldr	r3, .L8
+ 132 0016 1A68     		ldr	r2, [r3]
+ 133 0018 7B68     		ldr	r3, [r7, #4]
+ 134 001a 1343     		orrs	r3, r3, r2
+ 135 001c 044A     		ldr	r2, .L8
+ 136 001e 43F01003 		orr	r3, r3, #16
+ 137 0022 1360     		str	r3, [r2]
+  68:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 138              		.loc 1 68 1
+ 139 0024 00BF     		nop
+ 140 0026 0C37     		adds	r7, r7, #12
+ 141              		.cfi_def_cfa_offset 4
+ 142 0028 BD46     		mov	sp, r7
+ 143              		.cfi_def_cfa_register 13
+ 144              		@ sp needed
+ 145 002a 80BC     		pop	{r7}
+ 146              		.cfi_restore 7
+ 147              		.cfi_def_cfa_offset 0
+ 148 002c 7047     		bx	lr
+ 149              	.L9:
+ 150 002e 00BF     		.align	2
+ 151              	.L8:
+ 152 0030 00700040 		.word	1073770496
+ 153              		.cfi_endproc
+ 154              	.LFE2:
+ 156              		.section	.text.pwr_disable_power_voltage_detect,"ax",%progbits
+ 157              		.align	1
+ 158              		.global	pwr_disable_power_voltage_detect
+ 159              		.syntax unified
+ 160              		.thumb
+ 161              		.thumb_func
+ 162              		.fpu softvfp
+ 164              	pwr_disable_power_voltage_detect:
+ 165              	.LFB3:
+  69:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  70:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  71:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Disable Power Voltage Detector.
+  72:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  73:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  74:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  75:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_disable_power_voltage_detect(void)
+  76:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 166              		.loc 1 76 1
+ 167              		.cfi_startproc
+ 168              		@ args = 0, pretend = 0, frame = 0
+ 169              		@ frame_needed = 1, uses_anonymous_args = 0
+ 170              		@ link register save eliminated.
+ 171 0000 80B4     		push	{r7}
+ 172              		.cfi_def_cfa_offset 4
+ 173              		.cfi_offset 7, -4
+ 174 0002 00AF     		add	r7, sp, #0
+ 175              		.cfi_def_cfa_register 7
+  77:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR &= ~PWR_CR_PVDE;
+ 176              		.loc 1 77 9
+ 177 0004 044B     		ldr	r3, .L11
+ 178 0006 1B68     		ldr	r3, [r3]
+ 179 0008 034A     		ldr	r2, .L11
+ 180 000a 23F01003 		bic	r3, r3, #16
+ 181 000e 1360     		str	r3, [r2]
+  78:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 182              		.loc 1 78 1
+ 183 0010 00BF     		nop
+ 184 0012 BD46     		mov	sp, r7
+ 185              		.cfi_def_cfa_register 13
+ 186              		@ sp needed
+ 187 0014 80BC     		pop	{r7}
+ 188              		.cfi_restore 7
+ 189              		.cfi_def_cfa_offset 0
+ 190 0016 7047     		bx	lr
+ 191              	.L12:
+ 192              		.align	2
+ 193              	.L11:
+ 194 0018 00700040 		.word	1073770496
+ 195              		.cfi_endproc
+ 196              	.LFE3:
+ 198              		.section	.text.pwr_clear_standby_flag,"ax",%progbits
+ 199              		.align	1
+ 200              		.global	pwr_clear_standby_flag
+ 201              		.syntax unified
+ 202              		.thumb
+ 203              		.thumb_func
+ 204              		.fpu softvfp
+ 206              	pwr_clear_standby_flag:
+ 207              	.LFB4:
+  79:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  80:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  81:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Clear the Standby Flag.
+  82:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  83:../libopencm3/lib/stm32/common/pwr_common_v1.c **** This is set when the processor returns from a standby mode.
+  84:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  85:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  86:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_clear_standby_flag(void)
+  87:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 208              		.loc 1 87 1
+ 209              		.cfi_startproc
+ 210              		@ args = 0, pretend = 0, frame = 0
+ 211              		@ frame_needed = 1, uses_anonymous_args = 0
+ 212              		@ link register save eliminated.
+ 213 0000 80B4     		push	{r7}
+ 214              		.cfi_def_cfa_offset 4
+ 215              		.cfi_offset 7, -4
+ 216 0002 00AF     		add	r7, sp, #0
+ 217              		.cfi_def_cfa_register 7
+  88:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= PWR_CR_CSBF;
+ 218              		.loc 1 88 9
+ 219 0004 044B     		ldr	r3, .L14
+ 220 0006 1B68     		ldr	r3, [r3]
+ 221 0008 034A     		ldr	r2, .L14
+ 222 000a 43F00803 		orr	r3, r3, #8
+ 223 000e 1360     		str	r3, [r2]
+  89:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 224              		.loc 1 89 1
+ 225 0010 00BF     		nop
+ 226 0012 BD46     		mov	sp, r7
+ 227              		.cfi_def_cfa_register 13
+ 228              		@ sp needed
+ 229 0014 80BC     		pop	{r7}
+ 230              		.cfi_restore 7
+ 231              		.cfi_def_cfa_offset 0
+ 232 0016 7047     		bx	lr
+ 233              	.L15:
+ 234              		.align	2
+ 235              	.L14:
+ 236 0018 00700040 		.word	1073770496
+ 237              		.cfi_endproc
+ 238              	.LFE4:
+ 240              		.section	.text.pwr_clear_wakeup_flag,"ax",%progbits
+ 241              		.align	1
+ 242              		.global	pwr_clear_wakeup_flag
+ 243              		.syntax unified
+ 244              		.thumb
+ 245              		.thumb_func
+ 246              		.fpu softvfp
+ 248              	pwr_clear_wakeup_flag:
+ 249              	.LFB5:
+  90:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  91:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+  92:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Clear the Wakeup Flag.
+  93:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  94:../libopencm3/lib/stm32/common/pwr_common_v1.c **** This is set when the processor receives a wakeup signal.
+  95:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+  96:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+  97:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_clear_wakeup_flag(void)
+  98:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 250              		.loc 1 98 1
+ 251              		.cfi_startproc
+ 252              		@ args = 0, pretend = 0, frame = 0
+ 253              		@ frame_needed = 1, uses_anonymous_args = 0
+ 254              		@ link register save eliminated.
+ 255 0000 80B4     		push	{r7}
+ 256              		.cfi_def_cfa_offset 4
+ 257              		.cfi_offset 7, -4
+ 258 0002 00AF     		add	r7, sp, #0
+ 259              		.cfi_def_cfa_register 7
+  99:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= PWR_CR_CWUF;
+ 260              		.loc 1 99 9
+ 261 0004 044B     		ldr	r3, .L17
+ 262 0006 1B68     		ldr	r3, [r3]
+ 263 0008 034A     		ldr	r2, .L17
+ 264 000a 43F00403 		orr	r3, r3, #4
+ 265 000e 1360     		str	r3, [r2]
+ 100:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 266              		.loc 1 100 1
+ 267 0010 00BF     		nop
+ 268 0012 BD46     		mov	sp, r7
+ 269              		.cfi_def_cfa_register 13
+ 270              		@ sp needed
+ 271 0014 80BC     		pop	{r7}
+ 272              		.cfi_restore 7
+ 273              		.cfi_def_cfa_offset 0
+ 274 0016 7047     		bx	lr
+ 275              	.L18:
+ 276              		.align	2
+ 277              	.L17:
+ 278 0018 00700040 		.word	1073770496
+ 279              		.cfi_endproc
+ 280              	.LFE5:
+ 282              		.section	.text.pwr_set_standby_mode,"ax",%progbits
+ 283              		.align	1
+ 284              		.global	pwr_set_standby_mode
+ 285              		.syntax unified
+ 286              		.thumb
+ 287              		.thumb_func
+ 288              		.fpu softvfp
+ 290              	pwr_set_standby_mode:
+ 291              	.LFB6:
+ 101:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 102:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 103:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Set Standby Mode in Deep Sleep.
+ 104:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 105:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 106:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 107:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_set_standby_mode(void)
+ 108:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 292              		.loc 1 108 1
+ 293              		.cfi_startproc
+ 294              		@ args = 0, pretend = 0, frame = 0
+ 295              		@ frame_needed = 1, uses_anonymous_args = 0
+ 296              		@ link register save eliminated.
+ 297 0000 80B4     		push	{r7}
+ 298              		.cfi_def_cfa_offset 4
+ 299              		.cfi_offset 7, -4
+ 300 0002 00AF     		add	r7, sp, #0
+ 301              		.cfi_def_cfa_register 7
+ 109:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= PWR_CR_PDDS;
+ 302              		.loc 1 109 9
+ 303 0004 044B     		ldr	r3, .L20
+ 304 0006 1B68     		ldr	r3, [r3]
+ 305 0008 034A     		ldr	r2, .L20
+ 306 000a 43F00203 		orr	r3, r3, #2
+ 307 000e 1360     		str	r3, [r2]
+ 110:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 308              		.loc 1 110 1
+ 309 0010 00BF     		nop
+ 310 0012 BD46     		mov	sp, r7
+ 311              		.cfi_def_cfa_register 13
+ 312              		@ sp needed
+ 313 0014 80BC     		pop	{r7}
+ 314              		.cfi_restore 7
+ 315              		.cfi_def_cfa_offset 0
+ 316 0016 7047     		bx	lr
+ 317              	.L21:
+ 318              		.align	2
+ 319              	.L20:
+ 320 0018 00700040 		.word	1073770496
+ 321              		.cfi_endproc
+ 322              	.LFE6:
+ 324              		.section	.text.pwr_set_stop_mode,"ax",%progbits
+ 325              		.align	1
+ 326              		.global	pwr_set_stop_mode
+ 327              		.syntax unified
+ 328              		.thumb
+ 329              		.thumb_func
+ 330              		.fpu softvfp
+ 332              	pwr_set_stop_mode:
+ 333              	.LFB7:
+ 111:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 112:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 113:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Set Stop Mode in Deep Sleep.
+ 114:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 115:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 116:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 117:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_set_stop_mode(void)
+ 118:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 334              		.loc 1 118 1
+ 335              		.cfi_startproc
+ 336              		@ args = 0, pretend = 0, frame = 0
+ 337              		@ frame_needed = 1, uses_anonymous_args = 0
+ 338              		@ link register save eliminated.
+ 339 0000 80B4     		push	{r7}
+ 340              		.cfi_def_cfa_offset 4
+ 341              		.cfi_offset 7, -4
+ 342 0002 00AF     		add	r7, sp, #0
+ 343              		.cfi_def_cfa_register 7
+ 119:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR &= ~PWR_CR_PDDS;
+ 344              		.loc 1 119 9
+ 345 0004 044B     		ldr	r3, .L23
+ 346 0006 1B68     		ldr	r3, [r3]
+ 347 0008 034A     		ldr	r2, .L23
+ 348 000a 23F00203 		bic	r3, r3, #2
+ 349 000e 1360     		str	r3, [r2]
+ 120:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 350              		.loc 1 120 1
+ 351 0010 00BF     		nop
+ 352 0012 BD46     		mov	sp, r7
+ 353              		.cfi_def_cfa_register 13
+ 354              		@ sp needed
+ 355 0014 80BC     		pop	{r7}
+ 356              		.cfi_restore 7
+ 357              		.cfi_def_cfa_offset 0
+ 358 0016 7047     		bx	lr
+ 359              	.L24:
+ 360              		.align	2
+ 361              	.L23:
+ 362 0018 00700040 		.word	1073770496
+ 363              		.cfi_endproc
+ 364              	.LFE7:
+ 366              		.section	.text.pwr_voltage_regulator_on_in_stop,"ax",%progbits
+ 367              		.align	1
+ 368              		.global	pwr_voltage_regulator_on_in_stop
+ 369              		.syntax unified
+ 370              		.thumb
+ 371              		.thumb_func
+ 372              		.fpu softvfp
+ 374              	pwr_voltage_regulator_on_in_stop:
+ 375              	.LFB8:
+ 121:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 122:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 123:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Voltage Regulator On in Stop Mode.
+ 124:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 125:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 126:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 127:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_voltage_regulator_on_in_stop(void)
+ 128:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 376              		.loc 1 128 1
+ 377              		.cfi_startproc
+ 378              		@ args = 0, pretend = 0, frame = 0
+ 379              		@ frame_needed = 1, uses_anonymous_args = 0
+ 380              		@ link register save eliminated.
+ 381 0000 80B4     		push	{r7}
+ 382              		.cfi_def_cfa_offset 4
+ 383              		.cfi_offset 7, -4
+ 384 0002 00AF     		add	r7, sp, #0
+ 385              		.cfi_def_cfa_register 7
+ 129:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR &= ~PWR_CR_LPDS;
+ 386              		.loc 1 129 9
+ 387 0004 044B     		ldr	r3, .L26
+ 388 0006 1B68     		ldr	r3, [r3]
+ 389 0008 034A     		ldr	r2, .L26
+ 390 000a 23F00103 		bic	r3, r3, #1
+ 391 000e 1360     		str	r3, [r2]
+ 130:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 392              		.loc 1 130 1
+ 393 0010 00BF     		nop
+ 394 0012 BD46     		mov	sp, r7
+ 395              		.cfi_def_cfa_register 13
+ 396              		@ sp needed
+ 397 0014 80BC     		pop	{r7}
+ 398              		.cfi_restore 7
+ 399              		.cfi_def_cfa_offset 0
+ 400 0016 7047     		bx	lr
+ 401              	.L27:
+ 402              		.align	2
+ 403              	.L26:
+ 404 0018 00700040 		.word	1073770496
+ 405              		.cfi_endproc
+ 406              	.LFE8:
+ 408              		.section	.text.pwr_voltage_regulator_low_power_in_stop,"ax",%progbits
+ 409              		.align	1
+ 410              		.global	pwr_voltage_regulator_low_power_in_stop
+ 411              		.syntax unified
+ 412              		.thumb
+ 413              		.thumb_func
+ 414              		.fpu softvfp
+ 416              	pwr_voltage_regulator_low_power_in_stop:
+ 417              	.LFB9:
+ 131:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 132:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 133:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Voltage Regulator Low Power in Stop Mode.
+ 134:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 135:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 136:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 137:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_voltage_regulator_low_power_in_stop(void)
+ 138:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 418              		.loc 1 138 1
+ 419              		.cfi_startproc
+ 420              		@ args = 0, pretend = 0, frame = 0
+ 421              		@ frame_needed = 1, uses_anonymous_args = 0
+ 422              		@ link register save eliminated.
+ 423 0000 80B4     		push	{r7}
+ 424              		.cfi_def_cfa_offset 4
+ 425              		.cfi_offset 7, -4
+ 426 0002 00AF     		add	r7, sp, #0
+ 427              		.cfi_def_cfa_register 7
+ 139:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CR |= PWR_CR_LPDS;
+ 428              		.loc 1 139 9
+ 429 0004 044B     		ldr	r3, .L29
+ 430 0006 1B68     		ldr	r3, [r3]
+ 431 0008 034A     		ldr	r2, .L29
+ 432 000a 43F00103 		orr	r3, r3, #1
+ 433 000e 1360     		str	r3, [r2]
+ 140:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 434              		.loc 1 140 1
+ 435 0010 00BF     		nop
+ 436 0012 BD46     		mov	sp, r7
+ 437              		.cfi_def_cfa_register 13
+ 438              		@ sp needed
+ 439 0014 80BC     		pop	{r7}
+ 440              		.cfi_restore 7
+ 441              		.cfi_def_cfa_offset 0
+ 442 0016 7047     		bx	lr
+ 443              	.L30:
+ 444              		.align	2
+ 445              	.L29:
+ 446 0018 00700040 		.word	1073770496
+ 447              		.cfi_endproc
+ 448              	.LFE9:
+ 450              		.section	.text.pwr_enable_wakeup_pin,"ax",%progbits
+ 451              		.align	1
+ 452              		.global	pwr_enable_wakeup_pin
+ 453              		.syntax unified
+ 454              		.thumb
+ 455              		.thumb_func
+ 456              		.fpu softvfp
+ 458              	pwr_enable_wakeup_pin:
+ 459              	.LFB10:
+ 141:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 142:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 143:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Enable Wakeup Pin.
+ 144:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 145:../libopencm3/lib/stm32/common/pwr_common_v1.c **** The wakeup pin is used for waking the processor from standby mode.
+ 146:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 147:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 148:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_enable_wakeup_pin(void)
+ 149:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 460              		.loc 1 149 1
+ 461              		.cfi_startproc
+ 462              		@ args = 0, pretend = 0, frame = 0
+ 463              		@ frame_needed = 1, uses_anonymous_args = 0
+ 464              		@ link register save eliminated.
+ 465 0000 80B4     		push	{r7}
+ 466              		.cfi_def_cfa_offset 4
+ 467              		.cfi_offset 7, -4
+ 468 0002 00AF     		add	r7, sp, #0
+ 469              		.cfi_def_cfa_register 7
+ 150:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CSR |= PWR_CSR_EWUP;
+ 470              		.loc 1 150 10
+ 471 0004 044B     		ldr	r3, .L32
+ 472 0006 1B68     		ldr	r3, [r3]
+ 473 0008 034A     		ldr	r2, .L32
+ 474 000a 43F48073 		orr	r3, r3, #256
+ 475 000e 1360     		str	r3, [r2]
+ 151:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 476              		.loc 1 151 1
+ 477 0010 00BF     		nop
+ 478 0012 BD46     		mov	sp, r7
+ 479              		.cfi_def_cfa_register 13
+ 480              		@ sp needed
+ 481 0014 80BC     		pop	{r7}
+ 482              		.cfi_restore 7
+ 483              		.cfi_def_cfa_offset 0
+ 484 0016 7047     		bx	lr
+ 485              	.L33:
+ 486              		.align	2
+ 487              	.L32:
+ 488 0018 04700040 		.word	1073770500
+ 489              		.cfi_endproc
+ 490              	.LFE10:
+ 492              		.section	.text.pwr_disable_wakeup_pin,"ax",%progbits
+ 493              		.align	1
+ 494              		.global	pwr_disable_wakeup_pin
+ 495              		.syntax unified
+ 496              		.thumb
+ 497              		.thumb_func
+ 498              		.fpu softvfp
+ 500              	pwr_disable_wakeup_pin:
+ 501              	.LFB11:
+ 152:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 153:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 154:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Release Wakeup Pin.
+ 155:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 156:../libopencm3/lib/stm32/common/pwr_common_v1.c **** The wakeup pin is used for general purpose I/O.
+ 157:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 158:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 159:../libopencm3/lib/stm32/common/pwr_common_v1.c **** void pwr_disable_wakeup_pin(void)
+ 160:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 502              		.loc 1 160 1
+ 503              		.cfi_startproc
+ 504              		@ args = 0, pretend = 0, frame = 0
+ 505              		@ frame_needed = 1, uses_anonymous_args = 0
+ 506              		@ link register save eliminated.
+ 507 0000 80B4     		push	{r7}
+ 508              		.cfi_def_cfa_offset 4
+ 509              		.cfi_offset 7, -4
+ 510 0002 00AF     		add	r7, sp, #0
+ 511              		.cfi_def_cfa_register 7
+ 161:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	PWR_CSR &= ~PWR_CSR_EWUP;
+ 512              		.loc 1 161 10
+ 513 0004 044B     		ldr	r3, .L35
+ 514 0006 1B68     		ldr	r3, [r3]
+ 515 0008 034A     		ldr	r2, .L35
+ 516 000a 23F48073 		bic	r3, r3, #256
+ 517 000e 1360     		str	r3, [r2]
+ 162:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 518              		.loc 1 162 1
+ 519 0010 00BF     		nop
+ 520 0012 BD46     		mov	sp, r7
+ 521              		.cfi_def_cfa_register 13
+ 522              		@ sp needed
+ 523 0014 80BC     		pop	{r7}
+ 524              		.cfi_restore 7
+ 525              		.cfi_def_cfa_offset 0
+ 526 0016 7047     		bx	lr
+ 527              	.L36:
+ 528              		.align	2
+ 529              	.L35:
+ 530 0018 04700040 		.word	1073770500
+ 531              		.cfi_endproc
+ 532              	.LFE11:
+ 534              		.section	.text.pwr_voltage_high,"ax",%progbits
+ 535              		.align	1
+ 536              		.global	pwr_voltage_high
+ 537              		.syntax unified
+ 538              		.thumb
+ 539              		.thumb_func
+ 540              		.fpu softvfp
+ 542              	pwr_voltage_high:
+ 543              	.LFB12:
+ 163:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 164:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 165:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Get Voltage Detector Output.
+ 166:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 167:../libopencm3/lib/stm32/common/pwr_common_v1.c **** The voltage detector threshold must be set when the power voltage detector is
+ 168:../libopencm3/lib/stm32/common/pwr_common_v1.c **** enabled, see @ref pwr_enable_power_voltage_detect.
+ 169:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 170:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @returns boolean: TRUE if the power voltage is above the preset voltage
+ 171:../libopencm3/lib/stm32/common/pwr_common_v1.c **** threshold.
+ 172:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 173:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 174:../libopencm3/lib/stm32/common/pwr_common_v1.c **** bool pwr_voltage_high(void)
+ 175:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 544              		.loc 1 175 1
+ 545              		.cfi_startproc
+ 546              		@ args = 0, pretend = 0, frame = 0
+ 547              		@ frame_needed = 1, uses_anonymous_args = 0
+ 548              		@ link register save eliminated.
+ 549 0000 80B4     		push	{r7}
+ 550              		.cfi_def_cfa_offset 4
+ 551              		.cfi_offset 7, -4
+ 552 0002 00AF     		add	r7, sp, #0
+ 553              		.cfi_def_cfa_register 7
+ 176:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	return !(PWR_CSR & PWR_CSR_PVDO);
+ 554              		.loc 1 176 11
+ 555 0004 064B     		ldr	r3, .L39
+ 556 0006 1B68     		ldr	r3, [r3]
+ 557              		.loc 1 176 19
+ 558 0008 03F00403 		and	r3, r3, #4
+ 559              		.loc 1 176 9
+ 560 000c 002B     		cmp	r3, #0
+ 561 000e 0CBF     		ite	eq
+ 562 0010 0123     		moveq	r3, #1
+ 563 0012 0023     		movne	r3, #0
+ 564 0014 DBB2     		uxtb	r3, r3
+ 177:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 565              		.loc 1 177 1
+ 566 0016 1846     		mov	r0, r3
+ 567 0018 BD46     		mov	sp, r7
+ 568              		.cfi_def_cfa_register 13
+ 569              		@ sp needed
+ 570 001a 80BC     		pop	{r7}
+ 571              		.cfi_restore 7
+ 572              		.cfi_def_cfa_offset 0
+ 573 001c 7047     		bx	lr
+ 574              	.L40:
+ 575 001e 00BF     		.align	2
+ 576              	.L39:
+ 577 0020 04700040 		.word	1073770500
+ 578              		.cfi_endproc
+ 579              	.LFE12:
+ 581              		.section	.text.pwr_get_standby_flag,"ax",%progbits
+ 582              		.align	1
+ 583              		.global	pwr_get_standby_flag
+ 584              		.syntax unified
+ 585              		.thumb
+ 586              		.thumb_func
+ 587              		.fpu softvfp
+ 589              	pwr_get_standby_flag:
+ 590              	.LFB13:
+ 178:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 179:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 180:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Get Standby Flag.
+ 181:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 182:../libopencm3/lib/stm32/common/pwr_common_v1.c **** The standby flag is set when the processor returns from a standby state. It is
+ 183:../libopencm3/lib/stm32/common/pwr_common_v1.c **** cleared by software (see @ref pwr_clear_standby_flag).
+ 184:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 185:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @returns boolean: TRUE if the processor was in standby state.
+ 186:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 187:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 188:../libopencm3/lib/stm32/common/pwr_common_v1.c **** bool pwr_get_standby_flag(void)
+ 189:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 591              		.loc 1 189 1
+ 592              		.cfi_startproc
+ 593              		@ args = 0, pretend = 0, frame = 0
+ 594              		@ frame_needed = 1, uses_anonymous_args = 0
+ 595              		@ link register save eliminated.
+ 596 0000 80B4     		push	{r7}
+ 597              		.cfi_def_cfa_offset 4
+ 598              		.cfi_offset 7, -4
+ 599 0002 00AF     		add	r7, sp, #0
+ 600              		.cfi_def_cfa_register 7
+ 190:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	return PWR_CSR & PWR_CSR_SBF;
+ 601              		.loc 1 190 9
+ 602 0004 064B     		ldr	r3, .L43
+ 603 0006 1B68     		ldr	r3, [r3]
+ 604              		.loc 1 190 17
+ 605 0008 03F00203 		and	r3, r3, #2
+ 606 000c 002B     		cmp	r3, #0
+ 607 000e 14BF     		ite	ne
+ 608 0010 0123     		movne	r3, #1
+ 609 0012 0023     		moveq	r3, #0
+ 610 0014 DBB2     		uxtb	r3, r3
+ 191:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 611              		.loc 1 191 1
+ 612 0016 1846     		mov	r0, r3
+ 613 0018 BD46     		mov	sp, r7
+ 614              		.cfi_def_cfa_register 13
+ 615              		@ sp needed
+ 616 001a 80BC     		pop	{r7}
+ 617              		.cfi_restore 7
+ 618              		.cfi_def_cfa_offset 0
+ 619 001c 7047     		bx	lr
+ 620              	.L44:
+ 621 001e 00BF     		.align	2
+ 622              	.L43:
+ 623 0020 04700040 		.word	1073770500
+ 624              		.cfi_endproc
+ 625              	.LFE13:
+ 627              		.section	.text.pwr_get_wakeup_flag,"ax",%progbits
+ 628              		.align	1
+ 629              		.global	pwr_get_wakeup_flag
+ 630              		.syntax unified
+ 631              		.thumb
+ 632              		.thumb_func
+ 633              		.fpu softvfp
+ 635              	pwr_get_wakeup_flag:
+ 636              	.LFB14:
+ 192:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 193:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /*---------------------------------------------------------------------------*/
+ 194:../libopencm3/lib/stm32/common/pwr_common_v1.c **** /** @brief Get Wakeup Flag.
+ 195:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 196:../libopencm3/lib/stm32/common/pwr_common_v1.c **** The wakeup flag is set when a wakeup event has been received. It is
+ 197:../libopencm3/lib/stm32/common/pwr_common_v1.c **** cleared by software (see @ref pwr_clear_wakeup_flag).
+ 198:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 199:../libopencm3/lib/stm32/common/pwr_common_v1.c **** @returns boolean: TRUE if a wakeup event was received.
+ 200:../libopencm3/lib/stm32/common/pwr_common_v1.c **** */
+ 201:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 
+ 202:../libopencm3/lib/stm32/common/pwr_common_v1.c **** bool pwr_get_wakeup_flag(void)
+ 203:../libopencm3/lib/stm32/common/pwr_common_v1.c **** {
+ 637              		.loc 1 203 1
+ 638              		.cfi_startproc
+ 639              		@ args = 0, pretend = 0, frame = 0
+ 640              		@ frame_needed = 1, uses_anonymous_args = 0
+ 641              		@ link register save eliminated.
+ 642 0000 80B4     		push	{r7}
+ 643              		.cfi_def_cfa_offset 4
+ 644              		.cfi_offset 7, -4
+ 645 0002 00AF     		add	r7, sp, #0
+ 646              		.cfi_def_cfa_register 7
+ 204:../libopencm3/lib/stm32/common/pwr_common_v1.c **** 	return PWR_CSR & PWR_CSR_WUF;
+ 647              		.loc 1 204 9
+ 648 0004 064B     		ldr	r3, .L47
+ 649 0006 1B68     		ldr	r3, [r3]
+ 650              		.loc 1 204 17
+ 651 0008 03F00103 		and	r3, r3, #1
+ 652 000c 002B     		cmp	r3, #0
+ 653 000e 14BF     		ite	ne
+ 654 0010 0123     		movne	r3, #1
+ 655 0012 0023     		moveq	r3, #0
+ 656 0014 DBB2     		uxtb	r3, r3
+ 205:../libopencm3/lib/stm32/common/pwr_common_v1.c **** }
+ 657              		.loc 1 205 1
+ 658 0016 1846     		mov	r0, r3
+ 659 0018 BD46     		mov	sp, r7
+ 660              		.cfi_def_cfa_register 13
+ 661              		@ sp needed
+ 662 001a 80BC     		pop	{r7}
+ 663              		.cfi_restore 7
+ 664              		.cfi_def_cfa_offset 0
+ 665 001c 7047     		bx	lr
+ 666              	.L48:
+ 667 001e 00BF     		.align	2
+ 668              	.L47:
+ 669 0020 04700040 		.word	1073770500
+ 670              		.cfi_endproc
+ 671              	.LFE14:
+ 673              		.text
+ 674              	.Letext0:
+ 675              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 676              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 pwr_common_v1.c
+     /tmp/cc5gOJZE.s:16     .text.pwr_disable_backup_domain_write_protect:0000000000000000 $t
+     /tmp/cc5gOJZE.s:24     .text.pwr_disable_backup_domain_write_protect:0000000000000000 pwr_disable_backup_domain_write_protect
+     /tmp/cc5gOJZE.s:55     .text.pwr_disable_backup_domain_write_protect:0000000000000018 $d
+     /tmp/cc5gOJZE.s:60     .text.pwr_enable_backup_domain_write_protect:0000000000000000 $t
+     /tmp/cc5gOJZE.s:67     .text.pwr_enable_backup_domain_write_protect:0000000000000000 pwr_enable_backup_domain_write_protect
+     /tmp/cc5gOJZE.s:97     .text.pwr_enable_backup_domain_write_protect:0000000000000018 $d
+     /tmp/cc5gOJZE.s:102    .text.pwr_enable_power_voltage_detect:0000000000000000 $t
+     /tmp/cc5gOJZE.s:109    .text.pwr_enable_power_voltage_detect:0000000000000000 pwr_enable_power_voltage_detect
+     /tmp/cc5gOJZE.s:152    .text.pwr_enable_power_voltage_detect:0000000000000030 $d
+     /tmp/cc5gOJZE.s:157    .text.pwr_disable_power_voltage_detect:0000000000000000 $t
+     /tmp/cc5gOJZE.s:164    .text.pwr_disable_power_voltage_detect:0000000000000000 pwr_disable_power_voltage_detect
+     /tmp/cc5gOJZE.s:194    .text.pwr_disable_power_voltage_detect:0000000000000018 $d
+     /tmp/cc5gOJZE.s:199    .text.pwr_clear_standby_flag:0000000000000000 $t
+     /tmp/cc5gOJZE.s:206    .text.pwr_clear_standby_flag:0000000000000000 pwr_clear_standby_flag
+     /tmp/cc5gOJZE.s:236    .text.pwr_clear_standby_flag:0000000000000018 $d
+     /tmp/cc5gOJZE.s:241    .text.pwr_clear_wakeup_flag:0000000000000000 $t
+     /tmp/cc5gOJZE.s:248    .text.pwr_clear_wakeup_flag:0000000000000000 pwr_clear_wakeup_flag
+     /tmp/cc5gOJZE.s:278    .text.pwr_clear_wakeup_flag:0000000000000018 $d
+     /tmp/cc5gOJZE.s:283    .text.pwr_set_standby_mode:0000000000000000 $t
+     /tmp/cc5gOJZE.s:290    .text.pwr_set_standby_mode:0000000000000000 pwr_set_standby_mode
+     /tmp/cc5gOJZE.s:320    .text.pwr_set_standby_mode:0000000000000018 $d
+     /tmp/cc5gOJZE.s:325    .text.pwr_set_stop_mode:0000000000000000 $t
+     /tmp/cc5gOJZE.s:332    .text.pwr_set_stop_mode:0000000000000000 pwr_set_stop_mode
+     /tmp/cc5gOJZE.s:362    .text.pwr_set_stop_mode:0000000000000018 $d
+     /tmp/cc5gOJZE.s:367    .text.pwr_voltage_regulator_on_in_stop:0000000000000000 $t
+     /tmp/cc5gOJZE.s:374    .text.pwr_voltage_regulator_on_in_stop:0000000000000000 pwr_voltage_regulator_on_in_stop
+     /tmp/cc5gOJZE.s:404    .text.pwr_voltage_regulator_on_in_stop:0000000000000018 $d
+     /tmp/cc5gOJZE.s:409    .text.pwr_voltage_regulator_low_power_in_stop:0000000000000000 $t
+     /tmp/cc5gOJZE.s:416    .text.pwr_voltage_regulator_low_power_in_stop:0000000000000000 pwr_voltage_regulator_low_power_in_stop
+     /tmp/cc5gOJZE.s:446    .text.pwr_voltage_regulator_low_power_in_stop:0000000000000018 $d
+     /tmp/cc5gOJZE.s:451    .text.pwr_enable_wakeup_pin:0000000000000000 $t
+     /tmp/cc5gOJZE.s:458    .text.pwr_enable_wakeup_pin:0000000000000000 pwr_enable_wakeup_pin
+     /tmp/cc5gOJZE.s:488    .text.pwr_enable_wakeup_pin:0000000000000018 $d
+     /tmp/cc5gOJZE.s:493    .text.pwr_disable_wakeup_pin:0000000000000000 $t
+     /tmp/cc5gOJZE.s:500    .text.pwr_disable_wakeup_pin:0000000000000000 pwr_disable_wakeup_pin
+     /tmp/cc5gOJZE.s:530    .text.pwr_disable_wakeup_pin:0000000000000018 $d
+     /tmp/cc5gOJZE.s:535    .text.pwr_voltage_high:0000000000000000 $t
+     /tmp/cc5gOJZE.s:542    .text.pwr_voltage_high:0000000000000000 pwr_voltage_high
+     /tmp/cc5gOJZE.s:577    .text.pwr_voltage_high:0000000000000020 $d
+     /tmp/cc5gOJZE.s:582    .text.pwr_get_standby_flag:0000000000000000 $t
+     /tmp/cc5gOJZE.s:589    .text.pwr_get_standby_flag:0000000000000000 pwr_get_standby_flag
+     /tmp/cc5gOJZE.s:623    .text.pwr_get_standby_flag:0000000000000020 $d
+     /tmp/cc5gOJZE.s:628    .text.pwr_get_wakeup_flag:0000000000000000 $t
+     /tmp/cc5gOJZE.s:635    .text.pwr_get_wakeup_flag:0000000000000000 pwr_get_wakeup_flag
+     /tmp/cc5gOJZE.s:669    .text.pwr_get_wakeup_flag:0000000000000020 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.pwr_common_v1.h.34.5ba50cacb26c1962a4ec30bab2f0c81c
+
+NO UNDEFINED SYMBOLS

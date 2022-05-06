@@ -1,0 +1,375 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"usb_f107.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.bss.usbd_dev,"aw",%nobits
+  16              		.align	2
+  19              	usbd_dev:
+  20 0000 00000000 		.space	260
+  20      00000000 
+  20      00000000 
+  20      00000000 
+  20      00000000 
+  21              		.global	stm32f107_usb_driver
+  22              		.section	.data.rel.ro.stm32f107_usb_driver,"aw"
+  23              		.align	2
+  26              	stm32f107_usb_driver:
+  27 0000 00000000 		.word	stm32f107_usbd_init
+  28 0004 00000000 		.word	dwc_set_address
+  29 0008 00000000 		.word	dwc_ep_setup
+  30 000c 00000000 		.word	dwc_endpoints_reset
+  31 0010 00000000 		.word	dwc_ep_stall_set
+  32 0014 00000000 		.word	dwc_ep_nak_set
+  33 0018 00000000 		.word	dwc_ep_stall_get
+  34 001c 00000000 		.word	dwc_ep_write_packet
+  35 0020 00000000 		.word	dwc_ep_read_packet
+  36 0024 00000000 		.word	dwc_poll
+  37 0028 00000000 		.word	dwc_disconnect
+  38 002c 00000050 		.word	1342177280
+  39 0030 01       		.byte	1
+  40 0031 00       		.space	1
+  41 0032 8000     		.short	128
+  42              		.section	.text.stm32f107_usbd_init,"ax",%progbits
+  43              		.align	1
+  44              		.arch armv7-m
+  45              		.syntax unified
+  46              		.thumb
+  47              		.thumb_func
+  48              		.fpu softvfp
+  50              	stm32f107_usbd_init:
+  51              	.LFB0:
+  52              		.file 1 "../libopencm3/lib/usb/usb_f107.c"
+   1:../libopencm3/lib/usb/usb_f107.c **** /*
+   2:../libopencm3/lib/usb/usb_f107.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/usb/usb_f107.c ****  *
+   4:../libopencm3/lib/usb/usb_f107.c ****  * Copyright (C) 2011 Gareth McMullin <gareth@blacksphere.co.nz>
+   5:../libopencm3/lib/usb/usb_f107.c ****  *
+   6:../libopencm3/lib/usb/usb_f107.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../libopencm3/lib/usb/usb_f107.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../libopencm3/lib/usb/usb_f107.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../libopencm3/lib/usb/usb_f107.c ****  * (at your option) any later version.
+  10:../libopencm3/lib/usb/usb_f107.c ****  *
+  11:../libopencm3/lib/usb/usb_f107.c ****  * This library is distributed in the hope that it will be useful,
+  12:../libopencm3/lib/usb/usb_f107.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../libopencm3/lib/usb/usb_f107.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../libopencm3/lib/usb/usb_f107.c ****  * GNU Lesser General Public License for more details.
+  15:../libopencm3/lib/usb/usb_f107.c ****  *
+  16:../libopencm3/lib/usb/usb_f107.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../libopencm3/lib/usb/usb_f107.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../libopencm3/lib/usb/usb_f107.c ****  */
+  19:../libopencm3/lib/usb/usb_f107.c **** 
+  20:../libopencm3/lib/usb/usb_f107.c **** #include <string.h>
+  21:../libopencm3/lib/usb/usb_f107.c **** #include <libopencm3/cm3/common.h>
+  22:../libopencm3/lib/usb/usb_f107.c **** #include <libopencm3/stm32/tools.h>
+  23:../libopencm3/lib/usb/usb_f107.c **** #include <libopencm3/stm32/rcc.h>
+  24:../libopencm3/lib/usb/usb_f107.c **** #include <libopencm3/usb/usbd.h>
+  25:../libopencm3/lib/usb/usb_f107.c **** #include <libopencm3/usb/dwc/otg_fs.h>
+  26:../libopencm3/lib/usb/usb_f107.c **** #include "usb_private.h"
+  27:../libopencm3/lib/usb/usb_f107.c **** #include "usb_dwc_common.h"
+  28:../libopencm3/lib/usb/usb_f107.c **** 
+  29:../libopencm3/lib/usb/usb_f107.c **** /* Receive FIFO size in 32-bit words. */
+  30:../libopencm3/lib/usb/usb_f107.c **** #define RX_FIFO_SIZE 128
+  31:../libopencm3/lib/usb/usb_f107.c **** 
+  32:../libopencm3/lib/usb/usb_f107.c **** static usbd_device *stm32f107_usbd_init(void);
+  33:../libopencm3/lib/usb/usb_f107.c **** 
+  34:../libopencm3/lib/usb/usb_f107.c **** static struct _usbd_device usbd_dev;
+  35:../libopencm3/lib/usb/usb_f107.c **** 
+  36:../libopencm3/lib/usb/usb_f107.c **** const struct _usbd_driver stm32f107_usb_driver = {
+  37:../libopencm3/lib/usb/usb_f107.c **** 	.init = stm32f107_usbd_init,
+  38:../libopencm3/lib/usb/usb_f107.c **** 	.set_address = dwc_set_address,
+  39:../libopencm3/lib/usb/usb_f107.c **** 	.ep_setup = dwc_ep_setup,
+  40:../libopencm3/lib/usb/usb_f107.c **** 	.ep_reset = dwc_endpoints_reset,
+  41:../libopencm3/lib/usb/usb_f107.c **** 	.ep_stall_set = dwc_ep_stall_set,
+  42:../libopencm3/lib/usb/usb_f107.c **** 	.ep_stall_get = dwc_ep_stall_get,
+  43:../libopencm3/lib/usb/usb_f107.c **** 	.ep_nak_set = dwc_ep_nak_set,
+  44:../libopencm3/lib/usb/usb_f107.c **** 	.ep_write_packet = dwc_ep_write_packet,
+  45:../libopencm3/lib/usb/usb_f107.c **** 	.ep_read_packet = dwc_ep_read_packet,
+  46:../libopencm3/lib/usb/usb_f107.c **** 	.poll = dwc_poll,
+  47:../libopencm3/lib/usb/usb_f107.c **** 	.disconnect = dwc_disconnect,
+  48:../libopencm3/lib/usb/usb_f107.c **** 	.base_address = USB_OTG_FS_BASE,
+  49:../libopencm3/lib/usb/usb_f107.c **** 	.set_address_before_status = 1,
+  50:../libopencm3/lib/usb/usb_f107.c **** 	.rx_fifo_size = RX_FIFO_SIZE,
+  51:../libopencm3/lib/usb/usb_f107.c **** };
+  52:../libopencm3/lib/usb/usb_f107.c **** 
+  53:../libopencm3/lib/usb/usb_f107.c **** /** Initialize the USB device controller hardware of the STM32. */
+  54:../libopencm3/lib/usb/usb_f107.c **** static usbd_device *stm32f107_usbd_init(void)
+  55:../libopencm3/lib/usb/usb_f107.c **** {
+  53              		.loc 1 55 1
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 1, uses_anonymous_args = 0
+  57 0000 80B5     		push	{r7, lr}
+  58              		.cfi_def_cfa_offset 8
+  59              		.cfi_offset 7, -8
+  60              		.cfi_offset 14, -4
+  61 0002 00AF     		add	r7, sp, #0
+  62              		.cfi_def_cfa_register 7
+  56:../libopencm3/lib/usb/usb_f107.c **** 	rcc_periph_clock_enable(RCC_OTGFS);
+  63              		.loc 1 56 2
+  64 0004 4FF42370 		mov	r0, #652
+  65 0008 FFF7FEFF 		bl	rcc_periph_clock_enable(PLT)
+  57:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GUSBCFG |= OTG_GUSBCFG_PHYSEL;
+  66              		.loc 1 57 17
+  67 000c 2F4B     		ldr	r3, .L7
+  68 000e 1B68     		ldr	r3, [r3]
+  69 0010 2E4A     		ldr	r2, .L7
+  70 0012 43F04003 		orr	r3, r3, #64
+  71 0016 1360     		str	r3, [r2]
+  58:../libopencm3/lib/usb/usb_f107.c **** 
+  59:../libopencm3/lib/usb/usb_f107.c **** 	/* Wait for AHB idle. */
+  60:../libopencm3/lib/usb/usb_f107.c **** 	while (!(OTG_FS_GRSTCTL & OTG_GRSTCTL_AHBIDL));
+  72              		.loc 1 60 8
+  73 0018 00BF     		nop
+  74              	.L2:
+  75              		.loc 1 60 11 discriminator 1
+  76 001a 2D4B     		ldr	r3, .L7+4
+  77 001c 1B68     		ldr	r3, [r3]
+  78              		.loc 1 60 8 discriminator 1
+  79 001e 002B     		cmp	r3, #0
+  80 0020 FBDA     		bge	.L2
+  61:../libopencm3/lib/usb/usb_f107.c **** 	/* Do core soft reset. */
+  62:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GRSTCTL |= OTG_GRSTCTL_CSRST;
+  81              		.loc 1 62 17
+  82 0022 2B4B     		ldr	r3, .L7+4
+  83 0024 1B68     		ldr	r3, [r3]
+  84 0026 2A4A     		ldr	r2, .L7+4
+  85 0028 43F00103 		orr	r3, r3, #1
+  86 002c 1360     		str	r3, [r2]
+  63:../libopencm3/lib/usb/usb_f107.c **** 	while (OTG_FS_GRSTCTL & OTG_GRSTCTL_CSRST);
+  87              		.loc 1 63 8
+  88 002e 00BF     		nop
+  89              	.L3:
+  90              		.loc 1 63 9 discriminator 1
+  91 0030 274B     		ldr	r3, .L7+4
+  92 0032 1B68     		ldr	r3, [r3]
+  93              		.loc 1 63 24 discriminator 1
+  94 0034 03F00103 		and	r3, r3, #1
+  95              		.loc 1 63 8 discriminator 1
+  96 0038 002B     		cmp	r3, #0
+  97 003a F9D1     		bne	.L3
+  64:../libopencm3/lib/usb/usb_f107.c **** 
+  65:../libopencm3/lib/usb/usb_f107.c **** 	if (OTG_FS_CID >= OTG_CID_HAS_VBDEN) {
+  98              		.loc 1 65 6
+  99 003c 254B     		ldr	r3, .L7+8
+ 100 003e 1B68     		ldr	r3, [r3]
+ 101              		.loc 1 65 5
+ 102 0040 B3F5005F 		cmp	r3, #8192
+ 103 0044 06D3     		bcc	.L4
+  66:../libopencm3/lib/usb/usb_f107.c **** 		/* Enable VBUS detection in device mode and power up the PHY. */
+  67:../libopencm3/lib/usb/usb_f107.c **** 		OTG_FS_GCCFG |= OTG_GCCFG_VBDEN | OTG_GCCFG_PWRDWN;
+ 104              		.loc 1 67 16
+ 105 0046 244B     		ldr	r3, .L7+12
+ 106 0048 1B68     		ldr	r3, [r3]
+ 107 004a 234A     		ldr	r2, .L7+12
+ 108 004c 43F40413 		orr	r3, r3, #2162688
+ 109 0050 1360     		str	r3, [r2]
+ 110 0052 05E0     		b	.L5
+ 111              	.L4:
+  68:../libopencm3/lib/usb/usb_f107.c **** 	} else {
+  69:../libopencm3/lib/usb/usb_f107.c **** 		/* Enable VBUS sensing in device mode and power up the PHY. */
+  70:../libopencm3/lib/usb/usb_f107.c **** 		OTG_FS_GCCFG |= OTG_GCCFG_VBUSBSEN | OTG_GCCFG_PWRDWN;
+ 112              		.loc 1 70 16
+ 113 0054 204B     		ldr	r3, .L7+12
+ 114 0056 1B68     		ldr	r3, [r3]
+ 115 0058 1F4A     		ldr	r2, .L7+12
+ 116 005a 43F41023 		orr	r3, r3, #589824
+ 117 005e 1360     		str	r3, [r2]
+ 118              	.L5:
+  71:../libopencm3/lib/usb/usb_f107.c **** 	}
+  72:../libopencm3/lib/usb/usb_f107.c **** 	/* Explicitly enable DP pullup (not all cores do this by default) */
+  73:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_DCTL &= ~OTG_DCTL_SDIS;
+ 119              		.loc 1 73 14
+ 120 0060 1E4B     		ldr	r3, .L7+16
+ 121 0062 1B68     		ldr	r3, [r3]
+ 122 0064 1D4A     		ldr	r2, .L7+16
+ 123 0066 23F00203 		bic	r3, r3, #2
+ 124 006a 1360     		str	r3, [r2]
+  74:../libopencm3/lib/usb/usb_f107.c **** 
+  75:../libopencm3/lib/usb/usb_f107.c **** 	/* Force peripheral only mode. */
+  76:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GUSBCFG |= OTG_GUSBCFG_FDMOD | OTG_GUSBCFG_TRDT_MASK;
+ 125              		.loc 1 76 17
+ 126 006c 174B     		ldr	r3, .L7
+ 127 006e 1B68     		ldr	r3, [r3]
+ 128 0070 164A     		ldr	r2, .L7
+ 129 0072 43F08043 		orr	r3, r3, #1073741824
+ 130 0076 43F47053 		orr	r3, r3, #15360
+ 131 007a 1360     		str	r3, [r2]
+  77:../libopencm3/lib/usb/usb_f107.c **** 
+  78:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GINTSTS = OTG_GINTSTS_MMIS;
+ 132              		.loc 1 78 2
+ 133 007c 184B     		ldr	r3, .L7+20
+ 134              		.loc 1 78 17
+ 135 007e 0222     		movs	r2, #2
+ 136 0080 1A60     		str	r2, [r3]
+  79:../libopencm3/lib/usb/usb_f107.c **** 
+  80:../libopencm3/lib/usb/usb_f107.c **** 	/* Full speed device. */
+  81:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_DCFG |= OTG_DCFG_DSPD;
+ 137              		.loc 1 81 14
+ 138 0082 184B     		ldr	r3, .L7+24
+ 139 0084 1B68     		ldr	r3, [r3]
+ 140 0086 174A     		ldr	r2, .L7+24
+ 141 0088 43F00303 		orr	r3, r3, #3
+ 142 008c 1360     		str	r3, [r2]
+  82:../libopencm3/lib/usb/usb_f107.c **** 
+  83:../libopencm3/lib/usb/usb_f107.c **** 	/* Restart the PHY clock. */
+  84:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_PCGCCTL = 0;
+ 143              		.loc 1 84 2
+ 144 008e 164B     		ldr	r3, .L7+28
+ 145              		.loc 1 84 17
+ 146 0090 0022     		movs	r2, #0
+ 147 0092 1A60     		str	r2, [r3]
+  85:../libopencm3/lib/usb/usb_f107.c **** 
+  86:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GRXFSIZ = stm32f107_usb_driver.rx_fifo_size;
+ 148              		.loc 1 86 39
+ 149 0094 8022     		movs	r2, #128
+ 150              		.loc 1 86 2
+ 151 0096 154B     		ldr	r3, .L7+32
+ 152              		.loc 1 86 17
+ 153 0098 1A60     		str	r2, [r3]
+  87:../libopencm3/lib/usb/usb_f107.c **** 	usbd_dev.fifo_mem_top = stm32f107_usb_driver.rx_fifo_size;
+ 154              		.loc 1 87 46
+ 155 009a 8022     		movs	r2, #128
+ 156              		.loc 1 87 24
+ 157 009c 194B     		ldr	r3, .L7+56
+ 158              	.LPIC0:
+ 159 009e 7B44     		add	r3, pc
+ 160 00a0 A3F8E820 		strh	r2, [r3, #232]	@ movhi
+  88:../libopencm3/lib/usb/usb_f107.c **** 
+  89:../libopencm3/lib/usb/usb_f107.c **** 	/* Unmask interrupts for TX and RX. */
+  90:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GAHBCFG |= OTG_GAHBCFG_GINT;
+ 161              		.loc 1 90 17
+ 162 00a4 124B     		ldr	r3, .L7+36
+ 163 00a6 1B68     		ldr	r3, [r3]
+ 164 00a8 114A     		ldr	r2, .L7+36
+ 165 00aa 43F00103 		orr	r3, r3, #1
+ 166 00ae 1360     		str	r3, [r2]
+  91:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_GINTMSK = OTG_GINTMSK_ENUMDNEM |
+ 167              		.loc 1 91 2
+ 168 00b0 104B     		ldr	r3, .L7+40
+ 169              		.loc 1 91 17
+ 170 00b2 114A     		ldr	r2, .L7+44
+ 171 00b4 1A60     		str	r2, [r3]
+  92:../libopencm3/lib/usb/usb_f107.c **** 			 OTG_GINTMSK_RXFLVLM |
+  93:../libopencm3/lib/usb/usb_f107.c **** 			 OTG_GINTMSK_IEPINT |
+  94:../libopencm3/lib/usb/usb_f107.c **** 			 OTG_GINTMSK_USBSUSPM |
+  95:../libopencm3/lib/usb/usb_f107.c **** 			 OTG_GINTMSK_WUIM;
+  96:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_DAINTMSK = 0xF;
+ 172              		.loc 1 96 2
+ 173 00b6 114B     		ldr	r3, .L7+48
+ 174              		.loc 1 96 18
+ 175 00b8 0F22     		movs	r2, #15
+ 176 00ba 1A60     		str	r2, [r3]
+  97:../libopencm3/lib/usb/usb_f107.c **** 	OTG_FS_DIEPMSK = OTG_DIEPMSK_XFRCM;
+ 177              		.loc 1 97 2
+ 178 00bc 104B     		ldr	r3, .L7+52
+ 179              		.loc 1 97 17
+ 180 00be 0122     		movs	r2, #1
+ 181 00c0 1A60     		str	r2, [r3]
+  98:../libopencm3/lib/usb/usb_f107.c **** 
+  99:../libopencm3/lib/usb/usb_f107.c **** 	return &usbd_dev;
+ 182              		.loc 1 99 9
+ 183 00c2 114B     		ldr	r3, .L7+60
+ 184              	.LPIC1:
+ 185 00c4 7B44     		add	r3, pc
+ 100:../libopencm3/lib/usb/usb_f107.c **** }
+ 186              		.loc 1 100 1
+ 187 00c6 1846     		mov	r0, r3
+ 188 00c8 80BD     		pop	{r7, pc}
+ 189              	.L8:
+ 190 00ca 00BF     		.align	2
+ 191              	.L7:
+ 192 00cc 0C000050 		.word	1342177292
+ 193 00d0 10000050 		.word	1342177296
+ 194 00d4 3C000050 		.word	1342177340
+ 195 00d8 38000050 		.word	1342177336
+ 196 00dc 04080050 		.word	1342179332
+ 197 00e0 14000050 		.word	1342177300
+ 198 00e4 00080050 		.word	1342179328
+ 199 00e8 000E0050 		.word	1342180864
+ 200 00ec 24000050 		.word	1342177316
+ 201 00f0 08000050 		.word	1342177288
+ 202 00f4 18000050 		.word	1342177304
+ 203 00f8 10280480 		.word	-2147211248
+ 204 00fc 1C080050 		.word	1342179356
+ 205 0100 10080050 		.word	1342179344
+ 206 0104 62000000 		.word	usbd_dev-(.LPIC0+4)
+ 207 0108 40000000 		.word	usbd_dev-(.LPIC1+4)
+ 208              		.cfi_endproc
+ 209              	.LFE0:
+ 211              		.text
+ 212              	.Letext0:
+ 213              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 214              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 215              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 216              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 217              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 218              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 219              		.file 8 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+ 220              		.file 9 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbstd.h"
+ 221              		.file 10 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbd.h"
+ 222              		.file 11 "../libopencm3/lib/usb/usb_private.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usb_f107.c
+     /tmp/ccU6TD9I.s:16     .bss.usbd_dev:0000000000000000 $d
+     /tmp/ccU6TD9I.s:19     .bss.usbd_dev:0000000000000000 usbd_dev
+     /tmp/ccU6TD9I.s:26     .data.rel.ro.stm32f107_usb_driver:0000000000000000 stm32f107_usb_driver
+     /tmp/ccU6TD9I.s:23     .data.rel.ro.stm32f107_usb_driver:0000000000000000 $d
+     /tmp/ccU6TD9I.s:50     .text.stm32f107_usbd_init:0000000000000000 stm32f107_usbd_init
+     /tmp/ccU6TD9I.s:43     .text.stm32f107_usbd_init:0000000000000000 $t
+     /tmp/ccU6TD9I.s:192    .text.stm32f107_usbd_init:00000000000000cc $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4.features.h.22.fad1cec3bc7ff06488171438dbdcfd02
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stddef.h.39.a38874c8f8a57e66301090908ec2a69f
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.string.h.15.dab3980bf35408a4c507182805e2de3a
+                           .group:0000000000000000 wm4.stddef.h.161.19e15733342b50ead2919490b095303e
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.tools.h.21.75e74419488d11c9cf865f0f24faab06
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+                           .group:0000000000000000 wm4.usbstd.h.44.4afe4d1bc74038b0efb850274c9ca72f
+                           .group:0000000000000000 wm4.usbd.h.59.36297d267a452a295a2169d9133104f5
+                           .group:0000000000000000 wm4.otg_common.h.27.7374abeb4d4afce8cbd042d2e3e521aa
+                           .group:0000000000000000 wm4.otg_fs.h.42.08880e0f442d1307830e0eab16c18fec
+                           .group:0000000000000000 wm4.usb_private.h.39.0319c55b21f25116dad040a5212d0c5d
+
+UNDEFINED SYMBOLS
+dwc_set_address
+dwc_ep_setup
+dwc_endpoints_reset
+dwc_ep_stall_set
+dwc_ep_nak_set
+dwc_ep_stall_get
+dwc_ep_write_packet
+dwc_ep_read_packet
+dwc_poll
+dwc_disconnect
+rcc_periph_clock_enable

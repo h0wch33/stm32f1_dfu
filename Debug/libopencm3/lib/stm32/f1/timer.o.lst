@@ -1,0 +1,178 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"timer.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.timer_ic_set_polarity,"ax",%progbits
+  16              		.align	1
+  17              		.global	timer_ic_set_polarity
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	timer_ic_set_polarity:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/f1/timer.c"
+   1:../libopencm3/lib/stm32/f1/timer.c **** /** @defgroup timer_file TIMER peripheral API
+   2:../libopencm3/lib/stm32/f1/timer.c **** @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/f1/timer.c **** @brief <b>libopencm3 STM32F1xx Timers</b>
+   4:../libopencm3/lib/stm32/f1/timer.c **** 
+   5:../libopencm3/lib/stm32/f1/timer.c **** @version 1.0.0
+   6:../libopencm3/lib/stm32/f1/timer.c **** 
+   7:../libopencm3/lib/stm32/f1/timer.c **** @date 18 August 2012
+   8:../libopencm3/lib/stm32/f1/timer.c **** 
+   9:../libopencm3/lib/stm32/f1/timer.c **** */
+  10:../libopencm3/lib/stm32/f1/timer.c **** 
+  11:../libopencm3/lib/stm32/f1/timer.c **** /*
+  12:../libopencm3/lib/stm32/f1/timer.c ****  * This file is part of the libopencm3 project.
+  13:../libopencm3/lib/stm32/f1/timer.c ****  *
+  14:../libopencm3/lib/stm32/f1/timer.c ****  * Copyright (C) 2010 Edward Cheeseman <evbuilder@users.sourceforge.org>
+  15:../libopencm3/lib/stm32/f1/timer.c ****  * Copyright (C) 2011 Stephen Caudle <scaudle@doceme.com>
+  16:../libopencm3/lib/stm32/f1/timer.c ****  *
+  17:../libopencm3/lib/stm32/f1/timer.c ****  * This library is free software: you can redistribute it and/or modify
+  18:../libopencm3/lib/stm32/f1/timer.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  19:../libopencm3/lib/stm32/f1/timer.c ****  * the Free Software Foundation, either version 3 of the License, or
+  20:../libopencm3/lib/stm32/f1/timer.c ****  * (at your option) any later version.
+  21:../libopencm3/lib/stm32/f1/timer.c ****  *
+  22:../libopencm3/lib/stm32/f1/timer.c ****  * This library is distributed in the hope that it will be useful,
+  23:../libopencm3/lib/stm32/f1/timer.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  24:../libopencm3/lib/stm32/f1/timer.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  25:../libopencm3/lib/stm32/f1/timer.c ****  * GNU Lesser General Public License for more details.
+  26:../libopencm3/lib/stm32/f1/timer.c ****  *
+  27:../libopencm3/lib/stm32/f1/timer.c ****  * You should have received a copy of the GNU Lesser General Public License
+  28:../libopencm3/lib/stm32/f1/timer.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  29:../libopencm3/lib/stm32/f1/timer.c ****  */
+  30:../libopencm3/lib/stm32/f1/timer.c **** 
+  31:../libopencm3/lib/stm32/f1/timer.c **** #include <libopencm3/stm32/timer.h>
+  32:../libopencm3/lib/stm32/f1/timer.c **** 
+  33:../libopencm3/lib/stm32/f1/timer.c **** /**@{*/
+  34:../libopencm3/lib/stm32/f1/timer.c **** 
+  35:../libopencm3/lib/stm32/f1/timer.c **** /*---------------------------------------------------------------------------*/
+  36:../libopencm3/lib/stm32/f1/timer.c **** /** @brief Set Input Polarity
+  37:../libopencm3/lib/stm32/f1/timer.c **** 
+  38:../libopencm3/lib/stm32/f1/timer.c **** @param[in] timer_peripheral Unsigned int32. Timer register address base
+  39:../libopencm3/lib/stm32/f1/timer.c **** @param[in] ic ::tim_ic_id. Input Capture channel designator.
+  40:../libopencm3/lib/stm32/f1/timer.c **** @param[in] pol ::tim_ic_pol. Input Capture polarity.
+  41:../libopencm3/lib/stm32/f1/timer.c **** */
+  42:../libopencm3/lib/stm32/f1/timer.c **** 
+  43:../libopencm3/lib/stm32/f1/timer.c **** void timer_ic_set_polarity(uint32_t timer_peripheral, enum tim_ic_id ic,
+  44:../libopencm3/lib/stm32/f1/timer.c **** 			   enum tim_ic_pol pol)
+  45:../libopencm3/lib/stm32/f1/timer.c **** {
+  27              		.loc 1 45 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 0B46     		mov	r3, r1
+  41 000a FB70     		strb	r3, [r7, #3]
+  42 000c 1346     		mov	r3, r2
+  43 000e BB70     		strb	r3, [r7, #2]
+  46:../libopencm3/lib/stm32/f1/timer.c **** 	if (pol) {
+  44              		.loc 1 46 5
+  45 0010 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+  46 0012 002B     		cmp	r3, #0
+  47 0014 0DD0     		beq	.L2
+  47:../libopencm3/lib/stm32/f1/timer.c **** 		TIM_CCER(timer_peripheral) |= (0x2 << (ic * 4));
+  48              		.loc 1 47 30
+  49 0016 7B68     		ldr	r3, [r7, #4]
+  50 0018 2033     		adds	r3, r3, #32
+  51 001a 1B68     		ldr	r3, [r3]
+  52              		.loc 1 47 45
+  53 001c FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+  54 001e 9200     		lsls	r2, r2, #2
+  55              		.loc 1 47 38
+  56 0020 0221     		movs	r1, #2
+  57 0022 01FA02F2 		lsl	r2, r1, r2
+  58 0026 1146     		mov	r1, r2
+  59              		.loc 1 47 30
+  60 0028 7A68     		ldr	r2, [r7, #4]
+  61 002a 2032     		adds	r2, r2, #32
+  62 002c 0B43     		orrs	r3, r3, r1
+  63 002e 1360     		str	r3, [r2]
+  48:../libopencm3/lib/stm32/f1/timer.c **** 	} else {
+  49:../libopencm3/lib/stm32/f1/timer.c **** 		TIM_CCER(timer_peripheral) &= ~(0x2 << (ic * 4));
+  50:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  51:../libopencm3/lib/stm32/f1/timer.c **** }
+  64              		.loc 1 51 1
+  65 0030 0DE0     		b	.L4
+  66              	.L2:
+  49:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  67              		.loc 1 49 30
+  68 0032 7B68     		ldr	r3, [r7, #4]
+  69 0034 2033     		adds	r3, r3, #32
+  70 0036 1B68     		ldr	r3, [r3]
+  49:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  71              		.loc 1 49 46
+  72 0038 FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+  73 003a 9200     		lsls	r2, r2, #2
+  49:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  74              		.loc 1 49 39
+  75 003c 0221     		movs	r1, #2
+  76 003e 01FA02F2 		lsl	r2, r1, r2
+  49:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  77              		.loc 1 49 33
+  78 0042 D243     		mvns	r2, r2
+  79 0044 1146     		mov	r1, r2
+  49:../libopencm3/lib/stm32/f1/timer.c **** 	}
+  80              		.loc 1 49 30
+  81 0046 7A68     		ldr	r2, [r7, #4]
+  82 0048 2032     		adds	r2, r2, #32
+  83 004a 0B40     		ands	r3, r3, r1
+  84 004c 1360     		str	r3, [r2]
+  85              	.L4:
+  86              		.loc 1 51 1
+  87 004e 00BF     		nop
+  88 0050 0C37     		adds	r7, r7, #12
+  89              		.cfi_def_cfa_offset 4
+  90 0052 BD46     		mov	sp, r7
+  91              		.cfi_def_cfa_register 13
+  92              		@ sp needed
+  93 0054 80BC     		pop	{r7}
+  94              		.cfi_restore 7
+  95              		.cfi_def_cfa_offset 0
+  96 0056 7047     		bx	lr
+  97              		.cfi_endproc
+  98              	.LFE0:
+ 100              		.text
+ 101              	.Letext0:
+ 102              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 103              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 104              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/common/timer_
+ 105              		.file 5 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/timer.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 timer.c
+     /tmp/ccCOrFGb.s:16     .text.timer_ic_set_polarity:0000000000000000 $t
+     /tmp/ccCOrFGb.s:24     .text.timer_ic_set_polarity:0000000000000000 timer_ic_set_polarity
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.timer_common_all.h.38.0a1f642293b7899eb57e7a7f4569c40b
+
+NO UNDEFINED SYMBOLS

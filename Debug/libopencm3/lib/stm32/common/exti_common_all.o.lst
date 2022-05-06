@@ -1,0 +1,756 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"exti_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.exti_set_trigger,"ax",%progbits
+  16              		.align	1
+  17              		.global	exti_set_trigger
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	exti_set_trigger:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/exti_common_all.c"
+   1:../libopencm3/lib/stm32/common/exti_common_all.c **** /** @addtogroup exti_file EXTI peripheral API
+   2:../libopencm3/lib/stm32/common/exti_common_all.c ****  * @ingroup peripheral_apis
+   3:../libopencm3/lib/stm32/common/exti_common_all.c ****  */
+   4:../libopencm3/lib/stm32/common/exti_common_all.c **** /*
+   5:../libopencm3/lib/stm32/common/exti_common_all.c ****  * This file is part of the libopencm3 project.
+   6:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+   7:../libopencm3/lib/stm32/common/exti_common_all.c ****  * Copyright (C) 2010 Mark Butler <mbutler@physics.otago.ac.nz>
+   8:../libopencm3/lib/stm32/common/exti_common_all.c ****  * Copyright (C) 2012 Karl Palsson <karlp@tweak.net.au>
+   9:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+  10:../libopencm3/lib/stm32/common/exti_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+  11:../libopencm3/lib/stm32/common/exti_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  12:../libopencm3/lib/stm32/common/exti_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+  13:../libopencm3/lib/stm32/common/exti_common_all.c ****  * (at your option) any later version.
+  14:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+  15:../libopencm3/lib/stm32/common/exti_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  16:../libopencm3/lib/stm32/common/exti_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  17:../libopencm3/lib/stm32/common/exti_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  18:../libopencm3/lib/stm32/common/exti_common_all.c ****  * GNU Lesser General Public License for more details.
+  19:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+  20:../libopencm3/lib/stm32/common/exti_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  21:../libopencm3/lib/stm32/common/exti_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  22:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+  23:../libopencm3/lib/stm32/common/exti_common_all.c ****  * This provides the code for the "next gen" EXTI block provided in F2/F4/F7/L1
+  24:../libopencm3/lib/stm32/common/exti_common_all.c ****  * devices.  (differences only in the source selection)
+  25:../libopencm3/lib/stm32/common/exti_common_all.c ****  */
+  26:../libopencm3/lib/stm32/common/exti_common_all.c **** /**@{*/
+  27:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  28:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  29:../libopencm3/lib/stm32/common/exti_common_all.c **** #include <libopencm3/stm32/exti.h>
+  30:../libopencm3/lib/stm32/common/exti_common_all.c **** #include <libopencm3/stm32/gpio.h>
+  31:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  32:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(EXTI_EXTICR)
+  33:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_FIELDSIZE	EXTI_EXTICR_FIELDSIZE
+  34:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_REG(x)	EXTI_EXTICR(x)
+  35:../libopencm3/lib/stm32/common/exti_common_all.c **** #elif defined(AFIO_EXTICR)
+  36:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_FIELDSIZE	AFIO_EXTICR_FIELDSIZE
+  37:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_REG(x)	AFIO_EXTICR(x)
+  38:../libopencm3/lib/stm32/common/exti_common_all.c **** #else
+  39:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#include <libopencm3/stm32/syscfg.h>
+  40:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_FIELDSIZE	SYSCFG_EXTICR_FIELDSIZE
+  41:../libopencm3/lib/stm32/common/exti_common_all.c **** 	#define EXTICR_SELECTION_REG(x)	SYSCFG_EXTICR(x)
+  42:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+  43:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  44:../libopencm3/lib/stm32/common/exti_common_all.c **** void exti_set_trigger(uint32_t extis, enum exti_trigger_type trig)
+  45:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+  27              		.loc 1 45 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 83B0     		sub	sp, sp, #12
+  36              		.cfi_def_cfa_offset 16
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7860     		str	r0, [r7, #4]
+  40 0008 0B46     		mov	r3, r1
+  41 000a FB70     		strb	r3, [r7, #3]
+  46:../libopencm3/lib/stm32/common/exti_common_all.c **** 	switch (trig) {
+  42              		.loc 1 46 2
+  43 000c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+  44 000e 012B     		cmp	r3, #1
+  45 0010 11D0     		beq	.L2
+  46 0012 022B     		cmp	r3, #2
+  47 0014 1DD0     		beq	.L3
+  48 0016 002B     		cmp	r3, #0
+  49 0018 28D1     		bne	.L5
+  47:../libopencm3/lib/stm32/common/exti_common_all.c **** 	case EXTI_TRIGGER_RISING:
+  48:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_RTSR |= extis;
+  50              		.loc 1 48 13
+  51 001a 174B     		ldr	r3, .L6
+  52 001c 1A68     		ldr	r2, [r3]
+  53 001e 1649     		ldr	r1, .L6
+  54 0020 7B68     		ldr	r3, [r7, #4]
+  55 0022 1343     		orrs	r3, r3, r2
+  56 0024 0B60     		str	r3, [r1]
+  49:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_FTSR &= ~extis;
+  57              		.loc 1 49 13
+  58 0026 154B     		ldr	r3, .L6+4
+  59 0028 1A68     		ldr	r2, [r3]
+  60              		.loc 1 49 16
+  61 002a 7B68     		ldr	r3, [r7, #4]
+  62 002c DB43     		mvns	r3, r3
+  63              		.loc 1 49 13
+  64 002e 1349     		ldr	r1, .L6+4
+  65 0030 1340     		ands	r3, r3, r2
+  66 0032 0B60     		str	r3, [r1]
+  50:../libopencm3/lib/stm32/common/exti_common_all.c **** 		break;
+  67              		.loc 1 50 3
+  68 0034 1AE0     		b	.L4
+  69              	.L2:
+  51:../libopencm3/lib/stm32/common/exti_common_all.c **** 	case EXTI_TRIGGER_FALLING:
+  52:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_RTSR &= ~extis;
+  70              		.loc 1 52 13
+  71 0036 104B     		ldr	r3, .L6
+  72 0038 1A68     		ldr	r2, [r3]
+  73              		.loc 1 52 16
+  74 003a 7B68     		ldr	r3, [r7, #4]
+  75 003c DB43     		mvns	r3, r3
+  76              		.loc 1 52 13
+  77 003e 0E49     		ldr	r1, .L6
+  78 0040 1340     		ands	r3, r3, r2
+  79 0042 0B60     		str	r3, [r1]
+  53:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_FTSR |= extis;
+  80              		.loc 1 53 13
+  81 0044 0D4B     		ldr	r3, .L6+4
+  82 0046 1A68     		ldr	r2, [r3]
+  83 0048 0C49     		ldr	r1, .L6+4
+  84 004a 7B68     		ldr	r3, [r7, #4]
+  85 004c 1343     		orrs	r3, r3, r2
+  86 004e 0B60     		str	r3, [r1]
+  54:../libopencm3/lib/stm32/common/exti_common_all.c **** 		break;
+  87              		.loc 1 54 3
+  88 0050 0CE0     		b	.L4
+  89              	.L3:
+  55:../libopencm3/lib/stm32/common/exti_common_all.c **** 	case EXTI_TRIGGER_BOTH:
+  56:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_RTSR |= extis;
+  90              		.loc 1 56 13
+  91 0052 094B     		ldr	r3, .L6
+  92 0054 1A68     		ldr	r2, [r3]
+  93 0056 0849     		ldr	r1, .L6
+  94 0058 7B68     		ldr	r3, [r7, #4]
+  95 005a 1343     		orrs	r3, r3, r2
+  96 005c 0B60     		str	r3, [r1]
+  57:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTI_FTSR |= extis;
+  97              		.loc 1 57 13
+  98 005e 074B     		ldr	r3, .L6+4
+  99 0060 1A68     		ldr	r2, [r3]
+ 100 0062 0649     		ldr	r1, .L6+4
+ 101 0064 7B68     		ldr	r3, [r7, #4]
+ 102 0066 1343     		orrs	r3, r3, r2
+ 103 0068 0B60     		str	r3, [r1]
+  58:../libopencm3/lib/stm32/common/exti_common_all.c **** 		break;
+ 104              		.loc 1 58 3
+ 105 006a 00BF     		nop
+ 106              	.L4:
+ 107              	.L5:
+  59:../libopencm3/lib/stm32/common/exti_common_all.c **** 	}
+  60:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 108              		.loc 1 60 1
+ 109 006c 00BF     		nop
+ 110 006e 0C37     		adds	r7, r7, #12
+ 111              		.cfi_def_cfa_offset 4
+ 112 0070 BD46     		mov	sp, r7
+ 113              		.cfi_def_cfa_register 13
+ 114              		@ sp needed
+ 115 0072 80BC     		pop	{r7}
+ 116              		.cfi_restore 7
+ 117              		.cfi_def_cfa_offset 0
+ 118 0074 7047     		bx	lr
+ 119              	.L7:
+ 120 0076 00BF     		.align	2
+ 121              	.L6:
+ 122 0078 08040140 		.word	1073808392
+ 123 007c 0C040140 		.word	1073808396
+ 124              		.cfi_endproc
+ 125              	.LFE0:
+ 127              		.section	.text.exti_enable_request,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	exti_enable_request
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 133              		.fpu softvfp
+ 135              	exti_enable_request:
+ 136              	.LFB1:
+  61:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  62:../libopencm3/lib/stm32/common/exti_common_all.c **** void exti_enable_request(uint32_t extis)
+  63:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+ 137              		.loc 1 63 1
+ 138              		.cfi_startproc
+ 139              		@ args = 0, pretend = 0, frame = 8
+ 140              		@ frame_needed = 1, uses_anonymous_args = 0
+ 141              		@ link register save eliminated.
+ 142 0000 80B4     		push	{r7}
+ 143              		.cfi_def_cfa_offset 4
+ 144              		.cfi_offset 7, -4
+ 145 0002 83B0     		sub	sp, sp, #12
+ 146              		.cfi_def_cfa_offset 16
+ 147 0004 00AF     		add	r7, sp, #0
+ 148              		.cfi_def_cfa_register 7
+ 149 0006 7860     		str	r0, [r7, #4]
+  64:../libopencm3/lib/stm32/common/exti_common_all.c **** 	/* Enable interrupts. */
+  65:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_IMR |= extis;
+ 150              		.loc 1 65 11
+ 151 0008 084B     		ldr	r3, .L9
+ 152 000a 1A68     		ldr	r2, [r3]
+ 153 000c 0749     		ldr	r1, .L9
+ 154 000e 7B68     		ldr	r3, [r7, #4]
+ 155 0010 1343     		orrs	r3, r3, r2
+ 156 0012 0B60     		str	r3, [r1]
+  66:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  67:../libopencm3/lib/stm32/common/exti_common_all.c **** 	/* Enable events. */
+  68:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_EMR |= extis;
+ 157              		.loc 1 68 11
+ 158 0014 064B     		ldr	r3, .L9+4
+ 159 0016 1A68     		ldr	r2, [r3]
+ 160 0018 0549     		ldr	r1, .L9+4
+ 161 001a 7B68     		ldr	r3, [r7, #4]
+ 162 001c 1343     		orrs	r3, r3, r2
+ 163 001e 0B60     		str	r3, [r1]
+  69:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 164              		.loc 1 69 1
+ 165 0020 00BF     		nop
+ 166 0022 0C37     		adds	r7, r7, #12
+ 167              		.cfi_def_cfa_offset 4
+ 168 0024 BD46     		mov	sp, r7
+ 169              		.cfi_def_cfa_register 13
+ 170              		@ sp needed
+ 171 0026 80BC     		pop	{r7}
+ 172              		.cfi_restore 7
+ 173              		.cfi_def_cfa_offset 0
+ 174 0028 7047     		bx	lr
+ 175              	.L10:
+ 176 002a 00BF     		.align	2
+ 177              	.L9:
+ 178 002c 00040140 		.word	1073808384
+ 179 0030 04040140 		.word	1073808388
+ 180              		.cfi_endproc
+ 181              	.LFE1:
+ 183              		.section	.text.exti_disable_request,"ax",%progbits
+ 184              		.align	1
+ 185              		.global	exti_disable_request
+ 186              		.syntax unified
+ 187              		.thumb
+ 188              		.thumb_func
+ 189              		.fpu softvfp
+ 191              	exti_disable_request:
+ 192              	.LFB2:
+  70:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  71:../libopencm3/lib/stm32/common/exti_common_all.c **** void exti_disable_request(uint32_t extis)
+  72:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+ 193              		.loc 1 72 1
+ 194              		.cfi_startproc
+ 195              		@ args = 0, pretend = 0, frame = 8
+ 196              		@ frame_needed = 1, uses_anonymous_args = 0
+ 197              		@ link register save eliminated.
+ 198 0000 80B4     		push	{r7}
+ 199              		.cfi_def_cfa_offset 4
+ 200              		.cfi_offset 7, -4
+ 201 0002 83B0     		sub	sp, sp, #12
+ 202              		.cfi_def_cfa_offset 16
+ 203 0004 00AF     		add	r7, sp, #0
+ 204              		.cfi_def_cfa_register 7
+ 205 0006 7860     		str	r0, [r7, #4]
+  73:../libopencm3/lib/stm32/common/exti_common_all.c **** 	/* Disable interrupts. */
+  74:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_IMR &= ~extis;
+ 206              		.loc 1 74 11
+ 207 0008 094B     		ldr	r3, .L12
+ 208 000a 1A68     		ldr	r2, [r3]
+ 209              		.loc 1 74 14
+ 210 000c 7B68     		ldr	r3, [r7, #4]
+ 211 000e DB43     		mvns	r3, r3
+ 212              		.loc 1 74 11
+ 213 0010 0749     		ldr	r1, .L12
+ 214 0012 1340     		ands	r3, r3, r2
+ 215 0014 0B60     		str	r3, [r1]
+  75:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  76:../libopencm3/lib/stm32/common/exti_common_all.c **** 	/* Disable events. */
+  77:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_EMR &= ~extis;
+ 216              		.loc 1 77 11
+ 217 0016 074B     		ldr	r3, .L12+4
+ 218 0018 1A68     		ldr	r2, [r3]
+ 219              		.loc 1 77 14
+ 220 001a 7B68     		ldr	r3, [r7, #4]
+ 221 001c DB43     		mvns	r3, r3
+ 222              		.loc 1 77 11
+ 223 001e 0549     		ldr	r1, .L12+4
+ 224 0020 1340     		ands	r3, r3, r2
+ 225 0022 0B60     		str	r3, [r1]
+  78:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 226              		.loc 1 78 1
+ 227 0024 00BF     		nop
+ 228 0026 0C37     		adds	r7, r7, #12
+ 229              		.cfi_def_cfa_offset 4
+ 230 0028 BD46     		mov	sp, r7
+ 231              		.cfi_def_cfa_register 13
+ 232              		@ sp needed
+ 233 002a 80BC     		pop	{r7}
+ 234              		.cfi_restore 7
+ 235              		.cfi_def_cfa_offset 0
+ 236 002c 7047     		bx	lr
+ 237              	.L13:
+ 238 002e 00BF     		.align	2
+ 239              	.L12:
+ 240 0030 00040140 		.word	1073808384
+ 241 0034 04040140 		.word	1073808388
+ 242              		.cfi_endproc
+ 243              	.LFE2:
+ 245              		.section	.text.exti_reset_request,"ax",%progbits
+ 246              		.align	1
+ 247              		.global	exti_reset_request
+ 248              		.syntax unified
+ 249              		.thumb
+ 250              		.thumb_func
+ 251              		.fpu softvfp
+ 253              	exti_reset_request:
+ 254              	.LFB3:
+  79:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  80:../libopencm3/lib/stm32/common/exti_common_all.c **** /*
+  81:../libopencm3/lib/stm32/common/exti_common_all.c ****  * Reset the interrupt request by writing a 1 to the corresponding
+  82:../libopencm3/lib/stm32/common/exti_common_all.c ****  * pending bit register.
+  83:../libopencm3/lib/stm32/common/exti_common_all.c ****  */
+  84:../libopencm3/lib/stm32/common/exti_common_all.c **** void exti_reset_request(uint32_t extis)
+  85:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+ 255              		.loc 1 85 1
+ 256              		.cfi_startproc
+ 257              		@ args = 0, pretend = 0, frame = 8
+ 258              		@ frame_needed = 1, uses_anonymous_args = 0
+ 259              		@ link register save eliminated.
+ 260 0000 80B4     		push	{r7}
+ 261              		.cfi_def_cfa_offset 4
+ 262              		.cfi_offset 7, -4
+ 263 0002 83B0     		sub	sp, sp, #12
+ 264              		.cfi_def_cfa_offset 16
+ 265 0004 00AF     		add	r7, sp, #0
+ 266              		.cfi_def_cfa_register 7
+ 267 0006 7860     		str	r0, [r7, #4]
+  86:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(EXTI_RPR1) && defined(EXTI_FPR1)
+  87:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_RPR1 = extis;
+  88:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_FPR1 = extis;
+  89:../libopencm3/lib/stm32/common/exti_common_all.c **** #else
+  90:../libopencm3/lib/stm32/common/exti_common_all.c **** 	EXTI_PR = extis;
+ 268              		.loc 1 90 2
+ 269 0008 034A     		ldr	r2, .L15
+ 270              		.loc 1 90 10
+ 271 000a 7B68     		ldr	r3, [r7, #4]
+ 272 000c 1360     		str	r3, [r2]
+  91:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+  92:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 273              		.loc 1 92 1
+ 274 000e 00BF     		nop
+ 275 0010 0C37     		adds	r7, r7, #12
+ 276              		.cfi_def_cfa_offset 4
+ 277 0012 BD46     		mov	sp, r7
+ 278              		.cfi_def_cfa_register 13
+ 279              		@ sp needed
+ 280 0014 80BC     		pop	{r7}
+ 281              		.cfi_restore 7
+ 282              		.cfi_def_cfa_offset 0
+ 283 0016 7047     		bx	lr
+ 284              	.L16:
+ 285              		.align	2
+ 286              	.L15:
+ 287 0018 14040140 		.word	1073808404
+ 288              		.cfi_endproc
+ 289              	.LFE3:
+ 291              		.section	.text.exti_get_flag_status,"ax",%progbits
+ 292              		.align	1
+ 293              		.global	exti_get_flag_status
+ 294              		.syntax unified
+ 295              		.thumb
+ 296              		.thumb_func
+ 297              		.fpu softvfp
+ 299              	exti_get_flag_status:
+ 300              	.LFB4:
+  93:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+  94:../libopencm3/lib/stm32/common/exti_common_all.c **** /*
+  95:../libopencm3/lib/stm32/common/exti_common_all.c ****  * Check the flag of a given EXTI interrupt.
+  96:../libopencm3/lib/stm32/common/exti_common_all.c ****  * */
+  97:../libopencm3/lib/stm32/common/exti_common_all.c **** uint32_t exti_get_flag_status(uint32_t exti)
+  98:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+ 301              		.loc 1 98 1
+ 302              		.cfi_startproc
+ 303              		@ args = 0, pretend = 0, frame = 8
+ 304              		@ frame_needed = 1, uses_anonymous_args = 0
+ 305              		@ link register save eliminated.
+ 306 0000 80B4     		push	{r7}
+ 307              		.cfi_def_cfa_offset 4
+ 308              		.cfi_offset 7, -4
+ 309 0002 83B0     		sub	sp, sp, #12
+ 310              		.cfi_def_cfa_offset 16
+ 311 0004 00AF     		add	r7, sp, #0
+ 312              		.cfi_def_cfa_register 7
+ 313 0006 7860     		str	r0, [r7, #4]
+  99:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(EXTI_RPR1) && defined(EXTI_FPR1)
+ 100:../libopencm3/lib/stm32/common/exti_common_all.c **** 	return (EXTI_RPR1 & exti) | (EXTI_FPR1 & exti);
+ 101:../libopencm3/lib/stm32/common/exti_common_all.c **** #else
+ 102:../libopencm3/lib/stm32/common/exti_common_all.c **** 	return EXTI_PR & exti;
+ 314              		.loc 1 102 9
+ 315 0008 044B     		ldr	r3, .L19
+ 316 000a 1A68     		ldr	r2, [r3]
+ 317              		.loc 1 102 17
+ 318 000c 7B68     		ldr	r3, [r7, #4]
+ 319 000e 1340     		ands	r3, r3, r2
+ 103:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 104:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 320              		.loc 1 104 1
+ 321 0010 1846     		mov	r0, r3
+ 322 0012 0C37     		adds	r7, r7, #12
+ 323              		.cfi_def_cfa_offset 4
+ 324 0014 BD46     		mov	sp, r7
+ 325              		.cfi_def_cfa_register 13
+ 326              		@ sp needed
+ 327 0016 80BC     		pop	{r7}
+ 328              		.cfi_restore 7
+ 329              		.cfi_def_cfa_offset 0
+ 330 0018 7047     		bx	lr
+ 331              	.L20:
+ 332 001a 00BF     		.align	2
+ 333              	.L19:
+ 334 001c 14040140 		.word	1073808404
+ 335              		.cfi_endproc
+ 336              	.LFE4:
+ 338              		.section	.text.exti_select_source,"ax",%progbits
+ 339              		.align	1
+ 340              		.global	exti_select_source
+ 341              		.syntax unified
+ 342              		.thumb
+ 343              		.thumb_func
+ 344              		.fpu softvfp
+ 346              	exti_select_source:
+ 347              	.LFB5:
+ 105:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+ 106:../libopencm3/lib/stm32/common/exti_common_all.c **** /*
+ 107:../libopencm3/lib/stm32/common/exti_common_all.c ****  * Remap an external interrupt line to the corresponding pin on the
+ 108:../libopencm3/lib/stm32/common/exti_common_all.c ****  * specified GPIO port.
+ 109:../libopencm3/lib/stm32/common/exti_common_all.c ****  *
+ 110:../libopencm3/lib/stm32/common/exti_common_all.c ****  * TODO: This could be rewritten in fewer lines of code.
+ 111:../libopencm3/lib/stm32/common/exti_common_all.c ****  */
+ 112:../libopencm3/lib/stm32/common/exti_common_all.c **** void exti_select_source(uint32_t exti, uint32_t gpioport)
+ 113:../libopencm3/lib/stm32/common/exti_common_all.c **** {
+ 348              		.loc 1 113 1
+ 349              		.cfi_startproc
+ 350              		@ args = 0, pretend = 0, frame = 32
+ 351              		@ frame_needed = 1, uses_anonymous_args = 0
+ 352              		@ link register save eliminated.
+ 353 0000 80B4     		push	{r7}
+ 354              		.cfi_def_cfa_offset 4
+ 355              		.cfi_offset 7, -4
+ 356 0002 89B0     		sub	sp, sp, #36
+ 357              		.cfi_def_cfa_offset 40
+ 358 0004 00AF     		add	r7, sp, #0
+ 359              		.cfi_def_cfa_register 7
+ 360 0006 7860     		str	r0, [r7, #4]
+ 361 0008 3960     		str	r1, [r7]
+ 114:../libopencm3/lib/stm32/common/exti_common_all.c **** 	uint32_t line;
+ 115:../libopencm3/lib/stm32/common/exti_common_all.c **** 	for (line = 0; line < 16; line++) {
+ 362              		.loc 1 115 12
+ 363 000a 0023     		movs	r3, #0
+ 364 000c FB61     		str	r3, [r7, #28]
+ 365              		.loc 1 115 2
+ 366 000e 69E0     		b	.L22
+ 367              	.L34:
+ 368              	.LBB2:
+ 116:../libopencm3/lib/stm32/common/exti_common_all.c **** 		if (!(exti & (1 << line))) {
+ 369              		.loc 1 116 19
+ 370 0010 0122     		movs	r2, #1
+ 371 0012 FB69     		ldr	r3, [r7, #28]
+ 372 0014 02FA03F3 		lsl	r3, r2, r3
+ 373 0018 1A46     		mov	r2, r3
+ 374              		.loc 1 116 14
+ 375 001a 7B68     		ldr	r3, [r7, #4]
+ 376 001c 1340     		ands	r3, r3, r2
+ 377              		.loc 1 116 6
+ 378 001e 002B     		cmp	r3, #0
+ 379 0020 5CD0     		beq	.L35
+ 117:../libopencm3/lib/stm32/common/exti_common_all.c **** 			continue;
+ 118:../libopencm3/lib/stm32/common/exti_common_all.c **** 		}
+ 119:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+ 120:../libopencm3/lib/stm32/common/exti_common_all.c **** 		uint32_t bits = 0;
+ 380              		.loc 1 120 12
+ 381 0022 0023     		movs	r3, #0
+ 382 0024 BB61     		str	r3, [r7, #24]
+ 121:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+ 122:../libopencm3/lib/stm32/common/exti_common_all.c **** 		switch (gpioport) {
+ 383              		.loc 1 122 3
+ 384 0026 3B68     		ldr	r3, [r7]
+ 385 0028 324A     		ldr	r2, .L36
+ 386 002a 9342     		cmp	r3, r2
+ 387 002c 26D0     		beq	.L25
+ 388 002e 3B68     		ldr	r3, [r7]
+ 389 0030 304A     		ldr	r2, .L36
+ 390 0032 9342     		cmp	r3, r2
+ 391 0034 0CD8     		bhi	.L26
+ 392 0036 3B68     		ldr	r3, [r7]
+ 393 0038 2F4A     		ldr	r2, .L36+4
+ 394 003a 9342     		cmp	r3, r2
+ 395 003c 18D0     		beq	.L27
+ 396 003e 3B68     		ldr	r3, [r7]
+ 397 0040 2E4A     		ldr	r2, .L36+8
+ 398 0042 9342     		cmp	r3, r2
+ 399 0044 17D0     		beq	.L28
+ 400 0046 3B68     		ldr	r3, [r7]
+ 401 0048 2D4A     		ldr	r2, .L36+12
+ 402 004a 9342     		cmp	r3, r2
+ 403 004c 0DD0     		beq	.L29
+ 404 004e 21E0     		b	.L30
+ 405              	.L26:
+ 406 0050 3B68     		ldr	r3, [r7]
+ 407 0052 2C4A     		ldr	r2, .L36+16
+ 408 0054 9342     		cmp	r3, r2
+ 409 0056 17D0     		beq	.L31
+ 410 0058 3B68     		ldr	r3, [r7]
+ 411 005a 2B4A     		ldr	r2, .L36+20
+ 412 005c 9342     		cmp	r3, r2
+ 413 005e 16D0     		beq	.L32
+ 414 0060 3B68     		ldr	r3, [r7]
+ 415 0062 2A4A     		ldr	r2, .L36+24
+ 416 0064 9342     		cmp	r3, r2
+ 417 0066 0CD0     		beq	.L33
+ 418 0068 14E0     		b	.L30
+ 419              	.L29:
+ 123:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOA:
+ 124:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 0;
+ 420              		.loc 1 124 9
+ 421 006a 0023     		movs	r3, #0
+ 422 006c BB61     		str	r3, [r7, #24]
+ 125:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 423              		.loc 1 125 4
+ 424 006e 11E0     		b	.L30
+ 425              	.L27:
+ 126:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOB:
+ 127:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 1;
+ 426              		.loc 1 127 9
+ 427 0070 0123     		movs	r3, #1
+ 428 0072 BB61     		str	r3, [r7, #24]
+ 128:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 429              		.loc 1 128 4
+ 430 0074 0EE0     		b	.L30
+ 431              	.L28:
+ 129:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOC:
+ 130:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 2;
+ 432              		.loc 1 130 9
+ 433 0076 0223     		movs	r3, #2
+ 434 0078 BB61     		str	r3, [r7, #24]
+ 131:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 435              		.loc 1 131 4
+ 436 007a 0BE0     		b	.L30
+ 437              	.L25:
+ 132:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOD:
+ 133:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 3;
+ 438              		.loc 1 133 9
+ 439 007c 0323     		movs	r3, #3
+ 440 007e BB61     		str	r3, [r7, #24]
+ 134:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 441              		.loc 1 134 4
+ 442 0080 08E0     		b	.L30
+ 443              	.L33:
+ 135:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOE) && defined(GPIO_PORT_E_BASE)
+ 136:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOE:
+ 137:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 4;
+ 444              		.loc 1 137 9
+ 445 0082 0423     		movs	r3, #4
+ 446 0084 BB61     		str	r3, [r7, #24]
+ 138:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 447              		.loc 1 138 4
+ 448 0086 05E0     		b	.L30
+ 449              	.L31:
+ 139:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 140:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOF) && defined(GPIO_PORT_F_BASE)
+ 141:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOF:
+ 142:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 5;
+ 450              		.loc 1 142 9
+ 451 0088 0523     		movs	r3, #5
+ 452 008a BB61     		str	r3, [r7, #24]
+ 143:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 453              		.loc 1 143 4
+ 454 008c 02E0     		b	.L30
+ 455              	.L32:
+ 144:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 145:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOG) && defined(GPIO_PORT_G_BASE)
+ 146:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOG:
+ 147:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 6;
+ 456              		.loc 1 147 9
+ 457 008e 0623     		movs	r3, #6
+ 458 0090 BB61     		str	r3, [r7, #24]
+ 148:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 459              		.loc 1 148 4
+ 460 0092 00BF     		nop
+ 461              	.L30:
+ 149:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 150:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOH) && defined(GPIO_PORT_H_BASE)
+ 151:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOH:
+ 152:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 7;
+ 153:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 154:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 155:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOI) && defined(GPIO_PORT_I_BASE)
+ 156:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOI:
+ 157:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 8;
+ 158:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 159:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 160:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOJ) && defined(GPIO_PORT_J_BASE)
+ 161:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOJ:
+ 162:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 9;
+ 163:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 164:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 165:../libopencm3/lib/stm32/common/exti_common_all.c **** #if defined(GPIOK) && defined(GPIO_PORT_K_BASE)
+ 166:../libopencm3/lib/stm32/common/exti_common_all.c **** 		case GPIOK:
+ 167:../libopencm3/lib/stm32/common/exti_common_all.c **** 			bits = 10;
+ 168:../libopencm3/lib/stm32/common/exti_common_all.c **** 			break;
+ 169:../libopencm3/lib/stm32/common/exti_common_all.c **** #endif
+ 170:../libopencm3/lib/stm32/common/exti_common_all.c **** 		}
+ 171:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+ 172:../libopencm3/lib/stm32/common/exti_common_all.c **** 		uint8_t shift = (uint8_t)(EXTICR_SELECTION_FIELDSIZE * (line % 4));
+ 462              		.loc 1 172 19
+ 463 0094 FB69     		ldr	r3, [r7, #28]
+ 464 0096 DBB2     		uxtb	r3, r3
+ 465 0098 03F00303 		and	r3, r3, #3
+ 466 009c DBB2     		uxtb	r3, r3
+ 467              		.loc 1 172 11
+ 468 009e 9B00     		lsls	r3, r3, #2
+ 469 00a0 FB75     		strb	r3, [r7, #23]
+ 173:../libopencm3/lib/stm32/common/exti_common_all.c **** 		uint32_t mask = ((1 << EXTICR_SELECTION_FIELDSIZE) - 1) << shift;
+ 470              		.loc 1 173 59
+ 471 00a2 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 472 00a4 0F22     		movs	r2, #15
+ 473 00a6 02FA03F3 		lsl	r3, r2, r3
+ 474              		.loc 1 173 12
+ 475 00aa 3B61     		str	r3, [r7, #16]
+ 174:../libopencm3/lib/stm32/common/exti_common_all.c **** 		uint32_t reg = line / 4;
+ 476              		.loc 1 174 12
+ 477 00ac FB69     		ldr	r3, [r7, #28]
+ 478 00ae 9B08     		lsrs	r3, r3, #2
+ 479 00b0 FB60     		str	r3, [r7, #12]
+ 175:../libopencm3/lib/stm32/common/exti_common_all.c **** 
+ 176:../libopencm3/lib/stm32/common/exti_common_all.c **** 		EXTICR_SELECTION_REG(reg) = (EXTICR_SELECTION_REG(reg) & ~mask) | (bits << shift);
+ 480              		.loc 1 176 32
+ 481 00b2 FA68     		ldr	r2, [r7, #12]
+ 482 00b4 164B     		ldr	r3, .L36+28
+ 483 00b6 1344     		add	r3, r3, r2
+ 484 00b8 9B00     		lsls	r3, r3, #2
+ 485 00ba 1A68     		ldr	r2, [r3]
+ 486              		.loc 1 176 60
+ 487 00bc 3B69     		ldr	r3, [r7, #16]
+ 488 00be DB43     		mvns	r3, r3
+ 489              		.loc 1 176 58
+ 490 00c0 02EA0301 		and	r1, r2, r3
+ 491              		.loc 1 176 75
+ 492 00c4 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 493 00c6 BA69     		ldr	r2, [r7, #24]
+ 494 00c8 9A40     		lsls	r2, r2, r3
+ 495              		.loc 1 176 3
+ 496 00ca F868     		ldr	r0, [r7, #12]
+ 497 00cc 104B     		ldr	r3, .L36+28
+ 498 00ce 0344     		add	r3, r3, r0
+ 499 00d0 9B00     		lsls	r3, r3, #2
+ 500 00d2 1846     		mov	r0, r3
+ 501              		.loc 1 176 67
+ 502 00d4 41EA0203 		orr	r3, r1, r2
+ 503              		.loc 1 176 29
+ 504 00d8 0360     		str	r3, [r0]
+ 505 00da 00E0     		b	.L24
+ 506              	.L35:
+ 117:../libopencm3/lib/stm32/common/exti_common_all.c **** 		}
+ 507              		.loc 1 117 4
+ 508 00dc 00BF     		nop
+ 509              	.L24:
+ 510              	.LBE2:
+ 115:../libopencm3/lib/stm32/common/exti_common_all.c **** 		if (!(exti & (1 << line))) {
+ 511              		.loc 1 115 32 discriminator 2
+ 512 00de FB69     		ldr	r3, [r7, #28]
+ 513 00e0 0133     		adds	r3, r3, #1
+ 514 00e2 FB61     		str	r3, [r7, #28]
+ 515              	.L22:
+ 115:../libopencm3/lib/stm32/common/exti_common_all.c **** 		if (!(exti & (1 << line))) {
+ 516              		.loc 1 115 2 discriminator 1
+ 517 00e4 FB69     		ldr	r3, [r7, #28]
+ 518 00e6 0F2B     		cmp	r3, #15
+ 519 00e8 92D9     		bls	.L34
+ 177:../libopencm3/lib/stm32/common/exti_common_all.c **** 	};
+ 178:../libopencm3/lib/stm32/common/exti_common_all.c **** }
+ 520              		.loc 1 178 1
+ 521 00ea 00BF     		nop
+ 522 00ec 2437     		adds	r7, r7, #36
+ 523              		.cfi_def_cfa_offset 4
+ 524 00ee BD46     		mov	sp, r7
+ 525              		.cfi_def_cfa_register 13
+ 526              		@ sp needed
+ 527 00f0 80BC     		pop	{r7}
+ 528              		.cfi_restore 7
+ 529              		.cfi_def_cfa_offset 0
+ 530 00f2 7047     		bx	lr
+ 531              	.L37:
+ 532              		.align	2
+ 533              	.L36:
+ 534 00f4 00140140 		.word	1073812480
+ 535 00f8 000C0140 		.word	1073810432
+ 536 00fc 00100140 		.word	1073811456
+ 537 0100 00080140 		.word	1073809408
+ 538 0104 001C0140 		.word	1073814528
+ 539 0108 00200140 		.word	1073815552
+ 540 010c 00180140 		.word	1073813504
+ 541 0110 02400010 		.word	268451842
+ 542              		.cfi_endproc
+ 543              	.LFE5:
+ 545              		.text
+ 546              	.Letext0:
+ 547              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 548              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 549              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/common/exti_c
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 exti_common_all.c
+     /tmp/ccBOKf0Y.s:16     .text.exti_set_trigger:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:24     .text.exti_set_trigger:0000000000000000 exti_set_trigger
+     /tmp/ccBOKf0Y.s:122    .text.exti_set_trigger:0000000000000078 $d
+     /tmp/ccBOKf0Y.s:128    .text.exti_enable_request:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:135    .text.exti_enable_request:0000000000000000 exti_enable_request
+     /tmp/ccBOKf0Y.s:178    .text.exti_enable_request:000000000000002c $d
+     /tmp/ccBOKf0Y.s:184    .text.exti_disable_request:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:191    .text.exti_disable_request:0000000000000000 exti_disable_request
+     /tmp/ccBOKf0Y.s:240    .text.exti_disable_request:0000000000000030 $d
+     /tmp/ccBOKf0Y.s:246    .text.exti_reset_request:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:253    .text.exti_reset_request:0000000000000000 exti_reset_request
+     /tmp/ccBOKf0Y.s:287    .text.exti_reset_request:0000000000000018 $d
+     /tmp/ccBOKf0Y.s:292    .text.exti_get_flag_status:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:299    .text.exti_get_flag_status:0000000000000000 exti_get_flag_status
+     /tmp/ccBOKf0Y.s:334    .text.exti_get_flag_status:000000000000001c $d
+     /tmp/ccBOKf0Y.s:339    .text.exti_select_source:0000000000000000 $t
+     /tmp/ccBOKf0Y.s:346    .text.exti_select_source:0000000000000000 exti_select_source
+     /tmp/ccBOKf0Y.s:534    .text.exti_select_source:00000000000000f4 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.exti_common_all.h.29.0c2e2fc3a4fa73c9d031cf0c9c76f7e0
+                           .group:0000000000000000 wm4.exti_common_v1.h.32.43696415ba411f20ec0e3d65f2d54271
+                           .group:0000000000000000 wm4.gpio_common_all.h.37.fedbbcb9179f773c905aa3c3e4b7dbdd
+                           .group:0000000000000000 wm4.gpio.h.49.d09d289f6b7cafdf34d45f4623a2b0fb
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,247 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"scb.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.scb_reset_core,"ax",%progbits
+  16              		.align	1
+  17              		.global	scb_reset_core
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	scb_reset_core:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/cm3/scb.c"
+   1:../libopencm3/lib/cm3/scb.c **** /** @defgroup CM3_scb_file SCB
+   2:../libopencm3/lib/cm3/scb.c ****  *
+   3:../libopencm3/lib/cm3/scb.c ****  * @ingroup CM3_files
+   4:../libopencm3/lib/cm3/scb.c ****  *
+   5:../libopencm3/lib/cm3/scb.c ****  * @brief <b>libopencm3 Cortex-M System Control Block</b>
+   6:../libopencm3/lib/cm3/scb.c ****  *
+   7:../libopencm3/lib/cm3/scb.c ****  * The System Control Block (SCB) is a section of the System Control Space
+   8:../libopencm3/lib/cm3/scb.c ****  * which provides status information and control features for the processor core.
+   9:../libopencm3/lib/cm3/scb.c ****  * It allows, amongst other:
+  10:../libopencm3/lib/cm3/scb.c ****  * * software reset control
+  11:../libopencm3/lib/cm3/scb.c ****  * * exception management and grouping
+  12:../libopencm3/lib/cm3/scb.c ****  * * fault information
+  13:../libopencm3/lib/cm3/scb.c ****  * * power management
+  14:../libopencm3/lib/cm3/scb.c ****  * * debug status information
+  15:../libopencm3/lib/cm3/scb.c ****  *
+  16:../libopencm3/lib/cm3/scb.c ****  * @see ARMv7m Architecture Reference Manual (Chapter B3.2.1 About the SCB)
+  17:../libopencm3/lib/cm3/scb.c ****  *
+  18:../libopencm3/lib/cm3/scb.c ****  * LGPL License Terms @ref lgpl_license
+  19:../libopencm3/lib/cm3/scb.c ****  * @{
+  20:../libopencm3/lib/cm3/scb.c ****  */
+  21:../libopencm3/lib/cm3/scb.c **** /*
+  22:../libopencm3/lib/cm3/scb.c ****  * This file is part of the libopencm3 project.
+  23:../libopencm3/lib/cm3/scb.c ****  *
+  24:../libopencm3/lib/cm3/scb.c ****  * Copyright (C) 2010 Gareth McMullin <gareth@blacksphere.co.nz>
+  25:../libopencm3/lib/cm3/scb.c ****  *
+  26:../libopencm3/lib/cm3/scb.c ****  * This library is free software: you can redistribute it and/or modify
+  27:../libopencm3/lib/cm3/scb.c ****  * it under the terms of the GNU Lesser General Public License as published by
+  28:../libopencm3/lib/cm3/scb.c ****  * the Free Software Foundation, either version 3 of the License, or
+  29:../libopencm3/lib/cm3/scb.c ****  * (at your option) any later version.
+  30:../libopencm3/lib/cm3/scb.c ****  *
+  31:../libopencm3/lib/cm3/scb.c ****  * This library is distributed in the hope that it will be useful,
+  32:../libopencm3/lib/cm3/scb.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  33:../libopencm3/lib/cm3/scb.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  34:../libopencm3/lib/cm3/scb.c ****  * GNU Lesser General Public License for more details.
+  35:../libopencm3/lib/cm3/scb.c ****  *
+  36:../libopencm3/lib/cm3/scb.c ****  * You should have received a copy of the GNU Lesser General Public License
+  37:../libopencm3/lib/cm3/scb.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  38:../libopencm3/lib/cm3/scb.c ****  */
+  39:../libopencm3/lib/cm3/scb.c **** 
+  40:../libopencm3/lib/cm3/scb.c **** #include <stdlib.h>
+  41:../libopencm3/lib/cm3/scb.c **** 
+  42:../libopencm3/lib/cm3/scb.c **** #include <libopencm3/cm3/scb.h>
+  43:../libopencm3/lib/cm3/scb.c **** 
+  44:../libopencm3/lib/cm3/scb.c **** /* Those are defined only on CM3 or CM4 */
+  45:../libopencm3/lib/cm3/scb.c **** #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+  46:../libopencm3/lib/cm3/scb.c **** void scb_reset_core(void)
+  47:../libopencm3/lib/cm3/scb.c **** {
+  27              		.loc 1 47 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  48:../libopencm3/lib/cm3/scb.c **** 	SCB_AIRCR = SCB_AIRCR_VECTKEY | SCB_AIRCR_VECTRESET;
+  37              		.loc 1 48 2
+  38 0004 014B     		ldr	r3, .L3
+  39              		.loc 1 48 12
+  40 0006 024A     		ldr	r2, .L3+4
+  41 0008 1A60     		str	r2, [r3]
+  42              	.L2:
+  49:../libopencm3/lib/cm3/scb.c **** 
+  50:../libopencm3/lib/cm3/scb.c **** 	while (1);
+  43              		.loc 1 50 8 discriminator 1
+  44 000a FEE7     		b	.L2
+  45              	.L4:
+  46              		.align	2
+  47              	.L3:
+  48 000c 0CED00E0 		.word	-536810228
+  49 0010 0100FA05 		.word	100270081
+  50              		.cfi_endproc
+  51              	.LFE0:
+  53              		.section	.text.scb_reset_system,"ax",%progbits
+  54              		.align	1
+  55              		.global	scb_reset_system
+  56              		.syntax unified
+  57              		.thumb
+  58              		.thumb_func
+  59              		.fpu softvfp
+  61              	scb_reset_system:
+  62              	.LFB1:
+  51:../libopencm3/lib/cm3/scb.c **** }
+  52:../libopencm3/lib/cm3/scb.c **** #endif
+  53:../libopencm3/lib/cm3/scb.c **** 
+  54:../libopencm3/lib/cm3/scb.c **** void scb_reset_system(void)
+  55:../libopencm3/lib/cm3/scb.c **** {
+  63              		.loc 1 55 1
+  64              		.cfi_startproc
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 1, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+  68 0000 80B4     		push	{r7}
+  69              		.cfi_def_cfa_offset 4
+  70              		.cfi_offset 7, -4
+  71 0002 00AF     		add	r7, sp, #0
+  72              		.cfi_def_cfa_register 7
+  56:../libopencm3/lib/cm3/scb.c **** 	SCB_AIRCR = SCB_AIRCR_VECTKEY | SCB_AIRCR_SYSRESETREQ;
+  73              		.loc 1 56 2
+  74 0004 014B     		ldr	r3, .L7
+  75              		.loc 1 56 12
+  76 0006 024A     		ldr	r2, .L7+4
+  77 0008 1A60     		str	r2, [r3]
+  78              	.L6:
+  57:../libopencm3/lib/cm3/scb.c **** 
+  58:../libopencm3/lib/cm3/scb.c **** 	while (1);
+  79              		.loc 1 58 8 discriminator 1
+  80 000a FEE7     		b	.L6
+  81              	.L8:
+  82              		.align	2
+  83              	.L7:
+  84 000c 0CED00E0 		.word	-536810228
+  85 0010 0400FA05 		.word	100270084
+  86              		.cfi_endproc
+  87              	.LFE1:
+  89              		.section	.text.scb_set_priority_grouping,"ax",%progbits
+  90              		.align	1
+  91              		.global	scb_set_priority_grouping
+  92              		.syntax unified
+  93              		.thumb
+  94              		.thumb_func
+  95              		.fpu softvfp
+  97              	scb_set_priority_grouping:
+  98              	.LFB2:
+  59:../libopencm3/lib/cm3/scb.c **** }
+  60:../libopencm3/lib/cm3/scb.c **** 
+  61:../libopencm3/lib/cm3/scb.c **** /* Those are defined only on CM3 or CM4 */
+  62:../libopencm3/lib/cm3/scb.c **** #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+  63:../libopencm3/lib/cm3/scb.c **** void scb_set_priority_grouping(uint32_t prigroup)
+  64:../libopencm3/lib/cm3/scb.c **** {
+  99              		.loc 1 64 1
+ 100              		.cfi_startproc
+ 101              		@ args = 0, pretend = 0, frame = 8
+ 102              		@ frame_needed = 1, uses_anonymous_args = 0
+ 103              		@ link register save eliminated.
+ 104 0000 80B4     		push	{r7}
+ 105              		.cfi_def_cfa_offset 4
+ 106              		.cfi_offset 7, -4
+ 107 0002 83B0     		sub	sp, sp, #12
+ 108              		.cfi_def_cfa_offset 16
+ 109 0004 00AF     		add	r7, sp, #0
+ 110              		.cfi_def_cfa_register 7
+ 111 0006 7860     		str	r0, [r7, #4]
+  65:../libopencm3/lib/cm3/scb.c **** 	SCB_AIRCR = SCB_AIRCR_VECTKEY | prigroup;
+ 112              		.loc 1 65 2
+ 113 0008 054A     		ldr	r2, .L10
+ 114              		.loc 1 65 32
+ 115 000a 7B68     		ldr	r3, [r7, #4]
+ 116 000c 43F0BF63 		orr	r3, r3, #100139008
+ 117 0010 43F40033 		orr	r3, r3, #131072
+ 118              		.loc 1 65 12
+ 119 0014 1360     		str	r3, [r2]
+  66:../libopencm3/lib/cm3/scb.c **** }
+ 120              		.loc 1 66 1
+ 121 0016 00BF     		nop
+ 122 0018 0C37     		adds	r7, r7, #12
+ 123              		.cfi_def_cfa_offset 4
+ 124 001a BD46     		mov	sp, r7
+ 125              		.cfi_def_cfa_register 13
+ 126              		@ sp needed
+ 127 001c 80BC     		pop	{r7}
+ 128              		.cfi_restore 7
+ 129              		.cfi_def_cfa_offset 0
+ 130 001e 7047     		bx	lr
+ 131              	.L11:
+ 132              		.align	2
+ 133              	.L10:
+ 134 0020 0CED00E0 		.word	-536810228
+ 135              		.cfi_endproc
+ 136              	.LFE2:
+ 138              		.text
+ 139              	.Letext0:
+ 140              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 141              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 142              		.file 4 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_types.h"
+ 143              		.file 5 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/reent.h"
+ 144              		.file 6 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/lock.h"
+ 145              		.file 7 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/stdlib.h"
+ 146              		.file 8 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 scb.c
+     /tmp/ccsTg74U.s:16     .text.scb_reset_core:0000000000000000 $t
+     /tmp/ccsTg74U.s:24     .text.scb_reset_core:0000000000000000 scb_reset_core
+     /tmp/ccsTg74U.s:48     .text.scb_reset_core:000000000000000c $d
+     /tmp/ccsTg74U.s:54     .text.scb_reset_system:0000000000000000 $t
+     /tmp/ccsTg74U.s:61     .text.scb_reset_system:0000000000000000 scb_reset_system
+     /tmp/ccsTg74U.s:84     .text.scb_reset_system:000000000000000c $d
+     /tmp/ccsTg74U.s:90     .text.scb_set_priority_grouping:0000000000000000 $t
+     /tmp/ccsTg74U.s:97     .text.scb_set_priority_grouping:0000000000000000 scb_set_priority_grouping
+     /tmp/ccsTg74U.s:134    .text.scb_set_priority_grouping:0000000000000020 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac
+                           .group:0000000000000000 wm4.features.h.22.fad1cec3bc7ff06488171438dbdcfd02
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stdlib.h.13.4ed386f5c1a80d71e72172885d946ef2
+                           .group:0000000000000000 wm4.stddef.h.187.e1c83cba2098ce92b68f6311de19e6b1
+                           .group:0000000000000000 wm4.stddef.h.39.57db33e786ccd422e31be63a26e19309
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.161.5349cb105733e8777bfb0cf53c4e3f34
+                           .group:0000000000000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.cdefs.h.49.6260d97adb8d27534cbdc0f868b8ea87
+                           .group:0000000000000000 wm4.alloca.h.8.dfc0c703c47ec3e69746825b17d9e66d
+                           .group:0000000000000000 wm4.stdlib.h.56.f4862cfbf4363a1db01842d5bdf72c18
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.scb.h.43.8b4f1f26a2f656642be580b6ecb65fcd
+
+NO UNDEFINED SYMBOLS

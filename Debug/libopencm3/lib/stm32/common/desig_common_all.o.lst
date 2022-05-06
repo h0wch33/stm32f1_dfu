@@ -1,0 +1,409 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"desig_common_all.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.rodata
+  16              		.align	2
+  17              	.LC0:
+  18 0000 30313233 		.ascii	"0123456789ABCDEF\000"
+  18      34353637 
+  18      38394142 
+  18      43444546 
+  18      00
+  19              		.section	.text.desig_get_unique_id_as_string,"ax",%progbits
+  20              		.align	1
+  21              		.global	desig_get_unique_id_as_string
+  22              		.arch armv7-m
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  26              		.fpu softvfp
+  28              	desig_get_unique_id_as_string:
+  29              	.LFB0:
+  30              		.file 1 "../libopencm3/lib/stm32/common/desig_common_all.c"
+   1:../libopencm3/lib/stm32/common/desig_common_all.c **** /*
+   2:../libopencm3/lib/stm32/common/desig_common_all.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/stm32/common/desig_common_all.c ****  *
+   4:../libopencm3/lib/stm32/common/desig_common_all.c ****  * Copyright (C) 2012 Karl Palsson <karlp@ŧweak.net.au>
+   5:../libopencm3/lib/stm32/common/desig_common_all.c ****  *
+   6:../libopencm3/lib/stm32/common/desig_common_all.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../libopencm3/lib/stm32/common/desig_common_all.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../libopencm3/lib/stm32/common/desig_common_all.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../libopencm3/lib/stm32/common/desig_common_all.c ****  * (at your option) any later version.
+  10:../libopencm3/lib/stm32/common/desig_common_all.c ****  *
+  11:../libopencm3/lib/stm32/common/desig_common_all.c ****  * This library is distributed in the hope that it will be useful,
+  12:../libopencm3/lib/stm32/common/desig_common_all.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../libopencm3/lib/stm32/common/desig_common_all.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../libopencm3/lib/stm32/common/desig_common_all.c ****  * GNU Lesser General Public License for more details.
+  15:../libopencm3/lib/stm32/common/desig_common_all.c ****  *
+  16:../libopencm3/lib/stm32/common/desig_common_all.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../libopencm3/lib/stm32/common/desig_common_all.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../libopencm3/lib/stm32/common/desig_common_all.c ****  */
+  19:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  20:../libopencm3/lib/stm32/common/desig_common_all.c **** #include <libopencm3/stm32/desig.h>
+  21:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  22:../libopencm3/lib/stm32/common/desig_common_all.c **** void desig_get_unique_id_as_string(char *string, unsigned int string_len)
+  23:../libopencm3/lib/stm32/common/desig_common_all.c **** {
+  31              		.loc 1 23 1
+  32              		.cfi_startproc
+  33              		@ args = 0, pretend = 0, frame = 56
+  34              		@ frame_needed = 1, uses_anonymous_args = 0
+  35 0000 B0B5     		push	{r4, r5, r7, lr}
+  36              		.cfi_def_cfa_offset 16
+  37              		.cfi_offset 4, -16
+  38              		.cfi_offset 5, -12
+  39              		.cfi_offset 7, -8
+  40              		.cfi_offset 14, -4
+  41 0002 8EB0     		sub	sp, sp, #56
+  42              		.cfi_def_cfa_offset 72
+  43 0004 00AF     		add	r7, sp, #0
+  44              		.cfi_def_cfa_register 7
+  45 0006 7860     		str	r0, [r7, #4]
+  46 0008 3960     		str	r1, [r7]
+  24:../libopencm3/lib/stm32/common/desig_common_all.c **** 	int i, len;
+  25:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint32_t uid_buf[3];
+  26:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint8_t *uid = (uint8_t *)uid_buf;
+  47              		.loc 1 26 11
+  48 000a 07F12003 		add	r3, r7, #32
+  49 000e 3B63     		str	r3, [r7, #48]
+  27:../libopencm3/lib/stm32/common/desig_common_all.c **** 	const char chars[] = "0123456789ABCDEF";
+  50              		.loc 1 27 13
+  51 0010 274B     		ldr	r3, .L4
+  52              	.LPIC0:
+  53 0012 7B44     		add	r3, pc
+  54 0014 07F10C04 		add	r4, r7, #12
+  55 0018 1D46     		mov	r5, r3
+  56 001a 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+  57 001c 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+  58 001e 2B68     		ldr	r3, [r5]
+  59 0020 2370     		strb	r3, [r4]
+  28:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  29:../libopencm3/lib/stm32/common/desig_common_all.c **** 	desig_get_unique_id(uid_buf);
+  60              		.loc 1 29 2
+  61 0022 07F12003 		add	r3, r7, #32
+  62 0026 1846     		mov	r0, r3
+  63 0028 FFF7FEFF 		bl	desig_get_unique_id(PLT)
+  30:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  31:../libopencm3/lib/stm32/common/desig_common_all.c **** 	/* Each byte produces two characters */
+  32:../libopencm3/lib/stm32/common/desig_common_all.c **** 	len = (2 * sizeof(uid_buf) < string_len) ?
+  33:../libopencm3/lib/stm32/common/desig_common_all.c **** 		2 * sizeof(uid_buf) : string_len - 1;
+  64              		.loc 1 33 23
+  65 002c 3B68     		ldr	r3, [r7]
+  66 002e 192B     		cmp	r3, #25
+  67 0030 28BF     		it	cs
+  68 0032 1923     		movcs	r3, #25
+  69 0034 013B     		subs	r3, r3, #1
+  32:../libopencm3/lib/stm32/common/desig_common_all.c **** 		2 * sizeof(uid_buf) : string_len - 1;
+  70              		.loc 1 32 6
+  71 0036 FB62     		str	r3, [r7, #44]
+  34:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  35:../libopencm3/lib/stm32/common/desig_common_all.c **** 	for (i = 0; i < len; i += 2) {
+  72              		.loc 1 35 9
+  73 0038 0023     		movs	r3, #0
+  74 003a 7B63     		str	r3, [r7, #52]
+  75              		.loc 1 35 2
+  76 003c 2BE0     		b	.L2
+  77              	.L3:
+  36:../libopencm3/lib/stm32/common/desig_common_all.c **** 		string[i]     = chars[(uid[i / 2] >> 4) & 0x0F];
+  78              		.loc 1 36 32 discriminator 3
+  79 003e 7B6B     		ldr	r3, [r7, #52]
+  80 0040 DA0F     		lsrs	r2, r3, #31
+  81 0042 1344     		add	r3, r3, r2
+  82 0044 5B10     		asrs	r3, r3, #1
+  83 0046 1A46     		mov	r2, r3
+  84              		.loc 1 36 29 discriminator 3
+  85 0048 3B6B     		ldr	r3, [r7, #48]
+  86 004a 1344     		add	r3, r3, r2
+  87 004c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  88              		.loc 1 36 43 discriminator 3
+  89 004e 1B09     		lsrs	r3, r3, #4
+  90 0050 DBB2     		uxtb	r3, r3
+  91 0052 03F00F02 		and	r2, r3, #15
+  92              		.loc 1 36 9 discriminator 3
+  93 0056 7B6B     		ldr	r3, [r7, #52]
+  94 0058 7968     		ldr	r1, [r7, #4]
+  95 005a 0B44     		add	r3, r3, r1
+  96              		.loc 1 36 24 discriminator 3
+  97 005c 07F13801 		add	r1, r7, #56
+  98 0060 0A44     		add	r2, r2, r1
+  99 0062 12F92C2C 		ldrsb	r2, [r2, #-44]
+ 100              		.loc 1 36 17 discriminator 3
+ 101 0066 1A70     		strb	r2, [r3]
+  37:../libopencm3/lib/stm32/common/desig_common_all.c **** 		string[i + 1] = chars[(uid[i / 2] >> 0) & 0x0F];
+ 102              		.loc 1 37 32 discriminator 3
+ 103 0068 7B6B     		ldr	r3, [r7, #52]
+ 104 006a DA0F     		lsrs	r2, r3, #31
+ 105 006c 1344     		add	r3, r3, r2
+ 106 006e 5B10     		asrs	r3, r3, #1
+ 107 0070 1A46     		mov	r2, r3
+ 108              		.loc 1 37 29 discriminator 3
+ 109 0072 3B6B     		ldr	r3, [r7, #48]
+ 110 0074 1344     		add	r3, r3, r2
+ 111 0076 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 112              		.loc 1 37 43 discriminator 3
+ 113 0078 03F00F02 		and	r2, r3, #15
+ 114              		.loc 1 37 9 discriminator 3
+ 115 007c 7B6B     		ldr	r3, [r7, #52]
+ 116 007e 0133     		adds	r3, r3, #1
+ 117 0080 7968     		ldr	r1, [r7, #4]
+ 118 0082 0B44     		add	r3, r3, r1
+ 119              		.loc 1 37 24 discriminator 3
+ 120 0084 07F13801 		add	r1, r7, #56
+ 121 0088 0A44     		add	r2, r2, r1
+ 122 008a 12F92C2C 		ldrsb	r2, [r2, #-44]
+ 123              		.loc 1 37 17 discriminator 3
+ 124 008e 1A70     		strb	r2, [r3]
+  35:../libopencm3/lib/stm32/common/desig_common_all.c **** 		string[i]     = chars[(uid[i / 2] >> 4) & 0x0F];
+ 125              		.loc 1 35 25 discriminator 3
+ 126 0090 7B6B     		ldr	r3, [r7, #52]
+ 127 0092 0233     		adds	r3, r3, #2
+ 128 0094 7B63     		str	r3, [r7, #52]
+ 129              	.L2:
+  35:../libopencm3/lib/stm32/common/desig_common_all.c **** 		string[i]     = chars[(uid[i / 2] >> 4) & 0x0F];
+ 130              		.loc 1 35 2 discriminator 1
+ 131 0096 7A6B     		ldr	r2, [r7, #52]
+ 132 0098 FB6A     		ldr	r3, [r7, #44]
+ 133 009a 9A42     		cmp	r2, r3
+ 134 009c CFDB     		blt	.L3
+  38:../libopencm3/lib/stm32/common/desig_common_all.c **** 	}
+  39:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  40:../libopencm3/lib/stm32/common/desig_common_all.c **** 	string[len] = '\0';
+ 135              		.loc 1 40 8
+ 136 009e FB6A     		ldr	r3, [r7, #44]
+ 137 00a0 7A68     		ldr	r2, [r7, #4]
+ 138 00a2 1344     		add	r3, r3, r2
+ 139              		.loc 1 40 14
+ 140 00a4 0022     		movs	r2, #0
+ 141 00a6 1A70     		strb	r2, [r3]
+  41:../libopencm3/lib/stm32/common/desig_common_all.c **** }
+ 142              		.loc 1 41 1
+ 143 00a8 00BF     		nop
+ 144 00aa 3837     		adds	r7, r7, #56
+ 145              		.cfi_def_cfa_offset 16
+ 146 00ac BD46     		mov	sp, r7
+ 147              		.cfi_def_cfa_register 13
+ 148              		@ sp needed
+ 149 00ae B0BD     		pop	{r4, r5, r7, pc}
+ 150              	.L5:
+ 151              		.align	2
+ 152              	.L4:
+ 153 00b0 9A000000 		.word	.LC0-(.LPIC0+4)
+ 154              		.cfi_endproc
+ 155              	.LFE0:
+ 157              		.section	.text.desig_get_unique_id_as_dfu,"ax",%progbits
+ 158              		.align	1
+ 159              		.global	desig_get_unique_id_as_dfu
+ 160              		.syntax unified
+ 161              		.thumb
+ 162              		.thumb_func
+ 163              		.fpu softvfp
+ 165              	desig_get_unique_id_as_dfu:
+ 166              	.LFB1:
+  42:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  43:../libopencm3/lib/stm32/common/desig_common_all.c **** void desig_get_unique_id_as_dfu(char *string) {
+ 167              		.loc 1 43 47
+ 168              		.cfi_startproc
+ 169              		@ args = 0, pretend = 0, frame = 64
+ 170              		@ frame_needed = 1, uses_anonymous_args = 0
+ 171 0000 B0B5     		push	{r4, r5, r7, lr}
+ 172              		.cfi_def_cfa_offset 16
+ 173              		.cfi_offset 4, -16
+ 174              		.cfi_offset 5, -12
+ 175              		.cfi_offset 7, -8
+ 176              		.cfi_offset 14, -4
+ 177 0002 90B0     		sub	sp, sp, #64
+ 178              		.cfi_def_cfa_offset 80
+ 179 0004 00AF     		add	r7, sp, #0
+ 180              		.cfi_def_cfa_register 7
+ 181 0006 7860     		str	r0, [r7, #4]
+  44:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint32_t uid_buf[3];
+  45:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint8_t *uid = (uint8_t *)uid_buf;
+ 182              		.loc 1 45 11
+ 183 0008 07F12803 		add	r3, r7, #40
+ 184 000c BB63     		str	r3, [r7, #56]
+  46:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  47:../libopencm3/lib/stm32/common/desig_common_all.c **** 	desig_get_unique_id(uid_buf);
+ 185              		.loc 1 47 2
+ 186 000e 07F12803 		add	r3, r7, #40
+ 187 0012 1846     		mov	r0, r3
+ 188 0014 FFF7FEFF 		bl	desig_get_unique_id(PLT)
+  48:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  49:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint8_t serial[6];
+  50:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[0] = uid[11];
+ 189              		.loc 1 50 12
+ 190 0018 BB6B     		ldr	r3, [r7, #56]
+ 191 001a DB7A     		ldrb	r3, [r3, #11]	@ zero_extendqisi2
+ 192 001c 87F82030 		strb	r3, [r7, #32]
+  51:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[1] = uid[10] + uid[2];
+ 193              		.loc 1 51 17
+ 194 0020 BB6B     		ldr	r3, [r7, #56]
+ 195 0022 0A33     		adds	r3, r3, #10
+ 196 0024 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 197              		.loc 1 51 27
+ 198 0026 BB6B     		ldr	r3, [r7, #56]
+ 199 0028 0233     		adds	r3, r3, #2
+ 200 002a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 201              		.loc 1 51 22
+ 202 002c 1344     		add	r3, r3, r2
+ 203 002e DBB2     		uxtb	r3, r3
+ 204              		.loc 1 51 12
+ 205 0030 87F82130 		strb	r3, [r7, #33]
+  52:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[2] = uid[9];
+ 206              		.loc 1 52 12
+ 207 0034 BB6B     		ldr	r3, [r7, #56]
+ 208 0036 5B7A     		ldrb	r3, [r3, #9]	@ zero_extendqisi2
+ 209 0038 87F82230 		strb	r3, [r7, #34]
+  53:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[3] = uid[8] + uid[0];
+ 210              		.loc 1 53 17
+ 211 003c BB6B     		ldr	r3, [r7, #56]
+ 212 003e 0833     		adds	r3, r3, #8
+ 213 0040 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 214              		.loc 1 53 26
+ 215 0042 BB6B     		ldr	r3, [r7, #56]
+ 216 0044 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 217              		.loc 1 53 21
+ 218 0046 1344     		add	r3, r3, r2
+ 219 0048 DBB2     		uxtb	r3, r3
+ 220              		.loc 1 53 12
+ 221 004a 87F82330 		strb	r3, [r7, #35]
+  54:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[4] = uid[7];
+ 222              		.loc 1 54 12
+ 223 004e BB6B     		ldr	r3, [r7, #56]
+ 224 0050 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 225 0052 87F82430 		strb	r3, [r7, #36]
+  55:../libopencm3/lib/stm32/common/desig_common_all.c **** 	serial[5] = uid[6];
+ 226              		.loc 1 55 12
+ 227 0056 BB6B     		ldr	r3, [r7, #56]
+ 228 0058 9B79     		ldrb	r3, [r3, #6]	@ zero_extendqisi2
+ 229 005a 87F82530 		strb	r3, [r7, #37]
+  56:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  57:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint8_t *ser = &serial[0];
+ 230              		.loc 1 57 11
+ 231 005e 07F12003 		add	r3, r7, #32
+ 232 0062 FB63     		str	r3, [r7, #60]
+  58:../libopencm3/lib/stm32/common/desig_common_all.c **** 	uint8_t *end = &serial[6];
+ 233              		.loc 1 58 11
+ 234 0064 07F12003 		add	r3, r7, #32
+ 235 0068 0633     		adds	r3, r3, #6
+ 236 006a 7B63     		str	r3, [r7, #52]
+  59:../libopencm3/lib/stm32/common/desig_common_all.c **** 	const char hex_digit[] = "0123456789ABCDEF";
+ 237              		.loc 1 59 13
+ 238 006c 194B     		ldr	r3, .L9
+ 239              	.LPIC1:
+ 240 006e 7B44     		add	r3, pc
+ 241 0070 07F10C04 		add	r4, r7, #12
+ 242 0074 1D46     		mov	r5, r3
+ 243 0076 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 244 0078 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 245 007a 2B68     		ldr	r3, [r5]
+ 246 007c 2370     		strb	r3, [r4]
+  60:../libopencm3/lib/stm32/common/desig_common_all.c **** 
+  61:../libopencm3/lib/stm32/common/desig_common_all.c **** 	for (; ser < end; ser++) {
+ 247              		.loc 1 61 2
+ 248 007e 1EE0     		b	.L7
+ 249              	.L8:
+  62:../libopencm3/lib/stm32/common/desig_common_all.c **** 		*string++ = hex_digit[(*ser >> 4) & 0x0f];
+ 250              		.loc 1 62 26 discriminator 2
+ 251 0080 FB6B     		ldr	r3, [r7, #60]
+ 252 0082 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 253              		.loc 1 62 37 discriminator 2
+ 254 0084 1B09     		lsrs	r3, r3, #4
+ 255 0086 DBB2     		uxtb	r3, r3
+ 256 0088 03F00F02 		and	r2, r3, #15
+ 257              		.loc 1 62 10 discriminator 2
+ 258 008c 7B68     		ldr	r3, [r7, #4]
+ 259 008e 591C     		adds	r1, r3, #1
+ 260 0090 7960     		str	r1, [r7, #4]
+ 261              		.loc 1 62 24 discriminator 2
+ 262 0092 07F14001 		add	r1, r7, #64
+ 263 0096 0A44     		add	r2, r2, r1
+ 264 0098 12F9342C 		ldrsb	r2, [r2, #-52]
+ 265              		.loc 1 62 13 discriminator 2
+ 266 009c 1A70     		strb	r2, [r3]
+  63:../libopencm3/lib/stm32/common/desig_common_all.c **** 		*string++ = hex_digit[(*ser >> 0) & 0x0f];
+ 267              		.loc 1 63 26 discriminator 2
+ 268 009e FB6B     		ldr	r3, [r7, #60]
+ 269 00a0 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 270              		.loc 1 63 37 discriminator 2
+ 271 00a2 03F00F02 		and	r2, r3, #15
+ 272              		.loc 1 63 10 discriminator 2
+ 273 00a6 7B68     		ldr	r3, [r7, #4]
+ 274 00a8 591C     		adds	r1, r3, #1
+ 275 00aa 7960     		str	r1, [r7, #4]
+ 276              		.loc 1 63 24 discriminator 2
+ 277 00ac 07F14001 		add	r1, r7, #64
+ 278 00b0 0A44     		add	r2, r2, r1
+ 279 00b2 12F9342C 		ldrsb	r2, [r2, #-52]
+ 280              		.loc 1 63 13 discriminator 2
+ 281 00b6 1A70     		strb	r2, [r3]
+  61:../libopencm3/lib/stm32/common/desig_common_all.c **** 		*string++ = hex_digit[(*ser >> 4) & 0x0f];
+ 282              		.loc 1 61 23 discriminator 2
+ 283 00b8 FB6B     		ldr	r3, [r7, #60]
+ 284 00ba 0133     		adds	r3, r3, #1
+ 285 00bc FB63     		str	r3, [r7, #60]
+ 286              	.L7:
+  61:../libopencm3/lib/stm32/common/desig_common_all.c **** 		*string++ = hex_digit[(*ser >> 4) & 0x0f];
+ 287              		.loc 1 61 2 discriminator 1
+ 288 00be FA6B     		ldr	r2, [r7, #60]
+ 289 00c0 7B6B     		ldr	r3, [r7, #52]
+ 290 00c2 9A42     		cmp	r2, r3
+ 291 00c4 DCD3     		bcc	.L8
+  64:../libopencm3/lib/stm32/common/desig_common_all.c **** 	}
+  65:../libopencm3/lib/stm32/common/desig_common_all.c **** 	*string = '\0';
+ 292              		.loc 1 65 10
+ 293 00c6 7B68     		ldr	r3, [r7, #4]
+ 294 00c8 0022     		movs	r2, #0
+ 295 00ca 1A70     		strb	r2, [r3]
+  66:../libopencm3/lib/stm32/common/desig_common_all.c **** }
+ 296              		.loc 1 66 1
+ 297 00cc 00BF     		nop
+ 298 00ce 4037     		adds	r7, r7, #64
+ 299              		.cfi_def_cfa_offset 16
+ 300 00d0 BD46     		mov	sp, r7
+ 301              		.cfi_def_cfa_register 13
+ 302              		@ sp needed
+ 303 00d2 B0BD     		pop	{r4, r5, r7, pc}
+ 304              	.L10:
+ 305              		.align	2
+ 306              	.L9:
+ 307 00d4 62000000 		.word	.LC0-(.LPIC1+4)
+ 308              		.cfi_endproc
+ 309              	.LFE1:
+ 311              		.text
+ 312              	.Letext0:
+ 313              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 314              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 desig_common_all.c
+     /tmp/cchZaTpN.s:16     .rodata:0000000000000000 $d
+     /tmp/cchZaTpN.s:20     .text.desig_get_unique_id_as_string:0000000000000000 $t
+     /tmp/cchZaTpN.s:28     .text.desig_get_unique_id_as_string:0000000000000000 desig_get_unique_id_as_string
+     /tmp/cchZaTpN.s:153    .text.desig_get_unique_id_as_string:00000000000000b0 $d
+     /tmp/cchZaTpN.s:158    .text.desig_get_unique_id_as_dfu:0000000000000000 $t
+     /tmp/cchZaTpN.s:165    .text.desig_get_unique_id_as_dfu:0000000000000000 desig_get_unique_id_as_dfu
+     /tmp/cchZaTpN.s:307    .text.desig_get_unique_id_as_dfu:00000000000000d4 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+
+UNDEFINED SYMBOLS
+desig_get_unique_id

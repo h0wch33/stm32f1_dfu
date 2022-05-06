@@ -1,0 +1,1917 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"st_usbfs_core.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	st_usbfs_force_nak,8,4
+  16              		.comm	st_usbfs_dev,260,4
+  17              		.section	.text.st_usbfs_set_address,"ax",%progbits
+  18              		.align	1
+  19              		.global	st_usbfs_set_address
+  20              		.arch armv7-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu softvfp
+  26              	st_usbfs_set_address:
+  27              	.LFB0:
+  28              		.file 1 "../libopencm3/lib/stm32/common/st_usbfs_core.c"
+   1:../libopencm3/lib/stm32/common/st_usbfs_core.c **** /*
+   2:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  *
+   4:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * Copyright (C) 2010 Gareth McMullin <gareth@blacksphere.co.nz>
+   5:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * Copyright (C) 2015 Robin Kreis <r.kreis@uni-bremen.de>
+   6:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  *
+   7:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * This library is free software: you can redistribute it and/or modify
+   8:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   9:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * the Free Software Foundation, either version 3 of the License, or
+  10:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * (at your option) any later version.
+  11:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  *
+  12:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * This library is distributed in the hope that it will be useful,
+  13:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  14:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  15:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * GNU Lesser General Public License for more details.
+  16:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  *
+  17:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * You should have received a copy of the GNU Lesser General Public License
+  18:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  19:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  */
+  20:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  21:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include <libopencm3/cm3/common.h>
+  22:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include <libopencm3/stm32/rcc.h>
+  23:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include <libopencm3/stm32/tools.h>
+  24:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include <libopencm3/stm32/st_usbfs.h>
+  25:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include <libopencm3/usb/usbd.h>
+  26:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include "../../usb/usb_private.h"
+  27:../libopencm3/lib/stm32/common/st_usbfs_core.c **** #include "st_usbfs_core.h"
+  28:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  29:../libopencm3/lib/stm32/common/st_usbfs_core.c **** /* TODO - can't these be inside the impls, not globals from the core? */
+  30:../libopencm3/lib/stm32/common/st_usbfs_core.c **** uint8_t st_usbfs_force_nak[8];
+  31:../libopencm3/lib/stm32/common/st_usbfs_core.c **** struct _usbd_device st_usbfs_dev;
+  32:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  33:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_set_address(usbd_device *dev, uint8_t addr)
+  34:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+  29              		.loc 1 34 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              		.cfi_def_cfa_offset 4
+  36              		.cfi_offset 7, -4
+  37 0002 83B0     		sub	sp, sp, #12
+  38              		.cfi_def_cfa_offset 16
+  39 0004 00AF     		add	r7, sp, #0
+  40              		.cfi_def_cfa_register 7
+  41 0006 7860     		str	r0, [r7, #4]
+  42 0008 0B46     		mov	r3, r1
+  43 000a FB70     		strb	r3, [r7, #3]
+  35:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+  36:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* Set device address and enable. */
+  37:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	SET_REG(USB_DADDR_REG, (addr & USB_DADDR_ADDR) | USB_DADDR_EF);
+  44              		.loc 1 37 2
+  45 000c FB78     		ldrb	r3, [r7, #3]
+  46 000e 63F07F03 		orn	r3, r3, #127
+  47 0012 DAB2     		uxtb	r2, r3
+  48 0014 034B     		ldr	r3, .L2
+  49 0016 1A60     		str	r2, [r3]
+  38:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+  50              		.loc 1 38 1
+  51 0018 00BF     		nop
+  52 001a 0C37     		adds	r7, r7, #12
+  53              		.cfi_def_cfa_offset 4
+  54 001c BD46     		mov	sp, r7
+  55              		.cfi_def_cfa_register 13
+  56              		@ sp needed
+  57 001e 80BC     		pop	{r7}
+  58              		.cfi_restore 7
+  59              		.cfi_def_cfa_offset 0
+  60 0020 7047     		bx	lr
+  61              	.L3:
+  62 0022 00BF     		.align	2
+  63              	.L2:
+  64 0024 4C5C0040 		.word	1073765452
+  65              		.cfi_endproc
+  66              	.LFE0:
+  68              		.section	.text.st_usbfs_set_ep_rx_bufsize,"ax",%progbits
+  69              		.align	1
+  70              		.global	st_usbfs_set_ep_rx_bufsize
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu softvfp
+  76              	st_usbfs_set_ep_rx_bufsize:
+  77              	.LFB1:
+  39:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  40:../libopencm3/lib/stm32/common/st_usbfs_core.c **** /**
+  41:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * Set the receive buffer size for a given USB endpoint.
+  42:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  *
+  43:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * @param dev the usb device handle returned from @ref usbd_init
+  44:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * @param ep Index of endpoint to configure.
+  45:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * @param size Size in bytes of the RX buffer. Legal sizes : {2,4,6...62}; {64,96,128...992}.
+  46:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  * @returns (uint16) Actual size set
+  47:../libopencm3/lib/stm32/common/st_usbfs_core.c ****  */
+  48:../libopencm3/lib/stm32/common/st_usbfs_core.c **** uint16_t st_usbfs_set_ep_rx_bufsize(usbd_device *dev, uint8_t ep, uint32_t size)
+  49:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+  78              		.loc 1 49 1
+  79              		.cfi_startproc
+  80              		@ args = 0, pretend = 0, frame = 24
+  81              		@ frame_needed = 1, uses_anonymous_args = 0
+  82              		@ link register save eliminated.
+  83 0000 80B4     		push	{r7}
+  84              		.cfi_def_cfa_offset 4
+  85              		.cfi_offset 7, -4
+  86 0002 87B0     		sub	sp, sp, #28
+  87              		.cfi_def_cfa_offset 32
+  88 0004 00AF     		add	r7, sp, #0
+  89              		.cfi_def_cfa_register 7
+  90 0006 F860     		str	r0, [r7, #12]
+  91 0008 0B46     		mov	r3, r1
+  92 000a 7A60     		str	r2, [r7, #4]
+  93 000c FB72     		strb	r3, [r7, #11]
+  50:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	uint16_t realsize;
+  51:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+  52:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/*
+  53:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 * Writes USB_COUNTn_RX reg fields : bits <14:10> are NUM_BLOCK; bit 15 is BL_SIZE
+  54:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 * - When (size <= 62), BL_SIZE is set to 0 and NUM_BLOCK set to (size / 2).
+  55:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 * - When (size > 62), BL_SIZE is set to 1 and NUM_BLOCK=((size / 32) - 1).
+  56:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *
+  57:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 * This algo rounds to the next largest legal buffer size, except 0. Examples:
+  58:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *	size =>	BL_SIZE, NUM_BLOCK	=> Actual bufsize
+  59:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *	0		0		0			??? "Not allowed" according to RM0091, RM0008
+  60:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *	1		0		1			2
+  61:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *	61		0		31			62
+  62:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 *	63		1		1			64
+  63:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	 */
+  64:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (size > 62) {
+  94              		.loc 1 64 5
+  95 000e 7B68     		ldr	r3, [r7, #4]
+  96 0010 3E2B     		cmp	r3, #62
+  97 0012 10D9     		bls	.L5
+  65:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		/* Round up, div by 32 and sub 1 == (size + 31)/32 - 1 == (size-1)/32)*/
+  66:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		size = ((size - 1) >> 5) & 0x1F;
+  98              		.loc 1 66 17
+  99 0014 7B68     		ldr	r3, [r7, #4]
+ 100 0016 013B     		subs	r3, r3, #1
+ 101              		.loc 1 66 22
+ 102 0018 5B09     		lsrs	r3, r3, #5
+ 103              		.loc 1 66 8
+ 104 001a 03F01F03 		and	r3, r3, #31
+ 105 001e 7B60     		str	r3, [r7, #4]
+  67:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		realsize = (size + 1) << 5;
+ 106              		.loc 1 67 20
+ 107 0020 7B68     		ldr	r3, [r7, #4]
+ 108 0022 9BB2     		uxth	r3, r3
+ 109 0024 0133     		adds	r3, r3, #1
+ 110 0026 9BB2     		uxth	r3, r3
+ 111              		.loc 1 67 12
+ 112 0028 5B01     		lsls	r3, r3, #5
+ 113 002a FB82     		strh	r3, [r7, #22]	@ movhi
+  68:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		/* Set BL_SIZE bit (no macro for this) */
+  69:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		size |= (1<<5);
+ 114              		.loc 1 69 8
+ 115 002c 7B68     		ldr	r3, [r7, #4]
+ 116 002e 43F02003 		orr	r3, r3, #32
+ 117 0032 7B60     		str	r3, [r7, #4]
+ 118 0034 07E0     		b	.L6
+ 119              	.L5:
+  70:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	} else {
+  71:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		/* round up and div by 2 */
+  72:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		size = (size + 1) >> 1;
+ 120              		.loc 1 72 16
+ 121 0036 7B68     		ldr	r3, [r7, #4]
+ 122 0038 0133     		adds	r3, r3, #1
+ 123              		.loc 1 72 8
+ 124 003a 5B08     		lsrs	r3, r3, #1
+ 125 003c 7B60     		str	r3, [r7, #4]
+  73:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		realsize = size << 1;
+ 126              		.loc 1 73 19
+ 127 003e 7B68     		ldr	r3, [r7, #4]
+ 128 0040 9BB2     		uxth	r3, r3
+ 129              		.loc 1 73 12
+ 130 0042 5B00     		lsls	r3, r3, #1
+ 131 0044 FB82     		strh	r3, [r7, #22]	@ movhi
+ 132              	.L6:
+  74:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+  75:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* write to the BL_SIZE and NUM_BLOCK fields */
+  76:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_SET_EP_RX_COUNT(ep, size << 10);
+ 133              		.loc 1 76 2
+ 134 0046 7B68     		ldr	r3, [r7, #4]
+ 135 0048 9BB2     		uxth	r3, r3
+ 136 004a 9B02     		lsls	r3, r3, #10
+ 137 004c 9AB2     		uxth	r2, r3
+ 138 004e 0A4B     		ldr	r3, .L8
+ 139 0050 1B68     		ldr	r3, [r3]
+ 140 0052 9BB2     		uxth	r3, r3
+ 141 0054 1946     		mov	r1, r3
+ 142 0056 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 143 0058 DB00     		lsls	r3, r3, #3
+ 144 005a 0B44     		add	r3, r3, r1
+ 145 005c 0633     		adds	r3, r3, #6
+ 146 005e 5B00     		lsls	r3, r3, #1
+ 147 0060 03F18043 		add	r3, r3, #1073741824
+ 148 0064 03F5C043 		add	r3, r3, #24576
+ 149 0068 1A60     		str	r2, [r3]
+  77:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	return realsize;
+ 150              		.loc 1 77 9
+ 151 006a FB8A     		ldrh	r3, [r7, #22]
+  78:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 152              		.loc 1 78 1
+ 153 006c 1846     		mov	r0, r3
+ 154 006e 1C37     		adds	r7, r7, #28
+ 155              		.cfi_def_cfa_offset 4
+ 156 0070 BD46     		mov	sp, r7
+ 157              		.cfi_def_cfa_register 13
+ 158              		@ sp needed
+ 159 0072 80BC     		pop	{r7}
+ 160              		.cfi_restore 7
+ 161              		.cfi_def_cfa_offset 0
+ 162 0074 7047     		bx	lr
+ 163              	.L9:
+ 164 0076 00BF     		.align	2
+ 165              	.L8:
+ 166 0078 505C0040 		.word	1073765456
+ 167              		.cfi_endproc
+ 168              	.LFE1:
+ 170              		.section	.rodata
+ 171              		.align	2
+ 172              	.LC0:
+ 173 0000 0002     		.short	512
+ 174 0002 0004     		.short	1024
+ 175 0004 0000     		.short	0
+ 176 0006 0006     		.short	1536
+ 177              		.section	.text.st_usbfs_ep_setup,"ax",%progbits
+ 178              		.align	1
+ 179              		.global	st_usbfs_ep_setup
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 183              		.fpu softvfp
+ 185              	st_usbfs_ep_setup:
+ 186              	.LFB2:
+  79:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  80:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_ep_setup(usbd_device *dev, uint8_t addr, uint8_t type,
+  81:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		uint16_t max_size,
+  82:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		void (*callback) (usbd_device *usbd_dev,
+  83:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		uint8_t ep))
+  84:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 187              		.loc 1 84 1
+ 188              		.cfi_startproc
+ 189              		@ args = 4, pretend = 0, frame = 24
+ 190              		@ frame_needed = 1, uses_anonymous_args = 0
+ 191 0000 90B5     		push	{r4, r7, lr}
+ 192              		.cfi_def_cfa_offset 12
+ 193              		.cfi_offset 4, -12
+ 194              		.cfi_offset 7, -8
+ 195              		.cfi_offset 14, -4
+ 196 0002 87B0     		sub	sp, sp, #28
+ 197              		.cfi_def_cfa_offset 40
+ 198 0004 00AF     		add	r7, sp, #0
+ 199              		.cfi_def_cfa_register 7
+ 200 0006 7860     		str	r0, [r7, #4]
+ 201 0008 0846     		mov	r0, r1
+ 202 000a 1146     		mov	r1, r2
+ 203 000c 1A46     		mov	r2, r3
+ 204 000e 0346     		mov	r3, r0
+ 205 0010 FB70     		strb	r3, [r7, #3]
+ 206 0012 0B46     		mov	r3, r1
+ 207 0014 BB70     		strb	r3, [r7, #2]
+ 208 0016 1346     		mov	r3, r2	@ movhi
+ 209 0018 3B80     		strh	r3, [r7]	@ movhi
+  85:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* Translate USB standard type codes to STM32. */
+  86:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	const uint16_t typelookup[] = {
+ 210              		.loc 1 86 17
+ 211 001a 814B     		ldr	r3, .L17+8
+ 212              	.LPIC0:
+ 213 001c 7B44     		add	r3, pc
+ 214 001e 1A46     		mov	r2, r3
+ 215 0020 07F10C03 		add	r3, r7, #12
+ 216 0024 92E80300 		ldm	r2, {r0, r1}
+ 217 0028 83E80300 		stm	r3, {r0, r1}
+  87:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		[USB_ENDPOINT_ATTR_CONTROL] = USB_EP_TYPE_CONTROL,
+  88:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		[USB_ENDPOINT_ATTR_ISOCHRONOUS] = USB_EP_TYPE_ISO,
+  89:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		[USB_ENDPOINT_ATTR_BULK] = USB_EP_TYPE_BULK,
+  90:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		[USB_ENDPOINT_ATTR_INTERRUPT] = USB_EP_TYPE_INTERRUPT,
+  91:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	};
+  92:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	uint8_t dir = addr & 0x80;
+ 218              		.loc 1 92 10
+ 219 002c FB78     		ldrb	r3, [r7, #3]
+ 220 002e 23F07F03 		bic	r3, r3, #127
+ 221 0032 FB75     		strb	r3, [r7, #23]
+  93:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	addr &= 0x7f;
+ 222              		.loc 1 93 7
+ 223 0034 FB78     		ldrb	r3, [r7, #3]
+ 224 0036 03F07F03 		and	r3, r3, #127
+ 225 003a FB70     		strb	r3, [r7, #3]
+  94:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  95:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* Assign address. */
+  96:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_SET_EP_ADDR(addr, addr);
+ 226              		.loc 1 96 2
+ 227 003c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 228 003e 9B00     		lsls	r3, r3, #2
+ 229 0040 03F18043 		add	r3, r3, #1073741824
+ 230 0044 03F5B843 		add	r3, r3, #23552
+ 231 0048 1B68     		ldr	r3, [r3]
+ 232 004a 1BB2     		sxth	r3, r3
+ 233 004c 23F4E043 		bic	r3, r3, #28672
+ 234 0050 23F07F03 		bic	r3, r3, #127
+ 235 0054 1AB2     		sxth	r2, r3
+ 236 0056 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 237 0058 1BB2     		sxth	r3, r3
+ 238 005a 1343     		orrs	r3, r3, r2
+ 239 005c 1BB2     		sxth	r3, r3
+ 240 005e 9AB2     		uxth	r2, r3
+ 241 0060 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 242 0062 9B00     		lsls	r3, r3, #2
+ 243 0064 03F18043 		add	r3, r3, #1073741824
+ 244 0068 03F5B843 		add	r3, r3, #23552
+ 245 006c 1A60     		str	r2, [r3]
+  97:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_SET_EP_TYPE(addr, typelookup[type]);
+ 246              		.loc 1 97 2
+ 247 006e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 248 0070 9B00     		lsls	r3, r3, #2
+ 249 0072 03F18043 		add	r3, r3, #1073741824
+ 250 0076 03F5B843 		add	r3, r3, #23552
+ 251 007a 1B68     		ldr	r3, [r3]
+ 252 007c 1BB2     		sxth	r3, r3
+ 253 007e 23F4EC43 		bic	r3, r3, #30208
+ 254 0082 23F07003 		bic	r3, r3, #112
+ 255 0086 1AB2     		sxth	r2, r3
+ 256 0088 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 257 008a 5B00     		lsls	r3, r3, #1
+ 258 008c 07F11801 		add	r1, r7, #24
+ 259 0090 0B44     		add	r3, r3, r1
+ 260 0092 33F80C3C 		ldrh	r3, [r3, #-12]
+ 261 0096 1BB2     		sxth	r3, r3
+ 262 0098 1343     		orrs	r3, r3, r2
+ 263 009a 1BB2     		sxth	r3, r3
+ 264 009c 9AB2     		uxth	r2, r3
+ 265 009e FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 266 00a0 9B00     		lsls	r3, r3, #2
+ 267 00a2 03F18043 		add	r3, r3, #1073741824
+ 268 00a6 03F5B843 		add	r3, r3, #23552
+ 269 00aa 1A60     		str	r2, [r3]
+  98:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+  99:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (dir || (addr == 0)) {
+ 270              		.loc 1 99 5
+ 271 00ac FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 272 00ae 002B     		cmp	r3, #0
+ 273 00b0 02D1     		bne	.L11
+ 274              		.loc 1 99 10 discriminator 1
+ 275 00b2 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 276 00b4 002B     		cmp	r3, #0
+ 277 00b6 4FD1     		bne	.L12
+ 278              	.L11:
+ 100:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_ADDR(addr, dev->pm_top);
+ 279              		.loc 1 100 3
+ 280 00b8 7B68     		ldr	r3, [r7, #4]
+ 281 00ba 1A8B     		ldrh	r2, [r3, #24]
+ 282 00bc 564B     		ldr	r3, .L17
+ 283 00be 1B68     		ldr	r3, [r3]
+ 284 00c0 9BB2     		uxth	r3, r3
+ 285 00c2 1946     		mov	r1, r3
+ 286 00c4 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 287 00c6 DB00     		lsls	r3, r3, #3
+ 288 00c8 0B44     		add	r3, r3, r1
+ 289 00ca 5B00     		lsls	r3, r3, #1
+ 290 00cc 03F18043 		add	r3, r3, #1073741824
+ 291 00d0 03F5C043 		add	r3, r3, #24576
+ 292 00d4 1A60     		str	r2, [r3]
+ 101:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (callback) {
+ 293              		.loc 1 101 6
+ 294 00d6 BB6A     		ldr	r3, [r7, #40]
+ 295 00d8 002B     		cmp	r3, #0
+ 296 00da 09D0     		beq	.L13
+ 102:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_ctr[addr][USB_TRANSACTION_IN] =
+ 297              		.loc 1 102 32
+ 298 00dc FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 299              		.loc 1 102 53
+ 300 00de 7968     		ldr	r1, [r7, #4]
+ 301 00e0 1346     		mov	r3, r2
+ 302 00e2 5B00     		lsls	r3, r3, #1
+ 303 00e4 1344     		add	r3, r3, r2
+ 304 00e6 9B00     		lsls	r3, r3, #2
+ 305 00e8 0B44     		add	r3, r3, r1
+ 306 00ea 6833     		adds	r3, r3, #104
+ 307 00ec BA6A     		ldr	r2, [r7, #40]
+ 308 00ee 1A60     		str	r2, [r3]
+ 309              	.L13:
+ 103:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			    (void *)callback;
+ 104:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 105:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_EP_TX_DTOG(addr);
+ 310              		.loc 1 105 3
+ 311 00f0 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 312 00f2 9B00     		lsls	r3, r3, #2
+ 313 00f4 03F18043 		add	r3, r3, #1073741824
+ 314 00f8 03F5B843 		add	r3, r3, #23552
+ 315 00fc 1B68     		ldr	r3, [r3]
+ 316 00fe 9BB2     		uxth	r3, r3
+ 317 0100 1946     		mov	r1, r3
+ 318 0102 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 319 0104 9B00     		lsls	r3, r3, #2
+ 320 0106 03F18043 		add	r3, r3, #1073741824
+ 321 010a 03F5B843 		add	r3, r3, #23552
+ 322 010e 48F6CF72 		movw	r2, #36815
+ 323 0112 0A40     		ands	r2, r2, r1
+ 324 0114 1A60     		str	r2, [r3]
+ 325              	.LBB2:
+ 106:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(addr, USB_EP_TX_STAT_NAK);
+ 326              		.loc 1 106 3
+ 327 0116 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 328 0118 9B00     		lsls	r3, r3, #2
+ 329 011a 03F18043 		add	r3, r3, #1073741824
+ 330 011e 03F5B843 		add	r3, r3, #23552
+ 331 0122 1B68     		ldr	r3, [r3]
+ 332 0124 9BB2     		uxth	r3, r3
+ 333 0126 23F4E043 		bic	r3, r3, #28672
+ 334 012a 23F04003 		bic	r3, r3, #64
+ 335 012e 9CB2     		uxth	r4, r3
+ 336 0130 84F02003 		eor	r3, r4, #32
+ 337 0134 9CB2     		uxth	r4, r3
+ 338 0136 394B     		ldr	r3, .L17+4
+ 339 0138 2343     		orrs	r3, r3, r4
+ 340 013a 9AB2     		uxth	r2, r3
+ 341 013c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 342 013e 9B00     		lsls	r3, r3, #2
+ 343 0140 03F18043 		add	r3, r3, #1073741824
+ 344 0144 03F5B843 		add	r3, r3, #23552
+ 345 0148 1A60     		str	r2, [r3]
+ 346              	.LBE2:
+ 107:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		dev->pm_top += max_size;
+ 347              		.loc 1 107 15
+ 348 014a 7B68     		ldr	r3, [r7, #4]
+ 349 014c 1A8B     		ldrh	r2, [r3, #24]
+ 350 014e 3B88     		ldrh	r3, [r7]	@ movhi
+ 351 0150 1344     		add	r3, r3, r2
+ 352 0152 9AB2     		uxth	r2, r3
+ 353 0154 7B68     		ldr	r3, [r7, #4]
+ 354 0156 1A83     		strh	r2, [r3, #24]	@ movhi
+ 355              	.L12:
+ 108:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 109:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 110:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (!dir) {
+ 356              		.loc 1 110 5
+ 357 0158 FB7D     		ldrb	r3, [r7, #23]	@ zero_extendqisi2
+ 358 015a 002B     		cmp	r3, #0
+ 359 015c 58D1     		bne	.L16
+ 360              	.LBB3:
+ 111:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		uint16_t realsize;
+ 112:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_ADDR(addr, dev->pm_top);
+ 361              		.loc 1 112 3
+ 362 015e 7B68     		ldr	r3, [r7, #4]
+ 363 0160 1A8B     		ldrh	r2, [r3, #24]
+ 364 0162 2D4B     		ldr	r3, .L17
+ 365 0164 1B68     		ldr	r3, [r3]
+ 366 0166 9BB2     		uxth	r3, r3
+ 367 0168 1946     		mov	r1, r3
+ 368 016a FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 369 016c DB00     		lsls	r3, r3, #3
+ 370 016e 0B44     		add	r3, r3, r1
+ 371 0170 0433     		adds	r3, r3, #4
+ 372 0172 5B00     		lsls	r3, r3, #1
+ 373 0174 03F18043 		add	r3, r3, #1073741824
+ 374 0178 03F5C043 		add	r3, r3, #24576
+ 375 017c 1A60     		str	r2, [r3]
+ 113:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		realsize = st_usbfs_set_ep_rx_bufsize(dev, addr, max_size);
+ 376              		.loc 1 113 14
+ 377 017e 3A88     		ldrh	r2, [r7]
+ 378 0180 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 379 0182 1946     		mov	r1, r3
+ 380 0184 7868     		ldr	r0, [r7, #4]
+ 381 0186 FFF7FEFF 		bl	st_usbfs_set_ep_rx_bufsize(PLT)
+ 382 018a 0346     		mov	r3, r0
+ 383 018c BB82     		strh	r3, [r7, #20]	@ movhi
+ 114:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (callback) {
+ 384              		.loc 1 114 6
+ 385 018e BB6A     		ldr	r3, [r7, #40]
+ 386 0190 002B     		cmp	r3, #0
+ 387 0192 09D0     		beq	.L15
+ 115:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_ctr[addr][USB_TRANSACTION_OUT] =
+ 388              		.loc 1 115 32
+ 389 0194 FA78     		ldrb	r2, [r7, #3]	@ zero_extendqisi2
+ 390              		.loc 1 115 54
+ 391 0196 7968     		ldr	r1, [r7, #4]
+ 392 0198 1346     		mov	r3, r2
+ 393 019a 5B00     		lsls	r3, r3, #1
+ 394 019c 1344     		add	r3, r3, r2
+ 395 019e 9B00     		lsls	r3, r3, #2
+ 396 01a0 0B44     		add	r3, r3, r1
+ 397 01a2 6C33     		adds	r3, r3, #108
+ 398 01a4 BA6A     		ldr	r2, [r7, #40]
+ 399 01a6 1A60     		str	r2, [r3]
+ 400              	.L15:
+ 116:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			    (void *)callback;
+ 117:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 118:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_EP_RX_DTOG(addr);
+ 401              		.loc 1 118 3
+ 402 01a8 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 403 01aa 9B00     		lsls	r3, r3, #2
+ 404 01ac 03F18043 		add	r3, r3, #1073741824
+ 405 01b0 03F5B843 		add	r3, r3, #23552
+ 406 01b4 1B68     		ldr	r3, [r3]
+ 407 01b6 9BB2     		uxth	r3, r3
+ 408 01b8 1946     		mov	r1, r3
+ 409 01ba FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 410 01bc 9B00     		lsls	r3, r3, #2
+ 411 01be 03F18043 		add	r3, r3, #1073741824
+ 412 01c2 03F5B843 		add	r3, r3, #23552
+ 413 01c6 4CF68F72 		movw	r2, #53135
+ 414 01ca 0A40     		ands	r2, r2, r1
+ 415 01cc 1A60     		str	r2, [r3]
+ 416              	.LBB4:
+ 119:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(addr, USB_EP_RX_STAT_VALID);
+ 417              		.loc 1 119 3
+ 418 01ce FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 419 01d0 9B00     		lsls	r3, r3, #2
+ 420 01d2 03F18043 		add	r3, r3, #1073741824
+ 421 01d6 03F5B843 		add	r3, r3, #23552
+ 422 01da 1B68     		ldr	r3, [r3]
+ 423 01dc 9BB2     		uxth	r3, r3
+ 424 01de 23F48043 		bic	r3, r3, #16384
+ 425 01e2 23F07003 		bic	r3, r3, #112
+ 426 01e6 9CB2     		uxth	r4, r3
+ 427 01e8 84F44053 		eor	r3, r4, #12288
+ 428 01ec 9CB2     		uxth	r4, r3
+ 429 01ee 0B4B     		ldr	r3, .L17+4
+ 430 01f0 2343     		orrs	r3, r3, r4
+ 431 01f2 9AB2     		uxth	r2, r3
+ 432 01f4 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 433 01f6 9B00     		lsls	r3, r3, #2
+ 434 01f8 03F18043 		add	r3, r3, #1073741824
+ 435 01fc 03F5B843 		add	r3, r3, #23552
+ 436 0200 1A60     		str	r2, [r3]
+ 437              	.LBE4:
+ 120:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		dev->pm_top += realsize;
+ 438              		.loc 1 120 15
+ 439 0202 7B68     		ldr	r3, [r7, #4]
+ 440 0204 1A8B     		ldrh	r2, [r3, #24]
+ 441 0206 BB8A     		ldrh	r3, [r7, #20]	@ movhi
+ 442 0208 1344     		add	r3, r3, r2
+ 443 020a 9AB2     		uxth	r2, r3
+ 444 020c 7B68     		ldr	r3, [r7, #4]
+ 445 020e 1A83     		strh	r2, [r3, #24]	@ movhi
+ 446              	.L16:
+ 447              	.LBE3:
+ 121:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 122:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 448              		.loc 1 122 1
+ 449 0210 00BF     		nop
+ 450 0212 1C37     		adds	r7, r7, #28
+ 451              		.cfi_def_cfa_offset 12
+ 452 0214 BD46     		mov	sp, r7
+ 453              		.cfi_def_cfa_register 13
+ 454              		@ sp needed
+ 455 0216 90BD     		pop	{r4, r7, pc}
+ 456              	.L18:
+ 457              		.align	2
+ 458              	.L17:
+ 459 0218 505C0040 		.word	1073765456
+ 460 021c 8080FFFF 		.word	-32640
+ 461 0220 00020000 		.word	.LC0-(.LPIC0+4)
+ 462              		.cfi_endproc
+ 463              	.LFE2:
+ 465              		.section	.text.st_usbfs_endpoints_reset,"ax",%progbits
+ 466              		.align	1
+ 467              		.global	st_usbfs_endpoints_reset
+ 468              		.syntax unified
+ 469              		.thumb
+ 470              		.thumb_func
+ 471              		.fpu softvfp
+ 473              	st_usbfs_endpoints_reset:
+ 474              	.LFB3:
+ 123:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 124:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_endpoints_reset(usbd_device *dev)
+ 125:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 475              		.loc 1 125 1
+ 476              		.cfi_startproc
+ 477              		@ args = 0, pretend = 0, frame = 16
+ 478              		@ frame_needed = 1, uses_anonymous_args = 0
+ 479              		@ link register save eliminated.
+ 480 0000 90B4     		push	{r4, r7}
+ 481              		.cfi_def_cfa_offset 8
+ 482              		.cfi_offset 4, -8
+ 483              		.cfi_offset 7, -4
+ 484 0002 84B0     		sub	sp, sp, #16
+ 485              		.cfi_def_cfa_offset 24
+ 486 0004 00AF     		add	r7, sp, #0
+ 487              		.cfi_def_cfa_register 7
+ 488 0006 7860     		str	r0, [r7, #4]
+ 126:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	int i;
+ 127:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 128:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* Reset all endpoints. */
+ 129:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	for (i = 1; i < 8; i++) {
+ 489              		.loc 1 129 9
+ 490 0008 0123     		movs	r3, #1
+ 491 000a FB60     		str	r3, [r7, #12]
+ 492              		.loc 1 129 2
+ 493 000c 30E0     		b	.L20
+ 494              	.L21:
+ 495              	.LBB5:
+ 130:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(i, USB_EP_TX_STAT_DISABLED);
+ 496              		.loc 1 130 3 discriminator 3
+ 497 000e FB68     		ldr	r3, [r7, #12]
+ 498 0010 9B00     		lsls	r3, r3, #2
+ 499 0012 03F18043 		add	r3, r3, #1073741824
+ 500 0016 03F5B843 		add	r3, r3, #23552
+ 501 001a 1B68     		ldr	r3, [r3]
+ 502 001c 9BB2     		uxth	r3, r3
+ 503 001e 23F4E043 		bic	r3, r3, #28672
+ 504 0022 23F04003 		bic	r3, r3, #64
+ 505 0026 9CB2     		uxth	r4, r3
+ 506 0028 1A4B     		ldr	r3, .L22
+ 507 002a 2343     		orrs	r3, r3, r4
+ 508 002c 9AB2     		uxth	r2, r3
+ 509 002e FB68     		ldr	r3, [r7, #12]
+ 510 0030 9B00     		lsls	r3, r3, #2
+ 511 0032 03F18043 		add	r3, r3, #1073741824
+ 512 0036 03F5B843 		add	r3, r3, #23552
+ 513 003a 1A60     		str	r2, [r3]
+ 514              	.LBE5:
+ 515              	.LBB6:
+ 131:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(i, USB_EP_RX_STAT_DISABLED);
+ 516              		.loc 1 131 3 discriminator 3
+ 517 003c FB68     		ldr	r3, [r7, #12]
+ 518 003e 9B00     		lsls	r3, r3, #2
+ 519 0040 03F18043 		add	r3, r3, #1073741824
+ 520 0044 03F5B843 		add	r3, r3, #23552
+ 521 0048 1B68     		ldr	r3, [r3]
+ 522 004a 9BB2     		uxth	r3, r3
+ 523 004c 23F48043 		bic	r3, r3, #16384
+ 524 0050 23F07003 		bic	r3, r3, #112
+ 525 0054 9CB2     		uxth	r4, r3
+ 526 0056 0F4B     		ldr	r3, .L22
+ 527 0058 2343     		orrs	r3, r3, r4
+ 528 005a 9AB2     		uxth	r2, r3
+ 529 005c FB68     		ldr	r3, [r7, #12]
+ 530 005e 9B00     		lsls	r3, r3, #2
+ 531 0060 03F18043 		add	r3, r3, #1073741824
+ 532 0064 03F5B843 		add	r3, r3, #23552
+ 533 0068 1A60     		str	r2, [r3]
+ 534              	.LBE6:
+ 129:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(i, USB_EP_TX_STAT_DISABLED);
+ 535              		.loc 1 129 22 discriminator 3
+ 536 006a FB68     		ldr	r3, [r7, #12]
+ 537 006c 0133     		adds	r3, r3, #1
+ 538 006e FB60     		str	r3, [r7, #12]
+ 539              	.L20:
+ 129:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(i, USB_EP_TX_STAT_DISABLED);
+ 540              		.loc 1 129 2 discriminator 1
+ 541 0070 FB68     		ldr	r3, [r7, #12]
+ 542 0072 072B     		cmp	r3, #7
+ 543 0074 CBDD     		ble	.L21
+ 132:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 133:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	dev->pm_top = USBD_PM_TOP + (2 * dev->desc->bMaxPacketSize0);
+ 544              		.loc 1 133 38
+ 545 0076 7B68     		ldr	r3, [r7, #4]
+ 546 0078 1B68     		ldr	r3, [r3]
+ 547              		.loc 1 133 44
+ 548 007a DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 549              		.loc 1 133 28
+ 550 007c 2033     		adds	r3, r3, #32
+ 551              		.loc 1 133 14
+ 552 007e 9BB2     		uxth	r3, r3
+ 553 0080 5B00     		lsls	r3, r3, #1
+ 554 0082 9AB2     		uxth	r2, r3
+ 555 0084 7B68     		ldr	r3, [r7, #4]
+ 556 0086 1A83     		strh	r2, [r3, #24]	@ movhi
+ 134:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 557              		.loc 1 134 1
+ 558 0088 00BF     		nop
+ 559 008a 1037     		adds	r7, r7, #16
+ 560              		.cfi_def_cfa_offset 8
+ 561 008c BD46     		mov	sp, r7
+ 562              		.cfi_def_cfa_register 13
+ 563              		@ sp needed
+ 564 008e 90BC     		pop	{r4, r7}
+ 565              		.cfi_restore 7
+ 566              		.cfi_restore 4
+ 567              		.cfi_def_cfa_offset 0
+ 568 0090 7047     		bx	lr
+ 569              	.L23:
+ 570 0092 00BF     		.align	2
+ 571              	.L22:
+ 572 0094 8080FFFF 		.word	-32640
+ 573              		.cfi_endproc
+ 574              	.LFE3:
+ 576              		.section	.text.st_usbfs_ep_stall_set,"ax",%progbits
+ 577              		.align	1
+ 578              		.global	st_usbfs_ep_stall_set
+ 579              		.syntax unified
+ 580              		.thumb
+ 581              		.thumb_func
+ 582              		.fpu softvfp
+ 584              	st_usbfs_ep_stall_set:
+ 585              	.LFB4:
+ 135:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 136:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_ep_stall_set(usbd_device *dev, uint8_t addr,
+ 137:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   uint8_t stall)
+ 138:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 586              		.loc 1 138 1
+ 587              		.cfi_startproc
+ 588              		@ args = 0, pretend = 0, frame = 8
+ 589              		@ frame_needed = 1, uses_anonymous_args = 0
+ 590              		@ link register save eliminated.
+ 591 0000 90B4     		push	{r4, r7}
+ 592              		.cfi_def_cfa_offset 8
+ 593              		.cfi_offset 4, -8
+ 594              		.cfi_offset 7, -4
+ 595 0002 82B0     		sub	sp, sp, #8
+ 596              		.cfi_def_cfa_offset 16
+ 597 0004 00AF     		add	r7, sp, #0
+ 598              		.cfi_def_cfa_register 7
+ 599 0006 7860     		str	r0, [r7, #4]
+ 600 0008 0B46     		mov	r3, r1
+ 601 000a FB70     		strb	r3, [r7, #3]
+ 602 000c 1346     		mov	r3, r2
+ 603 000e BB70     		strb	r3, [r7, #2]
+ 139:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+ 140:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (addr == 0) {
+ 604              		.loc 1 140 5
+ 605 0010 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 606 0012 002B     		cmp	r3, #0
+ 607 0014 20D1     		bne	.L25
+ 608              	.LBB7:
+ 141:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(addr, stall ? USB_EP_TX_STAT_STALL :
+ 609              		.loc 1 141 3
+ 610 0016 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 611 0018 9B00     		lsls	r3, r3, #2
+ 612 001a 03F18043 		add	r3, r3, #1073741824
+ 613 001e 03F5B843 		add	r3, r3, #23552
+ 614 0022 1B68     		ldr	r3, [r3]
+ 615 0024 9BB2     		uxth	r3, r3
+ 616 0026 23F4E043 		bic	r3, r3, #28672
+ 617 002a 23F04003 		bic	r3, r3, #64
+ 618 002e 9CB2     		uxth	r4, r3
+ 619 0030 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 620 0032 002B     		cmp	r3, #0
+ 621 0034 01D0     		beq	.L26
+ 622              		.loc 1 141 3 is_stmt 0 discriminator 1
+ 623 0036 1022     		movs	r2, #16
+ 624 0038 00E0     		b	.L27
+ 625              	.L26:
+ 626              		.loc 1 141 3 discriminator 2
+ 627 003a 2022     		movs	r2, #32
+ 628              	.L27:
+ 629              		.loc 1 141 3 discriminator 4
+ 630 003c 23B2     		sxth	r3, r4
+ 631 003e 5340     		eors	r3, r3, r2
+ 632 0040 1BB2     		sxth	r3, r3
+ 633 0042 9CB2     		uxth	r4, r3
+ 634 0044 434B     		ldr	r3, .L37
+ 635 0046 2343     		orrs	r3, r3, r4
+ 636 0048 9AB2     		uxth	r2, r3
+ 637 004a FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 638 004c 9B00     		lsls	r3, r3, #2
+ 639 004e 03F18043 		add	r3, r3, #1073741824
+ 640 0052 03F5B843 		add	r3, r3, #23552
+ 641 0056 1A60     		str	r2, [r3]
+ 642              	.L25:
+ 643              	.LBE7:
+ 142:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_TX_STAT_NAK);
+ 143:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 144:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 145:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (addr & 0x80) {
+ 644              		.loc 1 145 6 is_stmt 1
+ 645 0058 97F90330 		ldrsb	r3, [r7, #3]
+ 646              		.loc 1 145 5
+ 647 005c 002B     		cmp	r3, #0
+ 648 005e 3BDA     		bge	.L28
+ 146:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		addr &= 0x7F;
+ 649              		.loc 1 146 8
+ 650 0060 FB78     		ldrb	r3, [r7, #3]
+ 651 0062 03F07F03 		and	r3, r3, #127
+ 652 0066 FB70     		strb	r3, [r7, #3]
+ 653              	.LBB8:
+ 147:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 148:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_TX_STAT(addr, stall ? USB_EP_TX_STAT_STALL :
+ 654              		.loc 1 148 3
+ 655 0068 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 656 006a 9B00     		lsls	r3, r3, #2
+ 657 006c 03F18043 		add	r3, r3, #1073741824
+ 658 0070 03F5B843 		add	r3, r3, #23552
+ 659 0074 1B68     		ldr	r3, [r3]
+ 660 0076 9BB2     		uxth	r3, r3
+ 661 0078 23F4E043 		bic	r3, r3, #28672
+ 662 007c 23F04003 		bic	r3, r3, #64
+ 663 0080 9CB2     		uxth	r4, r3
+ 664 0082 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 665 0084 002B     		cmp	r3, #0
+ 666 0086 01D0     		beq	.L29
+ 667              		.loc 1 148 3 is_stmt 0 discriminator 1
+ 668 0088 1022     		movs	r2, #16
+ 669 008a 00E0     		b	.L30
+ 670              	.L29:
+ 671              		.loc 1 148 3 discriminator 2
+ 672 008c 2022     		movs	r2, #32
+ 673              	.L30:
+ 674              		.loc 1 148 3 discriminator 4
+ 675 008e 23B2     		sxth	r3, r4
+ 676 0090 5340     		eors	r3, r3, r2
+ 677 0092 1BB2     		sxth	r3, r3
+ 678 0094 9CB2     		uxth	r4, r3
+ 679 0096 2F4B     		ldr	r3, .L37
+ 680 0098 2343     		orrs	r3, r3, r4
+ 681 009a 9AB2     		uxth	r2, r3
+ 682 009c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 683 009e 9B00     		lsls	r3, r3, #2
+ 684 00a0 03F18043 		add	r3, r3, #1073741824
+ 685 00a4 03F5B843 		add	r3, r3, #23552
+ 686 00a8 1A60     		str	r2, [r3]
+ 687              	.LBE8:
+ 149:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_TX_STAT_NAK);
+ 150:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 151:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		/* Reset to DATA0 if clearing stall condition. */
+ 152:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (!stall) {
+ 688              		.loc 1 152 6 is_stmt 1 discriminator 4
+ 689 00aa BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 690 00ac 002B     		cmp	r3, #0
+ 691 00ae 4CD1     		bne	.L36
+ 153:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			USB_CLR_EP_TX_DTOG(addr);
+ 692              		.loc 1 153 4
+ 693 00b0 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 694 00b2 9B00     		lsls	r3, r3, #2
+ 695 00b4 03F18043 		add	r3, r3, #1073741824
+ 696 00b8 03F5B843 		add	r3, r3, #23552
+ 697 00bc 1B68     		ldr	r3, [r3]
+ 698 00be 9BB2     		uxth	r3, r3
+ 699 00c0 1946     		mov	r1, r3
+ 700 00c2 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 701 00c4 9B00     		lsls	r3, r3, #2
+ 702 00c6 03F18043 		add	r3, r3, #1073741824
+ 703 00ca 03F5B843 		add	r3, r3, #23552
+ 704 00ce 48F6CF72 		movw	r2, #36815
+ 705 00d2 0A40     		ands	r2, r2, r1
+ 706 00d4 1A60     		str	r2, [r3]
+ 154:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 155:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	} else {
+ 156:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		/* Reset to DATA0 if clearing stall condition. */
+ 157:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (!stall) {
+ 158:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			USB_CLR_EP_RX_DTOG(addr);
+ 159:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 160:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 161:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(addr, stall ? USB_EP_RX_STAT_STALL :
+ 162:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_RX_STAT_VALID);
+ 163:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 164:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 707              		.loc 1 164 1
+ 708 00d6 38E0     		b	.L36
+ 709              	.L28:
+ 157:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			USB_CLR_EP_RX_DTOG(addr);
+ 710              		.loc 1 157 6
+ 711 00d8 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 712 00da 002B     		cmp	r3, #0
+ 713 00dc 12D1     		bne	.L33
+ 158:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 714              		.loc 1 158 4
+ 715 00de FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 716 00e0 9B00     		lsls	r3, r3, #2
+ 717 00e2 03F18043 		add	r3, r3, #1073741824
+ 718 00e6 03F5B843 		add	r3, r3, #23552
+ 719 00ea 1B68     		ldr	r3, [r3]
+ 720 00ec 9BB2     		uxth	r3, r3
+ 721 00ee 1946     		mov	r1, r3
+ 722 00f0 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 723 00f2 9B00     		lsls	r3, r3, #2
+ 724 00f4 03F18043 		add	r3, r3, #1073741824
+ 725 00f8 03F5B843 		add	r3, r3, #23552
+ 726 00fc 4CF68F72 		movw	r2, #53135
+ 727 0100 0A40     		ands	r2, r2, r1
+ 728 0102 1A60     		str	r2, [r3]
+ 729              	.L33:
+ 730              	.LBB9:
+ 161:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_RX_STAT_VALID);
+ 731              		.loc 1 161 3
+ 732 0104 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 733 0106 9B00     		lsls	r3, r3, #2
+ 734 0108 03F18043 		add	r3, r3, #1073741824
+ 735 010c 03F5B843 		add	r3, r3, #23552
+ 736 0110 1B68     		ldr	r3, [r3]
+ 737 0112 9BB2     		uxth	r3, r3
+ 738 0114 23F48043 		bic	r3, r3, #16384
+ 739 0118 23F07003 		bic	r3, r3, #112
+ 740 011c 9CB2     		uxth	r4, r3
+ 741 011e BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 742 0120 002B     		cmp	r3, #0
+ 743 0122 02D0     		beq	.L34
+ 161:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_RX_STAT_VALID);
+ 744              		.loc 1 161 3 is_stmt 0 discriminator 1
+ 745 0124 4FF48052 		mov	r2, #4096
+ 746 0128 01E0     		b	.L35
+ 747              	.L34:
+ 161:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_RX_STAT_VALID);
+ 748              		.loc 1 161 3 discriminator 2
+ 749 012a 4FF44052 		mov	r2, #12288
+ 750              	.L35:
+ 161:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				   USB_EP_RX_STAT_VALID);
+ 751              		.loc 1 161 3 discriminator 4
+ 752 012e 23B2     		sxth	r3, r4
+ 753 0130 5340     		eors	r3, r3, r2
+ 754 0132 1BB2     		sxth	r3, r3
+ 755 0134 9CB2     		uxth	r4, r3
+ 756 0136 074B     		ldr	r3, .L37
+ 757 0138 2343     		orrs	r3, r3, r4
+ 758 013a 9AB2     		uxth	r2, r3
+ 759 013c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 760 013e 9B00     		lsls	r3, r3, #2
+ 761 0140 03F18043 		add	r3, r3, #1073741824
+ 762 0144 03F5B843 		add	r3, r3, #23552
+ 763 0148 1A60     		str	r2, [r3]
+ 764              	.L36:
+ 765              	.LBE9:
+ 766              		.loc 1 164 1 is_stmt 1
+ 767 014a 00BF     		nop
+ 768 014c 0837     		adds	r7, r7, #8
+ 769              		.cfi_def_cfa_offset 8
+ 770 014e BD46     		mov	sp, r7
+ 771              		.cfi_def_cfa_register 13
+ 772              		@ sp needed
+ 773 0150 90BC     		pop	{r4, r7}
+ 774              		.cfi_restore 7
+ 775              		.cfi_restore 4
+ 776              		.cfi_def_cfa_offset 0
+ 777 0152 7047     		bx	lr
+ 778              	.L38:
+ 779              		.align	2
+ 780              	.L37:
+ 781 0154 8080FFFF 		.word	-32640
+ 782              		.cfi_endproc
+ 783              	.LFE4:
+ 785              		.section	.text.st_usbfs_ep_stall_get,"ax",%progbits
+ 786              		.align	1
+ 787              		.global	st_usbfs_ep_stall_get
+ 788              		.syntax unified
+ 789              		.thumb
+ 790              		.thumb_func
+ 791              		.fpu softvfp
+ 793              	st_usbfs_ep_stall_get:
+ 794              	.LFB5:
+ 165:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 166:../libopencm3/lib/stm32/common/st_usbfs_core.c **** uint8_t st_usbfs_ep_stall_get(usbd_device *dev, uint8_t addr)
+ 167:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 795              		.loc 1 167 1
+ 796              		.cfi_startproc
+ 797              		@ args = 0, pretend = 0, frame = 8
+ 798              		@ frame_needed = 1, uses_anonymous_args = 0
+ 799              		@ link register save eliminated.
+ 800 0000 80B4     		push	{r7}
+ 801              		.cfi_def_cfa_offset 4
+ 802              		.cfi_offset 7, -4
+ 803 0002 83B0     		sub	sp, sp, #12
+ 804              		.cfi_def_cfa_offset 16
+ 805 0004 00AF     		add	r7, sp, #0
+ 806              		.cfi_def_cfa_register 7
+ 807 0006 7860     		str	r0, [r7, #4]
+ 808 0008 0B46     		mov	r3, r1
+ 809 000a FB70     		strb	r3, [r7, #3]
+ 168:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+ 169:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (addr & 0x80) {
+ 810              		.loc 1 169 6
+ 811 000c 97F90330 		ldrsb	r3, [r7, #3]
+ 812              		.loc 1 169 5
+ 813 0010 002B     		cmp	r3, #0
+ 814 0012 0EDA     		bge	.L40
+ 170:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if ((*USB_EP_REG(addr & 0x7F) & USB_EP_TX_STAT) ==
+ 815              		.loc 1 170 9
+ 816 0014 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 817 0016 03F07F03 		and	r3, r3, #127
+ 818 001a 9B00     		lsls	r3, r3, #2
+ 819 001c 03F18043 		add	r3, r3, #1073741824
+ 820 0020 03F5B843 		add	r3, r3, #23552
+ 821              		.loc 1 170 8
+ 822 0024 1B68     		ldr	r3, [r3]
+ 823              		.loc 1 170 33
+ 824 0026 03F03003 		and	r3, r3, #48
+ 825              		.loc 1 170 6
+ 826 002a 102B     		cmp	r3, #16
+ 827 002c 0FD1     		bne	.L41
+ 171:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		    USB_EP_TX_STAT_STALL) {
+ 172:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			return 1;
+ 828              		.loc 1 172 11
+ 829 002e 0123     		movs	r3, #1
+ 830 0030 0EE0     		b	.L42
+ 831              	.L40:
+ 173:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 174:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	} else {
+ 175:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if ((*USB_EP_REG(addr) & USB_EP_RX_STAT) ==
+ 832              		.loc 1 175 9
+ 833 0032 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 834 0034 9B00     		lsls	r3, r3, #2
+ 835 0036 03F18043 		add	r3, r3, #1073741824
+ 836 003a 03F5B843 		add	r3, r3, #23552
+ 837              		.loc 1 175 8
+ 838 003e 1B68     		ldr	r3, [r3]
+ 839              		.loc 1 175 26
+ 840 0040 03F44053 		and	r3, r3, #12288
+ 841              		.loc 1 175 6
+ 842 0044 B3F5805F 		cmp	r3, #4096
+ 843 0048 01D1     		bne	.L41
+ 176:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		    USB_EP_RX_STAT_STALL) {
+ 177:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			return 1;
+ 844              		.loc 1 177 11
+ 845 004a 0123     		movs	r3, #1
+ 846 004c 00E0     		b	.L42
+ 847              	.L41:
+ 178:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 179:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 180:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	return 0;
+ 848              		.loc 1 180 9
+ 849 004e 0023     		movs	r3, #0
+ 850              	.L42:
+ 181:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 851              		.loc 1 181 1
+ 852 0050 1846     		mov	r0, r3
+ 853 0052 0C37     		adds	r7, r7, #12
+ 854              		.cfi_def_cfa_offset 4
+ 855 0054 BD46     		mov	sp, r7
+ 856              		.cfi_def_cfa_register 13
+ 857              		@ sp needed
+ 858 0056 80BC     		pop	{r7}
+ 859              		.cfi_restore 7
+ 860              		.cfi_def_cfa_offset 0
+ 861 0058 7047     		bx	lr
+ 862              		.cfi_endproc
+ 863              	.LFE5:
+ 865              		.section	.text.st_usbfs_ep_nak_set,"ax",%progbits
+ 866              		.align	1
+ 867              		.global	st_usbfs_ep_nak_set
+ 868              		.syntax unified
+ 869              		.thumb
+ 870              		.thumb_func
+ 871              		.fpu softvfp
+ 873              	st_usbfs_ep_nak_set:
+ 874              	.LFB6:
+ 182:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 183:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_ep_nak_set(usbd_device *dev, uint8_t addr, uint8_t nak)
+ 184:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 875              		.loc 1 184 1
+ 876              		.cfi_startproc
+ 877              		@ args = 0, pretend = 0, frame = 8
+ 878              		@ frame_needed = 1, uses_anonymous_args = 0
+ 879              		@ link register save eliminated.
+ 880 0000 90B4     		push	{r4, r7}
+ 881              		.cfi_def_cfa_offset 8
+ 882              		.cfi_offset 4, -8
+ 883              		.cfi_offset 7, -4
+ 884 0002 82B0     		sub	sp, sp, #8
+ 885              		.cfi_def_cfa_offset 16
+ 886 0004 00AF     		add	r7, sp, #0
+ 887              		.cfi_def_cfa_register 7
+ 888 0006 7860     		str	r0, [r7, #4]
+ 889 0008 0B46     		mov	r3, r1
+ 890 000a FB70     		strb	r3, [r7, #3]
+ 891 000c 1346     		mov	r3, r2
+ 892 000e BB70     		strb	r3, [r7, #2]
+ 185:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+ 186:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	/* It does not make sense to force NAK on IN endpoints. */
+ 187:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (addr & 0x80) {
+ 893              		.loc 1 187 6
+ 894 0010 97F90330 		ldrsb	r3, [r7, #3]
+ 895              		.loc 1 187 5
+ 896 0014 002B     		cmp	r3, #0
+ 897 0016 3FDB     		blt	.L47
+ 188:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		return;
+ 189:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 190:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 191:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	st_usbfs_force_nak[addr] = nak;
+ 898              		.loc 1 191 20
+ 899 0018 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 900              		.loc 1 191 27
+ 901 001a 234A     		ldr	r2, .L48+4
+ 902 001c 59F80220 		ldr	r2, [r9, r2]
+ 903 0020 1146     		mov	r1, r2
+ 904 0022 BA78     		ldrb	r2, [r7, #2]
+ 905 0024 CA54     		strb	r2, [r1, r3]
+ 192:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 193:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (nak) {
+ 906              		.loc 1 193 5
+ 907 0026 BB78     		ldrb	r3, [r7, #2]	@ zero_extendqisi2
+ 908 0028 002B     		cmp	r3, #0
+ 909 002a 1AD0     		beq	.L46
+ 910              	.LBB10:
+ 194:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(addr, USB_EP_RX_STAT_NAK);
+ 911              		.loc 1 194 3
+ 912 002c FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 913 002e 9B00     		lsls	r3, r3, #2
+ 914 0030 03F18043 		add	r3, r3, #1073741824
+ 915 0034 03F5B843 		add	r3, r3, #23552
+ 916 0038 1B68     		ldr	r3, [r3]
+ 917 003a 9BB2     		uxth	r3, r3
+ 918 003c 23F48043 		bic	r3, r3, #16384
+ 919 0040 23F07003 		bic	r3, r3, #112
+ 920 0044 9CB2     		uxth	r4, r3
+ 921 0046 84F40053 		eor	r3, r4, #8192
+ 922 004a 9CB2     		uxth	r4, r3
+ 923 004c 154B     		ldr	r3, .L48
+ 924 004e 2343     		orrs	r3, r3, r4
+ 925 0050 9AB2     		uxth	r2, r3
+ 926 0052 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 927 0054 9B00     		lsls	r3, r3, #2
+ 928 0056 03F18043 		add	r3, r3, #1073741824
+ 929 005a 03F5B843 		add	r3, r3, #23552
+ 930 005e 1A60     		str	r2, [r3]
+ 931              	.LBE10:
+ 932 0060 1BE0     		b	.L43
+ 933              	.L46:
+ 934              	.LBB11:
+ 195:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	} else {
+ 196:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(addr, USB_EP_RX_STAT_VALID);
+ 935              		.loc 1 196 3
+ 936 0062 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 937 0064 9B00     		lsls	r3, r3, #2
+ 938 0066 03F18043 		add	r3, r3, #1073741824
+ 939 006a 03F5B843 		add	r3, r3, #23552
+ 940 006e 1B68     		ldr	r3, [r3]
+ 941 0070 9BB2     		uxth	r3, r3
+ 942 0072 23F48043 		bic	r3, r3, #16384
+ 943 0076 23F07003 		bic	r3, r3, #112
+ 944 007a 9CB2     		uxth	r4, r3
+ 945 007c 84F44053 		eor	r3, r4, #12288
+ 946 0080 9CB2     		uxth	r4, r3
+ 947 0082 084B     		ldr	r3, .L48
+ 948 0084 2343     		orrs	r3, r3, r4
+ 949 0086 9AB2     		uxth	r2, r3
+ 950 0088 FB78     		ldrb	r3, [r7, #3]	@ zero_extendqisi2
+ 951 008a 9B00     		lsls	r3, r3, #2
+ 952 008c 03F18043 		add	r3, r3, #1073741824
+ 953 0090 03F5B843 		add	r3, r3, #23552
+ 954 0094 1A60     		str	r2, [r3]
+ 955 0096 00E0     		b	.L43
+ 956              	.L47:
+ 957              	.LBE11:
+ 188:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 958              		.loc 1 188 3
+ 959 0098 00BF     		nop
+ 960              	.L43:
+ 197:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 198:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 961              		.loc 1 198 1
+ 962 009a 0837     		adds	r7, r7, #8
+ 963              		.cfi_def_cfa_offset 8
+ 964 009c BD46     		mov	sp, r7
+ 965              		.cfi_def_cfa_register 13
+ 966              		@ sp needed
+ 967 009e 90BC     		pop	{r4, r7}
+ 968              		.cfi_restore 7
+ 969              		.cfi_restore 4
+ 970              		.cfi_def_cfa_offset 0
+ 971 00a0 7047     		bx	lr
+ 972              	.L49:
+ 973 00a2 00BF     		.align	2
+ 974              	.L48:
+ 975 00a4 8080FFFF 		.word	-32640
+ 976 00a8 00000000 		.word	st_usbfs_force_nak(GOT)
+ 977              		.cfi_endproc
+ 978              	.LFE6:
+ 980              		.section	.text.st_usbfs_ep_write_packet,"ax",%progbits
+ 981              		.align	1
+ 982              		.global	st_usbfs_ep_write_packet
+ 983              		.syntax unified
+ 984              		.thumb
+ 985              		.thumb_func
+ 986              		.fpu softvfp
+ 988              	st_usbfs_ep_write_packet:
+ 989              	.LFB7:
+ 199:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 200:../libopencm3/lib/stm32/common/st_usbfs_core.c **** uint16_t st_usbfs_ep_write_packet(usbd_device *dev, uint8_t addr,
+ 201:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				     const void *buf, uint16_t len)
+ 202:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 990              		.loc 1 202 1
+ 991              		.cfi_startproc
+ 992              		@ args = 0, pretend = 0, frame = 16
+ 993              		@ frame_needed = 1, uses_anonymous_args = 0
+ 994 0000 90B5     		push	{r4, r7, lr}
+ 995              		.cfi_def_cfa_offset 12
+ 996              		.cfi_offset 4, -12
+ 997              		.cfi_offset 7, -8
+ 998              		.cfi_offset 14, -4
+ 999 0002 85B0     		sub	sp, sp, #20
+ 1000              		.cfi_def_cfa_offset 32
+ 1001 0004 00AF     		add	r7, sp, #0
+ 1002              		.cfi_def_cfa_register 7
+ 1003 0006 F860     		str	r0, [r7, #12]
+ 1004 0008 7A60     		str	r2, [r7, #4]
+ 1005 000a 1A46     		mov	r2, r3
+ 1006 000c 0B46     		mov	r3, r1
+ 1007 000e FB72     		strb	r3, [r7, #11]
+ 1008 0010 1346     		mov	r3, r2	@ movhi
+ 1009 0012 3B81     		strh	r3, [r7, #8]	@ movhi
+ 203:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+ 204:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	addr &= 0x7F;
+ 1010              		.loc 1 204 7
+ 1011 0014 FB7A     		ldrb	r3, [r7, #11]
+ 1012 0016 03F07F03 		and	r3, r3, #127
+ 1013 001a FB72     		strb	r3, [r7, #11]
+ 205:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 206:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if ((*USB_EP_REG(addr) & USB_EP_TX_STAT) == USB_EP_TX_STAT_VALID) {
+ 1014              		.loc 1 206 8
+ 1015 001c FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1016 001e 9B00     		lsls	r3, r3, #2
+ 1017 0020 03F18043 		add	r3, r3, #1073741824
+ 1018 0024 03F5B843 		add	r3, r3, #23552
+ 1019              		.loc 1 206 7
+ 1020 0028 1B68     		ldr	r3, [r3]
+ 1021              		.loc 1 206 25
+ 1022 002a 03F03003 		and	r3, r3, #48
+ 1023              		.loc 1 206 5
+ 1024 002e 302B     		cmp	r3, #48
+ 1025 0030 01D1     		bne	.L51
+ 207:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		return 0;
+ 1026              		.loc 1 207 10
+ 1027 0032 0023     		movs	r3, #0
+ 1028 0034 43E0     		b	.L52
+ 1029              	.L51:
+ 208:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 209:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 210:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	st_usbfs_copy_to_pm(USB_GET_EP_TX_BUFF(addr), buf, len);
+ 1030              		.loc 1 210 22
+ 1031 0036 244B     		ldr	r3, .L53
+ 1032 0038 1B68     		ldr	r3, [r3]
+ 1033 003a 9BB2     		uxth	r3, r3
+ 1034 003c 1A46     		mov	r2, r3
+ 1035 003e FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1036 0040 DB00     		lsls	r3, r3, #3
+ 1037 0042 1344     		add	r3, r3, r2
+ 1038 0044 5B00     		lsls	r3, r3, #1
+ 1039 0046 03F18043 		add	r3, r3, #1073741824
+ 1040 004a 03F5C043 		add	r3, r3, #24576
+ 1041 004e 1B68     		ldr	r3, [r3]
+ 1042 0050 9BB2     		uxth	r3, r3
+ 1043 0052 5B00     		lsls	r3, r3, #1
+ 1044 0054 03F18043 		add	r3, r3, #1073741824
+ 1045 0058 03F5C043 		add	r3, r3, #24576
+ 1046              		.loc 1 210 2
+ 1047 005c 1846     		mov	r0, r3
+ 1048 005e 3B89     		ldrh	r3, [r7, #8]
+ 1049 0060 1A46     		mov	r2, r3
+ 1050 0062 7968     		ldr	r1, [r7, #4]
+ 1051 0064 FFF7FEFF 		bl	st_usbfs_copy_to_pm(PLT)
+ 211:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_SET_EP_TX_COUNT(addr, len);
+ 1052              		.loc 1 211 2
+ 1053 0068 174B     		ldr	r3, .L53
+ 1054 006a 1B68     		ldr	r3, [r3]
+ 1055 006c 9BB2     		uxth	r3, r3
+ 1056 006e 1A46     		mov	r2, r3
+ 1057 0070 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1058 0072 DB00     		lsls	r3, r3, #3
+ 1059 0074 1344     		add	r3, r3, r2
+ 1060 0076 0233     		adds	r3, r3, #2
+ 1061 0078 5B00     		lsls	r3, r3, #1
+ 1062 007a 03F18043 		add	r3, r3, #1073741824
+ 1063 007e 03F5C043 		add	r3, r3, #24576
+ 1064 0082 1A46     		mov	r2, r3
+ 1065 0084 3B89     		ldrh	r3, [r7, #8]
+ 1066 0086 1360     		str	r3, [r2]
+ 1067              	.LBB12:
+ 212:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_SET_EP_TX_STAT(addr, USB_EP_TX_STAT_VALID);
+ 1068              		.loc 1 212 2
+ 1069 0088 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1070 008a 9B00     		lsls	r3, r3, #2
+ 1071 008c 03F18043 		add	r3, r3, #1073741824
+ 1072 0090 03F5B843 		add	r3, r3, #23552
+ 1073 0094 1B68     		ldr	r3, [r3]
+ 1074 0096 9BB2     		uxth	r3, r3
+ 1075 0098 23F4E043 		bic	r3, r3, #28672
+ 1076 009c 23F04003 		bic	r3, r3, #64
+ 1077 00a0 9CB2     		uxth	r4, r3
+ 1078 00a2 84F03003 		eor	r3, r4, #48
+ 1079 00a6 9CB2     		uxth	r4, r3
+ 1080 00a8 084B     		ldr	r3, .L53+4
+ 1081 00aa 2343     		orrs	r3, r3, r4
+ 1082 00ac 9AB2     		uxth	r2, r3
+ 1083 00ae FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1084 00b0 9B00     		lsls	r3, r3, #2
+ 1085 00b2 03F18043 		add	r3, r3, #1073741824
+ 1086 00b6 03F5B843 		add	r3, r3, #23552
+ 1087 00ba 1A60     		str	r2, [r3]
+ 1088              	.LBE12:
+ 213:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 214:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	return len;
+ 1089              		.loc 1 214 9
+ 1090 00bc 3B89     		ldrh	r3, [r7, #8]
+ 1091              	.L52:
+ 215:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 1092              		.loc 1 215 1
+ 1093 00be 1846     		mov	r0, r3
+ 1094 00c0 1437     		adds	r7, r7, #20
+ 1095              		.cfi_def_cfa_offset 12
+ 1096 00c2 BD46     		mov	sp, r7
+ 1097              		.cfi_def_cfa_register 13
+ 1098              		@ sp needed
+ 1099 00c4 90BD     		pop	{r4, r7, pc}
+ 1100              	.L54:
+ 1101 00c6 00BF     		.align	2
+ 1102              	.L53:
+ 1103 00c8 505C0040 		.word	1073765456
+ 1104 00cc 8080FFFF 		.word	-32640
+ 1105              		.cfi_endproc
+ 1106              	.LFE7:
+ 1108              		.section	.text.st_usbfs_ep_read_packet,"ax",%progbits
+ 1109              		.align	1
+ 1110              		.global	st_usbfs_ep_read_packet
+ 1111              		.syntax unified
+ 1112              		.thumb
+ 1113              		.thumb_func
+ 1114              		.fpu softvfp
+ 1116              	st_usbfs_ep_read_packet:
+ 1117              	.LFB8:
+ 216:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 217:../libopencm3/lib/stm32/common/st_usbfs_core.c **** uint16_t st_usbfs_ep_read_packet(usbd_device *dev, uint8_t addr,
+ 218:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 					 void *buf, uint16_t len)
+ 219:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 1118              		.loc 1 219 1
+ 1119              		.cfi_startproc
+ 1120              		@ args = 0, pretend = 0, frame = 16
+ 1121              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1122 0000 90B5     		push	{r4, r7, lr}
+ 1123              		.cfi_def_cfa_offset 12
+ 1124              		.cfi_offset 4, -12
+ 1125              		.cfi_offset 7, -8
+ 1126              		.cfi_offset 14, -4
+ 1127 0002 85B0     		sub	sp, sp, #20
+ 1128              		.cfi_def_cfa_offset 32
+ 1129 0004 00AF     		add	r7, sp, #0
+ 1130              		.cfi_def_cfa_register 7
+ 1131 0006 F860     		str	r0, [r7, #12]
+ 1132 0008 7A60     		str	r2, [r7, #4]
+ 1133 000a 1A46     		mov	r2, r3
+ 1134 000c 0B46     		mov	r3, r1
+ 1135 000e FB72     		strb	r3, [r7, #11]
+ 1136 0010 1346     		mov	r3, r2	@ movhi
+ 1137 0012 3B81     		strh	r3, [r7, #8]	@ movhi
+ 220:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	(void)dev;
+ 221:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if ((*USB_EP_REG(addr) & USB_EP_RX_STAT) == USB_EP_RX_STAT_VALID) {
+ 1138              		.loc 1 221 8
+ 1139 0014 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1140 0016 9B00     		lsls	r3, r3, #2
+ 1141 0018 03F18043 		add	r3, r3, #1073741824
+ 1142 001c 03F5B843 		add	r3, r3, #23552
+ 1143              		.loc 1 221 7
+ 1144 0020 1B68     		ldr	r3, [r3]
+ 1145              		.loc 1 221 25
+ 1146 0022 03F44053 		and	r3, r3, #12288
+ 1147              		.loc 1 221 5
+ 1148 0026 B3F5405F 		cmp	r3, #12288
+ 1149 002a 01D1     		bne	.L56
+ 222:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		return 0;
+ 1150              		.loc 1 222 10
+ 1151 002c 0023     		movs	r3, #0
+ 1152 002e 7BE0     		b	.L57
+ 1153              	.L56:
+ 223:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 224:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 225:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	len = MIN(USB_GET_EP_RX_COUNT(addr) & 0x3ff, len);
+ 1154              		.loc 1 225 8
+ 1155 0030 3F4B     		ldr	r3, .L61
+ 1156 0032 1B68     		ldr	r3, [r3]
+ 1157 0034 9BB2     		uxth	r3, r3
+ 1158 0036 1A46     		mov	r2, r3
+ 1159 0038 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1160 003a DB00     		lsls	r3, r3, #3
+ 1161 003c 1344     		add	r3, r3, r2
+ 1162 003e 0633     		adds	r3, r3, #6
+ 1163 0040 5B00     		lsls	r3, r3, #1
+ 1164 0042 03F18043 		add	r3, r3, #1073741824
+ 1165 0046 03F5C043 		add	r3, r3, #24576
+ 1166 004a 1B68     		ldr	r3, [r3]
+ 1167 004c 9BB2     		uxth	r3, r3
+ 1168 004e C3F30902 		ubfx	r2, r3, #0, #10
+ 1169 0052 3B89     		ldrh	r3, [r7, #8]
+ 1170              		.loc 1 225 6
+ 1171 0054 9A42     		cmp	r2, r3
+ 1172 0056 12DA     		bge	.L58
+ 1173              		.loc 1 225 8 discriminator 1
+ 1174 0058 354B     		ldr	r3, .L61
+ 1175 005a 1B68     		ldr	r3, [r3]
+ 1176 005c 9BB2     		uxth	r3, r3
+ 1177 005e 1A46     		mov	r2, r3
+ 1178 0060 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1179 0062 DB00     		lsls	r3, r3, #3
+ 1180 0064 1344     		add	r3, r3, r2
+ 1181 0066 0633     		adds	r3, r3, #6
+ 1182 0068 5B00     		lsls	r3, r3, #1
+ 1183 006a 03F18043 		add	r3, r3, #1073741824
+ 1184 006e 03F5C043 		add	r3, r3, #24576
+ 1185 0072 1B68     		ldr	r3, [r3]
+ 1186 0074 9BB2     		uxth	r3, r3
+ 1187              		.loc 1 225 6 discriminator 1
+ 1188 0076 C3F30903 		ubfx	r3, r3, #0, #10
+ 1189 007a 9BB2     		uxth	r3, r3
+ 1190 007c 00E0     		b	.L59
+ 1191              	.L58:
+ 1192              		.loc 1 225 6 is_stmt 0 discriminator 2
+ 1193 007e 3B89     		ldrh	r3, [r7, #8]
+ 1194              	.L59:
+ 1195              		.loc 1 225 6 discriminator 4
+ 1196 0080 3B81     		strh	r3, [r7, #8]	@ movhi
+ 226:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	st_usbfs_copy_from_pm(buf, USB_GET_EP_RX_BUFF(addr), len);
+ 1197              		.loc 1 226 29 is_stmt 1 discriminator 4
+ 1198 0082 2B4B     		ldr	r3, .L61
+ 1199 0084 1B68     		ldr	r3, [r3]
+ 1200 0086 9BB2     		uxth	r3, r3
+ 1201 0088 1A46     		mov	r2, r3
+ 1202 008a FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1203 008c DB00     		lsls	r3, r3, #3
+ 1204 008e 1344     		add	r3, r3, r2
+ 1205 0090 0433     		adds	r3, r3, #4
+ 1206 0092 5B00     		lsls	r3, r3, #1
+ 1207 0094 03F18043 		add	r3, r3, #1073741824
+ 1208 0098 03F5C043 		add	r3, r3, #24576
+ 1209 009c 1B68     		ldr	r3, [r3]
+ 1210 009e 9BB2     		uxth	r3, r3
+ 1211 00a0 5B00     		lsls	r3, r3, #1
+ 1212 00a2 03F18043 		add	r3, r3, #1073741824
+ 1213 00a6 03F5C043 		add	r3, r3, #24576
+ 1214              		.loc 1 226 2 discriminator 4
+ 1215 00aa 1946     		mov	r1, r3
+ 1216 00ac 3B89     		ldrh	r3, [r7, #8]
+ 1217 00ae 1A46     		mov	r2, r3
+ 1218 00b0 7868     		ldr	r0, [r7, #4]
+ 1219 00b2 FFF7FEFF 		bl	st_usbfs_copy_from_pm(PLT)
+ 227:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	USB_CLR_EP_RX_CTR(addr);
+ 1220              		.loc 1 227 2 discriminator 4
+ 1221 00b6 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1222 00b8 9B00     		lsls	r3, r3, #2
+ 1223 00ba 03F18043 		add	r3, r3, #1073741824
+ 1224 00be 03F5B843 		add	r3, r3, #23552
+ 1225 00c2 1B68     		ldr	r3, [r3]
+ 1226 00c4 1AB2     		sxth	r2, r3
+ 1227 00c6 40F60F73 		movw	r3, #3855
+ 1228 00ca 1340     		ands	r3, r3, r2
+ 1229 00cc 1BB2     		sxth	r3, r3
+ 1230 00ce 43F08003 		orr	r3, r3, #128
+ 1231 00d2 1BB2     		sxth	r3, r3
+ 1232 00d4 9AB2     		uxth	r2, r3
+ 1233 00d6 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1234 00d8 9B00     		lsls	r3, r3, #2
+ 1235 00da 03F18043 		add	r3, r3, #1073741824
+ 1236 00de 03F5B843 		add	r3, r3, #23552
+ 1237 00e2 1A60     		str	r2, [r3]
+ 228:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 229:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (!st_usbfs_force_nak[addr]) {
+ 1238              		.loc 1 229 25 discriminator 4
+ 1239 00e4 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1240 00e6 144A     		ldr	r2, .L61+8
+ 1241 00e8 59F80220 		ldr	r2, [r9, r2]
+ 1242 00ec D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 1243              		.loc 1 229 5 discriminator 4
+ 1244 00ee 002B     		cmp	r3, #0
+ 1245 00f0 19D1     		bne	.L60
+ 1246              	.LBB13:
+ 230:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_SET_EP_RX_STAT(addr, USB_EP_RX_STAT_VALID);
+ 1247              		.loc 1 230 3
+ 1248 00f2 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1249 00f4 9B00     		lsls	r3, r3, #2
+ 1250 00f6 03F18043 		add	r3, r3, #1073741824
+ 1251 00fa 03F5B843 		add	r3, r3, #23552
+ 1252 00fe 1B68     		ldr	r3, [r3]
+ 1253 0100 9BB2     		uxth	r3, r3
+ 1254 0102 23F48043 		bic	r3, r3, #16384
+ 1255 0106 23F07003 		bic	r3, r3, #112
+ 1256 010a 9CB2     		uxth	r4, r3
+ 1257 010c 84F44053 		eor	r3, r4, #12288
+ 1258 0110 9CB2     		uxth	r4, r3
+ 1259 0112 084B     		ldr	r3, .L61+4
+ 1260 0114 2343     		orrs	r3, r3, r4
+ 1261 0116 9AB2     		uxth	r2, r3
+ 1262 0118 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1263 011a 9B00     		lsls	r3, r3, #2
+ 1264 011c 03F18043 		add	r3, r3, #1073741824
+ 1265 0120 03F5B843 		add	r3, r3, #23552
+ 1266 0124 1A60     		str	r2, [r3]
+ 1267              	.L60:
+ 1268              	.LBE13:
+ 231:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 232:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 233:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	return len;
+ 1269              		.loc 1 233 9
+ 1270 0126 3B89     		ldrh	r3, [r7, #8]
+ 1271              	.L57:
+ 234:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 1272              		.loc 1 234 1
+ 1273 0128 1846     		mov	r0, r3
+ 1274 012a 1437     		adds	r7, r7, #20
+ 1275              		.cfi_def_cfa_offset 12
+ 1276 012c BD46     		mov	sp, r7
+ 1277              		.cfi_def_cfa_register 13
+ 1278              		@ sp needed
+ 1279 012e 90BD     		pop	{r4, r7, pc}
+ 1280              	.L62:
+ 1281              		.align	2
+ 1282              	.L61:
+ 1283 0130 505C0040 		.word	1073765456
+ 1284 0134 8080FFFF 		.word	-32640
+ 1285 0138 00000000 		.word	st_usbfs_force_nak(GOT)
+ 1286              		.cfi_endproc
+ 1287              	.LFE8:
+ 1289              		.section	.text.st_usbfs_poll,"ax",%progbits
+ 1290              		.align	1
+ 1291              		.global	st_usbfs_poll
+ 1292              		.syntax unified
+ 1293              		.thumb
+ 1294              		.thumb_func
+ 1295              		.fpu softvfp
+ 1297              	st_usbfs_poll:
+ 1298              	.LFB9:
+ 235:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 236:../libopencm3/lib/stm32/common/st_usbfs_core.c **** void st_usbfs_poll(usbd_device *dev)
+ 237:../libopencm3/lib/stm32/common/st_usbfs_core.c **** {
+ 1299              		.loc 1 237 1
+ 1300              		.cfi_startproc
+ 1301              		@ args = 0, pretend = 0, frame = 16
+ 1302              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1303 0000 80B5     		push	{r7, lr}
+ 1304              		.cfi_def_cfa_offset 8
+ 1305              		.cfi_offset 7, -8
+ 1306              		.cfi_offset 14, -4
+ 1307 0002 84B0     		sub	sp, sp, #16
+ 1308              		.cfi_def_cfa_offset 24
+ 1309 0004 00AF     		add	r7, sp, #0
+ 1310              		.cfi_def_cfa_register 7
+ 1311 0006 7860     		str	r0, [r7, #4]
+ 238:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	uint16_t istr = *USB_ISTR_REG;
+ 1312              		.loc 1 238 18
+ 1313 0008 654B     		ldr	r3, .L76
+ 1314 000a 1B68     		ldr	r3, [r3]
+ 1315              		.loc 1 238 11
+ 1316 000c BB81     		strh	r3, [r7, #12]	@ movhi
+ 239:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 240:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (istr & USB_ISTR_RESET) {
+ 1317              		.loc 1 240 11
+ 1318 000e BB89     		ldrh	r3, [r7, #12]
+ 1319 0010 03F48063 		and	r3, r3, #1024
+ 1320              		.loc 1 240 5
+ 1321 0014 002B     		cmp	r3, #0
+ 1322 0016 0AD0     		beq	.L64
+ 241:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_ISTR_RESET();
+ 1323              		.loc 1 241 3
+ 1324 0018 614B     		ldr	r3, .L76
+ 1325 001a 4FF6FF32 		movw	r2, #64511
+ 1326 001e 1A60     		str	r2, [r3]
+ 242:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		dev->pm_top = USBD_PM_TOP;
+ 1327              		.loc 1 242 15
+ 1328 0020 7B68     		ldr	r3, [r7, #4]
+ 1329 0022 4022     		movs	r2, #64
+ 1330 0024 1A83     		strh	r2, [r3, #24]	@ movhi
+ 243:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		_usbd_reset(dev);
+ 1331              		.loc 1 243 3
+ 1332 0026 7868     		ldr	r0, [r7, #4]
+ 1333 0028 FFF7FEFF 		bl	_usbd_reset(PLT)
+ 244:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		return;
+ 1334              		.loc 1 244 3
+ 1335 002c B4E0     		b	.L63
+ 1336              	.L64:
+ 245:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 246:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 247:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (istr & USB_ISTR_CTR) {
+ 1337              		.loc 1 247 6
+ 1338 002e B7F90C30 		ldrsh	r3, [r7, #12]
+ 1339              		.loc 1 247 5
+ 1340 0032 002B     		cmp	r3, #0
+ 1341 0034 6FDA     		bge	.L66
+ 1342              	.LBB14:
+ 248:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		uint8_t ep = istr & USB_ISTR_EP_ID;
+ 1343              		.loc 1 248 21
+ 1344 0036 BB89     		ldrh	r3, [r7, #12]	@ movhi
+ 1345 0038 DBB2     		uxtb	r3, r3
+ 1346              		.loc 1 248 11
+ 1347 003a 03F00F03 		and	r3, r3, #15
+ 1348 003e FB72     		strb	r3, [r7, #11]
+ 249:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		uint8_t type;
+ 250:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 251:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (istr & USB_ISTR_DIR) {
+ 1349              		.loc 1 251 12
+ 1350 0040 BB89     		ldrh	r3, [r7, #12]
+ 1351 0042 03F01003 		and	r3, r3, #16
+ 1352              		.loc 1 251 6
+ 1353 0046 002B     		cmp	r3, #0
+ 1354 0048 18D0     		beq	.L67
+ 252:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			/* OUT or SETUP? */
+ 253:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			if (*USB_EP_REG(ep) & USB_EP_SETUP) {
+ 1355              		.loc 1 253 9
+ 1356 004a FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1357 004c 9B00     		lsls	r3, r3, #2
+ 1358 004e 03F18043 		add	r3, r3, #1073741824
+ 1359 0052 03F5B843 		add	r3, r3, #23552
+ 1360              		.loc 1 253 8
+ 1361 0056 1B68     		ldr	r3, [r3]
+ 1362              		.loc 1 253 24
+ 1363 0058 03F40063 		and	r3, r3, #2048
+ 1364              		.loc 1 253 7
+ 1365 005c 002B     		cmp	r3, #0
+ 1366 005e 0AD0     		beq	.L68
+ 254:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				type = USB_TRANSACTION_SETUP;
+ 1367              		.loc 1 254 10
+ 1368 0060 0223     		movs	r3, #2
+ 1369 0062 FB73     		strb	r3, [r7, #15]
+ 255:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				st_usbfs_ep_read_packet(dev, ep, &dev->control_state.req, 8);
+ 1370              		.loc 1 255 38
+ 1371 0064 7B68     		ldr	r3, [r7, #4]
+ 1372 0066 03F13002 		add	r2, r3, #48
+ 1373              		.loc 1 255 5
+ 1374 006a F97A     		ldrb	r1, [r7, #11]	@ zero_extendqisi2
+ 1375 006c 0823     		movs	r3, #8
+ 1376 006e 7868     		ldr	r0, [r7, #4]
+ 1377 0070 FFF7FEFF 		bl	st_usbfs_ep_read_packet(PLT)
+ 1378 0074 1DE0     		b	.L70
+ 1379              	.L68:
+ 256:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			} else {
+ 257:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 				type = USB_TRANSACTION_OUT;
+ 1380              		.loc 1 257 10
+ 1381 0076 0123     		movs	r3, #1
+ 1382 0078 FB73     		strb	r3, [r7, #15]
+ 1383 007a 1AE0     		b	.L70
+ 1384              	.L67:
+ 258:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			}
+ 259:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		} else {
+ 260:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			type = USB_TRANSACTION_IN;
+ 1385              		.loc 1 260 9
+ 1386 007c 0023     		movs	r3, #0
+ 1387 007e FB73     		strb	r3, [r7, #15]
+ 261:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			USB_CLR_EP_TX_CTR(ep);
+ 1388              		.loc 1 261 4
+ 1389 0080 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1390 0082 9B00     		lsls	r3, r3, #2
+ 1391 0084 03F18043 		add	r3, r3, #1073741824
+ 1392 0088 03F5B843 		add	r3, r3, #23552
+ 1393 008c 1B68     		ldr	r3, [r3]
+ 1394 008e 1AB2     		sxth	r2, r3
+ 1395 0090 40F60F73 		movw	r3, #3855
+ 1396 0094 1340     		ands	r3, r3, r2
+ 1397 0096 1BB2     		sxth	r3, r3
+ 1398 0098 6FEA4343 		mvn	r3, r3, lsl #17
+ 1399 009c 6FEA5343 		mvn	r3, r3, lsr #17
+ 1400 00a0 1BB2     		sxth	r3, r3
+ 1401 00a2 9AB2     		uxth	r2, r3
+ 1402 00a4 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1403 00a6 9B00     		lsls	r3, r3, #2
+ 1404 00a8 03F18043 		add	r3, r3, #1073741824
+ 1405 00ac 03F5B843 		add	r3, r3, #23552
+ 1406 00b0 1A60     		str	r2, [r3]
+ 1407              	.L70:
+ 262:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 263:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 264:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (dev->user_callback_ctr[ep][type]) {
+ 1408              		.loc 1 264 33
+ 1409 00b2 FA7A     		ldrb	r2, [r7, #11]	@ zero_extendqisi2
+ 1410 00b4 F87B     		ldrb	r0, [r7, #15]	@ zero_extendqisi2
+ 1411 00b6 7968     		ldr	r1, [r7, #4]
+ 1412 00b8 1346     		mov	r3, r2
+ 1413 00ba 5B00     		lsls	r3, r3, #1
+ 1414 00bc 1344     		add	r3, r3, r2
+ 1415 00be 0344     		add	r3, r3, r0
+ 1416 00c0 1A33     		adds	r3, r3, #26
+ 1417 00c2 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 1418              		.loc 1 264 6
+ 1419 00c6 002B     		cmp	r3, #0
+ 1420 00c8 0ED0     		beq	.L71
+ 265:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_ctr[ep][type] (dev, ep);
+ 1421              		.loc 1 265 30
+ 1422 00ca FA7A     		ldrb	r2, [r7, #11]	@ zero_extendqisi2
+ 1423 00cc F87B     		ldrb	r0, [r7, #15]	@ zero_extendqisi2
+ 1424 00ce 7968     		ldr	r1, [r7, #4]
+ 1425 00d0 1346     		mov	r3, r2
+ 1426 00d2 5B00     		lsls	r3, r3, #1
+ 1427 00d4 1344     		add	r3, r3, r2
+ 1428 00d6 0344     		add	r3, r3, r0
+ 1429 00d8 1A33     		adds	r3, r3, #26
+ 1430 00da 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 1431              		.loc 1 265 4
+ 1432 00de FA7A     		ldrb	r2, [r7, #11]	@ zero_extendqisi2
+ 1433 00e0 1146     		mov	r1, r2
+ 1434 00e2 7868     		ldr	r0, [r7, #4]
+ 1435 00e4 9847     		blx	r3
+ 1436              	.LVL0:
+ 1437 00e6 16E0     		b	.L66
+ 1438              	.L71:
+ 266:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		} else {
+ 267:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			USB_CLR_EP_RX_CTR(ep);
+ 1439              		.loc 1 267 4
+ 1440 00e8 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1441 00ea 9B00     		lsls	r3, r3, #2
+ 1442 00ec 03F18043 		add	r3, r3, #1073741824
+ 1443 00f0 03F5B843 		add	r3, r3, #23552
+ 1444 00f4 1B68     		ldr	r3, [r3]
+ 1445 00f6 1AB2     		sxth	r2, r3
+ 1446 00f8 40F60F73 		movw	r3, #3855
+ 1447 00fc 1340     		ands	r3, r3, r2
+ 1448 00fe 1BB2     		sxth	r3, r3
+ 1449 0100 43F08003 		orr	r3, r3, #128
+ 1450 0104 1BB2     		sxth	r3, r3
+ 1451 0106 9AB2     		uxth	r2, r3
+ 1452 0108 FB7A     		ldrb	r3, [r7, #11]	@ zero_extendqisi2
+ 1453 010a 9B00     		lsls	r3, r3, #2
+ 1454 010c 03F18043 		add	r3, r3, #1073741824
+ 1455 0110 03F5B843 		add	r3, r3, #23552
+ 1456 0114 1A60     		str	r2, [r3]
+ 1457              	.L66:
+ 1458              	.LBE14:
+ 268:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 269:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 270:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 271:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (istr & USB_ISTR_SUSP) {
+ 1459              		.loc 1 271 11
+ 1460 0116 BB89     		ldrh	r3, [r7, #12]
+ 1461 0118 03F40063 		and	r3, r3, #2048
+ 1462              		.loc 1 271 5
+ 1463 011c 002B     		cmp	r3, #0
+ 1464 011e 0AD0     		beq	.L72
+ 272:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_ISTR_SUSP();
+ 1465              		.loc 1 272 3
+ 1466 0120 1F4B     		ldr	r3, .L76
+ 1467 0122 4FF2FF72 		movw	r2, #63487
+ 1468 0126 1A60     		str	r2, [r3]
+ 273:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (dev->user_callback_suspend) {
+ 1469              		.loc 1 273 10
+ 1470 0128 7B68     		ldr	r3, [r7, #4]
+ 1471 012a 1B6A     		ldr	r3, [r3, #32]
+ 1472              		.loc 1 273 6
+ 1473 012c 002B     		cmp	r3, #0
+ 1474 012e 02D0     		beq	.L72
+ 274:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_suspend();
+ 1475              		.loc 1 274 7
+ 1476 0130 7B68     		ldr	r3, [r7, #4]
+ 1477 0132 1B6A     		ldr	r3, [r3, #32]
+ 1478              		.loc 1 274 4
+ 1479 0134 9847     		blx	r3
+ 1480              	.LVL1:
+ 1481              	.L72:
+ 275:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 276:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 277:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 278:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (istr & USB_ISTR_WKUP) {
+ 1482              		.loc 1 278 11
+ 1483 0136 BB89     		ldrh	r3, [r7, #12]
+ 1484 0138 03F48053 		and	r3, r3, #4096
+ 1485              		.loc 1 278 5
+ 1486 013c 002B     		cmp	r3, #0
+ 1487 013e 0AD0     		beq	.L73
+ 279:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_ISTR_WKUP();
+ 1488              		.loc 1 279 3
+ 1489 0140 174B     		ldr	r3, .L76
+ 1490 0142 4EF6FF72 		movw	r2, #61439
+ 1491 0146 1A60     		str	r2, [r3]
+ 280:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (dev->user_callback_resume) {
+ 1492              		.loc 1 280 10
+ 1493 0148 7B68     		ldr	r3, [r7, #4]
+ 1494 014a 5B6A     		ldr	r3, [r3, #36]
+ 1495              		.loc 1 280 6
+ 1496 014c 002B     		cmp	r3, #0
+ 1497 014e 02D0     		beq	.L73
+ 281:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_resume();
+ 1498              		.loc 1 281 7
+ 1499 0150 7B68     		ldr	r3, [r7, #4]
+ 1500 0152 5B6A     		ldr	r3, [r3, #36]
+ 1501              		.loc 1 281 4
+ 1502 0154 9847     		blx	r3
+ 1503              	.LVL2:
+ 1504              	.L73:
+ 282:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 283:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 284:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 285:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (istr & USB_ISTR_SOF) {
+ 1505              		.loc 1 285 11
+ 1506 0156 BB89     		ldrh	r3, [r7, #12]
+ 1507 0158 03F40073 		and	r3, r3, #512
+ 1508              		.loc 1 285 5
+ 1509 015c 002B     		cmp	r3, #0
+ 1510 015e 0AD0     		beq	.L74
+ 286:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		USB_CLR_ISTR_SOF();
+ 1511              		.loc 1 286 3
+ 1512 0160 0F4B     		ldr	r3, .L76
+ 1513 0162 4FF6FF52 		movw	r2, #65023
+ 1514 0166 1A60     		str	r2, [r3]
+ 287:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		if (dev->user_callback_sof) {
+ 1515              		.loc 1 287 10
+ 1516 0168 7B68     		ldr	r3, [r7, #4]
+ 1517 016a 9B6A     		ldr	r3, [r3, #40]
+ 1518              		.loc 1 287 6
+ 1519 016c 002B     		cmp	r3, #0
+ 1520 016e 02D0     		beq	.L74
+ 288:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 			dev->user_callback_sof();
+ 1521              		.loc 1 288 7
+ 1522 0170 7B68     		ldr	r3, [r7, #4]
+ 1523 0172 9B6A     		ldr	r3, [r3, #40]
+ 1524              		.loc 1 288 4
+ 1525 0174 9847     		blx	r3
+ 1526              	.LVL3:
+ 1527              	.L74:
+ 289:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		}
+ 290:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 291:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 
+ 292:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	if (dev->user_callback_sof) {
+ 1528              		.loc 1 292 9
+ 1529 0176 7B68     		ldr	r3, [r7, #4]
+ 1530 0178 9B6A     		ldr	r3, [r3, #40]
+ 1531              		.loc 1 292 5
+ 1532 017a 002B     		cmp	r3, #0
+ 1533 017c 06D0     		beq	.L75
+ 293:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		*USB_CNTR_REG |= USB_CNTR_SOFM;
+ 1534              		.loc 1 293 17
+ 1535 017e 094B     		ldr	r3, .L76+4
+ 1536 0180 1B68     		ldr	r3, [r3]
+ 1537 0182 084A     		ldr	r2, .L76+4
+ 1538 0184 43F40073 		orr	r3, r3, #512
+ 1539 0188 1360     		str	r3, [r2]
+ 1540 018a 05E0     		b	.L63
+ 1541              	.L75:
+ 294:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	} else {
+ 295:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 		*USB_CNTR_REG &= ~USB_CNTR_SOFM;
+ 1542              		.loc 1 295 17
+ 1543 018c 054B     		ldr	r3, .L76+4
+ 1544 018e 1B68     		ldr	r3, [r3]
+ 1545 0190 044A     		ldr	r2, .L76+4
+ 1546 0192 23F40073 		bic	r3, r3, #512
+ 1547 0196 1360     		str	r3, [r2]
+ 1548              	.L63:
+ 296:../libopencm3/lib/stm32/common/st_usbfs_core.c **** 	}
+ 297:../libopencm3/lib/stm32/common/st_usbfs_core.c **** }
+ 1549              		.loc 1 297 1
+ 1550 0198 1037     		adds	r7, r7, #16
+ 1551              		.cfi_def_cfa_offset 8
+ 1552 019a BD46     		mov	sp, r7
+ 1553              		.cfi_def_cfa_register 13
+ 1554              		@ sp needed
+ 1555 019c 80BD     		pop	{r7, pc}
+ 1556              	.L77:
+ 1557 019e 00BF     		.align	2
+ 1558              	.L76:
+ 1559 01a0 445C0040 		.word	1073765444
+ 1560 01a4 405C0040 		.word	1073765440
+ 1561              		.cfi_endproc
+ 1562              	.LFE9:
+ 1564              		.text
+ 1565              	.Letext0:
+ 1566              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 1567              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+ 1568              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/stm32/f1/rcc.h"
+ 1569              		.file 5 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbstd.h"
+ 1570              		.file 6 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/usb/usbd.h"
+ 1571              		.file 7 "../libopencm3/lib/stm32/common/../../usb/usb_private.h"
+ 1572              		.file 8 "../libopencm3/lib/stm32/common/st_usbfs_core.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 st_usbfs_core.c
+                            *COM*:0000000000000008 st_usbfs_force_nak
+                            *COM*:0000000000000104 st_usbfs_dev
+     /tmp/ccuMfVEX.s:18     .text.st_usbfs_set_address:0000000000000000 $t
+     /tmp/ccuMfVEX.s:26     .text.st_usbfs_set_address:0000000000000000 st_usbfs_set_address
+     /tmp/ccuMfVEX.s:64     .text.st_usbfs_set_address:0000000000000024 $d
+     /tmp/ccuMfVEX.s:69     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 $t
+     /tmp/ccuMfVEX.s:76     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 st_usbfs_set_ep_rx_bufsize
+     /tmp/ccuMfVEX.s:166    .text.st_usbfs_set_ep_rx_bufsize:0000000000000078 $d
+     /tmp/ccuMfVEX.s:171    .rodata:0000000000000000 $d
+     /tmp/ccuMfVEX.s:178    .text.st_usbfs_ep_setup:0000000000000000 $t
+     /tmp/ccuMfVEX.s:185    .text.st_usbfs_ep_setup:0000000000000000 st_usbfs_ep_setup
+     /tmp/ccuMfVEX.s:459    .text.st_usbfs_ep_setup:0000000000000218 $d
+     /tmp/ccuMfVEX.s:466    .text.st_usbfs_endpoints_reset:0000000000000000 $t
+     /tmp/ccuMfVEX.s:473    .text.st_usbfs_endpoints_reset:0000000000000000 st_usbfs_endpoints_reset
+     /tmp/ccuMfVEX.s:572    .text.st_usbfs_endpoints_reset:0000000000000094 $d
+     /tmp/ccuMfVEX.s:577    .text.st_usbfs_ep_stall_set:0000000000000000 $t
+     /tmp/ccuMfVEX.s:584    .text.st_usbfs_ep_stall_set:0000000000000000 st_usbfs_ep_stall_set
+     /tmp/ccuMfVEX.s:781    .text.st_usbfs_ep_stall_set:0000000000000154 $d
+     /tmp/ccuMfVEX.s:786    .text.st_usbfs_ep_stall_get:0000000000000000 $t
+     /tmp/ccuMfVEX.s:793    .text.st_usbfs_ep_stall_get:0000000000000000 st_usbfs_ep_stall_get
+     /tmp/ccuMfVEX.s:866    .text.st_usbfs_ep_nak_set:0000000000000000 $t
+     /tmp/ccuMfVEX.s:873    .text.st_usbfs_ep_nak_set:0000000000000000 st_usbfs_ep_nak_set
+     /tmp/ccuMfVEX.s:975    .text.st_usbfs_ep_nak_set:00000000000000a4 $d
+     /tmp/ccuMfVEX.s:981    .text.st_usbfs_ep_write_packet:0000000000000000 $t
+     /tmp/ccuMfVEX.s:988    .text.st_usbfs_ep_write_packet:0000000000000000 st_usbfs_ep_write_packet
+     /tmp/ccuMfVEX.s:1103   .text.st_usbfs_ep_write_packet:00000000000000c8 $d
+     /tmp/ccuMfVEX.s:1109   .text.st_usbfs_ep_read_packet:0000000000000000 $t
+     /tmp/ccuMfVEX.s:1116   .text.st_usbfs_ep_read_packet:0000000000000000 st_usbfs_ep_read_packet
+     /tmp/ccuMfVEX.s:1283   .text.st_usbfs_ep_read_packet:0000000000000130 $d
+     /tmp/ccuMfVEX.s:1290   .text.st_usbfs_poll:0000000000000000 $t
+     /tmp/ccuMfVEX.s:1297   .text.st_usbfs_poll:0000000000000000 st_usbfs_poll
+     /tmp/ccuMfVEX.s:1559   .text.st_usbfs_poll:00000000000001a0 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+                           .group:0000000000000000 wm4.rcc.h.41.95732b09c707a3cd05d8e73deda4763f
+                           .group:0000000000000000 wm4.tools.h.21.75e74419488d11c9cf865f0f24faab06
+                           .group:0000000000000000 wm4.st_usbfs_common.h.45.f60d64c4129b0b0e3e198ec0990d50af
+                           .group:0000000000000000 wm4.st_usbfs_v1.h.41.336c57bfbb116837563fbcc9c59e2ab7
+                           .group:0000000000000000 wm4.usbstd.h.44.4afe4d1bc74038b0efb850274c9ca72f
+                           .group:0000000000000000 wm4.usbd.h.59.36297d267a452a295a2169d9133104f5
+                           .group:0000000000000000 wm4.usb_private.h.39.0319c55b21f25116dad040a5212d0c5d
+                           .group:0000000000000000 wm4.st_usbfs_core.h.28.065eabeab16a03ca11e811d6f3ae3701
+
+UNDEFINED SYMBOLS
+st_usbfs_copy_to_pm
+st_usbfs_copy_from_pm
+_usbd_reset

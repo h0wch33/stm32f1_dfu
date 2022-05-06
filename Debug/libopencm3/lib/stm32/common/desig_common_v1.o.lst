@@ -1,0 +1,179 @@
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"desig_common_v1.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.desig_get_flash_size,"ax",%progbits
+  16              		.align	1
+  17              		.global	desig_get_flash_size
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	desig_get_flash_size:
+  25              	.LFB0:
+  26              		.file 1 "../libopencm3/lib/stm32/common/desig_common_v1.c"
+   1:../libopencm3/lib/stm32/common/desig_common_v1.c **** /*
+   2:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * This file is part of the libopencm3 project.
+   3:../libopencm3/lib/stm32/common/desig_common_v1.c ****  *
+   4:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * Copyright (C) 2012 Karl Palsson <karlp@ŧweak.net.au>
+   5:../libopencm3/lib/stm32/common/desig_common_v1.c ****  *
+   6:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * This library is free software: you can redistribute it and/or modify
+   7:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * it under the terms of the GNU Lesser General Public License as published by
+   8:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * the Free Software Foundation, either version 3 of the License, or
+   9:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * (at your option) any later version.
+  10:../libopencm3/lib/stm32/common/desig_common_v1.c ****  *
+  11:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * This library is distributed in the hope that it will be useful,
+  12:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * GNU Lesser General Public License for more details.
+  15:../libopencm3/lib/stm32/common/desig_common_v1.c ****  *
+  16:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * You should have received a copy of the GNU Lesser General Public License
+  17:../libopencm3/lib/stm32/common/desig_common_v1.c ****  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+  18:../libopencm3/lib/stm32/common/desig_common_v1.c ****  */
+  19:../libopencm3/lib/stm32/common/desig_common_v1.c **** 
+  20:../libopencm3/lib/stm32/common/desig_common_v1.c **** #include <libopencm3/stm32/desig.h>
+  21:../libopencm3/lib/stm32/common/desig_common_v1.c **** 
+  22:../libopencm3/lib/stm32/common/desig_common_v1.c **** uint16_t desig_get_flash_size(void)
+  23:../libopencm3/lib/stm32/common/desig_common_v1.c **** {
+  27              		.loc 1 23 1
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+  24:../libopencm3/lib/stm32/common/desig_common_v1.c ****   return *((uint32_t*)DESIG_FLASH_SIZE_BASE);
+  37              		.loc 1 24 10
+  38 0004 034B     		ldr	r3, .L3
+  39 0006 1B68     		ldr	r3, [r3]
+  40 0008 9BB2     		uxth	r3, r3
+  25:../libopencm3/lib/stm32/common/desig_common_v1.c **** }
+  41              		.loc 1 25 1
+  42 000a 1846     		mov	r0, r3
+  43 000c BD46     		mov	sp, r7
+  44              		.cfi_def_cfa_register 13
+  45              		@ sp needed
+  46 000e 80BC     		pop	{r7}
+  47              		.cfi_restore 7
+  48              		.cfi_def_cfa_offset 0
+  49 0010 7047     		bx	lr
+  50              	.L4:
+  51 0012 00BF     		.align	2
+  52              	.L3:
+  53 0014 E0F7FF1F 		.word	536868832
+  54              		.cfi_endproc
+  55              	.LFE0:
+  57              		.section	.text.desig_get_unique_id,"ax",%progbits
+  58              		.align	1
+  59              		.global	desig_get_unique_id
+  60              		.syntax unified
+  61              		.thumb
+  62              		.thumb_func
+  63              		.fpu softvfp
+  65              	desig_get_unique_id:
+  66              	.LFB1:
+  26:../libopencm3/lib/stm32/common/desig_common_v1.c **** 
+  27:../libopencm3/lib/stm32/common/desig_common_v1.c **** void desig_get_unique_id(uint32_t *result)
+  28:../libopencm3/lib/stm32/common/desig_common_v1.c **** {
+  67              		.loc 1 28 1
+  68              		.cfi_startproc
+  69              		@ args = 0, pretend = 0, frame = 8
+  70              		@ frame_needed = 1, uses_anonymous_args = 0
+  71              		@ link register save eliminated.
+  72 0000 80B4     		push	{r7}
+  73              		.cfi_def_cfa_offset 4
+  74              		.cfi_offset 7, -4
+  75 0002 83B0     		sub	sp, sp, #12
+  76              		.cfi_def_cfa_offset 16
+  77 0004 00AF     		add	r7, sp, #0
+  78              		.cfi_def_cfa_register 7
+  79 0006 7860     		str	r0, [r7, #4]
+  29:../libopencm3/lib/stm32/common/desig_common_v1.c ****   *result++ = DESIG_UNIQUE_ID2;
+  80              		.loc 1 29 15
+  81 0008 0A49     		ldr	r1, .L6
+  82              		.loc 1 29 10
+  83 000a 7B68     		ldr	r3, [r7, #4]
+  84 000c 1A1D     		adds	r2, r3, #4
+  85 000e 7A60     		str	r2, [r7, #4]
+  86              		.loc 1 29 15
+  87 0010 0A68     		ldr	r2, [r1]
+  88              		.loc 1 29 13
+  89 0012 1A60     		str	r2, [r3]
+  30:../libopencm3/lib/stm32/common/desig_common_v1.c ****   *result++ = DESIG_UNIQUE_ID1;
+  90              		.loc 1 30 15
+  91 0014 0849     		ldr	r1, .L6+4
+  92              		.loc 1 30 10
+  93 0016 7B68     		ldr	r3, [r7, #4]
+  94 0018 1A1D     		adds	r2, r3, #4
+  95 001a 7A60     		str	r2, [r7, #4]
+  96              		.loc 1 30 15
+  97 001c 0A68     		ldr	r2, [r1]
+  98              		.loc 1 30 13
+  99 001e 1A60     		str	r2, [r3]
+  31:../libopencm3/lib/stm32/common/desig_common_v1.c ****   *result = DESIG_UNIQUE_ID0;
+ 100              		.loc 1 31 13
+ 101 0020 064B     		ldr	r3, .L6+8
+ 102 0022 1A68     		ldr	r2, [r3]
+ 103              		.loc 1 31 11
+ 104 0024 7B68     		ldr	r3, [r7, #4]
+ 105 0026 1A60     		str	r2, [r3]
+  32:../libopencm3/lib/stm32/common/desig_common_v1.c **** }
+ 106              		.loc 1 32 1
+ 107 0028 00BF     		nop
+ 108 002a 0C37     		adds	r7, r7, #12
+ 109              		.cfi_def_cfa_offset 4
+ 110 002c BD46     		mov	sp, r7
+ 111              		.cfi_def_cfa_register 13
+ 112              		@ sp needed
+ 113 002e 80BC     		pop	{r7}
+ 114              		.cfi_restore 7
+ 115              		.cfi_def_cfa_offset 0
+ 116 0030 7047     		bx	lr
+ 117              	.L7:
+ 118 0032 00BF     		.align	2
+ 119              	.L6:
+ 120 0034 F0F7FF1F 		.word	536868848
+ 121 0038 ECF7FF1F 		.word	536868844
+ 122 003c E8F7FF1F 		.word	536868840
+ 123              		.cfi_endproc
+ 124              	.LFE1:
+ 126              		.text
+ 127              	.Letext0:
+ 128              		.file 2 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/machine/_default
+ 129              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 desig_common_v1.c
+     /tmp/cct9xJTR.s:16     .text.desig_get_flash_size:0000000000000000 $t
+     /tmp/cct9xJTR.s:24     .text.desig_get_flash_size:0000000000000000 desig_get_flash_size
+     /tmp/cct9xJTR.s:53     .text.desig_get_flash_size:0000000000000014 $d
+     /tmp/cct9xJTR.s:58     .text.desig_get_unique_id:0000000000000000 $t
+     /tmp/cct9xJTR.s:65     .text.desig_get_unique_id:0000000000000000 desig_get_unique_id
+     /tmp/cct9xJTR.s:120    .text.desig_get_unique_id:0000000000000034 $d
+                           .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
+                           .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
+                           .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.stdbool.h.29.07dce69c3b78884144b7f7bd19483461
+                           .group:0000000000000000 wm4.common.h.67.5c568a1f62c8e726909b04e29f9e1fc0
+                           .group:0000000000000000 wm4.memorymap.h.21.8c90486dae5eea2d8efddd23fe5d09d9
+                           .group:0000000000000000 wm4.memorymap.h.28.604d7358fc0612658e4a83c212b80b62
+
+NO UNDEFINED SYMBOLS
