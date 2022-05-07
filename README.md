@@ -47,10 +47,13 @@ $ make -C Debug all
 Flashing the DFU firmware to MCU
 --------------------------------
 
-To flash it first time into the MCU (change the script files path as appropriate)
+Use openocd to flash it first time into the MCU (change the script files path as appropriate).
+
+A compiled copy of the DFU firmware is included in the Debug folder.
+
 
 ```
-$ openocd -f /usr/local/share/openocd/scripts/interface/stlink.cfg -f /usr/local/share/openocd/scripts/target/stm32f1x.cfg -c "program stm32f1_dfu.bin verify reset exit 0x8000000"
+$ openocd -f /usr/local/share/openocd/scripts/interface/stlink.cfg -f /usr/local/share/openocd/scripts/target/stm32f1x.cfg -c "program Debug/stm32f1_dfu.bin verify reset exit 0x8000000"
 ```
 
 Using the DFU bootloader
