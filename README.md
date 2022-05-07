@@ -7,7 +7,7 @@ Most non built-in DFU bootloader available today requires the firmware that is t
 
 This bootloader on the other hand will moved itself to end of flash so that existing firmware can be uploaded as it is without offseting from the beginning of flash.
 
-The setback is that this bootloader will change the content of the vector table of the uploaded firmware. It replaces the intial stack pointer and the reset address of the uploaded firmware with its own pointer. The original stack pointer and reset address of the uploaded firmware is placed at offset 0x1C and 0x20. (address 0x800001c and 0x8000020 respectively). The 4 byte value at these address must be 0 in order for this bootloader to use it. By default, these address is unused and usually contains zeros.
+The setback is that this bootloader will change the content of the vector table of the uploaded firmware. It replaces the intial stack pointer and the reset address of the uploaded firmware with its own pointer. The original stack pointer and reset address of the uploaded firmware are placed at offset 0x1C and 0x20. (address 0x800001c and 0x8000020 respectively). The 4 byte value at these addresses must be 0 in order for this bootloader to use it. By default, these addresses are unused and usually contains zeros. The bootloader will read back the uploaded firmware stack pointer and reset address before jumping to the uploaded firmware. There is no checksum checking on the uploaded firmware.
 
 After uploading the firmware, user can unplug and plug in again the STM32F103C8 module to run the uploaded firmware.
 
@@ -15,11 +15,11 @@ To go into DFU bootloader, press the reset button.
 
 This DFU loader also can upgrade itself when a new version is avaialble. (using DFU)
 
-The codes still is incomplete but is enough for dfu-util to load required firmware.
+The code is still incomplete but it is enough for dfu-util to upload new firmware.
 
 Although tested on STM32F103C8 only, this code should work also on any STM32F1xx MCU with 1k flash bank.
 
-If anyone has tested it working on other STM32F10xxx MCU, please drop me an email.
+If anyone tested it working on other STM32F10xxx MCU, please drop me an email.
 
 The source is compiled using GNU Arm Embedded Toolchain 8-2019-q3-update.
 
