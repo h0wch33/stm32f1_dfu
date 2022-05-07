@@ -21,6 +21,8 @@ Although tested on STM32F103C8 only, this code should work also on any STM32F1xx
 
 If anyone has tested it working on other STM32F10xxx MCU, please drop me an email.
 
+The source is compiled using GNU Arm Embedded Toolchain 8-2019-q3-update.
+
 
 Caveat
 ------
