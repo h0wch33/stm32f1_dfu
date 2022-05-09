@@ -5,23 +5,25 @@ Another DFU for STM32F103C8T6 module
 
 Most non built-in DFU bootloader available today requires the firmware that is to be uploaded to the MCU to be offseted from the orgiin of FLASH base address. The offset is needed since the DFU bootloader is placed at the beginning of flash memory. Different DFU bootloader has different offset requirement and hence the firmware that is going to be uploaded needs to be recompile for different bootloader. 
 
-This bootloader on the other hand will moved itself to end of flash so that existing firmware can be uploaded as it is without offseting from the beginning of flash.
+This bootloader on the other hand will moved itself to end of flash so that existing firmware can be uploaded as it is without offseting from the beginning of flash. 
 
 The setback is that this bootloader will change the content of the vector table of the uploaded firmware. It replaces the intial stack pointer and the reset address of the uploaded firmware with its own pointer. The original stack pointer and reset address of the uploaded firmware are placed at offset 0x1C and 0x20. (address 0x800001c and 0x8000020 respectively). The 4 byte value at these addresses must be 0 in order for this bootloader to use it. By default, these addresses are unused and usually contains zeros. The bootloader will read back the uploaded firmware stack pointer and reset address before jumping to the uploaded firmware. There is no checksum checking on the uploaded firmware.
 
 After uploading the firmware, user can unplug and plug in again the STM32F103C8 module to run the uploaded firmware.
 
+The firmware does not use any IO lines beside USB D+/D- and reset input. 
+
 To go into DFU bootloader, press the reset button.
 
 This DFU loader also can upgrade itself when a new version is avaialble. (using DFU)
 
-The code is still incomplete but it is enough for dfu-util to upload new firmware.
+The code is still incomplete but it is enough for dfu-util to upload new firmware. The main purpose of this DFU firmware is to enable easy upload of compiled firmware without the hassle of wiring up the SWD pins. 
 
-Although tested on STM32F103C8 only, this code should work also on any STM32F1xx MCU with 1k flash bank.
+Although tested on STM32F103C8 only, this code should work also on any STM32F1xx MCU with 1k flash bank. 
 
 If anyone tested it working on other STM32F10xxx MCU, please drop me an email.
 
-The source is compiled using GNU Arm Embedded Toolchain 8-2019-q3-update.
+The source is compiled using GNU Arm Embedded Toolchain 8-2019-q3-update. Using other higher version of the toolchain might not compiled out a  working DFU firmware.
 
 
 Caveat
@@ -62,11 +64,28 @@ Using the DFU bootloader
 Press the reset button on the STM32F103C8T6 module and use dfu-util to upload the required firmware
 
 e.g.
+
 ```
 $ dfu-util -s 0x8000000 -D stm103v2.bin -R
 ```
+
 In Linux, option -R will do a USB port reset and the DFU firmware will run the uploaded firmware straight away after flashing.
 
+To load a firmware bin file that is suppose to be loaded at a offset (built for other DFU bootloader), a bash script is provided to pad the bin file so that it can be loaded at address 0x8000000
+
+For example if myfw.bin needs to be loaded at 0x8002000
+
+```
+$ ./dfu_binpad.sh myfw.bin 2000
+```
+
+myfw.bin.padded will be created.
+
+Use dfu-util to load the padded file.
+
+```
+$ dfu-util -s 0x8000000 -D myfw.bin.padded -R
+```
 
 Output from dfu-tool 
 --------------------
@@ -157,8 +176,6 @@ a) Current code is based on libopencm3 DFU example. The code currently occupies 
 
 b) Although working, the code is far from complete.
 
-c) To see how to support firmware that is offseted so that firmware built for other DFU bootloader can be uploaded unmodified using this bootloader.
-
-d) To support STM32F1xx with 2k flash bank.
+c) To support STM32F1xx with 2k flash bank.
 
 
