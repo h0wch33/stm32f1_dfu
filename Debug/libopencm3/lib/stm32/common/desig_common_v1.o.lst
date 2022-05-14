@@ -157,12 +157,12 @@
  129              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 desig_common_v1.c
-     /tmp/cct9xJTR.s:16     .text.desig_get_flash_size:0000000000000000 $t
-     /tmp/cct9xJTR.s:24     .text.desig_get_flash_size:0000000000000000 desig_get_flash_size
-     /tmp/cct9xJTR.s:53     .text.desig_get_flash_size:0000000000000014 $d
-     /tmp/cct9xJTR.s:58     .text.desig_get_unique_id:0000000000000000 $t
-     /tmp/cct9xJTR.s:65     .text.desig_get_unique_id:0000000000000000 desig_get_unique_id
-     /tmp/cct9xJTR.s:120    .text.desig_get_unique_id:0000000000000034 $d
+     /tmp/cc3VS65q.s:16     .text.desig_get_flash_size:0000000000000000 $t
+     /tmp/cc3VS65q.s:24     .text.desig_get_flash_size:0000000000000000 desig_get_flash_size
+     /tmp/cc3VS65q.s:53     .text.desig_get_flash_size:0000000000000014 $d
+     /tmp/cc3VS65q.s:58     .text.desig_get_unique_id:0000000000000000 $t
+     /tmp/cc3VS65q.s:65     .text.desig_get_unique_id:0000000000000000 desig_get_unique_id
+     /tmp/cc3VS65q.s:120    .text.desig_get_unique_id:0000000000000034 $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

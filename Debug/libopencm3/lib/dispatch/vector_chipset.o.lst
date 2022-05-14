@@ -74,8 +74,8 @@
   49              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 vector_chipset.c
-     /tmp/ccwTBBad.s:16     .text.pre_main:0000000000000000 $t
-     /tmp/ccwTBBad.s:23     .text.pre_main:0000000000000000 pre_main
+     /tmp/ccGU8jKP.s:16     .text.pre_main:0000000000000000 $t
+     /tmp/ccGU8jKP.s:23     .text.pre_main:0000000000000000 pre_main
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
 
 NO UNDEFINED SYMBOLS

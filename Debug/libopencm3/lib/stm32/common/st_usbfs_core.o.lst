@@ -1860,36 +1860,36 @@ DEFINED SYMBOLS
                             *ABS*:0000000000000000 st_usbfs_core.c
                             *COM*:0000000000000008 st_usbfs_force_nak
                             *COM*:0000000000000104 st_usbfs_dev
-     /tmp/ccuMfVEX.s:18     .text.st_usbfs_set_address:0000000000000000 $t
-     /tmp/ccuMfVEX.s:26     .text.st_usbfs_set_address:0000000000000000 st_usbfs_set_address
-     /tmp/ccuMfVEX.s:64     .text.st_usbfs_set_address:0000000000000024 $d
-     /tmp/ccuMfVEX.s:69     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 $t
-     /tmp/ccuMfVEX.s:76     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 st_usbfs_set_ep_rx_bufsize
-     /tmp/ccuMfVEX.s:166    .text.st_usbfs_set_ep_rx_bufsize:0000000000000078 $d
-     /tmp/ccuMfVEX.s:171    .rodata:0000000000000000 $d
-     /tmp/ccuMfVEX.s:178    .text.st_usbfs_ep_setup:0000000000000000 $t
-     /tmp/ccuMfVEX.s:185    .text.st_usbfs_ep_setup:0000000000000000 st_usbfs_ep_setup
-     /tmp/ccuMfVEX.s:459    .text.st_usbfs_ep_setup:0000000000000218 $d
-     /tmp/ccuMfVEX.s:466    .text.st_usbfs_endpoints_reset:0000000000000000 $t
-     /tmp/ccuMfVEX.s:473    .text.st_usbfs_endpoints_reset:0000000000000000 st_usbfs_endpoints_reset
-     /tmp/ccuMfVEX.s:572    .text.st_usbfs_endpoints_reset:0000000000000094 $d
-     /tmp/ccuMfVEX.s:577    .text.st_usbfs_ep_stall_set:0000000000000000 $t
-     /tmp/ccuMfVEX.s:584    .text.st_usbfs_ep_stall_set:0000000000000000 st_usbfs_ep_stall_set
-     /tmp/ccuMfVEX.s:781    .text.st_usbfs_ep_stall_set:0000000000000154 $d
-     /tmp/ccuMfVEX.s:786    .text.st_usbfs_ep_stall_get:0000000000000000 $t
-     /tmp/ccuMfVEX.s:793    .text.st_usbfs_ep_stall_get:0000000000000000 st_usbfs_ep_stall_get
-     /tmp/ccuMfVEX.s:866    .text.st_usbfs_ep_nak_set:0000000000000000 $t
-     /tmp/ccuMfVEX.s:873    .text.st_usbfs_ep_nak_set:0000000000000000 st_usbfs_ep_nak_set
-     /tmp/ccuMfVEX.s:975    .text.st_usbfs_ep_nak_set:00000000000000a4 $d
-     /tmp/ccuMfVEX.s:981    .text.st_usbfs_ep_write_packet:0000000000000000 $t
-     /tmp/ccuMfVEX.s:988    .text.st_usbfs_ep_write_packet:0000000000000000 st_usbfs_ep_write_packet
-     /tmp/ccuMfVEX.s:1103   .text.st_usbfs_ep_write_packet:00000000000000c8 $d
-     /tmp/ccuMfVEX.s:1109   .text.st_usbfs_ep_read_packet:0000000000000000 $t
-     /tmp/ccuMfVEX.s:1116   .text.st_usbfs_ep_read_packet:0000000000000000 st_usbfs_ep_read_packet
-     /tmp/ccuMfVEX.s:1283   .text.st_usbfs_ep_read_packet:0000000000000130 $d
-     /tmp/ccuMfVEX.s:1290   .text.st_usbfs_poll:0000000000000000 $t
-     /tmp/ccuMfVEX.s:1297   .text.st_usbfs_poll:0000000000000000 st_usbfs_poll
-     /tmp/ccuMfVEX.s:1559   .text.st_usbfs_poll:00000000000001a0 $d
+     /tmp/ccHxkBdB.s:18     .text.st_usbfs_set_address:0000000000000000 $t
+     /tmp/ccHxkBdB.s:26     .text.st_usbfs_set_address:0000000000000000 st_usbfs_set_address
+     /tmp/ccHxkBdB.s:64     .text.st_usbfs_set_address:0000000000000024 $d
+     /tmp/ccHxkBdB.s:69     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 $t
+     /tmp/ccHxkBdB.s:76     .text.st_usbfs_set_ep_rx_bufsize:0000000000000000 st_usbfs_set_ep_rx_bufsize
+     /tmp/ccHxkBdB.s:166    .text.st_usbfs_set_ep_rx_bufsize:0000000000000078 $d
+     /tmp/ccHxkBdB.s:171    .rodata:0000000000000000 $d
+     /tmp/ccHxkBdB.s:178    .text.st_usbfs_ep_setup:0000000000000000 $t
+     /tmp/ccHxkBdB.s:185    .text.st_usbfs_ep_setup:0000000000000000 st_usbfs_ep_setup
+     /tmp/ccHxkBdB.s:459    .text.st_usbfs_ep_setup:0000000000000218 $d
+     /tmp/ccHxkBdB.s:466    .text.st_usbfs_endpoints_reset:0000000000000000 $t
+     /tmp/ccHxkBdB.s:473    .text.st_usbfs_endpoints_reset:0000000000000000 st_usbfs_endpoints_reset
+     /tmp/ccHxkBdB.s:572    .text.st_usbfs_endpoints_reset:0000000000000094 $d
+     /tmp/ccHxkBdB.s:577    .text.st_usbfs_ep_stall_set:0000000000000000 $t
+     /tmp/ccHxkBdB.s:584    .text.st_usbfs_ep_stall_set:0000000000000000 st_usbfs_ep_stall_set
+     /tmp/ccHxkBdB.s:781    .text.st_usbfs_ep_stall_set:0000000000000154 $d
+     /tmp/ccHxkBdB.s:786    .text.st_usbfs_ep_stall_get:0000000000000000 $t
+     /tmp/ccHxkBdB.s:793    .text.st_usbfs_ep_stall_get:0000000000000000 st_usbfs_ep_stall_get
+     /tmp/ccHxkBdB.s:866    .text.st_usbfs_ep_nak_set:0000000000000000 $t
+     /tmp/ccHxkBdB.s:873    .text.st_usbfs_ep_nak_set:0000000000000000 st_usbfs_ep_nak_set
+     /tmp/ccHxkBdB.s:975    .text.st_usbfs_ep_nak_set:00000000000000a4 $d
+     /tmp/ccHxkBdB.s:981    .text.st_usbfs_ep_write_packet:0000000000000000 $t
+     /tmp/ccHxkBdB.s:988    .text.st_usbfs_ep_write_packet:0000000000000000 st_usbfs_ep_write_packet
+     /tmp/ccHxkBdB.s:1103   .text.st_usbfs_ep_write_packet:00000000000000c8 $d
+     /tmp/ccHxkBdB.s:1109   .text.st_usbfs_ep_read_packet:0000000000000000 $t
+     /tmp/ccHxkBdB.s:1116   .text.st_usbfs_ep_read_packet:0000000000000000 st_usbfs_ep_read_packet
+     /tmp/ccHxkBdB.s:1283   .text.st_usbfs_ep_read_packet:0000000000000130 $d
+     /tmp/ccHxkBdB.s:1290   .text.st_usbfs_poll:0000000000000000 $t
+     /tmp/ccHxkBdB.s:1297   .text.st_usbfs_poll:0000000000000000 st_usbfs_poll
+     /tmp/ccHxkBdB.s:1559   .text.st_usbfs_poll:00000000000001a0 $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

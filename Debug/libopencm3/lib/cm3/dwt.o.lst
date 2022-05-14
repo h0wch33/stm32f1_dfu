@@ -242,12 +242,12 @@
  143              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 dwt.c
-     /tmp/cczFgmZs.s:16     .text.dwt_enable_cycle_counter:0000000000000000 $t
-     /tmp/cczFgmZs.s:24     .text.dwt_enable_cycle_counter:0000000000000000 dwt_enable_cycle_counter
-     /tmp/cczFgmZs.s:81     .text.dwt_enable_cycle_counter:000000000000003c $d
-     /tmp/cczFgmZs.s:88     .text.dwt_read_cycle_counter:0000000000000000 $t
-     /tmp/cczFgmZs.s:95     .text.dwt_read_cycle_counter:0000000000000000 dwt_read_cycle_counter
-     /tmp/cczFgmZs.s:135    .text.dwt_read_cycle_counter:0000000000000020 $d
+     /tmp/ccpFLo9V.s:16     .text.dwt_enable_cycle_counter:0000000000000000 $t
+     /tmp/ccpFLo9V.s:24     .text.dwt_enable_cycle_counter:0000000000000000 dwt_enable_cycle_counter
+     /tmp/ccpFLo9V.s:81     .text.dwt_enable_cycle_counter:000000000000003c $d
+     /tmp/ccpFLo9V.s:88     .text.dwt_read_cycle_counter:0000000000000000 $t
+     /tmp/ccpFLo9V.s:95     .text.dwt_read_cycle_counter:0000000000000000 dwt_read_cycle_counter
+     /tmp/ccpFLo9V.s:135    .text.dwt_read_cycle_counter:0000000000000020 $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.scs.h.22.1ac8693f455c5ba0f27b0d8537183ef0
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4

@@ -570,17 +570,17 @@
  380              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 gpio.c
-     /tmp/ccycDrhO.s:16     .text.gpio_set_mode:0000000000000000 $t
-     /tmp/ccycDrhO.s:24     .text.gpio_set_mode:0000000000000000 gpio_set_mode
-     /tmp/ccycDrhO.s:215    .text.gpio_set_eventout:0000000000000000 $t
-     /tmp/ccycDrhO.s:222    .text.gpio_set_eventout:0000000000000000 gpio_set_eventout
-     /tmp/ccycDrhO.s:266    .text.gpio_set_eventout:000000000000002c $d
-     /tmp/ccycDrhO.s:271    .text.gpio_primary_remap:0000000000000000 $t
-     /tmp/ccycDrhO.s:278    .text.gpio_primary_remap:0000000000000000 gpio_primary_remap
-     /tmp/ccycDrhO.s:325    .text.gpio_primary_remap:000000000000002c $d
-     /tmp/ccycDrhO.s:330    .text.gpio_secondary_remap:0000000000000000 $t
-     /tmp/ccycDrhO.s:337    .text.gpio_secondary_remap:0000000000000000 gpio_secondary_remap
-     /tmp/ccycDrhO.s:373    .text.gpio_secondary_remap:0000000000000020 $d
+     /tmp/ccrJtqBk.s:16     .text.gpio_set_mode:0000000000000000 $t
+     /tmp/ccrJtqBk.s:24     .text.gpio_set_mode:0000000000000000 gpio_set_mode
+     /tmp/ccrJtqBk.s:215    .text.gpio_set_eventout:0000000000000000 $t
+     /tmp/ccrJtqBk.s:222    .text.gpio_set_eventout:0000000000000000 gpio_set_eventout
+     /tmp/ccrJtqBk.s:266    .text.gpio_set_eventout:000000000000002c $d
+     /tmp/ccrJtqBk.s:271    .text.gpio_primary_remap:0000000000000000 $t
+     /tmp/ccrJtqBk.s:278    .text.gpio_primary_remap:0000000000000000 gpio_primary_remap
+     /tmp/ccrJtqBk.s:325    .text.gpio_primary_remap:000000000000002c $d
+     /tmp/ccrJtqBk.s:330    .text.gpio_secondary_remap:0000000000000000 $t
+     /tmp/ccrJtqBk.s:337    .text.gpio_secondary_remap:0000000000000000 gpio_secondary_remap
+     /tmp/ccrJtqBk.s:373    .text.gpio_secondary_remap:0000000000000020 $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

@@ -206,15 +206,15 @@
  146              		.file 8 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 scb.c
-     /tmp/ccsTg74U.s:16     .text.scb_reset_core:0000000000000000 $t
-     /tmp/ccsTg74U.s:24     .text.scb_reset_core:0000000000000000 scb_reset_core
-     /tmp/ccsTg74U.s:48     .text.scb_reset_core:000000000000000c $d
-     /tmp/ccsTg74U.s:54     .text.scb_reset_system:0000000000000000 $t
-     /tmp/ccsTg74U.s:61     .text.scb_reset_system:0000000000000000 scb_reset_system
-     /tmp/ccsTg74U.s:84     .text.scb_reset_system:000000000000000c $d
-     /tmp/ccsTg74U.s:90     .text.scb_set_priority_grouping:0000000000000000 $t
-     /tmp/ccsTg74U.s:97     .text.scb_set_priority_grouping:0000000000000000 scb_set_priority_grouping
-     /tmp/ccsTg74U.s:134    .text.scb_set_priority_grouping:0000000000000020 $d
+     /tmp/ccMTqfsh.s:16     .text.scb_reset_core:0000000000000000 $t
+     /tmp/ccMTqfsh.s:24     .text.scb_reset_core:0000000000000000 scb_reset_core
+     /tmp/ccMTqfsh.s:48     .text.scb_reset_core:000000000000000c $d
+     /tmp/ccMTqfsh.s:54     .text.scb_reset_system:0000000000000000 $t
+     /tmp/ccMTqfsh.s:61     .text.scb_reset_system:0000000000000000 scb_reset_system
+     /tmp/ccMTqfsh.s:84     .text.scb_reset_system:000000000000000c $d
+     /tmp/ccMTqfsh.s:90     .text.scb_set_priority_grouping:0000000000000000 $t
+     /tmp/ccMTqfsh.s:97     .text.scb_set_priority_grouping:0000000000000000 scb_set_priority_grouping
+     /tmp/ccMTqfsh.s:134    .text.scb_set_priority_grouping:0000000000000020 $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

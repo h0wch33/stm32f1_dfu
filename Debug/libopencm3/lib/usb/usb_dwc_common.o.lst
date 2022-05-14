@@ -2622,28 +2622,28 @@
  2123              		.file 10 "../libopencm3/lib/usb/usb_private.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 usb_dwc_common.c
-     /tmp/ccv9DK9H.s:16     .text.dwc_set_address:0000000000000000 $t
-     /tmp/ccv9DK9H.s:24     .text.dwc_set_address:0000000000000000 dwc_set_address
-     /tmp/ccv9DK9H.s:78     .text.dwc_ep_setup:0000000000000000 $t
-     /tmp/ccv9DK9H.s:85     .text.dwc_ep_setup:0000000000000000 dwc_ep_setup
-     /tmp/ccv9DK9H.s:488    .text.dwc_endpoints_reset:0000000000000000 $t
-     /tmp/ccv9DK9H.s:495    .text.dwc_endpoints_reset:0000000000000000 dwc_endpoints_reset
-     /tmp/ccv9DK9H.s:631    .text.dwc_ep_stall_set:0000000000000000 $t
-     /tmp/ccv9DK9H.s:638    .text.dwc_ep_stall_set:0000000000000000 dwc_ep_stall_set
-     /tmp/ccv9DK9H.s:902    .text.dwc_ep_stall_get:0000000000000000 $t
-     /tmp/ccv9DK9H.s:909    .text.dwc_ep_stall_get:0000000000000000 dwc_ep_stall_get
-     /tmp/ccv9DK9H.s:986    .text.dwc_ep_nak_set:0000000000000000 $t
-     /tmp/ccv9DK9H.s:993    .text.dwc_ep_nak_set:0000000000000000 dwc_ep_nak_set
-     /tmp/ccv9DK9H.s:1097   .text.dwc_ep_write_packet:0000000000000000 $t
-     /tmp/ccv9DK9H.s:1104   .text.dwc_ep_write_packet:0000000000000000 dwc_ep_write_packet
-     /tmp/ccv9DK9H.s:1239   .text.dwc_ep_read_packet:0000000000000000 $t
-     /tmp/ccv9DK9H.s:1246   .text.dwc_ep_read_packet:0000000000000000 dwc_ep_read_packet
-     /tmp/ccv9DK9H.s:1368   .text.dwc_flush_txfifo:0000000000000000 $t
-     /tmp/ccv9DK9H.s:1374   .text.dwc_flush_txfifo:0000000000000000 dwc_flush_txfifo
-     /tmp/ccv9DK9H.s:1513   .text.dwc_poll:0000000000000000 $t
-     /tmp/ccv9DK9H.s:1520   .text.dwc_poll:0000000000000000 dwc_poll
-     /tmp/ccv9DK9H.s:2037   .text.dwc_disconnect:0000000000000000 $t
-     /tmp/ccv9DK9H.s:2044   .text.dwc_disconnect:0000000000000000 dwc_disconnect
+     /tmp/ccMDy3mn.s:16     .text.dwc_set_address:0000000000000000 $t
+     /tmp/ccMDy3mn.s:24     .text.dwc_set_address:0000000000000000 dwc_set_address
+     /tmp/ccMDy3mn.s:78     .text.dwc_ep_setup:0000000000000000 $t
+     /tmp/ccMDy3mn.s:85     .text.dwc_ep_setup:0000000000000000 dwc_ep_setup
+     /tmp/ccMDy3mn.s:488    .text.dwc_endpoints_reset:0000000000000000 $t
+     /tmp/ccMDy3mn.s:495    .text.dwc_endpoints_reset:0000000000000000 dwc_endpoints_reset
+     /tmp/ccMDy3mn.s:631    .text.dwc_ep_stall_set:0000000000000000 $t
+     /tmp/ccMDy3mn.s:638    .text.dwc_ep_stall_set:0000000000000000 dwc_ep_stall_set
+     /tmp/ccMDy3mn.s:902    .text.dwc_ep_stall_get:0000000000000000 $t
+     /tmp/ccMDy3mn.s:909    .text.dwc_ep_stall_get:0000000000000000 dwc_ep_stall_get
+     /tmp/ccMDy3mn.s:986    .text.dwc_ep_nak_set:0000000000000000 $t
+     /tmp/ccMDy3mn.s:993    .text.dwc_ep_nak_set:0000000000000000 dwc_ep_nak_set
+     /tmp/ccMDy3mn.s:1097   .text.dwc_ep_write_packet:0000000000000000 $t
+     /tmp/ccMDy3mn.s:1104   .text.dwc_ep_write_packet:0000000000000000 dwc_ep_write_packet
+     /tmp/ccMDy3mn.s:1239   .text.dwc_ep_read_packet:0000000000000000 $t
+     /tmp/ccMDy3mn.s:1246   .text.dwc_ep_read_packet:0000000000000000 dwc_ep_read_packet
+     /tmp/ccMDy3mn.s:1368   .text.dwc_flush_txfifo:0000000000000000 $t
+     /tmp/ccMDy3mn.s:1374   .text.dwc_flush_txfifo:0000000000000000 dwc_flush_txfifo
+     /tmp/ccMDy3mn.s:1513   .text.dwc_poll:0000000000000000 $t
+     /tmp/ccMDy3mn.s:1520   .text.dwc_poll:0000000000000000 dwc_poll
+     /tmp/ccMDy3mn.s:2037   .text.dwc_disconnect:0000000000000000 $t
+     /tmp/ccMDy3mn.s:2044   .text.dwc_disconnect:0000000000000000 dwc_disconnect
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
                            .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac

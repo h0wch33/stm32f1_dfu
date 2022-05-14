@@ -366,18 +366,18 @@
  301              		.file 4 "/home/src/eclipse-workspace/stm32f1_dfu/libopencm3/include/libopencm3/cm3/sync.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 sync.c
-     /tmp/ccNbZlV3.s:16     .text.__dmb:0000000000000000 $t
-     /tmp/ccNbZlV3.s:24     .text.__dmb:0000000000000000 __dmb
-     /tmp/ccNbZlV3.s:57     .text.__ldrex:0000000000000000 $t
-     /tmp/ccNbZlV3.s:64     .text.__ldrex:0000000000000000 __ldrex
-     /tmp/ccNbZlV3.s:105    .text.__strex:0000000000000000 $t
-     /tmp/ccNbZlV3.s:112    .text.__strex:0000000000000000 __strex
-     /tmp/ccNbZlV3.s:155    .text.mutex_lock:0000000000000000 $t
-     /tmp/ccNbZlV3.s:162    .text.mutex_lock:0000000000000000 mutex_lock
-     /tmp/ccNbZlV3.s:206    .text.mutex_trylock:0000000000000000 mutex_trylock
-     /tmp/ccNbZlV3.s:199    .text.mutex_trylock:0000000000000000 $t
-     /tmp/ccNbZlV3.s:258    .text.mutex_unlock:0000000000000000 $t
-     /tmp/ccNbZlV3.s:265    .text.mutex_unlock:0000000000000000 mutex_unlock
+     /tmp/ccgGTfGt.s:16     .text.__dmb:0000000000000000 $t
+     /tmp/ccgGTfGt.s:24     .text.__dmb:0000000000000000 __dmb
+     /tmp/ccgGTfGt.s:57     .text.__ldrex:0000000000000000 $t
+     /tmp/ccgGTfGt.s:64     .text.__ldrex:0000000000000000 __ldrex
+     /tmp/ccgGTfGt.s:105    .text.__strex:0000000000000000 $t
+     /tmp/ccgGTfGt.s:112    .text.__strex:0000000000000000 __strex
+     /tmp/ccgGTfGt.s:155    .text.mutex_lock:0000000000000000 $t
+     /tmp/ccgGTfGt.s:162    .text.mutex_lock:0000000000000000 mutex_lock
+     /tmp/ccgGTfGt.s:206    .text.mutex_trylock:0000000000000000 mutex_trylock
+     /tmp/ccgGTfGt.s:199    .text.mutex_trylock:0000000000000000 $t
+     /tmp/ccgGTfGt.s:258    .text.mutex_unlock:0000000000000000 $t
+     /tmp/ccgGTfGt.s:265    .text.mutex_unlock:0000000000000000 mutex_unlock
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

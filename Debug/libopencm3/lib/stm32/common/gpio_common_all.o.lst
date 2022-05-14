@@ -521,20 +521,20 @@
  386              		.file 3 "/home/toolchain/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/include/sys/_stdint.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 gpio_common_all.c
-     /tmp/cc0dGFnm.s:16     .text.gpio_set:0000000000000000 $t
-     /tmp/cc0dGFnm.s:24     .text.gpio_set:0000000000000000 gpio_set
-     /tmp/cc0dGFnm.s:64     .text.gpio_clear:0000000000000000 $t
-     /tmp/cc0dGFnm.s:71     .text.gpio_clear:0000000000000000 gpio_clear
-     /tmp/cc0dGFnm.s:111    .text.gpio_get:0000000000000000 $t
-     /tmp/cc0dGFnm.s:118    .text.gpio_get:0000000000000000 gpio_get
-     /tmp/cc0dGFnm.s:227    .text.gpio_port_read:0000000000000000 gpio_port_read
-     /tmp/cc0dGFnm.s:156    .text.gpio_toggle:0000000000000000 $t
-     /tmp/cc0dGFnm.s:163    .text.gpio_toggle:0000000000000000 gpio_toggle
-     /tmp/cc0dGFnm.s:220    .text.gpio_port_read:0000000000000000 $t
-     /tmp/cc0dGFnm.s:263    .text.gpio_port_write:0000000000000000 $t
-     /tmp/cc0dGFnm.s:270    .text.gpio_port_write:0000000000000000 gpio_port_write
-     /tmp/cc0dGFnm.s:309    .text.gpio_port_config_lock:0000000000000000 $t
-     /tmp/cc0dGFnm.s:316    .text.gpio_port_config_lock:0000000000000000 gpio_port_config_lock
+     /tmp/ccV7aM2Z.s:16     .text.gpio_set:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:24     .text.gpio_set:0000000000000000 gpio_set
+     /tmp/ccV7aM2Z.s:64     .text.gpio_clear:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:71     .text.gpio_clear:0000000000000000 gpio_clear
+     /tmp/ccV7aM2Z.s:111    .text.gpio_get:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:118    .text.gpio_get:0000000000000000 gpio_get
+     /tmp/ccV7aM2Z.s:227    .text.gpio_port_read:0000000000000000 gpio_port_read
+     /tmp/ccV7aM2Z.s:156    .text.gpio_toggle:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:163    .text.gpio_toggle:0000000000000000 gpio_toggle
+     /tmp/ccV7aM2Z.s:220    .text.gpio_port_read:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:263    .text.gpio_port_write:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:270    .text.gpio_port_write:0000000000000000 gpio_port_write
+     /tmp/ccV7aM2Z.s:309    .text.gpio_port_config_lock:0000000000000000 $t
+     /tmp/ccV7aM2Z.s:316    .text.gpio_port_config_lock:0000000000000000 gpio_port_config_lock
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

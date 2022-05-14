@@ -320,13 +320,13 @@
  222              		.file 11 "../libopencm3/lib/usb/usb_private.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 usb_f107.c
-     /tmp/ccU6TD9I.s:16     .bss.usbd_dev:0000000000000000 $d
-     /tmp/ccU6TD9I.s:19     .bss.usbd_dev:0000000000000000 usbd_dev
-     /tmp/ccU6TD9I.s:26     .data.rel.ro.stm32f107_usb_driver:0000000000000000 stm32f107_usb_driver
-     /tmp/ccU6TD9I.s:23     .data.rel.ro.stm32f107_usb_driver:0000000000000000 $d
-     /tmp/ccU6TD9I.s:50     .text.stm32f107_usbd_init:0000000000000000 stm32f107_usbd_init
-     /tmp/ccU6TD9I.s:43     .text.stm32f107_usbd_init:0000000000000000 $t
-     /tmp/ccU6TD9I.s:192    .text.stm32f107_usbd_init:00000000000000cc $d
+     /tmp/cc3ME34B.s:16     .bss.usbd_dev:0000000000000000 $d
+     /tmp/cc3ME34B.s:19     .bss.usbd_dev:0000000000000000 usbd_dev
+     /tmp/cc3ME34B.s:26     .data.rel.ro.stm32f107_usb_driver:0000000000000000 stm32f107_usb_driver
+     /tmp/cc3ME34B.s:23     .data.rel.ro.stm32f107_usb_driver:0000000000000000 $d
+     /tmp/cc3ME34B.s:50     .text.stm32f107_usbd_init:0000000000000000 stm32f107_usbd_init
+     /tmp/cc3ME34B.s:43     .text.stm32f107_usbd_init:0000000000000000 $t
+     /tmp/cc3ME34B.s:192    .text.stm32f107_usbd_init:00000000000000cc $d
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7
                            .group:0000000000000000 wm4.newlib.h.18.5e5ca3429233af402d406a202f1fc1ac

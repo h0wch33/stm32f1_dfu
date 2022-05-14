@@ -1483,28 +1483,28 @@
  1152              		.file 11 "../libopencm3/lib/usb/usb_private.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 usb_control.c
-     /tmp/ccw2Ge1y.s:16     .text.stall_transaction:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:23     .text.stall_transaction:0000000000000000 stall_transaction
-     /tmp/ccw2Ge1y.s:60     .text.needs_zlp:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:66     .text.needs_zlp:0000000000000000 needs_zlp
-     /tmp/ccw2Ge1y.s:126    .text.usbd_register_control_callback:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:133    .text.usbd_register_control_callback:0000000000000000 usbd_register_control_callback
-     /tmp/ccw2Ge1y.s:221    .text.usb_control_send_chunk:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:227    .text.usb_control_send_chunk:0000000000000000 usb_control_send_chunk
-     /tmp/ccw2Ge1y.s:350    .text.usb_control_recv_chunk:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:356    .text.usb_control_recv_chunk:0000000000000000 usb_control_recv_chunk
-     /tmp/ccw2Ge1y.s:436    .text.usb_control_request_dispatch:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:442    .text.usb_control_request_dispatch:0000000000000000 usb_control_request_dispatch
-     /tmp/ccw2Ge1y.s:578    .text.usb_control_setup_read:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:584    .text.usb_control_setup_read:0000000000000000 usb_control_setup_read
-     /tmp/ccw2Ge1y.s:681    .text.usb_control_setup_write:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:687    .text.usb_control_setup_write:0000000000000000 usb_control_setup_write
-     /tmp/ccw2Ge1y.s:771    .text._usbd_control_setup:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:778    .text._usbd_control_setup:0000000000000000 _usbd_control_setup
-     /tmp/ccw2Ge1y.s:854    .text._usbd_control_out:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:861    .text._usbd_control_out:0000000000000000 _usbd_control_out
-     /tmp/ccw2Ge1y.s:1018   .text._usbd_control_in:0000000000000000 $t
-     /tmp/ccw2Ge1y.s:1025   .text._usbd_control_in:0000000000000000 _usbd_control_in
+     /tmp/ccantrPo.s:16     .text.stall_transaction:0000000000000000 $t
+     /tmp/ccantrPo.s:23     .text.stall_transaction:0000000000000000 stall_transaction
+     /tmp/ccantrPo.s:60     .text.needs_zlp:0000000000000000 $t
+     /tmp/ccantrPo.s:66     .text.needs_zlp:0000000000000000 needs_zlp
+     /tmp/ccantrPo.s:126    .text.usbd_register_control_callback:0000000000000000 $t
+     /tmp/ccantrPo.s:133    .text.usbd_register_control_callback:0000000000000000 usbd_register_control_callback
+     /tmp/ccantrPo.s:221    .text.usb_control_send_chunk:0000000000000000 $t
+     /tmp/ccantrPo.s:227    .text.usb_control_send_chunk:0000000000000000 usb_control_send_chunk
+     /tmp/ccantrPo.s:350    .text.usb_control_recv_chunk:0000000000000000 $t
+     /tmp/ccantrPo.s:356    .text.usb_control_recv_chunk:0000000000000000 usb_control_recv_chunk
+     /tmp/ccantrPo.s:436    .text.usb_control_request_dispatch:0000000000000000 $t
+     /tmp/ccantrPo.s:442    .text.usb_control_request_dispatch:0000000000000000 usb_control_request_dispatch
+     /tmp/ccantrPo.s:578    .text.usb_control_setup_read:0000000000000000 $t
+     /tmp/ccantrPo.s:584    .text.usb_control_setup_read:0000000000000000 usb_control_setup_read
+     /tmp/ccantrPo.s:681    .text.usb_control_setup_write:0000000000000000 $t
+     /tmp/ccantrPo.s:687    .text.usb_control_setup_write:0000000000000000 usb_control_setup_write
+     /tmp/ccantrPo.s:771    .text._usbd_control_setup:0000000000000000 $t
+     /tmp/ccantrPo.s:778    .text._usbd_control_setup:0000000000000000 _usbd_control_setup
+     /tmp/ccantrPo.s:854    .text._usbd_control_out:0000000000000000 $t
+     /tmp/ccantrPo.s:861    .text._usbd_control_out:0000000000000000 _usbd_control_out
+     /tmp/ccantrPo.s:1018   .text._usbd_control_in:0000000000000000 $t
+     /tmp/ccantrPo.s:1025   .text._usbd_control_in:0000000000000000 _usbd_control_in
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.ieeefp.h.77.5499ed899a78229fbaf6d102924f4714
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

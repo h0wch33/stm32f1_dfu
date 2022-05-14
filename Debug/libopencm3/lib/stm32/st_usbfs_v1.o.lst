@@ -355,15 +355,15 @@
  269              		.file 8 "../libopencm3/lib/stm32/common/st_usbfs_core.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 st_usbfs_v1.c
-     /tmp/cch6aj0P.s:20     .data.rel.ro.st_usbfs_v1_usb_driver:0000000000000000 st_usbfs_v1_usb_driver
-     /tmp/cch6aj0P.s:17     .data.rel.ro.st_usbfs_v1_usb_driver:0000000000000000 $d
-     /tmp/cch6aj0P.s:40     .text.st_usbfs_v1_usbd_init:0000000000000000 st_usbfs_v1_usbd_init
-     /tmp/cch6aj0P.s:33     .text.st_usbfs_v1_usbd_init:0000000000000000 $t
-     /tmp/cch6aj0P.s:81     .text.st_usbfs_v1_usbd_init:0000000000000030 $d
-     /tmp/cch6aj0P.s:89     .text.st_usbfs_copy_to_pm:0000000000000000 $t
-     /tmp/cch6aj0P.s:96     .text.st_usbfs_copy_to_pm:0000000000000000 st_usbfs_copy_to_pm
-     /tmp/cch6aj0P.s:168    .text.st_usbfs_copy_from_pm:0000000000000000 $t
-     /tmp/cch6aj0P.s:175    .text.st_usbfs_copy_from_pm:0000000000000000 st_usbfs_copy_from_pm
+     /tmp/cc53QWGv.s:20     .data.rel.ro.st_usbfs_v1_usb_driver:0000000000000000 st_usbfs_v1_usb_driver
+     /tmp/cc53QWGv.s:17     .data.rel.ro.st_usbfs_v1_usb_driver:0000000000000000 $d
+     /tmp/cc53QWGv.s:40     .text.st_usbfs_v1_usbd_init:0000000000000000 st_usbfs_v1_usbd_init
+     /tmp/cc53QWGv.s:33     .text.st_usbfs_v1_usbd_init:0000000000000000 $t
+     /tmp/cc53QWGv.s:81     .text.st_usbfs_v1_usbd_init:0000000000000030 $d
+     /tmp/cc53QWGv.s:89     .text.st_usbfs_copy_to_pm:0000000000000000 $t
+     /tmp/cc53QWGv.s:96     .text.st_usbfs_copy_to_pm:0000000000000000 st_usbfs_copy_to_pm
+     /tmp/cc53QWGv.s:168    .text.st_usbfs_copy_from_pm:0000000000000000 $t
+     /tmp/cc53QWGv.s:175    .text.st_usbfs_copy_from_pm:0000000000000000 st_usbfs_copy_from_pm
                            .group:0000000000000000 wm4.0.5634517379934ab330ad1f3d5297a544
                            .group:0000000000000000 wm4.common.h.21.c9066c2f6b12c71b40226ea6107829a4
                            .group:0000000000000000 wm4._newlib_version.h.4.9ba035841e762c3308916a0ce96032e7

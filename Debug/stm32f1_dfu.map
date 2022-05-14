@@ -4154,25 +4154,25 @@ move_it_sect    0x0000000008003080      0x63c
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x0000000000000000     0xae48
+.debug_info     0x0000000000000000     0xae49
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x0000000000000000     0x1fad ./src/main.o
- .debug_info    0x0000000000001fad     0x1712 ./libopencm3/lib/usb/usb.o
- .debug_info    0x00000000000036bf     0x15b6 ./libopencm3/lib/usb/usb_control.o
- .debug_info    0x0000000000004c75     0x1b93 ./libopencm3/lib/usb/usb_standard.o
- .debug_info    0x0000000000006808      0x1c8 ./libopencm3/lib/stm32/f1/flash.o
- .debug_info    0x00000000000069d0      0x1ef ./libopencm3/lib/stm32/f1/gpio.o
- .debug_info    0x0000000000006bbf      0x8bc ./libopencm3/lib/stm32/f1/rcc.o
- .debug_info    0x000000000000747b       0xe2 ./libopencm3/lib/stm32/common/desig_common_v1.o
- .debug_info    0x000000000000755d       0xf2 ./libopencm3/lib/stm32/common/flash_common_all.o
- .debug_info    0x000000000000764f       0xbe ./libopencm3/lib/stm32/common/flash_common_f.o
- .debug_info    0x000000000000770d      0x152 ./libopencm3/lib/stm32/common/flash_common_f01.o
- .debug_info    0x000000000000785f      0x226 ./libopencm3/lib/stm32/common/gpio_common_all.o
- .debug_info    0x0000000000007a85      0x79f ./libopencm3/lib/stm32/common/rcc_common_all.o
- .debug_info    0x0000000000008224     0x10cf ./libopencm3/lib/stm32/common/st_usbfs_core.o
- .debug_info    0x00000000000092f3      0xf0c ./libopencm3/lib/stm32/st_usbfs_v1.o
- .debug_info    0x000000000000a1ff      0x987 ./libopencm3/lib/cm3/scb.o
- .debug_info    0x000000000000ab86      0x2c2 ./libopencm3/lib/cm3/vector.o
+ .debug_info    0x0000000000000000     0x1fae ./src/main.o
+ .debug_info    0x0000000000001fae     0x1712 ./libopencm3/lib/usb/usb.o
+ .debug_info    0x00000000000036c0     0x15b6 ./libopencm3/lib/usb/usb_control.o
+ .debug_info    0x0000000000004c76     0x1b93 ./libopencm3/lib/usb/usb_standard.o
+ .debug_info    0x0000000000006809      0x1c8 ./libopencm3/lib/stm32/f1/flash.o
+ .debug_info    0x00000000000069d1      0x1ef ./libopencm3/lib/stm32/f1/gpio.o
+ .debug_info    0x0000000000006bc0      0x8bc ./libopencm3/lib/stm32/f1/rcc.o
+ .debug_info    0x000000000000747c       0xe2 ./libopencm3/lib/stm32/common/desig_common_v1.o
+ .debug_info    0x000000000000755e       0xf2 ./libopencm3/lib/stm32/common/flash_common_all.o
+ .debug_info    0x0000000000007650       0xbe ./libopencm3/lib/stm32/common/flash_common_f.o
+ .debug_info    0x000000000000770e      0x152 ./libopencm3/lib/stm32/common/flash_common_f01.o
+ .debug_info    0x0000000000007860      0x226 ./libopencm3/lib/stm32/common/gpio_common_all.o
+ .debug_info    0x0000000000007a86      0x79f ./libopencm3/lib/stm32/common/rcc_common_all.o
+ .debug_info    0x0000000000008225     0x10cf ./libopencm3/lib/stm32/common/st_usbfs_core.o
+ .debug_info    0x00000000000092f4      0xf0c ./libopencm3/lib/stm32/st_usbfs_v1.o
+ .debug_info    0x000000000000a200      0x987 ./libopencm3/lib/cm3/scb.o
+ .debug_info    0x000000000000ab87      0x2c2 ./libopencm3/lib/cm3/vector.o
 
 .debug_abbrev   0x0000000000000000     0x1ec7
  *(.debug_abbrev)
